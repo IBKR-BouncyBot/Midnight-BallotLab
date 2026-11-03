@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  JUBJUB_SCALAR_ORDER as Q, requireScalar, requireBytes32,
+  JUBJUB_SCALAR_ORDER as Q, requireScalar, requireBytes32, requireCandidateCount,
   createDemoDealer, freshBallotRandomness, randomSecret32,
   nativeWitnesses, pairCoefficients,
 } from '../contracts/native/adapter.mjs';
@@ -32,8 +32,8 @@ test('native adapter only: dealer shares use the subgroup modulus and nonzero se
 test('native adapter only: each candidate receives a distinct nonzero random scalar', () => {
   const batches = Array.from({ length: 12 }, freshBallotRandomness);
   for (const batch of batches) {
-    assert.equal(batch.length, 3);
-    assert.equal(new Set(batch).size, 3);
+    assert.equal(batch.length, 5);
+    assert.equal(new Set(batch).size, 5);
     batch.forEach(value => requireScalar(value));
   }
   requireBytes32(randomSecret32());
@@ -41,11 +41,12 @@ test('native adapter only: each candidate receives a distinct nonzero random sca
 
 test('native adapter only: witness callbacks reject missing or malformed private inputs', () => {
   for (const callback of Object.values(nativeWitnesses)) assert.throws(() => callback({ privateState: {} }), /Missing native private input/);
-  const privateState = { selection: 2n, ballotRandomness: [1n, 2n, 3n] };
+  const privateState = { selection: 2n, ballotRandomness: [1n, 2n, 3n, 4n, 5n] };
   assert.deepEqual(nativeWitnesses.selection({ privateState }), [privateState, 2n]);
-  assert.throws(() => nativeWitnesses.selection({ privateState: { selection: 3n } }), /selection/);
-  assert.throws(() => nativeWitnesses.ballotRandomness({ privateState: { ballotRandomness: [1n, 1n, 2n] } }), /distinct/);
-  assert.throws(() => nativeWitnesses.ballotRandomness({ privateState: { ballotRandomness: [1n, 2n, Q] } }), /canonical/);
+  assert.throws(() => nativeWitnesses.selection({ privateState: { selection: 5n } }), /selection/);
+  assert.throws(() => nativeWitnesses.ballotRandomness({ privateState: { ballotRandomness: [1n, 1n, 2n, 4n, 5n] } }), /distinct/);
+  assert.throws(() => nativeWitnesses.ballotRandomness({ privateState: { ballotRandomness: [1n, 2n, 3n, 4n, Q] } }), /canonical/);
+  assert.throws(() => nativeWitnesses.ballotRandomness({ privateState: { ballotRandomness: [1n, 2n, 3n] } }), /five/);
   assert.throws(() => nativeWitnesses.eligibilityPath({ privateState: { eligibilityPath: {} } }), /depth-10/);
 });
 
@@ -58,13 +59,13 @@ test('native adapter only: threshold coefficients select exactly the three suppo
 
 function publicFixture() {
   const bytes = new Uint8Array(32).fill(7);
-  const points = [[0n, 1n], [0n, 1n], [0n, 1n]];
+  const points = Array.from({ length: 5 }, () => [0n, 1n]);
   const entry = value => ({ lookup: () => value });
   return {
     electionId: bytes, manifestDigest: bytes, configurationDigest: bytes, administrator: bytes,
-    keysConfigured: true, opensAt: 100n, closesAt: 200n, phase: 3n, accepted: 1n,
-    publicKey: [1n, 2n], coefficientKey: [3n, 4n], trusteeKeys: points,
-    aggregateA: points, aggregateB: points, finalizedTotals: [1n, 0n, 0n],
+    keysConfigured: true, candidateCount: 3n, opensAt: 100n, closesAt: 200n, phase: 3n, accepted: 1n,
+    publicKey: [1n, 2n], coefficientKey: [3n, 4n], trusteeKeys: points.slice(0, 3),
+    aggregateA: points, aggregateB: points, finalizedTotals: [1n, 0n, 0n, 0n, 0n],
     ballotA: entry(points), ballotB: entry(points), nullifiers: entry(bytes), ballotReceipts: entry(bytes),
     decryptionShares: { member: index => index !== 2n, lookup: () => points },
     privateState: { secretKey: 'PRIVATE-MARKER', setupSecret: 99n },
@@ -76,7 +77,8 @@ function publicFixture() {
 test('native projection only: public export excludes all private fields and disclaims proof authentication', () => {
   // Deliberately fabricated ledger-shaped input: projection is NOT verification.
   const record = projectNativePublicLedger(publicFixture(), { contractAddress: 'a'.repeat(64) });
-  assert.equal(record.schema, 'midnight-ballot-lab/native-emulator-public/v1');
+  assert.equal(record.schema, 'midnight-ballot-lab/native-emulator-public/v2');
+  assert.equal(record.candidateCount, 3);
   assert.equal(record.proofGenerated, false);
   assert.equal(record.ledgerInclusionVerified, false);
   assert.equal(record.network, null);
@@ -93,4 +95,14 @@ test('native projection only: invalid address and excessive ballot counts are re
   for (const accepted of [-1n, 1025n]) {
     assert.throws(() => projectNativePublicLedger({ ...publicFixture(), accepted }, { contractAddress: 'a'.repeat(64) }), /capacity/);
   }
+});
+
+test('native adapter only: candidate counts are explicit bounded integers', () => {
+  for (const value of [2, 3, 4, 5]) assert.equal(requireCandidateCount(value), value);
+  for (const value of [undefined, 0, 1, 6, 2.5, 3n, '3', NaN]) assert.throws(() => requireCandidateCount(value));
+  for (const candidateCount of [1n, 6n, 3]) {
+    assert.throws(() => projectNativePublicLedger({ ...publicFixture(), candidateCount }, { contractAddress: 'a'.repeat(64) }), /candidateCount/);
+  }
+  assert.throws(() => projectNativePublicLedger({ ...publicFixture(), trusteeKeys: publicFixture().aggregateA },
+    { contractAddress: 'a'.repeat(64) }), /coordinate vector length/);
 });

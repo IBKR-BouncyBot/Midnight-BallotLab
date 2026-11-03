@@ -2,13 +2,25 @@
 
 This report summarizes completed native-contract, proving, network and browser runs. It describes the tested source recorded in the linked reports, not unverified changes.
 
-## Current application verification
+## Version 0.6.0 verification
+
+The current source adds 2–5 active candidates in five fixed ciphertext lanes, a candidate-count-bound configuration, 1–1,024 synthetic browser credentials, a private credential selector, timed local preview and fresh-session public JSON/receipt verification. Compact 0.31.1 completed full compilation of all seven circuits. The combined native suite passed all 40 cases: 26 generated-contract cases and 14 public-verifier cases. The isolated wallet graph passed its 26 generated-runtime cases, and the root boundary suite passed 46 cases. The native example returned `[2,1,2,0,0]`. Proof-server 8.1.3 generated eight actual proofs across all seven circuit types. Fresh logs are retained under [`evidence/2026-11-03/v0.6.0/`](../evidence/2026-11-03/v0.6.0/). The latter include native point/subgroup rejection, all candidate counts, receipt/aggregate/tally tampering and an explicit demonstration that self-consistent substituted contributions do not establish authenticity or fairness.
+
+Fresh 0.6.0 native browser verification passed all seven real Chromium cases after correcting the mobile layout: all three trustee pairs across 2, 3 and 5 choices; fresh-session public import and every receipt; tampered-record rejection; an actual 15-second automatic preview; an actual 18-second Chromium freeze/resume deadline case; and two missing-prerequisite controls. The network client passed its four real browser initialization/failure cases. Static packaging passed with 57 references and 310 files. Network acceptance and hosted CI/deployment for this revision remain pending; completed runs below retain their exact source provenance. Local browser scheduling and the isolated devnet operator are separate: the first holds synthetic shares in one tab; the second needs actual running services and two externally supplied synthetic shares.
+
+All three updated SVG graphics were rendered locally in real Chromium and visually reviewed, with no text overflow or clipping. [graphics-review.json](../evidence/2026-11-03/v0.6.0/graphics-review.json) retains the source/render hashes and exact scope. No new direct browser test of the hosted origin is claimed.
+
+The three installed-provider API cases also passed. Fresh npm audits report zero application-graph vulnerabilities and eight moderate isolated-devnet entries, with no high or critical entries. The exact snapshots are [application-audit.json](../evidence/2026-11-03/v0.6.0/application-audit.json) and [devnet-audit.json](../evidence/2026-11-03/v0.6.0/devnet-audit.json). The remaining entries are still in the separate testkit/container/archive dependency chain; an audit result is not a security certification.
+
+## Version 0.5.0 verification
 
 Version 0.5.0 passed fresh local verification. Compact 0.31.1 compiled all seven native circuits, producing 14 key files and 14 ZKIR files. All 45 native input/receipt/configuration tests, 20 actual generated-contract tests and three installed-provider API tests passed. The example accepted five ballots and finalized `[2,1,2]`. Both browser bundles built successfully.
 
-The updated interface passed five real Chromium cases covering ballot-card clicks, keyboard operation, all three trustee pairs, exactly-two selection, reset, a 390-pixel mobile viewport and fail-closed prerequisites. The network client passed four initialization/failure-handling cases. These results are retained under [`evidence/2026-11-03/v0.5.0/`](../evidence/2026-11-03/v0.5.0/). Hosted 0.5.0 verification and deployment remain pending. The proof and network runs below remain tied to their recorded source hashes and commits.
+The updated interface passed five real Chromium cases covering ballot-card clicks, keyboard operation, all three trustee pairs, exactly-two selection, reset, a 390-pixel mobile viewport and fail-closed prerequisites. The network client passed four initialization/failure-handling cases. These results are retained under [`evidence/2026-11-03/v0.5.0/`](../evidence/2026-11-03/v0.5.0/).
 
-The [GitHub Pages application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) has a verified deployment at commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`: all three hosted workflows and real Chromium checks at the HTTPS URL passed. [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) records exact run links, tool versions and artifact provenance. Completed local proving and network evidence is reported separately below.
+Hosted 0.5.0 compatibility [run 41689471487](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41689471487) passed at commit `a904ea5c1688952fe3bfd459e51e9a1cf49db436`, including 45 boundary, 20 generated native, 20 isolated-graph and three provider API tests, eight actual proofs across seven circuits, and the five native/four network browser cases. Its environment was Node 24.22.2, npm 11.19.1 and Python 3.12.16. [Pages run 41689472206](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41689472206) completed its build and deployment successfully; this revision's browser checks ran on the CI runner, without a new direct browser test of the deployed origin. The corresponding [devnet run 41689476184](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41689476184) also passed: 17 accepted transactions, 16 completed proof transactions, five matching receipts, four pre-submission negative checks and final tally `[2,1,2]` at block 98. It ran from 18:01:37.620 through 18:11:22.157 UTC; its own Node process reports 24.22.1. The [public network report](../evidence/2026-11-03/v0.5.0/github/devnet/reports/network-evidence.json) retains its exact contract, configuration and transaction identifiers. [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) records exact runs and artifact provenance. Completed proof and network outcomes remain tied to their recorded source hashes and commits.
+
+Direct HTTPS browser evidence for the [GitHub Pages URL](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) is tied to commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`. The recorded 0.5.0 deployment is commit `a904ea5c1688952fe3bfd459e51e9a1cf49db436`, with successful runner-local browser checks as described above. [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) records each run's exact source and artifact provenance. The completed native evidence below is retained with its own version and execution scope.
 
 ## Provenance and environment
 
@@ -18,7 +30,7 @@ The [GitHub Pages application](https://ibkr-bouncybot.github.io/Midnight-BallotL
 - Installed Compact 0.31.1, compact-runtime 0.16.0, onchain-runtime-v3 3.0.0 and Midnight.js 4.1.1. The SDK's locked ledger-v8 package is 8.1.0.
 - Docker Engine 29.1.3 runs in WSL. Proof-server 8.1.3 image digest: `sha256:0f4ab0716985eaebbe55a970348f52ff05ffd8a96631ed7232bd0c4ba02c115c`.
 
-## Fresh completed checks
+## Recorded native execution checks
 
 | Check | Result |
 | --- | --- |
@@ -43,11 +55,11 @@ The [GitHub Pages application](https://ibkr-bouncybot.github.io/Midnight-BallotL
 
 Native command evidence is retained under `evidence/2026-11-03` alongside public browser/proof reports. The native browser runs execute the generated contract locally and do not make proofs. The standalone proof run uses the official local proving provider and does not submit transactions. The network browser run verifies actual SDK loading and failure handling without a connected wallet. None is relabeled as network acceptance.
 
-## Exact tested application versions
+## Versions for the recorded 0.4.0 native evidence
 
 | Component | Version |
 | --- | --- |
-| Current application source | 0.5.0; exact source hashes and commits retained for each execution stage |
+| Recorded application source | 0.4.0; exact source hashes and commits retained in these execution reports |
 | Compact devtools | 0.5.1 |
 | Compact compiler / language | 0.31.1 / 0.23.0 |
 | Compact runtime | 0.16.0 |

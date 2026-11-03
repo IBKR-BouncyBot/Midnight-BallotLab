@@ -1,70 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="816" viewBox="0 0 1600 816" role="img" aria-labelledby="title description">
-  <title id="title">How Midnight Ballot Lab works</title>
-  <desc id="description">Five steps: prepare five sample voters and three trustee shares; click a choice and encrypt it; keep a QR or JSON receipt; choose any two trustees; check the combined tally. Local browser execution uses real Compact and WASM without a wallet, proof or transaction. The separate development network flow requires a wallet, trusted local prover and submission. Indexer confirmation is not independent chain verification, and GitHub Pages provides neither a contract nor a prover.</desc>
-  <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17172b"/><stop offset="1" stop-color="#0a0a10"/></linearGradient>
-    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#24243e"/><stop offset="1" stop-color="#171722"/></linearGradient>
-    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1L6 4L1 7" fill="none" stroke="#a8a8ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
-    <g id="person" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cy="-9" r="9"/><path d="M-17 20v-4a17 17 0 0 1 34 0v4"/></g>
-    <style>
-      text { font-family: 'Segoe UI', Arial, sans-serif; fill: #f5f5ff; }
-      .muted { fill: #b9b9ce; } .violet { fill: #b0b0ff; }
-      .eyebrow { font-size: 14px; letter-spacing: 2px; font-weight: 600; }
-      .step-title { font-size: 24px; font-weight: 600; text-anchor: middle; }
-      .step-copy { font-size: 18px; text-anchor: middle; fill: #b9b9ce; }
-    </style>
-  </defs>
-  <rect width="1600" height="816" rx="28" fill="url(#background)"/>
-  <text x="72" y="51" class="eyebrow violet">MIDNIGHT BALLOT LAB / THE EXPERIENCE</text>
-  <text x="72" y="112" font-size="47" font-weight="600" letter-spacing="-1.3">From a private choice to a shared tally.</text>
-  <text x="74" y="154" font-size="20" class="muted">Five sample voters. Three trustees. One complete set of encrypted ballots.</text>
-
-  <g fill="url(#card)" stroke="#4e4e6c"><rect x="72" y="206" width="264" height="290" rx="20"/><rect x="370" y="206" width="264" height="290" rx="20"/><rect x="668" y="206" width="264" height="290" rx="20"/><rect x="966" y="206" width="264" height="290" rx="20"/><rect x="1264" y="206" width="264" height="290" rx="20"/></g>
-  <g fill="#333356"><circle cx="108" cy="242" r="16"/><circle cx="406" cy="242" r="16"/><circle cx="704" cy="242" r="16"/><circle cx="1002" cy="242" r="16"/><circle cx="1300" cy="242" r="16"/></g>
-  <g font-size="15" font-weight="600" text-anchor="middle"><text x="108" y="248">1</text><text x="406" y="248">2</text><text x="704" y="248">3</text><text x="1002" y="248">4</text><text x="1300" y="248">5</text></g>
-  <g fill="none" stroke="#a8a8ff" stroke-width="2" marker-end="url(#arrow)"><path d="M343 348h19"/><path d="M641 348h19"/><path d="M939 348h19"/><path d="M1237 348h19"/></g>
-
-  <g color="#b0b0ff"><use href="#person" transform="translate(174 310) scale(0.8)"/><use href="#person" transform="translate(234 310) scale(0.8)"/><use href="#person" transform="translate(204 297)"/></g>
-  <text x="204" y="383" class="step-title">Prepare</text>
-  <text x="204" y="422" class="step-copy">5 sample voters</text>
-  <text x="204" y="450" class="step-copy">3 trustee shares</text>
-
-  <rect x="458" y="272" width="88" height="70" rx="12" fill="#33335a" stroke="#b0b0ff" stroke-width="2"/>
-  <circle cx="480" cy="295" r="7" fill="#b0b0ff"/><path d="M498 295h28M480 318h46" stroke="#b0b0ff" stroke-width="4" stroke-linecap="round"/>
-  <path d="M524 330v-8a11 11 0 0 1 22 0v8" fill="none" stroke="#e1e1ff" stroke-width="3"/>
-  <rect x="518" y="328" width="34" height="28" rx="6" fill="#b0b0ff"/>
-  <text x="502" y="383" class="step-title">Click + encrypt</text>
-  <text x="502" y="422" class="step-copy">Select one choice</text>
-  <text x="502" y="450" class="step-copy">Native Jubjub encryption</text>
-
-  <rect x="757" y="266" width="86" height="86" rx="10" fill="#e1e1ff"/>
-  <g fill="none" stroke="#292941" stroke-width="6"><rect x="771" y="280" width="17" height="17"/><rect x="812" y="280" width="17" height="17"/><rect x="771" y="321" width="17" height="17"/></g>
-  <g fill="#292941"><rect x="800" y="307" width="10" height="10"/><rect x="818" y="312" width="12" height="9"/><rect x="800" y="330" width="10" height="8"/><rect x="819" y="329" width="11" height="9"/></g>
-  <text x="800" y="383" class="step-title">Keep a receipt</text>
-  <text x="800" y="422" class="step-copy">QR code or JSON</text>
-  <text x="800" y="450" class="step-copy">Bound to your ciphertext</text>
-
-  <g color="#b0b0ff"><circle cx="1072" cy="308" r="29" fill="#303050" stroke="#9292c9"/><use href="#person" transform="translate(1072 307) scale(0.7)"/><circle cx="1127" cy="308" r="29" fill="#303050" stroke="#9292c9"/><use href="#person" transform="translate(1127 307) scale(0.7)"/></g>
-  <path d="m1107 344 6 6 13-16" fill="none" stroke="#c6c6ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="1098" y="383" class="step-title">Choose any two</text>
-  <text x="1098" y="422" class="step-copy">Two valid contributions</text>
-  <text x="1098" y="450" class="step-copy">Use the frozen aggregate</text>
-
-  <path d="M1349 345h94" stroke="#6b6b93" stroke-width="2"/>
-  <g fill="#b0b0ff"><rect x="1357" y="280" width="21" height="65" rx="4"/><rect x="1386" y="312" width="21" height="33" rx="4"/><rect x="1415" y="280" width="21" height="65" rx="4"/></g>
-  <text x="1396" y="383" class="step-title">Combined tally</text>
-  <text x="1396" y="422" class="step-copy">Run contract checks</text>
-  <text x="1396" y="450" class="step-copy">Publish aggregate totals</text>
-
-  <rect x="72" y="548" width="712" height="188" rx="20" fill="#1c1c32" stroke="#626291"/>
-  <rect x="816" y="548" width="712" height="188" rx="20" fill="#161621" stroke="#4b4b65"/>
-  <circle cx="105" cy="582" r="5" fill="#b0b0ff"/><text x="124" y="588" class="eyebrow violet">LOCAL BROWSER</text>
-  <text x="103" y="629" font-size="24" font-weight="600">Generated Compact + real WASM</text>
-  <text x="103" y="669" font-size="19" class="muted">Runs native cryptography locally.</text>
-  <text x="103" y="701" font-size="19" class="muted">No wallet. No ZK proof. No transaction.</text>
-  <circle cx="849" cy="582" r="5" fill="#b0b0ff"/><text x="868" y="588" class="eyebrow violet">DEVELOPMENT NETWORK</text>
-  <text x="847" y="629" font-size="24" font-weight="600">Wallet + trusted local prover</text>
-  <text x="847" y="669" font-size="18" class="muted">Proof generation → submission → indexer confirmation.</text>
-  <text x="847" y="701" font-size="18" class="muted">Indexer observation ≠ independent chain verification.</text>
-  <text x="74" y="782" font-size="17" class="muted">GitHub Pages serves frontend files. It supplies neither a deployed Midnight contract nor a prover.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="780" viewBox="0 0 1600 780" role="img" aria-labelledby="title description">
+<title id="title">Set up election, cast a ballot, reveal results, verify election</title>
+<desc id="description">Configure two to five choices and one to 1,024 synthetic credentials. Privately choose a credential and cast a ballot. Reveal with two trustees, manually or in a scheduled local preview. Import public JSON in a fresh session and compare a receipt. Public consistency cannot authenticate missing proofs or establish election fairness.</desc>
+<style>text{font-family:Outfit,'Segoe UI',Arial,sans-serif;fill:#fff}.muted{fill:#b8b8bd}.label{font-size:15px;letter-spacing:2px}.body{font-size:20px}</style>
+<rect width="1600" height="780" fill="#09090b"/>
+<rect x="64" y="43" width="15" height="15" fill="#0000fe"/>
+<text x="94" y="57" class="label">MIDNIGHT BALLOT LAB / THE EXPERIENCE</text>
+<text x="64" y="130" font-size="48" font-weight="600" letter-spacing="-1">Your election, from choice to public check.</text>
+<path d="M64 168H1536" stroke="#36363c"/>
+<g fill="#101013" stroke="#36363c"><rect x="64" y="208" width="350" height="330"/><rect x="438" y="208" width="350" height="330"/><rect x="812" y="208" width="350" height="330"/><rect x="1186" y="208" width="350" height="330"/></g>
+<g fill="#0000fe"><rect x="64" y="208" width="54" height="54"/><rect x="438" y="208" width="54" height="54"/><rect x="812" y="208" width="54" height="54"/><rect x="1186" y="208" width="54" height="54"/></g>
+<g font-size="24" font-weight="600" text-anchor="middle"><text x="91" y="244">1</text><text x="465" y="244">2</text><text x="839" y="244">3</text><text x="1213" y="244">4</text></g>
+<text x="88" y="310" font-size="28" font-weight="600">Set up election</text>
+<text x="88" y="354" class="body muted">Name it. Add 2–5 choices.</text>
+<text x="88" y="390" class="body muted">Choose 1–1,024 credentials.</text>
+<text x="88" y="445" class="body">Manual or scheduled</text>
+<text x="88" y="479" class="body muted">Local preview: 15–3,600 sec.</text>
+<text x="462" y="310" font-size="28" font-weight="600">Vote / Cast a ballot</text>
+<text x="462" y="354" class="body muted">Pick an unused credential.</text>
+<text x="462" y="390" class="body muted">Click your choice and cast.</text>
+<text x="462" y="445" class="body">Save a QR or JSON receipt</text>
+<text x="462" y="479" class="body muted">No choice in the receipt.</text>
+<text x="836" y="310" font-size="28" font-weight="600">Reveal results</text>
+<text x="836" y="354" class="body muted">Choose any two trustees.</text>
+<text x="836" y="390" class="body muted">Check the combined tally.</text>
+<text x="836" y="445" class="body">Timed preview automates it</text>
+<text x="836" y="479" class="body muted">All roles still share one tab.</text>
+<text x="1210" y="310" font-size="28" font-weight="600">Verify election</text>
+<text x="1210" y="354" class="body muted">Import the public JSON.</text>
+<text x="1210" y="390" class="body muted">Compare your own receipt.</text>
+<text x="1210" y="445" class="body">Works in a fresh session</text>
+<text x="1210" y="479" class="body muted">No private credentials needed.</text>
+<path d="M64 578H1536" stroke="#73737b"/>
+<text x="64" y="618" class="label">WHAT THE CHECK MEANS</text>
+<text x="64" y="658" font-size="25">Native hashes and equations agree with the supplied record.</text>
+<text x="64" y="697" class="body muted">A self-consistent replacement can pass. Missing eligibility and trustee-share proofs are not authenticated.</text>
+<text x="64" y="741" class="body muted">Local runtime execution ≠ proof generation ≠ accepted network transaction. No election fairness guarantee.</text>
 </svg>

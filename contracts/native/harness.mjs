@@ -2,7 +2,7 @@
  * Requires compiled native-election output and the pinned runtime. No fallback.
  * Circuit proofData and private contexts are intentionally never exported.
  */
-import { nativeWitnesses, requireBytes32, requireScalar, pairCoefficients, pointEqual, NATIVE_CAPACITY } from './adapter.mjs';
+import { nativeWitnesses, requireBytes32, requireScalar, requireCandidateCount, pairCoefficients, pointEqual, NATIVE_CAPACITY, NATIVE_CANDIDATES } from './adapter.mjs';
 import { projectNativePublicLedger } from './record.mjs';
 
 export async function loadNativeModules() {
@@ -22,8 +22,9 @@ function seconds(value) {
 
 export async function createNativeEmulator({
   electionId, manifestDigest, administratorSecret, setupSecret, setupSlope,
-  opensAt, closesAt, address,
+  opensAt, closesAt, candidateCount, address, initialTime,
 }) {
+  requireCandidateCount(candidateCount);
   requireBytes32(electionId, 'electionId');
   requireBytes32(manifestDigest, 'manifestDigest');
   requireBytes32(administratorSecret, 'administratorSecret');
@@ -40,12 +41,12 @@ export async function createNativeEmulator({
   const initial = contract.initialState(
     RT.createConstructorContext(constructorPrivateState, coinPublicKey),
     electionId, manifestDigest, pureCircuits.administratorIdentity(administratorSecret),
-    BigInt(opensAt), BigInt(closesAt),
+    BigInt(opensAt), BigInt(closesAt), BigInt(candidateCount),
   );
   // Deployment does not prove constructor computations. Key setup is a separate
   // impure circuit and must be proven on the actual network.
   let context = RT.createCircuitContext(contractAddress, coinPublicKey,
-    initial.currentContractState, { administratorSecret }, undefined, undefined, opensAt - 1);
+    initial.currentContractState, { administratorSecret }, undefined, undefined, seconds(initialTime ?? opensAt - 1));
 
   const readLedger = () => ledger(context.currentQueryContext.state);
   const setPrivateState = privateState => {
@@ -78,6 +79,8 @@ export function recoverNativeTally(emulator, first, second) {
   const state = emulator.readLedger();
   if (state.phase !== 2n && state.phase !== 3n) throw new Error('Native voting must be closed before tally recovery');
   if (state.accepted < 0n || state.accepted > BigInt(NATIVE_CAPACITY)) throw new Error('Native ballot count exceeds capacity');
+  const candidateCount = requireCandidateCount(typeof state.candidateCount === 'bigint' ? Number(state.candidateCount) : NaN);
+  if (state.aggregateB.length !== NATIVE_CANDIDATES) throw new Error('Native aggregate must contain all five candidate lanes');
   const coefficients = pairCoefficients(first, second);
   if (!state.decryptionShares.member(first) || !state.decryptionShares.member(second)) throw new Error('The selected native trustee shares are not published');
   const d1 = state.decryptionShares.lookup(first);
@@ -88,7 +91,10 @@ export function recoverNativeTally(emulator, first, second) {
       negatePoint(scalePoint(d2[candidate], coefficients.second)));
     const target = addPoints(scalePoint(b, coefficients.scale), negatePoint(combined));
     for (let count = 0n; count <= state.accepted; count++) {
-      if (pointEqual(target, nativePublicKey(coefficients.scale * count))) return count;
+      if (pointEqual(target, nativePublicKey(coefficients.scale * count))) {
+        if (candidate >= candidateCount && count !== 0n) throw new Error('Inactive native candidate has a nonzero total');
+        return count;
+      }
     }
     throw new Error('No bounded total matches the native aggregate and trustee shares');
   });

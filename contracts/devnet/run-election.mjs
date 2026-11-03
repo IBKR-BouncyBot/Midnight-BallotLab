@@ -9,6 +9,7 @@ import { dirname, join, resolve, basename } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { stageRuntime } from './stage-runtime.mjs';
+import { runScheduledNativeTally } from './scheduled-operator.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const contracts = resolve(directory, '..');
@@ -26,6 +27,7 @@ let stage = 'prerequisites', walletProvider, db, privateDirectory, lastSubmitted
 let proofCompletions = 0, submissionAttempts = 0;
 const evidence = { executedAt: new Date().toISOString(), networkId: 'undeployed',
   environment: 'fresh-isolated-local-development-chain', confirmationSource: 'configured-local-indexer',
+  mode: 'external-scheduled-operator', onChainSelfExecution: false,
   independentlyVerifiedChainInclusion: false, browserWalletTested: false,
   acceptedTransactions: [], rejectedBeforeSubmission: [], proofTransactionsCompleted: 0,
   networkSubmission: false, status: 'running' };
@@ -82,6 +84,8 @@ try {
   if (process.argv.length !== 3 || process.argv[2] !== '--isolated-local-devnet') throw new Error('Explicit local development acceptance argument required');
   if (process.env.MN_TEST_WALLET_SEED || process.env.TEST_WALLET_SEED) throw new Error('External wallet credentials are not accepted by this isolated run');
   const staged = await stageRuntime(); evidence.sourceHashes = staged.hashes;
+  evidence.operatorSourceSha256 = createHash('sha256').update(await readFile(new URL('./scheduled-operator.mjs', import.meta.url))).digest('hex');
+  evidence.runnerSourceSha256 = createHash('sha256').update(await readFile(new URL('./run-election.mjs', import.meta.url))).digest('hex');
   const lock = JSON.parse(await readFile(join(directory, 'package-lock.json'), 'utf8'));
   evidence.lockfileSha256 = createHash('sha256').update(await readFile(join(directory, 'package-lock.json'))).digest('hex');
   evidence.versions = Object.fromEntries(['compact-runtime', 'midnight-js-contracts', 'testkit-js', 'wallet-sdk', 'ledger-v8', 'onchain-runtime-v3', 'zkir-v2']
@@ -155,7 +159,7 @@ try {
   const selections = [0n, 1n, 2n, 0n, 2n]; // Never projected to logs or evidence.
   const now = Math.max((await blockTime()).seconds, Math.floor(Date.now() / 1000));
   const opensAt = now + 240, closesAt = opensAt + 240;
-  evidence.schedule = { opensAt, closesAt }; evidence.expectedTotals = [2, 1, 2];
+  evidence.schedule = { opensAt, closesAt }; evidence.candidateCount = 3; evidence.expectedTotals = [2, 1, 2, 0, 0];
   async function accepted(name, callback) {
     const result = await operation(name, callback);
     assert.match(result.txId, /^[0-9a-f]+$/i);
@@ -172,7 +176,7 @@ try {
     evidence.rejectedBeforeSubmission.push({ operation: name, rejected: true, proofGenerated: false, submitted: false }); await save();
   }
   const deployment = await accepted('deploy', () => client.deploy({ electionId: adapter.randomSecret32(), manifestDigest: adapter.randomSecret32(),
-    administratorIdentity: native.pureCircuits.administratorIdentity(administratorSecret), opensAt: BigInt(opensAt), closesAt: BigInt(closesAt) }));
+    administratorIdentity: native.pureCircuits.administratorIdentity(administratorSecret), opensAt: BigInt(opensAt), closesAt: BigInt(closesAt), candidateCount: 3 }));
   evidence.contractAddress = deployment.contractAddress;
   await accepted('configure-keys', () => client.configureKeys({ administratorSecret, setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope }));
   evidence.configurationDigest = hex(client.configurationDigest);
@@ -191,14 +195,18 @@ try {
   for (const receipt of receipts) assert.equal((await client.checkReceipt(receipt)).receiptMatchesIndexedState, true);
   evidence.receipts = receipts.map(({ networkId, contractAddress, configurationDigest, index, receipt, txId, blockHeight }) => ({ networkId, contractAddress, configurationDigest, index, receipt, txId, blockHeight }));
   await save();
-  await waitUntilChainTime(closesAt + 2, 'wait-for-voting-close');
-  await accepted('close-voting', () => client.closeVoting());
-  await rejectedBeforeSubmission('reject-wrong-trustee-share', () => client.submitDecryption(1n, (dealer.trustees[0].secretShare % (adapter.JUBJUB_SCALAR_ORDER - 2n)) + 1n));
-  await accepted('trustee-1', () => client.submitDecryption(1n, dealer.trustees[0].secretShare));
-  await accepted('trustee-3', () => client.submitDecryption(3n, dealer.trustees[2].secretShare));
-  const totals = await client.recoverTally(1n, 3n); assert.deepEqual(totals, [2n, 1n, 2n]);
-  await rejectedBeforeSubmission('reject-changed-tally', () => client.finalize(1n, 3n, [1n, 2n, 2n]));
-  await accepted('finalize', () => client.finalize(1n, 3n, totals));
+  evidence.scheduledOperator = await runScheduledNativeTally({ client, indexerUrl: env.indexer, publicDataProvider,
+    trustees: [dealer.trustees[0], dealer.trustees[2]],
+    onStage: async name => { stage = name; evidence.currentStage = name; output({ stage, status: 'started' }); await save(); },
+    onWaiting: async record => output({ stage, ...record }),
+    onAccepted: async record => { evidence.acceptedTransactions.push(record); delete evidence.pendingSubmission;
+      await save(); output({ stage: record.operation, status: 'accepted-by-local-chain', txId: record.txId, blockHeight: record.blockHeight }); },
+    afterClosed: () => rejectedBeforeSubmission('reject-wrong-trustee-share',
+      () => client.submitDecryption(1n, (dealer.trustees[0].secretShare % (adapter.JUBJUB_SCALAR_ORDER - 2n)) + 1n)),
+    beforeFinalize: async totals => { assert.deepEqual(totals, [2n, 1n, 2n, 0n, 0n]);
+      await rejectedBeforeSubmission('reject-changed-tally', () => client.finalize(1n, 3n, [1n, 2n, 2n, 0n, 0n])); },
+  });
+  const totals = evidence.scheduledOperator.totals.map(BigInt);
   const finalState = await client.refreshConfiguration();
   assert.equal(finalState.phase, 3n); assert.equal(finalState.accepted, 5n); assert.deepEqual(finalState.finalizedTotals, totals);
   evidence.observedTotals = totals.map(Number); evidence.acceptedBallots = 5; evidence.finalPhase = 3;

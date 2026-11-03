@@ -40,6 +40,12 @@ def check(dist):
     dist = Path(dist).resolve()
     if not (dist / "index.html").is_file() or not (dist / ".nojekyll").is_file():
         raise ValueError("Run npm run build first; index.html and .nojekyll are required")
+    for name in ("overview.css", "fonts/Outfit-Latin.woff2", "fonts/Outfit-LatinExt.woff2", "fonts/OFL-Outfit.txt"):
+        path = dist / name
+        if not path.is_file() or path.stat().st_size == 0:
+            raise ValueError(f"Required frontend asset is missing or empty: {name}")
+        if path.suffix == ".woff2" and path.read_bytes()[:4] != b"wOF2":
+            raise ValueError(f"Frontend font is not a WOFF2 asset: {name}")
     pages = {}
     for page in dist.glob("*.html"):
         html = References()
@@ -141,6 +147,9 @@ def check(dist):
         raise ValueError("Disabled network build contains stale code or proving assets")
 
     required = {
+        "midnight-ballot-lab/LICENSE",
+        "midnight-ballot-lab/NOTICE.md",
+        "midnight-ballot-lab/THIRD_PARTY_NOTICES.md",
         "midnight-ballot-lab/AGENTS.md",
         "midnight-ballot-lab/contracts/package-lock.json",
         "midnight-ballot-lab/contracts/native/browser-providers.mjs",
@@ -148,27 +157,43 @@ def check(dist):
         "midnight-ballot-lab/src/network-app.mjs",
         "midnight-ballot-lab/scripts/build-network-browser.mjs",
         "midnight-ballot-lab/scripts/test-native-browser.mjs",
+        "midnight-ballot-lab/scripts/test-network-browser.mjs",
+        "midnight-ballot-lab/scripts/test-deployed-browser.mjs",
         "midnight-ballot-lab/.github/workflows/pages.yml",
         "midnight-ballot-lab/.github/workflows/native-compact.yml",
+        "midnight-ballot-lab/.github/workflows/devnet-acceptance.yml",
         "midnight-ballot-lab/docs/GITHUB_PAGES.md",
         "midnight-ballot-lab/scripts/check_pages.py",
         "midnight-ballot-lab/.gitignore",
         "midnight-ballot-lab/src/index.html",
+        "midnight-ballot-lab/src/overview.css",
+        "midnight-ballot-lab/src/fonts/Outfit-Latin.woff2",
+        "midnight-ballot-lab/src/fonts/Outfit-LatinExt.woff2",
+        "midnight-ballot-lab/src/fonts/OFL-Outfit.txt",
+        "midnight-ballot-lab/src/fonts/README.md",
         "midnight-ballot-lab/docs/assets/ballot-lab-banner.svg",
         "midnight-ballot-lab/docs/assets/how-it-works.svg",
         "midnight-ballot-lab/docs/assets/threshold-tally.svg",
         "midnight-ballot-lab/contracts/native-election.compact",
         "midnight-ballot-lab/contracts/native/sdk-client.mjs",
         "midnight-ballot-lab/contracts/native/harness.mjs",
+        "midnight-ballot-lab/contracts/native/verify-public.mjs",
         "midnight-ballot-lab/contracts/native/test/native-election.test.mjs",
+        "midnight-ballot-lab/contracts/native/test/public-verifier.test.mjs",
+        "midnight-ballot-lab/tests/native-adapter.test.mjs",
         "midnight-ballot-lab/docs/NATIVE_MIDNIGHT.md",
         "midnight-ballot-lab/src/native.html",
         "midnight-ballot-lab/src/native-app.mjs",
         "midnight-ballot-lab/src/native-loader.mjs",
         "midnight-ballot-lab/scripts/build-native-browser.mjs",
         "midnight-ballot-lab/contracts/devnet/package-lock.json",
+        "midnight-ballot-lab/contracts/devnet/package.json",
         "midnight-ballot-lab/contracts/devnet/run-election.mjs",
+        "midnight-ballot-lab/contracts/devnet/scheduled-operator.mjs",
+        "midnight-ballot-lab/contracts/devnet/stage-runtime.mjs",
+        "midnight-ballot-lab/contracts/devnet/probe.mjs",
         "midnight-ballot-lab/contracts/devnet/services.sh",
+        "midnight-ballot-lab/scripts/ci-stop-devnet.sh",
     }
     with ZipFile(dist / "midnight-ballot-lab-source.zip") as archive:
         bad = archive.testzip()
@@ -177,6 +202,8 @@ def check(dist):
         names = archive.namelist()
         if len(set(names)) != len(names) or not required.issubset(names):
             raise ValueError("Source ZIP has duplicate entries or omits deployment source")
+        if any(archive.getinfo(name).file_size == 0 for name in required):
+            raise ValueError("Source ZIP contains an empty required source file")
         forbidden = {".git", ".openai", "node_modules", "__pycache__", "private-state", "artifacts", "dist", "managed", ".runtime", ".npm-cache", "logs"}
         for name in names:
             path = PurePosixPath(name)

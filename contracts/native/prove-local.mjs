@@ -66,7 +66,8 @@ async function main() {
   const contract = new Contract(nativeWitnesses);
   const initial = contract.initialState(runtime.createConstructorContext({}, coinPublicKey),
     electionId, manifestDigest, pureCircuits.administratorIdentity(administratorSecret),
-    BigInt(opensAt), BigInt(closesAt));
+    BigInt(opensAt), BigInt(closesAt), 5n);
+  report.candidateCount = 5;
   let context = runtime.createCircuitContext(address, coinPublicKey, initial.currentContractState,
     {}, undefined, undefined, opensAt - 1);
   const as = privateState => { context = { ...context, currentPrivateState: privateState }; };
@@ -118,7 +119,7 @@ async function main() {
   at(opensAt + 1);
   await prove('openVoting');
   as({ voterSecret, eligibilityPath: state().members.findPathForLeaf(member),
-    selection: 1n, ballotRandomness: freshBallotRandomness() });
+    selection: 4n, ballotRandomness: freshBallotRandomness() });
   await prove('castBallot');
   as({});
   at(closesAt);
@@ -137,7 +138,7 @@ async function main() {
     await prove('submitDecryption', trustee.index);
   }
   as({});
-  await prove('finalize', 1n, 3n, [0n, 1n, 0n]);
+  await prove('finalize', 1n, 3n, [0n, 0n, 0n, 0n, 1n]);
   if (state().phase !== 3n || state().accepted !== 1n) throw new Error('Unexpected final state');
   report.status = 'passed';
   report.finishedAt = new Date().toISOString();

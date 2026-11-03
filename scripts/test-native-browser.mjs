@@ -61,6 +61,7 @@ async function waitOperation(page) {
 async function checkReceipt(page, text, accepted) {
   await page.locator('#native-receipt-input').fill(text);
   await page.locator('#native-check-receipt').click();
+  await waitOperation(page);
   assert.equal(await page.locator('#native-receipt-check-output').evaluate(el => el.classList.contains('pass')), accepted,
     accepted ? 'Public receipt should match this election' : 'Altered public receipt should be rejected');
   if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /No chain inclusion or ZK proof was verified/);
@@ -131,10 +132,13 @@ try {
   server = await staticServer();
   const origin = `http://127.0.0.1:${server.address().port}`;
 
-  for (const [pair, prefix, entry] of [
-    ['1,2', '/', 'index.html'],
-    ['1,3', '/arbitrary-repository-name/', 'index.html'],
-    ['2,3', '/arbitrary-repository-name/', 'native.html'],
+  for (const { pair, prefix, entry, candidateCount, voterCount, selections, voterOrder, totals } of [
+    { pair: '1,2', prefix: '/', entry: 'index.html', candidateCount: 3, voterCount: 5,
+      selections: [0, 1, 2, 0, 2], voterOrder: [0, 1, 2, 3, 4], totals: [2, 1, 2] },
+    { pair: '1,3', prefix: '/arbitrary-repository-name/', entry: 'index.html', candidateCount: 2, voterCount: 3,
+      selections: [1, 0, 1], voterOrder: [2, 0, 1], totals: [1, 2] },
+    { pair: '2,3', prefix: '/arbitrary-repository-name/', entry: 'native.html', candidateCount: 5, voterCount: 7,
+      selections: [4, 0, 3, 1, 4, 2, 0], voterOrder: [6, 1, 4, 0, 5, 2, 3], totals: [2, 1, 1, 1, 2] },
   ]) {
     stage = `trustees-${pair.replace(',', '-')}:load-native-wasm`;
     const context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1365, height: 1000 } });
@@ -155,14 +159,30 @@ try {
       await page.waitForFunction(() => ['ready', 'error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
       assert.equal(await page.locator('#native-availability').getAttribute('data-state'), 'ready', 'Native browser initialization must succeed');
       assert.match(await page.locator('#native-availability').textContent(), /no ZK proofs.*no blockchain transactions/i);
+      const font = await page.evaluate(async () => { await document.fonts.ready; return {
+        loaded: document.fonts.check('16px Outfit'), family: getComputedStyle(document.body).fontFamily }; });
+      assert.equal(font.loaded, true, 'Self-hosted Outfit must load'); assert.match(font.family, /Outfit/);
       for (const asset of manifest.assets) assert.ok(loadedWasm.has(`${prefix}${asset}`), 'Expected same-origin WASM was not loaded');
 
       stage = `trustees-${pair.replace(',', '-')}:setup-validation`;
+      assert.deepEqual(await page.locator('#native-candidate-count option').evaluateAll(options => options.map(option => option.value)), ['2', '3', '4', '5']);
+      for (const invalidCount of ['0', '1025', '1.5']) {
+        await page.locator('#native-voter-count').fill(invalidCount);
+        assert.equal(await page.locator('#native-voter-count').evaluate(input => input.checkValidity()), false);
+        await page.locator('#native-create').click();
+        assert.equal(await page.locator('#native-phase').textContent(), 'Not created');
+      }
+      for (const validCount of ['1', '1024']) {
+        await page.locator('#native-voter-count').fill(validCount);
+        assert.equal(await page.locator('#native-voter-count').evaluate(input => input.checkValidity()), true);
+      }
+      await page.locator('#native-voter-count').fill(String(voterCount));
+      await page.locator('#native-candidate-count').selectOption(String(candidateCount));
       await page.locator('#native-choice-b').fill('Option A');
       await page.locator('#native-create').click();
       await page.waitForFunction(() => !document.getElementById('native-status').classList.contains('working'));
       assert.equal(await page.locator('#native-phase').textContent(), 'Not created');
-      assert.match(await page.locator('#native-status').textContent(), /three different choices/);
+      assert.match(await page.locator('#native-status').textContent(), /different choices/);
       await page.locator('#native-choice-b').fill('Option B');
       await page.locator('#native-election-title').fill(`Browser native experiment ${pair}`);
       await page.locator('#native-create').click();
@@ -170,13 +190,20 @@ try {
       assert.equal(await page.locator('#native-phase').textContent(), 'Voting open');
       assert.match(await page.locator('#native-configuration').textContent(), /^[0-9a-f]{64}$/);
 
-      stage = `trustees-${pair.replace(',', '-')}:five-native-ballots`;
+      stage = `trustees-${pair.replace(',', '-')}:configured-native-ballots`;
       await page.locator('#native-go-vote').click();
-      assert.equal(await page.locator('#native-choices label.selection-card').count(), 3);
-      if (pair === '1,2') await page.locator('#native-choice-fieldset').screenshot({ path: join(evidenceDir, 'native-choice-cards.png') });
+      assert.equal(await page.locator('#native-choices label.selection-card').count(), candidateCount);
+      assert.equal(await page.locator('#native-voter option').count(), voterCount + 1);
+      assert.equal(await page.locator('#native-cast').isDisabled(), true, 'A voter must be selected explicitly');
+      if (pair === '1,2') {
+        await page.locator('#native-voter').selectOption('0');
+        await page.locator('#native-choice-fieldset').screenshot({ path: join(evidenceDir, 'native-choice-cards.png') });
+      }
+      const publicReceipts = [];
       // Synthetic acceptance inputs stay in this test process; they are never
       // copied into browser console, screenshots, traces, or result evidence.
-      for (const [index, candidate] of [0, 1, 2, 0, 2].entries()) {
+      for (const [index, candidate] of selections.entries()) {
+        await page.locator('#native-voter').selectOption(String(voterOrder[index]));
         const choice = page.locator(`input[name="native-choice"][value="${candidate}"]`);
         if (index === 0 && pair === '1,2') { await choice.focus(); await choice.press('Space'); }
         else await page.locator(`#native-choices label:has(input[value="${candidate}"])`).click();
@@ -186,9 +213,12 @@ try {
         await waitOperation(page);
         assert.equal(await page.locator('#native-ballots').textContent(), String(index + 1));
         assert.equal(await page.locator('input[name="native-choice"]:checked').count(), 0, 'Private choice must clear after casting');
+        assert.equal(await page.locator('#native-voter').inputValue(), '', 'Voter selection must clear before a public receipt is displayed');
+        assert.equal(await page.locator(`#native-voter option[value="${voterOrder[index]}"]`).isDisabled(), true, 'Used credential must be unavailable');
+        publicReceipts.push(await downloadJson(page, '#native-save-receipt'));
       }
-      assert.equal(await page.locator('#native-cast').isDisabled(), true, 'No sixth synthetic credential is available');
-      assert.equal(await page.locator('#native-ballot-list .ballot-item').count(), 5);
+      assert.equal(await page.locator('#native-cast').isDisabled(), true, 'No unused synthetic credential is available');
+      assert.equal(await page.locator('#native-ballot-list .ballot-item').count(), voterCount);
 
       stage = `trustees-${pair.replace(',', '-')}:rendered-qr-and-json-receipts`;
       const receipt = await downloadJson(page, '#native-save-receipt');
@@ -197,7 +227,7 @@ try {
       assert.equal(receipt.proofGenerated, false);
       assert.equal(receipt.ledgerInclusionVerified, false);
       assert.equal(receipt.network, null);
-      assert.equal(receipt.index, 4);
+      assert.equal(receipt.index, voterCount - 1);
       const png = pngjs.PNG.sync.read(await page.locator('#native-receipt-qr svg').screenshot());
       const qr = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
       assert.ok(qr, 'Independent decoder could not read the rendered receipt QR');
@@ -210,7 +240,7 @@ try {
       for (const field of ['contractAddress', 'electionId', 'configurationDigest', 'receipt']) {
         await checkReceipt(page, JSON.stringify({ ...receipt, [field]: changeDigest(receipt[field]) }), false);
       }
-      await checkReceipt(page, JSON.stringify({ ...receipt, index: 5 }), false);
+      await checkReceipt(page, JSON.stringify({ ...receipt, index: voterCount }), false);
       await checkReceipt(page, JSON.stringify({ ...receipt, network: 'preview' }), false);
       await checkReceipt(page, '{"schema":"first","schema":"second"}', false);
       await page.locator('#native-use-receipt').click();
@@ -249,32 +279,77 @@ try {
       await page.locator('#native-finalize').click();
       await waitOperation(page);
       assert.equal(await page.locator('#native-phase').textContent(), 'Finalized');
-      assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['2', '1', '2']);
+      assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), totals.map(String));
       assert.equal(await page.locator('#native-finalize').isDisabled(), true);
       await page.locator('[data-native-nav="check"]').click();
       await page.locator('#native-check-result').click();
       await waitOperation(page);
-      assert.match(await page.locator('#native-check-output').textContent(), /Native public consistency checks passed for 5 ballots/);
+      assert.match(await page.locator('#native-check-output').textContent(), new RegExp(`Native public consistency checks passed for ${voterCount} ballots`));
       const snapshot = await downloadJson(page, '#native-export');
       await waitOperation(page);
       exactKeys(snapshot, ['schema', 'execution', 'network', 'proofGenerated', 'ledgerInclusionVerified', 'warning',
         'contractAddress', 'electionId', 'manifestDigest', 'configurationDigest', 'keysConfigured', 'administrator',
-        'opensAt', 'closesAt', 'phase', 'accepted', 'publicKey', 'coefficientKey', 'trusteeKeys',
+        'opensAt', 'closesAt', 'candidateCount', 'phase', 'accepted', 'publicKey', 'coefficientKey', 'trusteeKeys',
         'aggregateA', 'aggregateB', 'ballots', 'decryptionShares', 'finalizedTotals', 'manifest'], 'Public snapshot');
       assert.equal(snapshot.execution, 'generated-contract-emulator');
       assert.equal(snapshot.network, null);
       assert.equal(snapshot.proofGenerated, false);
       assert.equal(snapshot.ledgerInclusionVerified, false);
-      assert.equal(snapshot.accepted, 5);
-      assert.deepEqual(snapshot.finalizedTotals, [2, 1, 2]);
+      assert.equal(snapshot.accepted, voterCount); assert.equal(snapshot.candidateCount, candidateCount);
+      assert.deepEqual(snapshot.finalizedTotals, [...totals, ...Array(5 - candidateCount).fill(0)]);
       assert.deepEqual(snapshot.decryptionShares.map(share => share.index), pair.split(',').map(Number));
       assert.equal(snapshot.manifestDigest, hash(Buffer.from(JSON.stringify(snapshot.manifest))));
       assert.equal(snapshot.configurationDigest, receipt.configurationDigest);
       exactKeys(snapshot.manifest, ['schema', 'execution', 'electionId', 'title', 'candidates',
-        'threshold', 'capacity', 'syntheticVoters', 'opensAt', 'closesAt'], 'Public metadata');
+        'threshold', 'capacity', 'syntheticVoters', 'timingMode', 'durationSeconds', 'opensAt', 'closesAt'], 'Public metadata');
+      assert.equal(snapshot.manifest.syntheticVoters, voterCount);
+      assert.equal(snapshot.manifest.timingMode, 'manual');
       for (const ballot of snapshot.ballots) exactKeys(ballot, ['index', 'a', 'b', 'nullifier', 'receipt'], 'Public ballot');
       for (const share of snapshot.decryptionShares) exactKeys(share, ['index', 'values'], 'Public trustee contribution');
       await writeFile(join(evidenceDir, `public-trustees-${pair.replace(',', '-')}.json`), JSON.stringify(snapshot, null, 2) + '\n');
+      stage = `trustees-${pair.replace(',', '-')}:independent-public-record-verification`;
+      const verifierContext = await browser.newContext();
+      try {
+        const verifierPage = await verifierContext.newPage(); verifierPage.setDefaultTimeout(120_000);
+        let verifierErrors = 0;
+        verifierPage.on('pageerror', () => { verifierErrors++; });
+        await verifierPage.goto(`${origin}${prefix}index.html`, { waitUntil: 'networkidle' });
+        await verifierPage.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
+        await verifierPage.locator('[data-native-nav="check"]').click();
+        assert.equal(await verifierPage.locator('#native-phase').textContent(), 'Not created');
+        assert.equal(await verifierPage.locator('#native-verify-import').isDisabled(), false, 'Fresh-tab verification must not require credentials');
+        const publicJson = JSON.stringify(snapshot);
+        if (pair === '2,3') {
+          await verifierPage.locator('#native-import-file').setInputFiles({ name: 'public-snapshot.json', mimeType: 'application/json', buffer: Buffer.from(publicJson) });
+          await waitOperation(verifierPage);
+        } else await verifierPage.locator('#native-import-text').fill(publicJson);
+        await verifierPage.locator('#native-expected-digest').fill(snapshot.configurationDigest);
+        await verifierPage.locator('#native-verify-import').click(); await waitOperation(verifierPage);
+        assert.match(await verifierPage.locator('#native-check-output').textContent(), /Imported public consistency checks passed/);
+        assert.equal(await verifierPage.locator('#native-check-source').inputValue(), 'import');
+        for (const savedReceipt of publicReceipts) await checkReceipt(verifierPage, JSON.stringify(savedReceipt), true);
+        await checkReceipt(verifierPage, qr.data, true);
+        await checkReceipt(verifierPage, JSON.stringify({ ...receipt, receipt: changeDigest(receipt.receipt) }), false);
+        assert.equal(await verifierPage.locator('#native-phase').textContent(), 'Not created');
+        assert.equal(await verifierPage.locator('#native-voters').textContent(), '—');
+        const alteredSnapshot = structuredClone(snapshot);
+        alteredSnapshot.finalizedTotals[0] += 1;
+        await verifierPage.locator('#native-import-text').fill(JSON.stringify(alteredSnapshot));
+        assert.equal(await verifierPage.locator('#native-check-receipt').isDisabled(), true, 'Changing an import must invalidate its verification context');
+        await verifierPage.locator('#native-verify-import').click();
+        await verifierPage.waitForFunction(() => !document.getElementById('native-status').classList.contains('working'));
+        assert.equal(await verifierPage.locator('#native-check-output').evaluate(element => element.classList.contains('failure')), true);
+        assert.equal(await verifierPage.locator('#native-check-receipt').isDisabled(), true);
+        await verifierPage.locator('#native-import-text').fill(publicJson);
+        await verifierPage.locator('#native-verify-import').click(); await waitOperation(verifierPage);
+        await checkReceipt(verifierPage, qr.data, true);
+        if (pair === '2,3') await verifierPage.screenshot({ path: join(evidenceDir, 'independent-public-verification.png'), fullPage: true });
+        await verifierPage.locator('#native-reset').click();
+        assert.equal(await verifierPage.locator('#native-import-text').inputValue(), '');
+        assert.equal(await verifierPage.locator('#native-check-receipt').isDisabled(), true);
+        assert.equal(await verifierPage.evaluate(() => localStorage.length + sessionStorage.length), 0);
+        assert.equal(verifierErrors, 0);
+      } finally { await verifierContext.close(); }
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: join(evidenceDir, `public-checks-trustees-${pair.replace(',', '-')}.png`), fullPage: true });
 
@@ -312,12 +387,94 @@ try {
         assert.equal(url.origin, origin, 'Native emulator must not send data to another origin');
       }
       assert.ok(requested.has(`${origin}${prefix}${manifest.bundle}`), 'Actual generated browser bundle must execute');
-      evidence.cases.push({ trustees: pair.split(',').map(Number), prefix, entry, passed: true, accepted: 5,
+      evidence.cases.push({ trustees: pair.split(',').map(Number), prefix, entry, passed: true, accepted: voterCount, candidateCount,
+        freshTabPublicVerification: true, everyReceiptChecked: true, tamperedSnapshotRejected: true,
         clickableCardsChecked: true, keyboardSelectionChecked: true, exactTwoTrusteesChecked: true,
         renderedQrDecoded: true, receiptContextRejections: true, reset: true, wasmLoaded: loadedWasm.size, mobileViewportChecked });
       console.log(JSON.stringify({ stage: `trustees-${pair.replace(',', '-')}`, passed: true }));
     } finally { await context.close(); }
   }
+
+  stage = 'scheduled-preview:real-wall-clock-deadline';
+  const scheduledContext = await browser.newContext({ acceptDownloads: true });
+  try {
+    const page = await scheduledContext.newPage(); page.setDefaultTimeout(120_000);
+    let pageErrors = 0; page.on('pageerror', () => { pageErrors++; });
+    await page.goto(`${origin}/arbitrary-repository-name/index.html`, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
+    await page.locator('#native-candidate-count').selectOption('2');
+    await page.locator('#native-voter-count').fill('1');
+    await page.locator('#native-timing-mode').selectOption('scheduled');
+    for (const duration of ['14', '3601']) {
+      await page.locator('#native-duration').fill(duration);
+      assert.equal(await page.locator('#native-duration').evaluate(input => input.checkValidity()), false);
+    }
+    await page.locator('#native-duration').fill('15');
+    const startedAt = Date.now();
+    await page.locator('#native-create').click(); await waitOperation(page);
+    assert.match(await page.locator('#native-schedule-status').textContent(), /Scheduled local preview/);
+    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Voting open');
+    assert.equal(await page.locator('#native-close').isDisabled(), true, 'Scheduled preview must not expose manual clock advancement');
+    await page.locator('#native-go-vote').click();
+    await page.locator('#native-voter').selectOption('0');
+    await page.locator('#native-choices label:has(input[value="1"])').click();
+    await page.locator('#native-cast').click(); await waitOperation(page);
+    const receipt = await downloadJson(page, '#native-save-receipt');
+    assert.equal(await page.locator('#native-finalize').isDisabled(), true);
+    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Finalized');
+    assert.ok(Date.now() - startedAt >= 15_000, 'Scheduled test must wait for the actual wall-clock duration');
+    assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '1']);
+    await page.locator('[data-native-nav="check"]').click();
+    await page.locator('#native-check-result').click(); await waitOperation(page);
+    await checkReceipt(page, JSON.stringify(receipt), true);
+    const snapshot = await downloadJson(page, '#native-export'); await waitOperation(page);
+    assert.equal(snapshot.manifest.timingMode, 'scheduled'); assert.equal(snapshot.manifest.durationSeconds, 15);
+    assert.equal(snapshot.closesAt - snapshot.opensAt, 15);
+    assert.ok(Date.now() >= snapshot.closesAt * 1000);
+    assert.deepEqual(snapshot.finalizedTotals, [0, 1, 0, 0, 0]);
+    assert.deepEqual(snapshot.decryptionShares.map(share => share.index), [1, 3]);
+    publicOnly(snapshot); assert.equal(snapshot.proofGenerated, false); assert.equal(snapshot.network, null);
+    await writeFile(join(evidenceDir, 'public-scheduled-preview.json'), JSON.stringify(snapshot, null, 2) + '\n');
+    assert.equal(pageErrors, 0);
+    evidence.cases.push({ case: 'scheduled-local-preview', passed: true, realWallClock: true, durationSeconds: 15,
+      accepted: 1, candidateCount: 2, trustees: [1, 3], automaticCloseAndFinalize: true, proofGeneration: false, networkSubmission: false });
+    console.log(JSON.stringify({ stage: 'scheduled-local-preview', passed: true }));
+  } finally { await scheduledContext.close(); }
+
+  stage = 'scheduled-preview:resume-after-deadline';
+  const resumedContext = await browser.newContext({ acceptDownloads: true });
+  try {
+    const page = await resumedContext.newPage(); page.setDefaultTimeout(120_000);
+    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
+    await page.locator('#native-voter-count').fill('1');
+    await page.locator('#native-candidate-count').selectOption('2');
+    await page.locator('#native-timing-mode').selectOption('scheduled');
+    await page.locator('#native-duration').fill('15');
+    await page.locator('#native-create').click(); await waitOperation(page);
+    assert.equal(await page.locator('#native-phase').textContent(), 'Enrollment');
+    // Freeze the real Chromium page lifecycle, without replacing Date, timers,
+    // application state or native calls. Wall-clock time continues normally.
+    const lifecycle = await resumedContext.newCDPSession(page);
+    await lifecycle.send('Page.setWebLifecycleState', { state: 'frozen' });
+    const frozenAt = Date.now();
+    await new Promise(resolveWait => setTimeout(resolveWait, 18_000));
+    assert.ok(Date.now() - frozenAt >= 18_000);
+    await lifecycle.send('Page.setWebLifecycleState', { state: 'active' });
+    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Finalized');
+    await lifecycle.detach();
+    assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '0']);
+    await page.locator('[data-native-nav="check"]').click();
+    await page.locator('#native-check-result').click(); await waitOperation(page);
+    const snapshot = await downloadJson(page, '#native-export'); await waitOperation(page);
+    assert.equal(snapshot.accepted, 0); assert.deepEqual(snapshot.finalizedTotals, [0, 0, 0, 0, 0]);
+    assert.deepEqual(snapshot.decryptionShares.map(share => share.index), [1, 3]);
+    assert.ok(Date.now() >= Number(snapshot.closesAt) * 1000);
+    evidence.cases.push({ case: 'scheduled-preview-resumed-after-deadline', passed: true,
+      realChromiumLifecycleFrozen: true, realWallClock: true, durationSeconds: 15, accepted: 0,
+      trustees: [1, 3], automaticCloseAndFinalize: true, proofGeneration: false, networkSubmission: false });
+    console.log(JSON.stringify({ stage: 'scheduled-preview-resumed-after-deadline', passed: true }));
+  } finally { await resumedContext.close(); }
 
   for (const failure of ['disabled-build', 'missing-wasm']) {
     stage = `fail-closed:${failure}`;

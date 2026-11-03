@@ -3,8 +3,17 @@
  * Primary reference: https://docs.midnight.network/compact/standard-library/exports
  */
 export const JUBJUB_SCALAR_ORDER = 6554484396890773809930967563523245729705921265872317281365359162392183254199n;
-export const NATIVE_CANDIDATES = 3;
+export const NATIVE_MIN_CANDIDATES = 2;
+export const NATIVE_MAX_CANDIDATES = 5;
+export const NATIVE_CANDIDATES = NATIVE_MAX_CANDIDATES;
 export const NATIVE_CAPACITY = 1024;
+
+export function requireCandidateCount(value) {
+  if (!Number.isSafeInteger(value) || value < NATIVE_MIN_CANDIDATES || value > NATIVE_MAX_CANDIDATES) {
+    throw new RangeError('Native candidateCount must be an integer from two to five');
+  }
+  return value;
+}
 
 export function requireBytes32(value, name = 'secret') {
   if (!(value instanceof Uint8Array) || value.length !== 32 || value.every(byte => byte === 0)) {
@@ -73,11 +82,11 @@ export const nativeWitnesses = Object.freeze({
   voterSecret: witness('voterSecret', requireBytes32),
   trusteeSecretShare: witness('trusteeSecretShare', requireScalar),
   selection: witness('selection', value => {
-    if (typeof value !== 'bigint' || value < 0n || value >= BigInt(NATIVE_CANDIDATES)) throw new TypeError('selection must be 0n, 1n or 2n');
+    if (typeof value !== 'bigint' || value < 0n || value >= BigInt(NATIVE_CANDIDATES)) throw new TypeError('selection must be a bigint from 0n through 4n');
     return value;
   }),
   ballotRandomness: witness('ballotRandomness', values => {
-    if (!Array.isArray(values) || values.length !== NATIVE_CANDIDATES) throw new TypeError('ballotRandomness must contain three scalars');
+    if (!Array.isArray(values) || values.length !== NATIVE_CANDIDATES) throw new TypeError('ballotRandomness must contain five scalars');
     values.forEach(value => requireScalar(value, 'ballot randomness'));
     if (new Set(values).size !== NATIVE_CANDIDATES) throw new TypeError('Each candidate requires distinct encryption randomness');
     return values;

@@ -112,6 +112,9 @@ try {
       if (diagnostic.import !== 'passed') evidence.importFailure = diagnostic;
       assert.equal(diagnostic.import, 'passed', 'Real SDK module must import in browser; see sanitized evidence category');
       assert.equal(await page.locator('#network-availability').getAttribute('data-state'), 'ready');
+      const font = await page.evaluate(async () => { await document.fonts.ready; return {
+        loaded: document.fonts.check('16px Outfit'), family: getComputedStyle(document.body).fontFamily }; });
+      assert.equal(font.loaded, true); assert.match(font.family, /Outfit/);
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined', 'Acceptance profile must have no injected wallet');
       assert.match(await page.locator('#network-wallet-note').textContent(), /No compatible wallet detected/);
       assert.match(await page.locator('#network-availability').textContent(), /Nothing has been proved or submitted/);
@@ -119,7 +122,8 @@ try {
       assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
       for (const [fieldset, name] of [['network-selection', 'network-choice'], ['network-trustee', 'network-trustee'], ['network-pair', 'network-pair']]) {
         assert.equal(await page.locator(`#${fieldset}`).evaluate(element => element.tagName), 'FIELDSET');
-        assert.equal(await page.locator(`#${fieldset} label.selection-card`).count(), 3);
+        assert.equal(await page.locator(`#${fieldset} label.selection-card`).count(), name === 'network-choice' ? 5 : 3);
+        assert.equal(await page.locator(`#${fieldset} label.selection-card:visible`).count(), 3);
         assert.equal(await page.locator(`input[name="${name}"]:checked`).count(), 0);
         for (const input of await page.locator(`input[name="${name}"]`).all()) assert.equal(await input.isDisabled(), true,
           'Ballot and trustee cards must remain disabled without a connected election');
@@ -133,6 +137,11 @@ try {
         assert.equal(response.status(), 200); assert.notEqual(response.headers()['content-type'], 'text/html');
       }
       if (prefix === '/') await page.screenshot({ path: join(evidenceDirectory, 'network-ready-no-wallet.png'), fullPage: false });
+      await page.setViewportSize({ width: 390, height: 844 });
+      const width = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
+        content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) }));
+      assert.ok(width.content <= width.viewport + 1, 'Network UI must fit the mobile viewport');
+      await page.setViewportSize({ width: 1365, height: 1000 });
 
       stage = `${prefix}:no-wallet-failure`;
       await page.locator('#network-id').selectOption('preview');

@@ -1,0 +1,166 @@
+{
+  "executedAt": "2026-11-03T18:01:57.841Z",
+  "node": "v24.22.2",
+  "execution": "real-sdk-and-wasm-browser-loading",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "independentChainVerification": false,
+  "cases": [
+    {
+      "case": "actual-sdk-load-and-no-wallet-failure",
+      "path": "/",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "circuitAssetsServed": 21,
+      "ballotAndTrusteeCardsPresent": true,
+      "cardControlsDisabled": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "remoteRequests": 0
+    },
+    {
+      "case": "actual-sdk-load-and-no-wallet-failure",
+      "path": "/project-prefix/",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "circuitAssetsServed": 21,
+      "ballotAndTrusteeCardsPresent": true,
+      "cardControlsDisabled": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "remoteRequests": 0
+    },
+    {
+      "case": "disabled-manifest",
+      "status": "passed",
+      "controls": "all-disabled"
+    },
+    {
+      "case": "missing-wasm",
+      "status": "passed",
+      "controls": "all-disabled"
+    }
+  ],
+  "bundleSha256": "c363077cd4a0776c3803d93395b4c63345b0c5cc837aa052cb66ab4cb5bbf1d1",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "sdk": "4.1.1",
+  "circuitAssets": [
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "bytes": 21573410,
+      "sha256": "228613e7730b1b62ab6a7694b9d3f9072400d458d0367faf174d5b638ce1f192"
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "bytes": 2311,
+      "sha256": "0d1a7b8a5651d5bf83ff3025e5552a29e0bc63083b74daccfc8361677f33f10a"
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "bytes": 3228,
+      "sha256": "8ca0f5c4e56e3989ff81e202a340782a9339a684b820b996b907ca2e2aca9c84"
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "bytes": 2824229,
+      "sha256": "738109033d128c383634cbc5a861a693b401d11c46ff086a914c16b024de84aa"
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "bytes": 2119,
+      "sha256": "3f08326a7adbcd61783fef8b05c08ac49cac0cbce4d7d6527e1a41a0422dabb7"
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "bytes": 677,
+      "sha256": "10db3aeb9fdb678f42dfe9a070e4cdd789ca6760f5fd75f450dd67429826559f"
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "bytes": 39784,
+      "sha256": "61f7f7eaab4df0639345706166f606dff14c658a6cdb171248b2f29ec8d94cdc"
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "bytes": 1351,
+      "sha256": "dbbaa94f32d1f33432fd73b1984d7b62d1bffbb3bd4515c764260ba42ba4cb11"
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "bytes": 461,
+      "sha256": "d3e20c9a17c6169d3868aae2693ae0d5dcd23ed62955a624b29726bfcc7d826e"
+    },
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "bytes": 21611723,
+      "sha256": "cde3172cf608c7f85918c05449cfbce8acf96afa44b760417d03936efcab0299"
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "bytes": 2311,
+      "sha256": "ce873ca725c29a5d8de8f10c80bddee155b2d664bf95c8741def98ea48db2e37"
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "bytes": 3397,
+      "sha256": "2b5da548a6e479acd6ad0f426ce6485a582b5a9d61aa33520ff43babcc8366eb"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "bytes": 39799,
+      "sha256": "470430a495ab69f79d3d851b1db5636681f2bfafb96df8b4efb23744ea97e600"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "bytes": 1351,
+      "sha256": "d92dee9f8f15338c002ab0f583c1be37340a2711c934e1023b469b22fd5b9be6"
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "bytes": 367,
+      "sha256": "52ee71823187b9e63331662ac02f3d13fd51d6929ffcac4cfdbcf79b3e682ff7"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "bytes": 1349576,
+      "sha256": "a7ffbd6cc4952d9d7a07f182fee703057c2f248b281a3d26bfe96cf2c9a959ec"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "bytes": 1591,
+      "sha256": "ae5af711f1ce6e7bd852f3ded26006df19b7ca06fb7900eb53bbfa8c9594937d"
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "bytes": 1355,
+      "sha256": "9411a0ea499f660071a3d5f9656bea069ca7e161f785e05fc61f401ccc9c7b4a"
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "bytes": 5402702,
+      "sha256": "f76e0082412c964b7875fa03d117d74831af7cc0d5cb0128266e11cbc4f0e7ac"
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "bytes": 1591,
+      "sha256": "59ad4343126100ced26654eb597b8cd07b66da7a5a73ccc08b48d5c46c4338e8"
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "bytes": 1963,
+      "sha256": "f9d08f1d6708405d271350bea8f0ed6e552cc955348c4a7e3f8073545fcb2d9c"
+    }
+  ],
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "lastBrowserCounters": {
+    "path": "/project-prefix/",
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleCategories": [],
+    "remoteRequests": 0
+  },
+  "status": "passed"
+}

@@ -131,6 +131,7 @@ function assertBrowserClean(observed) {
 async function checkReceipt(page, value, accepted) {
   await page.locator('#native-receipt-input').fill(value);
   await page.locator('#native-check-receipt').click();
+  await nativeOperation(page);
   assert.equal(await page.locator('#native-receipt-check-output').evaluate(el => el.classList.contains('pass')), accepted);
   if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /No chain inclusion or ZK proof was verified/);
 }
@@ -206,6 +207,7 @@ try {
     // Synthetic choices exist only during this local runtime test and are never
     // retained in evidence, logs, screenshots, browser traces or public exports.
     for (const [index, candidate] of [0, 1, 2, 0, 2].entries()) {
+      await page.locator('#native-voter').selectOption(String(index));
       await page.locator(`#native-choices label:has(input[value="${candidate}"])`).click();
       assert.equal(await page.locator(`input[name="native-choice"][value="${candidate}"]`).isChecked(), true);
       await page.locator('#native-cast').click(); await nativeOperation(page);
@@ -255,15 +257,16 @@ try {
     const snapshot = await downloadJson(page, '#native-export'); await nativeOperation(page);
     exactKeys(snapshot, ['schema', 'execution', 'network', 'proofGenerated', 'ledgerInclusionVerified', 'warning',
       'contractAddress', 'electionId', 'manifestDigest', 'configurationDigest', 'keysConfigured', 'administrator',
-      'opensAt', 'closesAt', 'phase', 'accepted', 'publicKey', 'coefficientKey', 'trusteeKeys',
+      'opensAt', 'closesAt', 'candidateCount', 'phase', 'accepted', 'publicKey', 'coefficientKey', 'trusteeKeys',
       'aggregateA', 'aggregateB', 'ballots', 'decryptionShares', 'finalizedTotals', 'manifest']);
     exactKeys(snapshot.manifest, ['schema', 'execution', 'electionId', 'title', 'candidates', 'threshold', 'capacity',
-      'syntheticVoters', 'opensAt', 'closesAt']);
+      'syntheticVoters', 'timingMode', 'durationSeconds', 'opensAt', 'closesAt']);
     for (const ballot of snapshot.ballots) exactKeys(ballot, ['index', 'a', 'b', 'nullifier', 'receipt']);
     for (const share of snapshot.decryptionShares) exactKeys(share, ['index', 'values']);
     assert.equal(snapshot.execution, 'generated-contract-emulator'); assert.equal(snapshot.network, null);
     assert.equal(snapshot.proofGenerated, false); assert.equal(snapshot.ledgerInclusionVerified, false);
-    assert.equal(snapshot.accepted, 5); assert.deepEqual(snapshot.finalizedTotals, [2, 1, 2]);
+    assert.equal(snapshot.accepted, 5); assert.equal(snapshot.candidateCount, 3);
+    assert.deepEqual(snapshot.finalizedTotals, [2, 1, 2, 0, 0]);
     assert.deepEqual(snapshot.decryptionShares.map(share => share.index), [1, 3]);
     assert.equal(snapshot.configurationDigest, receipt.configurationDigest);
     assert.equal(snapshot.manifestDigest, sha256(Buffer.from(JSON.stringify(snapshot.manifest))));
@@ -300,7 +303,7 @@ try {
     assert.equal(await page.locator('#network-id').inputValue(), '');
     assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
     for (const name of ['network-choice', 'network-trustee', 'network-pair']) {
-      assert.equal(await page.locator(`input[name="${name}"]`).count(), 3);
+      assert.equal(await page.locator(`input[name="${name}"]`).count(), name === 'network-choice' ? 5 : 3);
       assert.equal(await page.locator(`input[name="${name}"]:checked`).count(), 0);
       for (const input of await page.locator(`input[name="${name}"]`).all()) assert.equal(await input.isDisabled(), true);
     }

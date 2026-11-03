@@ -1,0 +1,57 @@
+
+> midnight-ballot-lab@0.5.0 test
+> node --test tests/*.test.mjs
+
+✔ Windows requires explicit WSL settings and never chooses the filesystem compressor (2.093754ms)
+✔ Windows invokes an explicit Linux binary and passes paths with spaces as single arguments (1.403357ms)
+✔ Windows fails instead of guessing a network mount or malformed executable (2.034394ms)
+✔ Windows rejects WSL selector option injection before any process starts (0.340665ms)
+✔ Linux and macOS retain direct official compact execution (0.30022ms)
+✔ A custom toolchain directory is explicit on Linux too (0.288328ms)
+✔ strict JSON preserves ordinary public-record and receipt values (3.448852ms)
+✔ duplicate fields are rejected after decoding JSON key escapes (1.966547ms)
+✔ native object construction does not invoke the __proto__ setter (0.414323ms)
+✔ public JSON transport rejects ambiguous number spellings (1.416121ms)
+✔ malformed strings, containers and non-JSON whitespace are rejected (0.800302ms)
+✔ byte limits count UTF-8 rather than UTF-16 string length (0.376091ms)
+✔ nesting is capped before either parser can exhaust the call stack (0.640965ms)
+✔ UTF-8 decoding rejects malformed bytes and preserves a forbidden BOM (0.871836ms)
+✔ native adapter only: accepts canonical scalars and rejects unsafe representations (2.15562ms)
+✔ native adapter only: dealer shares use the subgroup modulus and nonzero secrets (7.498416ms)
+✔ native adapter only: each candidate receives a distinct nonzero random scalar (1.062932ms)
+✔ native adapter only: witness callbacks reject missing or malformed private inputs (1.124617ms)
+✔ native adapter only: threshold coefficients select exactly the three supported pairs (0.546378ms)
+✔ native projection only: public export excludes all private fields and disclaims proof authentication (1.046451ms)
+✔ native projection only: invalid address and excessive ballot counts are rejected (0.307894ms)
+✔ native loader: an unavailable build never imports code or enables voting (1.711231ms)
+✔ native loader: initialization failure disables controls even after partial setup (0.475387ms)
+✔ native loader: readiness is reported only after application initialization completes (0.535498ms)
+✔ network configuration requires an explicit supported development environment (2.246409ms)
+✔ connector discovery uses entry IDs and preserves multiple wallet choices (3.781782ms)
+✔ asset URLs preserve GitHub Pages repository subdirectories (0.633661ms)
+✔ network configuration rejects remote insecure services and credential-bearing URLs (0.948529ms)
+✔ local development permits only loopback insecure endpoints (0.384988ms)
+✔ both wallet connection and wallet service configuration must match (0.361073ms)
+✔ browser CSP limits insecure IPv6 indexers without restricting the wallet prover (0.510963ms)
+✔ private witnesses are restricted to a wallet reporting a loopback prover (0.430784ms)
+✔ public error text does not expose wallet or proof error payloads (1.129216ms)
+✔ network receipt QR round trips all supported network contexts within QR capacity (102.476775ms)
+✔ network receipt context cannot be confused with local emulator receipts (0.661333ms)
+✔ network receipt rejects malformed digest, index and noncanonical text (0.506405ms)
+✔ receipt JSON decode excludes unrelated private fields and rejects duplicate keys (0.555807ms)
+✔ QR empty: all eight masks match independent reference (13.135091ms)
+✔ QR empty: automatic mask is one of eight valid symbols (33.851225ms)
+✔ QR plain: all eight masks match independent reference (2.790925ms)
+✔ QR plain: automatic mask is one of eight valid symbols (23.862097ms)
+✔ QR maximum: all eight masks match independent reference (2.692161ms)
+✔ QR maximum: automatic mask is one of eight valid symbols (27.384195ms)
+✔ QR receipt capacity and format are explicit (0.784062ms)
+✔ SVG has four-module quiet zone and never interpolates receipt text (20.327246ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 396.83035

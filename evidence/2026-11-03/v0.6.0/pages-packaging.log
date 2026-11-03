@@ -1,0 +1,1 @@
+{"status": "passed", "localReferences": 57, "sourceFiles": 310, "nativeMode": "included", "networkClient": "included", "urlShapes": ["https://example.github.io/", "https://example.github.io/arbitrary-repository-name/"], "scope": "Static packaging and path checks; no browser or GitHub deployment execution"}

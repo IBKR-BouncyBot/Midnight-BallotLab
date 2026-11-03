@@ -1,8 +1,8 @@
 # Native Midnight implementation
 
-This directory uses the generated bindings for [`../native-election.compact`](../native-election.compact). The contract performs ballot encryption and threshold decryption with Midnight's native Jubjub operations, and derives identities, nullifiers and receipts with Compact's typed hashes. It has three choices, up to 1,024 voters and two-of-three trustees.
+This directory uses the generated bindings for [`../native-election.compact`](../native-election.compact). The contract performs ballot encryption and threshold decryption with Midnight's native Jubjub operations, and derives identities, nullifiers and receipts with Compact's typed hashes. It has 2–5 active choices, five fixed ciphertext lanes, up to 1,024 voters and two-of-three trustees.
 
-**Fresh continuation status:** native compilation and all 20 generated-runtime tests passed; the five-ballot example returned `[2,1,2]`; five real Chromium cases exercised the native WASM election; proof-server 8.1.3 produced eight standalone proofs across all seven circuit types. Separate Node wallet acceptance completed 17 indexer-confirmed local-devnet transactions and 16 proof transactions, finalizing five ballots as `[2,1,2]`. The main browser page uses the actual generated native implementation locally; an actual browser-wallet transaction remains untested. See [CONTINUATION_RESULTS.md](../../docs/CONTINUATION_RESULTS.md). Missing native prerequisites still fail explicitly; there is no substitute cryptography.
+Version 0.6.0 adds candidate-count binding and independent public-record verification. The new source compiled with Compact 0.31.1; all 40 native cases (26 generated-contract and 14 public-verifier cases), 26 isolated-runtime cases and eight real standalone circuit proofs passed locally. Browser, proof and network outcomes must be read against their exact tested revisions in [CONTINUATION_RESULTS.md](../../docs/CONTINUATION_RESULTS.md). Missing native prerequisites fail explicitly. An actual browser-wallet transaction remains untested.
 
 ## Run with the actual toolchain
 
@@ -19,9 +19,9 @@ npm run demo:native
 
 The compiler wrapper checks the compiler version. Generated modules are expected at `contracts/managed/native-election/contract/index.js`; compiled circuit assets must accompany them for real proving.
 
-`demo.mjs` executes the actual generated contract and runtime locally. It creates synthetic credentials, configures keys through an impure circuit, enrolls five voters, casts five ballots, freezes the aggregate, submits trustees 1 and 3, and checks the expected tally `[2, 1, 2]`. This is an emulator demonstration: it neither generates ZK proofs nor submits transactions. It writes only an allowlisted public snapshot to `artifacts/native-emulator-public.json`. Pass a different output file with `npm run demo:native -- /path/to/output.json`.
+`demo.mjs` executes the actual generated contract and runtime locally. It creates synthetic credentials, configures keys through an impure circuit, enrolls five voters, casts five ballots, freezes the aggregate, submits trustees 1 and 3, and checks the expected five-lane tally `[2,1,2,0,0]`. This is an emulator demonstration: it neither generates ZK proofs nor submits transactions. It writes only an allowlisted public snapshot and canonical manifest to `artifacts/native-emulator-public.json`. Pass a different output file with `npm run demo:native -- /path/to/output.json`.
 
-The public snapshot is explicitly marked `native-emulator-public/v1`, with `proofGenerated: false`, `network: null` and `ledgerInclusionVerified: false`. Its receipt hashes are checked by generated native code before export. A copied snapshot alone cannot prove that ballots were eligible, that any proof was accepted, or that a ledger record is authentic.
+The public snapshot is explicitly marked `native-emulator-public/v2`, with `proofGenerated: false`, `network: null` and `ledgerInclusionVerified: false`. Its receipt hashes are checked by generated native code before export. A copied snapshot alone cannot prove that ballots were eligible, that any proof was accepted, or that a ledger record is authentic.
 
 ## Files and boundaries
 
@@ -35,8 +35,9 @@ The public snapshot is explicitly marked `native-emulator-public/v1`, with `proo
 | `browser-config.mjs` | Explicit test-network, endpoint, wallet and local-prover configuration checks. |
 | `browser-providers.mjs` | Actual Midnight.js private-state/indexer/ZK/wallet/proving/submission provider assembly. |
 | `prove-local.mjs` | Real standalone circuit proving against loopback proof-server 8.1.3; saves public proof digests/counts/timings only. |
+| `verify-public.mjs` | Fresh-session public JSON import; native point/subgroup checks, manifest/configuration/receipt commitments, aggregates and threshold equations. Reports consistency, not authentication or fairness. |
 
-The root tests cover input checks and public export boundaries separately from native execution. The `test:native` suite imports the actual generated contract/runtime and passed all 20 cases. `node native/prove-local.mjs` from the contracts directory additionally checks and proves generated circuit preimages against a loopback proof server. Its successful report remains distinct from an emulator snapshot or accepted transaction; no private context or preimage is exported.
+The root tests cover input checks and public export boundaries separately from native execution. The `test:native` suite imports the actual generated contract/runtime and includes independent public-verifier cases; the current 40-case run passed. `node native/prove-local.mjs` from the contracts directory additionally checks and proves generated circuit preimages against a loopback proof server. Its successful report remains distinct from an emulator snapshot or accepted transaction; no private context or preimage is exported.
 
 ## Connect real Midnight providers
 

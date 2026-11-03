@@ -1,0 +1,20 @@
+
+> midnight-ballot-lab@0.6.0 demo
+> node contracts/native/demo.mjs
+
+{
+  "execution": "generated-contract-emulator",
+  "ballots": 5,
+  "candidateCount": 3,
+  "tally": [
+    2,
+    1,
+    2,
+    0,
+    0
+  ],
+  "publicSnapshot": "C:\\Users\\[user]\\.codex\\.chatgpt-projects\\g-p-6ac265f76c4081a49e2bcef2b55218c0\\continuation\\Midnight_Ballot_Lab_Codex_Continuation_0.3.0\\midnight-ballot-lab\\artifacts\\native-emulator-public.json",
+  "nativeProofGenerated": false,
+  "networkTransactionSubmitted": false,
+  "note": "All synthetic roles run in one process. Public snapshot is not a proof or authenticated chain record."
+}

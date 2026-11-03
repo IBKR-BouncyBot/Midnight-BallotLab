@@ -49,7 +49,10 @@ export async function initNetworkApplication() {
   const resetSessionDisplay = () => {
     ['network-choice', 'network-trustee', 'network-pair'].forEach(clearSelection);
     $('network-share').value = '';
-    for (let index = 0; index < 3; index++) $(`network-choice-label-${index}`).textContent = `Choice ${index}`;
+    for (let index = 0; index < 5; index++) {
+      $(`network-choice-label-${index}`).textContent = `Choice ${index}`;
+      $(`network-choice-${index}`).closest('label').hidden = index >= 3;
+    }
     $('network-receipt-panel').hidden = true;
     $('network-receipt-code').textContent = '';
     $('network-receipt-qr').replaceChildren();
@@ -71,7 +74,7 @@ export async function initNetworkApplication() {
     for (const id of requireConfigured) $(id).disabled = busy || !client?.configurationDigest;
     const canChooseBallot = !busy && Boolean(client?.configurationDigest) && state?.phase === 1n && !client.pendingBallotReceipt;
     $('network-selection').disabled = !canChooseBallot;
-    $('network-cast').disabled = !canChooseBallot || !/^[012]$/.test(selectedValue('network-choice'));
+    $('network-cast').disabled = !canChooseBallot || !/^[0-4]$/.test(selectedValue('network-choice')) || Number(selectedValue('network-choice')) >= Number(state?.candidateCount);
     $('network-trustee').disabled = busy || !client?.configurationDigest;
     $('network-pair').disabled = busy || !client?.configurationDigest;
     $('network-submit-share').disabled = busy || !client?.configurationDigest || !/^[123]$/.test(selectedValue('network-trustee'));
@@ -100,11 +103,14 @@ export async function initNetworkApplication() {
   };
   const refreshState = async () => {
     state = await client.readPublicLedger();
+    const candidateCount = Number(state.candidateCount);
+    if (!Number.isInteger(candidateCount) || candidateCount < 2 || candidateCount > 5) throw new Error('Unsupported candidate count');
+    for (let index = 0; index < 5; index++) $(`network-choice-${index}`).closest('label').hidden = index >= candidateCount;
     $('network-address').value = client.contractAddress;
     if (client.configurationDigest) $('network-digest').value = hex(client.configurationDigest);
     $('network-public-state').textContent = JSON.stringify({ network: session.networkId,
       contractAddress: client.contractAddress, keysConfigured: state.keysConfigured,
-      configurationDigest: hex(state.configurationDigest), phase: Number(state.phase), accepted: Number(state.accepted),
+      configurationDigest: hex(state.configurationDigest), candidateCount, phase: Number(state.phase), accepted: Number(state.accepted),
       opensAt: String(state.opensAt), closesAt: String(state.closesAt), totals: state.finalizedTotals.map(Number),
       source: 'configured-indexer', independentlyVerified: false }, null, 2);
   };
@@ -163,13 +169,13 @@ export async function initNetworkApplication() {
   });
   click('network-deploy', async () => {
     const choices = $('network-choices').value.split(/\r?\n/).map(value => value.trim());
-    if (choices.length !== 3 || choices.some(value => !value || value.length > 40) || !$('network-title').value.trim()) throw new Error('Three named choices required');
+    if (choices.length < 2 || choices.length > 5 || new Set(choices).size !== choices.length || choices.some(value => !value || value.length > 40) || !$('network-title').value.trim()) throw new Error('Two to five different named choices required');
     const opens = Date.parse($('network-opens').value), closes = Date.parse($('network-closes').value);
     if (!Number.isFinite(opens) || !Number.isFinite(closes) || opens <= Date.now() || closes <= opens) throw new Error('Future network schedule required');
     manifest = null;
     const deploymentManifest = { schema: 'midnight-ballot-lab/election-manifest/v1', title: $('network-title').value.trim(), choices };
     const manifestDigest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(deploymentManifest))));
-    const result = await client.deploy({ electionId: randomSecret32(), manifestDigest,
+    const result = await client.deploy({ electionId: randomSecret32(), manifestDigest, candidateCount: choices.length,
       administratorIdentity: Native.pureCircuits.administratorIdentity(bytes($('network-admin').value)),
       opensAt: BigInt(Math.floor(opens / 1000)), closesAt: BigInt(Math.floor(closes / 1000)) });
     manifest = deploymentManifest;
@@ -190,7 +196,7 @@ export async function initNetworkApplication() {
   click('network-open', async () => { confirmed('Voting opened', await client.openVoting()); await refreshState(); });
   click('network-cast', async () => {
     const selection = selectedValue('network-choice');
-    if (!/^[012]$/.test(selection)) throw new Error('Choose a candidate');
+    if (!/^[0-4]$/.test(selection) || Number(selection) >= Number(state?.candidateCount)) throw new Error('Choose a configured candidate');
     latestReceipt = null;
     $('network-receipt-panel').hidden = true;
     $('network-receipt-code').textContent = '';

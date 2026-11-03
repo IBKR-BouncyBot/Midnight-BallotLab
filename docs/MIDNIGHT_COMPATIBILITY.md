@@ -1,6 +1,6 @@
 # Midnight toolchain compatibility
 
-Updated 3 November 2026 from installed packages, real compiler output and fresh execution evidence. Native compilation, generated-contract tests, the native browser/WASM flow, standalone circuit proof generation and isolated local-devnet transaction acceptance passed locally and on GitHub. Pages deployment and actual browser checks at the live URL also passed. Browser-wallet validation remains pending. The main page runs the actual generated native contract locally. Read [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md) and [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for separate local and hosted results.
+Updated 3 November 2026 from installed packages and execution evidence. Version 0.6.0 retains the pinned toolchain and compiles its seven native circuits with 2–5 active choices in five fixed lanes. Fresh local runs passed the combined 40-case native suite, 26 isolated-runtime cases, 46 boundary cases, the five-lane example and eight real proofs across all seven circuits. All seven native-browser and four network-browser cases passed, including fresh imports, receipt checks, scheduling and Chromium freeze/resume. New network acceptance and hosted CI/deployment results are pending. Completed native/browser/proof/network/Pages runs remain attached to their exact source revisions. Browser-wallet validation remains pending. Read [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md) and [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for separate local and hosted results.
 
 ## Pinned target
 
@@ -12,13 +12,14 @@ Do not substitute a latest compiler/runtime: the matrix identifies compiler 0.34
 
 | Component | Implemented / verification status |
 |---|---|
-| `contracts/native-election.compact` | Native three-choice election: full compilation passed, all 20 generated-runtime tests passed, and all seven circuit types produced standalone local proofs. |
+| `contracts/native-election.compact` | Native 2–5-choice election with five lanes: full compilation, 26 generated-contract cases and real standalone proving passed locally for 0.6.0; fresh network acceptance pending. |
 | Native witness/input adapter | Real private-input callbacks and subgroup scalar sampling. Dependency-free boundary tests executed. |
-| Native emulator harness | Executes actual generated bindings/runtime. Five-ballot example passed with tally `[2,1,2]`; no replacement implementation. |
-| Native browser mode | Main UI. Five real Chromium acceptance cases passed, including all trustee pairs, QR decoding, public checks and fail-closed missing-WASM behavior. |
+| Native emulator harness | Executes actual generated bindings/runtime. The three-active-choice example uses five ballots and padded totals `[2,1,2,0,0]`; no replacement implementation. |
+| Native browser mode | Main UI with configurable choices/voters, private credential selection, manual/scheduled local flow and independent public import. All seven 0.6.0 native-browser cases passed, including fresh imports, every receipt, real-clock automatic closing and Chromium freeze/resume; results are recorded by source revision. |
 | Native browser bundler | Successfully packages actual generated code/runtime/WASM. Missing prerequisites remain build failures. |
-| Native SDK client | Real Midnight.js 4.1.1 provider assembly and browser wallet/election UI implemented. Four real SDK/WASM loading and failure-handling browser cases passed. Separate Node wallet acceptance confirmed 17 transactions on the fresh local devnet; an actual browser-wallet transaction remains untested. |
+| Native SDK client | Real Midnight.js 4.1.1 provider assembly and browser wallet/election UI implemented. Completed SDK/WASM browser and 17-transaction Node wallet acceptance runs are retained by source revision. The four 0.6.0 network-browser initialization/failure cases passed; fresh 0.6.0 network transaction acceptance remains pending; an actual browser-wallet transaction remains untested. |
 | Standalone local proving | Proof-server 8.1.3 generated eight proofs across all seven circuit types; mismatched preimage/circuit material was rejected. No wallet or network transaction involved. |
+| Independent public verifier | Fourteen real-native tests passed. Strict fresh-session import validates native points/subgroups, configuration/receipts, aggregates and threshold equations. No eligibility/share proof or chain authentication is inferred. |
 | Native snapshot export | Explicit public allowlist; no private state/proof witness export. Snapshots mark proof generation and chain authentication false. Projection tests are not native execution. |
 | GitHub Pages | All three initial hosted workflows passed at commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`. The [deployed application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) passed real Chromium checks. Native/runtime/browser gates and reviewed lockfile installation remain required. Hosting supplies no node/prover infrastructure. |
 
@@ -27,10 +28,10 @@ Do not substitute a latest compiler/runtime: the matrix identifies compiler 0.34
 - Deployment has no proving stage. Private dealer key generation was moved out of the constructor into an administrator-authorized, one-time `configureKeys` circuit. Public metadata and empty initial state can be independently inspected before that transaction.
 - Compact's coordinate `Field` is not the Jubjub subgroup scalar field. The source avoids scalar-polynomial arithmetic and inverses modulo the wrong field. Final tally equations use small positive coefficients instead.
 - `Field` ordering and a `Uint<252>` cast are not valid solutions for scalar bounds. The source uses little-endian byte-derived limbs and a supported `Uint<248>` low limb.
-- Points in impure execution are derived from native generator operations and sums, rather than trusting externally constructed point coordinates. Exported pure coordinate helpers are explicitly not point validators.
-- Ballots bind actual ciphertexts to an election/configuration/nullifier. Three private selection masks must be nonzero and distinct, and selection must be one of three choices.
+- Points in impure execution are derived from native generator operations and sums, rather than trusting externally constructed point coordinates. Exported pure coordinate helpers are explicitly not point validators. The public importer separately applies official WASM point decoding, canonical coordinate checks and a native subgroup-order equation before invoking those helpers.
+- Ballots bind actual ciphertexts to an election/configuration/nullifier. Five private selection masks must be nonzero and distinct, selection must be below the sealed 2–5 candidate count, and inactive totals must remain zero.
 - Trustee calls use the complete frozen on-ledger aggregate; they accept no caller-selected subset. Finalization checks two registered contributions and bounded totals summing to accepted ballots.
-- The configuration digest binds metadata, administrator, deadlines and actual key commitments. Native receipts bind that configuration and ciphertexts. SDK client joins require an expected configuration digest in addition to the SDK's verifier-key comparison.
+- The configuration digest binds metadata, administrator, deadlines, candidate count and actual key commitments. Native receipts bind that configuration and ciphertexts. SDK client joins require an expected configuration digest in addition to the SDK's verifier-key comparison.
 
 The actual compiler rejected a possible disclosure of totals inside a ledger-dependent short-circuit expression. The fix discloses the already-public final totals before the comparisons; all total bounds, sum constraints and trustee pair equations remain enforced. Fresh native tests and local proofs then passed. These results are not an independent audit of constraint soundness. Authentication of initial state, verifier keys/code, real setup transaction, network and maintenance policy remains necessary. Matching verifier keys alone does not establish honest initialization.
 

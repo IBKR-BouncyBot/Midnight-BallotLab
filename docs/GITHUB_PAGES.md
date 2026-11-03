@@ -2,7 +2,7 @@
 
 The project is a static website: HTML, CSS and JavaScript execute in each visitor's browser. GitHub Pages can serve it without a backend, wallet, paid token or custom secret. It does not provide a shared election database, persistent private state, a Midnight node or a proof server.
 
-The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab). Its first deployment succeeded and the [live application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) passed real Chromium checks on 3 November 2026. All three initial hosted workflows passed at commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`; see [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for exact run links, versions and evidence.
+The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab). The 0.5.0 deployment and all three workflows completed successfully at `a904ea5c1688952fe3bfd459e51e9a1cf49db436`. Direct HTTPS browser evidence for the [live application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) is tied to `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`; it is not a direct-origin test of later changes. Version 0.6.0 is undergoing fresh verification. See [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for exact run links, versions and evidence.
 
 ## Publish from the included source
 
@@ -15,7 +15,7 @@ The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-Bo
 
 The workflow also tests native input, receipt and provider boundaries, builds `dist/`, checks relative asset paths and the source download, and uploads only `dist/` to Pages. Pull requests run tests and build checks but cannot invoke the deployment job. Manual runs on other branches also verify without publishing. If your publishing branch has another name, update both the workflow triggers and the branch conditions in `.github/workflows/pages.yml`.
 
-Fresh local and hosted execution on 3 November 2026 compiled the native contract with Compact 0.31.1, passed all 20 generated-runtime tests and ran the native example with tally `[2,1,2]`. The real Chromium acceptance suites passed all three trustee pairs, QR decoding, root and repository-subdirectory paths, reset, public export checks and missing-WASM failure handling. The [initial Pages workflow](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41684485038) and its deployment passed; a further real browser run verified the actual HTTPS Pages URL. A compiler, test, bundle, browser or packaging failure fails the workflow before publication. Native compilation and browser gates are required for every deployment.
+Recorded local and hosted executions compiled the native contract with Compact 0.31.1 and passed generated-runtime and real Chromium gates. Exact test counts, totals and source revisions are retained in the execution report; they are not automatically evidence for a new build. The [initial Pages workflow](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41684485038) and its deployment passed; a further real browser run verified the actual HTTPS Pages URL. A compiler, test, bundle, browser or packaging failure fails the workflow before publication. Native compilation and browser gates are required for every deployment.
 
 The website uses relative links and module imports, so the same build supports a project subdirectory, a user/organization Pages site, or a custom-domain root without changing a base URL. The build includes `.nojekyll`. Downloaded records remain local to the visitor unless they choose to share them.
 
@@ -47,7 +47,7 @@ node scripts/test-network-browser.mjs
 python3 -m http.server 8080 --directory dist
 ```
 
-On Windows, use `python` or `py -3` in place of `python3`, according to your Python installation. Open `http://localhost:8080`; HTTPS or localhost is required for the browser's cryptography API. The entire election session lives in browser memory and is lost on refresh. Public records and receipts can be exported first.
+On Windows, use `python` or `py -3` in place of `python3`, according to your Python installation. Open `http://localhost:8080`; HTTPS or localhost is required for the browser's cryptography API. The private election session lives in browser memory and is lost on refresh. Public records and receipts can be exported first and imported in a fresh session for consistency checks. Imported files do not restore credentials or authenticate missing proofs.
 
 The build order matters: `npm run build` recreates `dist/` and marks native/network bundles unavailable until their separate build commands succeed. The main page loads the native Compact/WASM experience. Local browser execution uses Midnight primitives but does not itself generate proofs or submit votes to a blockchain. The network page needs a compatible wallet, selected development/test network and trusted local proving configuration; browser initialization checks do not establish wallet or network transaction success.
 

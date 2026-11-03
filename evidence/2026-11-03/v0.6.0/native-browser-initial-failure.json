@@ -1,0 +1,50 @@
+{
+  "executedAt": "2026-11-03T18:27:14.575Z",
+  "node": "v24.18.0",
+  "execution": "generated-contract-browser-emulator",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "chainInclusionVerified": false,
+  "cases": [
+    {
+      "trustees": [
+        1,
+        2
+      ],
+      "prefix": "/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 5,
+      "candidateCount": 3,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false
+    }
+  ],
+  "generatedContractSha256": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7",
+  "bundleSha256": "58fb9941ef1baa77b74dff3ce170159c5af888e458cab85bca4831ee3da88847",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "wasmAssets": [
+    {
+      "asset": "native-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "bytes": 1398935
+    }
+  ],
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": false,
+  "failure": {
+    "stage": "main-entry:mobile-layout",
+    "kind": "AssertionError"
+  }
+}

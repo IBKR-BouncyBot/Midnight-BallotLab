@@ -1,6 +1,7 @@
 import { readFile, writeFile, readdir, mkdir, cp, rm } from 'node:fs/promises';
 import { dirname, resolve, relative, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { collectDependencyNotices } from './collect-licenses.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
@@ -21,6 +22,10 @@ await writeFile(join(dist, 'network-build.json'), JSON.stringify({
   reason: 'The network provider bundle and generated contract assets are not included in this build.',
 }) + '\n');
 await cp(join(root, 'docs'), join(dist, 'docs'), { recursive: true });
+for (const name of ['LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md']) {
+  await cp(join(root, name), join(dist, name));
+}
+await collectDependencyNotices(root, dist);
 // Keep relative links from the published compatibility guide usable.
 await mkdir(join(dist, 'contracts'), { recursive: true });
 for (const name of ['README.md', 'native-election.compact']) {
@@ -55,7 +60,7 @@ const sourcePaths = [];
 for (const path of ['src', 'contracts', 'tests', 'scripts', 'docs', '.github', 'evidence']) {
   sourcePaths.push(...await list(join(root,path)).catch(e=>{if(e.code==='ENOENT')return [];throw e;}));
 }
-for (const name of ['README.md','LICENSE','package.json','.gitignore','.gitattributes','AGENTS.md']) sourcePaths.push(join(root,name));
+for (const name of ['README.md','LICENSE','NOTICE.md','THIRD_PARTY_NOTICES.md','package.json','.gitignore','.gitattributes','AGENTS.md']) sourcePaths.push(join(root,name));
 const locals=[], central=[];
 let offset=0;
 for (const file of sourcePaths) {

@@ -1,0 +1,57 @@
+{
+  "graph": "devnet",
+  "lockfileVersion": 3,
+  "packageEntries": 383,
+  "packageLockSha256": "803821de8258b0cece16c8cdbf2a092d7aeea07e09202ba5ed25c6fdc0fdd62a",
+  "missingIntegrity": [],
+  "unexpectedRegistries": [],
+  "lifecycleScripts": [
+    "node_modules/classic-level",
+    "node_modules/cpu-features",
+    "node_modules/msgpackr-extract",
+    "node_modules/protobufjs",
+    "node_modules/ssh2"
+  ],
+  "lifecycleScriptsExecuted": false,
+  "directDependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "4.1.1",
+    "@midnight-ntwrk/testkit-js": "4.1.1",
+    "@midnight-ntwrk/wallet-sdk": "1.2.0",
+    "level": "10.0.0",
+    "pino": "10.3.1",
+    "rxjs": "7.8.2",
+    "ws": "8.22.1"
+  },
+  "runtimeVersions": [
+    {
+      "name": "node_modules/@midnight-ntwrk/compact-runtime",
+      "version": "0.16.0"
+    },
+    {
+      "name": "node_modules/@midnight-ntwrk/ledger-v8",
+      "version": "8.1.2"
+    },
+    {
+      "name": "node_modules/@midnight-ntwrk/onchain-runtime-v3",
+      "version": "3.1.1"
+    },
+    {
+      "name": "node_modules/@midnight-ntwrk/wallet-sdk",
+      "version": "1.2.0"
+    },
+    {
+      "name": "node_modules/@midnight-ntwrk/zkir-v2",
+      "version": "2.1.1"
+    }
+  ],
+  "scope": "Integrity metadata, registry sources and package versions; not a security certification."
+}

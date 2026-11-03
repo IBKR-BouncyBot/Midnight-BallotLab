@@ -7,7 +7,7 @@ import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-j
 import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
 import { getNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import * as Native from '../managed/native-election/contract/index.js';
-import { nativeWitnesses, requireBytes32, requireScalar, freshBallotRandomness, pairCoefficients, NATIVE_CAPACITY } from './adapter.mjs';
+import { nativeWitnesses, requireBytes32, requireScalar, requireCandidateCount, freshBallotRandomness, pairCoefficients, NATIVE_CAPACITY, NATIVE_CANDIDATES } from './adapter.mjs';
 import { recoverNativeTally } from './harness.mjs';
 import { requireDevelopmentNetwork } from './browser-config.mjs';
 
@@ -70,8 +70,9 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
     if (!handle || !expectedConfiguration) throw new Error('The native contract configuration has not been pinned');
     const state = await readLedger();
     if (!state.keysConfigured || !sameBytes(state.configurationDigest, expectedConfiguration)) throw new Error('Native configuration does not match the expected digest');
+    requireCandidateCount(typeof state.candidateCount === 'bigint' ? Number(state.candidateCount) : NaN);
     const recomputed = Native.pureCircuits.configurationDigestFor(state.electionId, state.manifestDigest,
-      state.administrator, state.opensAt, state.closesAt, state.publicKey, state.coefficientKey, state.trusteeKeys);
+      state.administrator, state.opensAt, state.closesAt, state.candidateCount, state.publicKey, state.coefficientKey, state.trusteeKeys);
     if (!sameBytes(recomputed, expectedConfiguration)) throw new Error('Native configuration fields are inconsistent');
     return state;
   }
@@ -118,14 +119,15 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
     // record can remain after wallet rejection too; absence is not confirmation.
     get pendingBallotReceipt() { return pendingBallot ? { ...pendingBallot, transaction: { ...pendingBallot.transaction } } : null; },
     recoverPendingReceipt: () => exclusive(findPendingReceipt),
-    async deploy({ electionId, manifestDigest, administratorIdentity, opensAt, closesAt }) {
+    async deploy({ electionId, manifestDigest, administratorIdentity, opensAt, closesAt, candidateCount }) {
       return exclusive(async () => {
         if (handle) throw new Error('This client already has a native contract');
+        requireCandidateCount(candidateCount);
         for (const [name, value] of Object.entries({ electionId, manifestDigest, administratorIdentity })) requireBytes32(value, name);
         if (typeof opensAt !== 'bigint' || typeof closesAt !== 'bigint' || opensAt < 0n || opensAt >= closesAt || closesAt >= 2n ** 64n) throw new TypeError('Invalid native voting window');
         const deployed = await deployContract(providers, {
           compiledContract: compiled, privateStateId: PRIVATE_STATE_ID, initialPrivateState: {},
-          args: [electionId, manifestDigest, administratorIdentity, opensAt, closesAt],
+          args: [electionId, manifestDigest, administratorIdentity, opensAt, closesAt, BigInt(candidateCount)],
         });
         handle = deployed;
         contractAddress = addressValue(deployed.deployTxData.public.contractAddress);
@@ -143,7 +145,7 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
         const key = pure.nativePublicKey(setupSecret), coefficient = pure.nativePublicKey(setupSlope);
         const k1 = pure.addPoints(key, coefficient), k2 = pure.addPoints(k1, coefficient), k3 = pure.addPoints(k2, coefficient);
         const expected = pure.configurationDigestFor(state.electionId, state.manifestDigest, state.administrator,
-          state.opensAt, state.closesAt, key, coefficient, [k1, k2, k3]);
+          state.opensAt, state.closesAt, state.candidateCount, key, coefficient, [k1, k2, k3]);
         const tx = await invoke('configureKeys', [], { administratorSecret, setupSecret, setupSlope });
         expectedConfiguration = expected;
         await requireConfiguration();
@@ -189,6 +191,7 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
         const secret = requireBytes32(voterSecret, 'voterSecret').slice();
         nativeWitnesses.selection({ privateState: { selection } });
         const state = await requireConfiguration();
+        if (selection >= state.candidateCount) throw new RangeError('Selection is outside this native election candidate count');
         const pure = Native.pureCircuits;
         const member = pure.memberIdentity(state.electionId, secret);
         const eligibilityPath = state.members.findPathForLeaf(member);
@@ -248,7 +251,7 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
     async finalize(first, second, totals) {
       return exclusive(async () => {
         pairCoefficients(first, second);
-        if (!Array.isArray(totals) || totals.length !== 3 || totals.some(value => typeof value !== 'bigint' || value < 0n || value > 1024n)) throw new TypeError('Expected three bounded native totals');
+        if (!Array.isArray(totals) || totals.length !== NATIVE_CANDIDATES || totals.some(value => typeof value !== 'bigint' || value < 0n || value > BigInt(NATIVE_CAPACITY))) throw new TypeError('Expected five bounded native totals');
         await requireConfiguration();
         return invoke('finalize', [first, second, totals]);
       });

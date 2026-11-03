@@ -1,5 +1,5 @@
 // NATIVE RESEARCH CONTRACT: fresh execution stages are in docs/CONTINUATION_RESULTS.md.
-// Three-choice encrypted voting with native Jubjub operations and threshold tallying.
+// Two to five encrypted choices with native Jubjub operations and threshold tallying.
 // It uses Compact's Jubjub operations and proves encryption/decryption relations
 // in the native circuits. Key configuration uses a centralized private dealer;
 // independent distributed key generation and production operations remain work.
@@ -10,17 +10,19 @@ import CompactStandardLibrary;
 // Coordinates can be stored and persistently hashed in the pinned toolchain;
 // the opaque JubjubPoint itself must not be nested in public records or hashes.
 export type PointCoordinates = Vector<2, Field>;
-export type CandidatePoints = Vector<3, PointCoordinates>;
+export type CandidatePoints = Vector<5, PointCoordinates>;
+export type TrusteePoints = Vector<3, PointCoordinates>;
 
 export sealed ledger electionId: Bytes<32>;
 export sealed ledger manifestDigest: Bytes<32>;
+export sealed ledger candidateCount: Uint<8>;
 export ledger configurationDigest: Bytes<32>;
 export sealed ledger administrator: Bytes<32>;
 export sealed ledger opensAt: Uint<64>;
 export sealed ledger closesAt: Uint<64>;
 export ledger publicKey: PointCoordinates;
 export ledger coefficientKey: PointCoordinates;
-export ledger trusteeKeys: CandidatePoints;
+export ledger trusteeKeys: TrusteePoints;
 export ledger keysConfigured: Boolean;
 
 // 0=enrollment, 1=voting, 2=frozen/decrypting, 3=finalized.
@@ -38,7 +40,7 @@ export ledger aggregateA: CandidatePoints;
 export ledger aggregateB: CandidatePoints;
 export ledger submittedTrustees: Set<Uint<8>>;
 export ledger decryptionShares: Map<Uint<8>, CandidatePoints>;
-export ledger finalizedTotals: Vector<3, Uint<32>>;
+export ledger finalizedTotals: Vector<5, Uint<32>>;
 
 witness setupSecret(): Field;
 witness setupSlope(): Field;
@@ -46,7 +48,7 @@ witness administratorSecret(): Bytes<32>;
 witness voterSecret(): Bytes<32>;
 witness eligibilityPath(): MerkleTreePath<10, Bytes<32>>;
 witness selection(): Uint<8>;
-witness ballotRandomness(): Vector<3, Field>;
+witness ballotRandomness(): Vector<5, Field>;
 witness trusteeSecretShare(): Field;
 
 // Scalar values are carried in Field by the pinned 0.31.x API, but MUST be
@@ -116,14 +118,14 @@ export pure circuit voterNullifier(id: Bytes<32>, sk: Bytes<32>): Bytes<32> {
 
 export pure circuit configurationDigestFor(
   id: Bytes<32>, manifest: Bytes<32>, adminIdentity: Bytes<32>,
-  opening: Uint<64>, closing: Uint<64>, key: PointCoordinates,
-  coefficient: PointCoordinates, keys: CandidatePoints
+  opening: Uint<64>, closing: Uint<64>, choices: Uint<8>, key: PointCoordinates,
+  coefficient: PointCoordinates, keys: TrusteePoints
 ): Bytes<32> {
   const keyDigest = persistentHash<Vector<5, PointCoordinates>>(
     [key, coefficient, keys[0], keys[1], keys[2]]);
-  const timeDigest = persistentHash<Vector<2, Uint<64>>>([opening, closing]);
+  const timeDigest = persistentHash<Vector<3, Uint<64>>>([opening, closing, choices as Uint<64>]);
   return persistentHash<Vector<6, Bytes<32>>>([
-    pad(32, "ballot-native:config:v1"), id, manifest, adminIdentity, keyDigest, timeDigest
+    pad(32, "ballot-native:config:v2"), id, manifest, adminIdentity, keyDigest, timeDigest
   ]);
 }
 
@@ -131,16 +133,17 @@ export pure circuit receiptDigest(
   id: Bytes<32>, configuration: Bytes<32>, nul: Bytes<32>,
   a: CandidatePoints, b: CandidatePoints
 ): Bytes<32> {
-  const ciphertextDigest = persistentHash<Vector<6, PointCoordinates>>(
-    [a[0], a[1], a[2], b[0], b[1], b[2]]);
+  const ciphertextDigest = persistentHash<Vector<10, PointCoordinates>>(
+    [a[0], a[1], a[2], a[3], a[4], b[0], b[1], b[2], b[3], b[4]]);
   return persistentHash<Vector<5, Bytes<32>>>(
-    [pad(32, "ballot-native:receipt:v1"), id, configuration, nul, ciphertextDigest]);
+    [pad(32, "ballot-native:receipt:v2"), id, configuration, nul, ciphertextDigest]);
 }
 
 constructor(
   id: Bytes<32>, manifest: Bytes<32>, adminIdentity: Bytes<32>,
-  opening: Uint<64>, closing: Uint<64>
+  opening: Uint<64>, closing: Uint<64>, choices: Uint<8>
 ) {
+  assert(choices >= 2 && choices <= 5, "candidate count must be two to five");
   assert(opening < closing, "invalid voting window");
   assert(id != default<Bytes<32>>, "empty election id");
   assert(manifest != default<Bytes<32>>, "empty manifest digest");
@@ -148,6 +151,7 @@ constructor(
   const identity = nativePublicKey(0);
   electionId = disclose(id);
   manifestDigest = disclose(manifest);
+  candidateCount = disclose(choices);
   administrator = disclose(adminIdentity);
   opensAt = disclose(opening);
   closesAt = disclose(closing);
@@ -156,9 +160,9 @@ constructor(
   trusteeKeys = [identity, identity, identity];
   configurationDigest = default<Bytes<32>>;
   keysConfigured = false;
-  aggregateA = [identity, identity, identity];
-  aggregateB = [identity, identity, identity];
-  finalizedTotals = [0, 0, 0];
+  aggregateA = [identity, identity, identity, identity, identity];
+  aggregateB = [identity, identity, identity, identity, identity];
+  finalizedTotals = [0, 0, 0, 0, 0];
   accepted = 0;
   phase = 0;
 }
@@ -171,6 +175,7 @@ export circuit configureKeys(): [] {
   assert(administratorIdentity(administratorSecret()) == administrator, "administrator required");
   assert(phase == 0 && !keysConfigured, "keys already configured or election started");
   assert(opensAt < closesAt, "invalid voting window");
+  assert(candidateCount >= 2 && candidateCount <= 5, "candidate count must be two to five");
   assert(electionId != default<Bytes<32>>, "empty election id");
   assert(manifestDigest != default<Bytes<32>>, "empty manifest digest");
   assert(administrator != default<Bytes<32>>, "empty administrator identity");
@@ -182,8 +187,10 @@ export circuit configureKeys(): [] {
   nonzeroScalar(x);
   nonzeroScalar(slope);
   const identity = nativePublicKey(0);
-  assert(samePoint(aggregateA[0], identity) && samePoint(aggregateA[1], identity) && samePoint(aggregateA[2], identity), "setup requires empty aggregate");
-  assert(samePoint(aggregateB[0], identity) && samePoint(aggregateB[1], identity) && samePoint(aggregateB[2], identity), "setup requires empty aggregate");
+  assert(samePoint(aggregateA[0], identity) && samePoint(aggregateA[1], identity) && samePoint(aggregateA[2], identity)
+    && samePoint(aggregateA[3], identity) && samePoint(aggregateA[4], identity), "setup requires empty aggregate");
+  assert(samePoint(aggregateB[0], identity) && samePoint(aggregateB[1], identity) && samePoint(aggregateB[2], identity)
+    && samePoint(aggregateB[3], identity) && samePoint(aggregateB[4], identity), "setup requires empty aggregate");
   const key = nativePublicKey(x);
   const coefficient = nativePublicKey(slope);
   // Shamir shares are x+i*slope modulo q, computed privately by the dealer.
@@ -199,8 +206,8 @@ export circuit configureKeys(): [] {
   coefficientKey = disclose(coefficient);
   trusteeKeys = disclose([k1, k2, k3]);
   configurationDigest = disclose(configurationDigestFor(electionId, manifestDigest, administrator,
-    opensAt, closesAt, key, coefficient, [k1, k2, k3]));
-  finalizedTotals = [0, 0, 0];
+    opensAt, closesAt, candidateCount, key, coefficient, [k1, k2, k3]));
+  finalizedTotals = [0, 0, 0, 0, 0];
   keysConfigured = true;
 }
 
@@ -240,18 +247,24 @@ export circuit castBallot(): Bytes<32> {
   const nul = disclose(voterNullifier(electionId, secret));
   assert(!spent.member(nul), "voter already voted");
   const choice = selection();
-  assert(choice < 3, "invalid choice");
+  assert(choice < candidateCount, "invalid choice");
   const r = ballotRandomness();
   nonzeroScalar(r[0]);
   nonzeroScalar(r[1]);
   nonzeroScalar(r[2]);
+  nonzeroScalar(r[3]);
+  nonzeroScalar(r[4]);
   // This catches equal masks; it cannot prove randomness quality or independence.
-  assert(r[0] != r[1] && r[0] != r[2] && r[1] != r[2], "reused candidate randomness");
-  const a = disclose([nativePublicKey(r[0]), nativePublicKey(r[1]), nativePublicKey(r[2])]);
+  assert(r[0] != r[1] && r[0] != r[2] && r[0] != r[3] && r[0] != r[4]
+    && r[1] != r[2] && r[1] != r[3] && r[1] != r[4]
+    && r[2] != r[3] && r[2] != r[4] && r[3] != r[4], "reused candidate randomness");
+  const a = disclose([nativePublicKey(r[0]), nativePublicKey(r[1]), nativePublicKey(r[2]), nativePublicKey(r[3]), nativePublicKey(r[4])]);
   const b = disclose([
     addPoints(scalePoint(publicKey, r[0]), nativePublicKey(choice == 0 ? 1 : 0)),
     addPoints(scalePoint(publicKey, r[1]), nativePublicKey(choice == 1 ? 1 : 0)),
-    addPoints(scalePoint(publicKey, r[2]), nativePublicKey(choice == 2 ? 1 : 0))
+    addPoints(scalePoint(publicKey, r[2]), nativePublicKey(choice == 2 ? 1 : 0)),
+    addPoints(scalePoint(publicKey, r[3]), nativePublicKey(choice == 3 ? 1 : 0)),
+    addPoints(scalePoint(publicKey, r[4]), nativePublicKey(choice == 4 ? 1 : 0))
   ]);
   const receipt = disclose(receiptDigest(electionId, configurationDigest, nul, a, b));
   ballotA.insert(accepted, a);
@@ -260,8 +273,8 @@ export circuit castBallot(): Bytes<32> {
   ballotReceipts.insert(accepted, receipt);
   spent.insert(nul);
   receipts.insert(receipt);
-  aggregateA = [addPoints(aggregateA[0], a[0]), addPoints(aggregateA[1], a[1]), addPoints(aggregateA[2], a[2])];
-  aggregateB = [addPoints(aggregateB[0], b[0]), addPoints(aggregateB[1], b[1]), addPoints(aggregateB[2], b[2])];
+  aggregateA = [addPoints(aggregateA[0], a[0]), addPoints(aggregateA[1], a[1]), addPoints(aggregateA[2], a[2]), addPoints(aggregateA[3], a[3]), addPoints(aggregateA[4], a[4])];
+  aggregateB = [addPoints(aggregateB[0], b[0]), addPoints(aggregateB[1], b[1]), addPoints(aggregateB[2], b[2]), addPoints(aggregateB[3], b[3]), addPoints(aggregateB[4], b[4])];
   accepted = (accepted + 1) as Uint<32>;
   return receipt;
 }
@@ -286,7 +299,8 @@ export circuit submitDecryption(index: Uint<8>): [] {
   const expected = trustee == 1 ? trusteeKeys[0] : (trustee == 2 ? trusteeKeys[1] : trusteeKeys[2]);
   assert(samePoint(nativePublicKey(share), expected), "wrong trustee secret share");
   const partial = disclose([
-    scalePoint(aggregateA[0], share), scalePoint(aggregateA[1], share), scalePoint(aggregateA[2], share)
+    scalePoint(aggregateA[0], share), scalePoint(aggregateA[1], share), scalePoint(aggregateA[2], share),
+    scalePoint(aggregateA[3], share), scalePoint(aggregateA[4], share)
   ]);
   decryptionShares.insert(trustee, partial);
   submittedTrustees.insert(trustee);
@@ -311,7 +325,7 @@ pure circuit checkTotal(
   }
 }
 
-export circuit finalize(first: Uint<8>, second: Uint<8>, totals: Vector<3, Uint<32>>): [] {
+export circuit finalize(first: Uint<8>, second: Uint<8>, totals: Vector<5, Uint<32>>): [] {
   assert(phase == 2, "election is not frozen for finalization");
   assert(first >= 1 && second <= 3 && first < second, "invalid trustee pair");
   const i = disclose(first);
@@ -320,13 +334,19 @@ export circuit finalize(first: Uint<8>, second: Uint<8>, totals: Vector<3, Uint<
   // read the ledger, as required by the compiler's disclosure analysis.
   const publicTotals = disclose(totals);
   assert(submittedTrustees.member(i) && submittedTrustees.member(j), "two verified trustees required");
-  assert(publicTotals[0] <= accepted && publicTotals[1] <= accepted && publicTotals[2] <= accepted, "total exceeds ballot count");
-  assert((publicTotals[0] as Uint<64>) + (publicTotals[1] as Uint<64>) + (publicTotals[2] as Uint<64>) == (accepted as Uint<64>), "totals do not sum to ballot count");
+  assert(publicTotals[0] <= accepted && publicTotals[1] <= accepted && publicTotals[2] <= accepted
+    && publicTotals[3] <= accepted && publicTotals[4] <= accepted, "total exceeds ballot count");
+  assert((candidateCount > 2 || publicTotals[2] == 0) && (candidateCount > 3 || publicTotals[3] == 0)
+    && (candidateCount > 4 || publicTotals[4] == 0), "inactive candidate total must be zero");
+  assert((publicTotals[0] as Uint<64>) + (publicTotals[1] as Uint<64>) + (publicTotals[2] as Uint<64>)
+    + (publicTotals[3] as Uint<64>) + (publicTotals[4] as Uint<64>) == (accepted as Uint<64>), "totals do not sum to ballot count");
   const dFirst = decryptionShares.lookup(i);
   const dSecond = decryptionShares.lookup(j);
   checkTotal(i, j, aggregateB[0], dFirst[0], dSecond[0], publicTotals[0]);
   checkTotal(i, j, aggregateB[1], dFirst[1], dSecond[1], publicTotals[1]);
   checkTotal(i, j, aggregateB[2], dFirst[2], dSecond[2], publicTotals[2]);
+  checkTotal(i, j, aggregateB[3], dFirst[3], dSecond[3], publicTotals[3]);
+  checkTotal(i, j, aggregateB[4], dFirst[4], dSecond[4], publicTotals[4]);
   finalizedTotals = publicTotals;
   phase = 3;
 }

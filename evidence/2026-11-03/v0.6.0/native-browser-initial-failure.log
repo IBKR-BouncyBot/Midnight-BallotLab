@@ -1,0 +1,2 @@
+{"stage":"trustees-1-2","passed":true}
+{"nativeBrowserAcceptance":"failed","stage":"main-entry:mobile-layout","kind":"AssertionError","note":"No native success is claimed. Diagnose this named stage without publishing witness data."}

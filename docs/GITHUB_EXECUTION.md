@@ -1,6 +1,24 @@
 # GitHub execution — 3 November 2026
 
-Version 0.5.0 passed fresh local compilation, 45 native boundary tests, 20 generated-contract tests, three provider API tests, the five-ballot example, both browser builds, five updated native-browser cases and four network-browser cases. The native-browser cases exercise clickable ballots, keyboard controls, all trustee pairs, exactly-two selection, reset, mobile layout and fail-closed behavior. Public evidence is retained under [`evidence/2026-11-03/v0.5.0/`](../evidence/2026-11-03/v0.5.0/). Hosted 0.5.0 execution and deployment remain pending; the hosted records below apply to their exact named commit.
+Version 0.6.0 is undergoing fresh verification. Its seven-circuit full compilation, combined 40-case native suite (26 generated-contract and 14 public-verifier cases), 26 isolated-graph runtime cases, 46 boundary cases and five-lane example passed locally. Eight real proofs across all seven circuit types also passed. All seven native-browser cases and four network-browser cases passed after correcting mobile layout; the native cases include fresh-session imports, every receipt, all three trustee pairs, real-clock scheduling and Chromium freeze/resume. Static packaging passed (57 references, 310 files). Network acceptance and hosted CI/deployment for this revision remain pending; no new hosted-origin browser test is claimed. A copied public snapshot supports consistency checks, not authenticated proof or fairness claims.
+
+Version 0.5.0 passed fresh local compilation, 45 native boundary tests, 20 generated-contract tests, three provider API tests, the five-ballot example, both browser builds, five updated native-browser cases and four network-browser cases. The native-browser cases exercise clickable ballots, keyboard controls, all trustee pairs, exactly-two selection, reset, mobile layout and fail-closed behavior. Public evidence is retained under [`evidence/2026-11-03/v0.5.0/`](../evidence/2026-11-03/v0.5.0/). The hosted records below apply to their exact named commits.
+
+## Version 0.5.0 hosted execution
+
+Commit [`a904ea5c1688952fe3bfd459e51e9a1cf49db436`](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/commit/a904ea5c1688952fe3bfd459e51e9a1cf49db436) is the source for these runs:
+
+| Workflow | GitHub run | Recorded state |
+| --- | --- | --- |
+| Midnight contract compatibility | [41689471487](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41689471487) | **Success.** Native compilation, 45 boundary tests, 20 generated native tests, 20 isolated-graph tests, three provider API cases, eight real circuit proofs and both browser suites passed. |
+| Deploy GitHub Pages | [41689472206](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41689472206) | **Success.** Build, native/browser gates and Pages deployment completed. |
+| Local devnet transaction acceptance | [41689476184](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41689476184) | **Success.** Seventeen accepted transactions, 16 completed proof transactions, five matching receipts and four pre-submission negative checks; final phase 3, tally `[2,1,2]`, block 98. |
+
+The compatibility/Pages environment recorded Node **24.22.2**, npm **11.19.1** and Python **3.12.16**. Compact devtools **0.5.1**, compiler **0.31.1**, runtime **0.16.0**, Midnight.js **4.1.1**, proof-server **8.1.3**, Playwright **1.64.1** and Chromium **156.0.8078.4** retain their reviewed versions. The standalone proof report contains eight proof responses across all seven circuit types, with negative checks and no network submission.
+
+The [compatibility provenance](../evidence/2026-11-03/v0.5.0/github/native/provenance.json) records artifact `13256677151`, archive SHA-256 `e9c47f8a795dc0e86fe2de83c43316cdee97073e5eac093a2d0a002dcda79b37`. The [Pages build provenance](../evidence/2026-11-03/v0.5.0/github/pages/provenance.json) records artifact `13255517853`, archive SHA-256 `d8c14841e305b11adadd1f28f0f5adb40516d558074f1dd788e0548737f32b09`. The [devnet provenance](../evidence/2026-11-03/v0.5.0/github/devnet/provenance.json) records artifact `13256184734`, archive SHA-256 `8a68bbe62131834b3e30f5154206bc65794a2704dcac5ba265cecb591b4b3aec`. Its actual wallet run began at 18:01:37.620 UTC and completed at 18:11:22.157 UTC, reporting Node 24.22.1. Its [public report](../evidence/2026-11-03/v0.5.0/github/devnet/reports/network-evidence.json) contains the exact contract address, configuration digest and all 17 accepted transaction IDs. Confirmation is from the configured local indexer; independent chain inclusion and browser-wallet validation remain false. Exact command output, source and artifact hashes, and public reports are retained alongside those manifests. The completed deployment serves [Midnight Ballot Lab](https://ibkr-bouncybot.github.io/Midnight-BallotLab/). This revision passed real browser tests on the CI runner; a new direct browser test at the deployed origin is not claimed.
+
+## Commit-specific execution records
 
 The hosted source is [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab) on `main`. The completed runs below tested commit [`b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/commit/b33b6e4896a12d211cc9b0040acdaf01c5a89ac5). GitHub Pages uses GitHub Actions as the build source. Local commands have their own evidence in [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md).
 
@@ -31,9 +49,9 @@ The [hosted transaction report](../evidence/2026-11-03/github/devnet/reports/net
 
 The [devnet provenance](../evidence/2026-11-03/github/devnet/provenance.json) records artifact ID `13255237907` and archive SHA-256 `17ba09940b51b6b42387b189427e8488fae8fd72aa37d961f9c681e36972b836`. The workflow stopped and removed its labeled services after execution. This temporary CI chain is not persistent public network infrastructure.
 
-## Pages state
+## Direct HTTPS browser evidence
 
-The deployed application is available at [https://ibkr-bouncybot.github.io/Midnight-BallotLab/](https://ibkr-bouncybot.github.io/Midnight-BallotLab/). A real Chromium run against that actual HTTPS project URL passed three cases on 3 November 2026, beginning at 17:33:41.358 UTC:
+A real Chromium run against [the actual HTTPS project URL](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) passed three cases on 3 November 2026, beginning at 17:33:41.358 UTC, for commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`. The 0.5.0 deployment and runner-local browser results are recorded in their own section above. The direct HTTPS run checked:
 
 - Thirty HTTP asset checks passed, including the three served WASM assets and 21 generated circuit assets. Served manifests, content-addressed WASM, bundle digests, MIME types and response headers were retained.
 - The native election accepted five synthetic ballots locally; trustees 1 and 3 finalized `[2,1,2]`. The rendered QR decoded, receipt JSON round-tripped, an altered receipt was rejected and public exports met their allowlist. A 390-pixel mobile viewport was exercised.

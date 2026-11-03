@@ -1,0 +1,12 @@
+/home/runner/work/_temp/compact-installer.sh: OK
+downloading compact 0.5.1 x86_64-unknown-linux-musl-static
+installing to /home/runner/.local/bin
+  compact
+everything's installed!
+compact 0.5.1
+compact: x86_64-unknown-linux-musl -- 0.31.1 -- installed
+compact: x86_64-unknown-linux-musl -- 0.31.1 -- default.
+0.31.1
+v24.22.2
+11.19.1
+Python 3.12.16

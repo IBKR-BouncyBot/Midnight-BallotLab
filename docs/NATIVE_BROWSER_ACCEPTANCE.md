@@ -30,16 +30,24 @@ The acceptance cases cover:
 
 - Actual WASM loaded from the page origin at root and a GitHub repository path;
   the native `index.html` main experience and `native.html` entry both run.
-- Invalid duplicate labels rejected before setup; actual key setup and five
-  synthetic voter credentials enrolled through generated code.
-- All candidate choices cast through the native UI, cleared after submission,
-  and a sixth synthetic cast disabled.
-- All trustee pairs, each finalizing the five-ballot aggregate to `[2, 1, 2]`.
+- Invalid labels/counts rejected before setup; actual key setup with 2, 3 and 5
+  active choices and 3, 5 and 7 synthetic credentials across the cases.
+- Private credential dropdown selection in nonsequential order; reused
+  credentials disabled; choices cleared after submission; no identity mapping
+  in the public record.
+- All trustee pairs, each finalizing the complete native aggregate and checking
+  the expected active totals and zero inactive lanes.
 - Downloaded receipt JSON and independently decoded QR round trips; altered
   address, election, configuration, receipt digest, index, network and malformed
   duplicate-key JSON rejected by the UI.
 - Native public consistency checks, metadata commitment, explicit emulator/proof
   limits, and allowlisted public snapshot/ballot/trustee fields.
+- Importing public JSON by upload/paste in a fresh browser context; no private
+  credentials required; every voter's receipt checked; changed totals rejected;
+  editing an import invalidates the selected verification context.
+- A real 15-second scheduled local preview, with automatic closing and trustees
+  1 + 3 finalization, plus an actual 18-second Chromium freeze/resume check across
+  the deadline. These cases do not generate proofs or submit transactions.
 - Reset clearing the UI, rejection of receipts from the previous experiment,
   and no private session persistence in localStorage or sessionStorage.
 - A 390-pixel mobile viewport without horizontal overflow, with a screenshot

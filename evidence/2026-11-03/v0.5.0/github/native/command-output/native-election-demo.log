@@ -1,0 +1,17 @@
+
+> midnight-ballot-lab-contract-source@0.5.0 demo:native
+> node native/demo.mjs
+
+{
+  "execution": "generated-contract-emulator",
+  "ballots": 5,
+  "tally": [
+    2,
+    1,
+    2
+  ],
+  "publicSnapshot": "/home/runner/work/Midnight-BallotLab/Midnight-BallotLab/artifacts/native-emulator-public.json",
+  "nativeProofGenerated": false,
+  "networkTransactionSubmitted": false,
+  "note": "All synthetic roles run in one process. Public snapshot is not a proof or authenticated chain record."
+}

@@ -2,3 +2,4 @@
 *.png -text
 *.wasm -text
 *.zip -text
+*.woff2 -text

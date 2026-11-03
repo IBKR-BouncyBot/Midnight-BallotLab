@@ -1,0 +1,88 @@
+{
+  "executedAt": "2026-11-03T18:01:50.245Z",
+  "node": "v24.22.1",
+  "execution": "generated-contract-browser-emulator",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "chainInclusionVerified": false,
+  "cases": [
+    {
+      "trustees": [
+        1,
+        2
+      ],
+      "prefix": "/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 5,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false
+    },
+    {
+      "trustees": [
+        1,
+        3
+      ],
+      "prefix": "/arbitrary-repository-name/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 5,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": true
+    },
+    {
+      "trustees": [
+        2,
+        3
+      ],
+      "prefix": "/arbitrary-repository-name/",
+      "entry": "native.html",
+      "passed": true,
+      "accepted": 5,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false
+    },
+    {
+      "failure": "disabled-build",
+      "passed": true,
+      "controlsDisabled": true
+    },
+    {
+      "failure": "missing-wasm",
+      "passed": true,
+      "controlsDisabled": true
+    }
+  ],
+  "generatedContractSha256": "8bafc2695b00c303f2adc4b4d90145020dd7e0dc6aacf94bd2ae3a0382074880",
+  "bundleSha256": "bdedbef4424442f6abc336383a9b7554f81c9d1f31e27388fd962ed3bcdda24b",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "wasmAssets": [
+    {
+      "asset": "native-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "bytes": 1398935
+    }
+  ],
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}

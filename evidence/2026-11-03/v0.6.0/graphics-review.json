@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-11-03T18:34:59.671Z",
+  "validationDate": "2026-11-03",
+  "scope": "Three repository SVGs rendered from local file URLs in actual headless Chromium and visually inspected; no hosted-origin request.",
+  "retention": "Recorded from completed tool output and reviewed PNGs; rendering was not rerun to produce this report.",
+  "renderer": "Installed Playwright 1.64.1 using repository .browser-cache Chromium; browser version was not printed by this graphics-only command.",
+  "checks": {
+    "xmlDocumentsParsed": 3,
+    "renderedGraphics": 3,
+    "textBoundsPassed": 3,
+    "visualReviewsCompleted": 3
+  },
+  "font": "Outfit, Segoe UI, Arial, sans-serif fallback; no external asset or font request.",
+  "files": [
+    {
+      "source": "docs/assets/ballot-lab-banner.svg",
+      "sourceSha256": "4deed4b191b3124c553a342d6f7bbab00ab10c32ac575a119d922f33c206926f",
+      "sourceModifiedAt": "2026-11-03T18:28:04.918Z",
+      "renderedImage": "artifacts/docs-graphics/ballot-lab-banner.png",
+      "renderedImageSha256": "38dc8f08a7c03293e502c7cd39ecb1fef0f76d058125a989b35c521b6f61d5a1",
+      "renderCreatedAt": "2026-11-03T18:28:40.844Z",
+      "textWithin1600PixelCanvas": true,
+      "visualReview": "No overlap or clipping observed; near-black, white and electric blue; labels and explicit verification limits readable."
+    },
+    {
+      "source": "docs/assets/how-it-works.svg",
+      "sourceSha256": "49fa9f51e249d2cb8a9f7ef81595b056f366eeb29b199adfeb021fce6d2537cd",
+      "sourceModifiedAt": "2026-11-03T18:28:06.917Z",
+      "renderedImage": "artifacts/docs-graphics/how-it-works.png",
+      "renderedImageSha256": "eb3c6f86549a4a521b534c515a4a6802e1a693d0daa79ca4c82a606621a4131e",
+      "renderCreatedAt": "2026-11-03T18:28:40.999Z",
+      "textWithin1600PixelCanvas": true,
+      "visualReview": "No overlap or clipping observed; near-black, white and electric blue; labels and explicit verification limits readable."
+    },
+    {
+      "source": "docs/assets/threshold-tally.svg",
+      "sourceSha256": "f2de7e6087ee287c13565d73414bac67a6eefbbf93aeb3df84911c72629c7c99",
+      "sourceModifiedAt": "2026-11-03T18:28:08.902Z",
+      "renderedImage": "artifacts/docs-graphics/threshold-tally.png",
+      "renderedImageSha256": "1ab1474ff996051d1aecf487aff1e529ac4dce777c7b707d82cd0de268d1a047",
+      "renderCreatedAt": "2026-11-03T18:28:41.144Z",
+      "textWithin1600PixelCanvas": true,
+      "visualReview": "No overlap or clipping observed; near-black, white and electric blue; labels and explicit verification limits readable."
+    }
+  ]
+}
