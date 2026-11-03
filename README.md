@@ -85,13 +85,13 @@ Private choices, randomness, credentials, secret shares and proof witnesses stay
 
 ## Buy me a coffee
 
-If the lab has been useful, you can support IBKR-BouncyBot with a little ADA. It's completely optional.
+If the lab has been useful, you can support IBKR-BouncyBot with a little NIGHT or ADA. It's completely optional.
 
-**ADA · Cardano mainnet**
+**NIGHT or ADA · Cardano mainnet**
 
 Scan the QR code or copy the address below. The [support section](https://ibkr-bouncybot.github.io/Midnight-BallotLab/#support) also has a copy button.
 
-<img src="src/assets/support-ada-qr.svg" width="220" height="220" alt="QR code for the Cardano mainnet ADA support address">
+<img src="src/assets/support-ada-qr.svg" width="220" height="220" alt="QR code for the Cardano mainnet NIGHT or ADA support address">
 
 ```text
 addr1q85w2v474ywzx868s69pghygek3vrhxm69e7c6ysuf28qhv8kmj5wd059grxl82f8h5mtyzl87cvqj8ldv2e0las7tnsdej9ax
