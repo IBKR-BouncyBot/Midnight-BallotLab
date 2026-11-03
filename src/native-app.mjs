@@ -16,6 +16,7 @@ const bytesFromHex = value => {
   return Uint8Array.from(value.match(/../g), byte => parseInt(byte, 16));
 };
 const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+const setupWindowExpired = () => Object.assign(new Error('Setup opening window elapsed'), { code: 'SETUP_WINDOW_EXPIRED' });
 
 function encodeReceipt(receipt) {
   const bytes = new Uint8Array(128);
@@ -35,11 +36,23 @@ function decodeReceipt(text) {
       contractAddress: hex(bytes.slice(0, 32)), electionId: hex(bytes.slice(32, 64)),
       configurationDigest: hex(bytes.slice(64, 96)), receipt: hex(bytes.slice(96)), index: Number(match[1]) };
     if (encodeReceipt(receipt) !== text) throw new Error('Receipt encoding is not canonical');
-    return receipt;
+    return validateReceiptShape(receipt);
   }
   const value = parseStrictJson(text, { maxBytes: 4096, maxDepth: 8 });
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Expected a native emulator receipt');
-  return value;
+  return validateReceiptShape(value);
+}
+
+function validateReceiptShape(receipt) {
+  const required = ['schema', 'execution', 'network', 'contractAddress', 'electionId', 'configurationDigest', 'index', 'receipt'];
+  const allowed = new Set([...required, 'proofGenerated', 'ledgerInclusionVerified']);
+  if (required.some(key => !Object.hasOwn(receipt, key)) || Object.keys(receipt).some(key => !allowed.has(key))
+    || receipt.schema !== RECEIPT_SCHEMA || receipt.execution !== 'generated-contract-emulator' || receipt.network !== null
+    || !Number.isSafeInteger(receipt.index) || receipt.index < 0 || receipt.index >= NATIVE_CAPACITY
+    || Object.hasOwn(receipt, 'proofGenerated') && receipt.proofGenerated !== false
+    || Object.hasOwn(receipt, 'ledgerInclusionVerified') && receipt.ledgerInclusionVerified !== false) throw new Error('Invalid public receipt');
+  for (const key of ['contractAddress', 'electionId', 'configurationDigest', 'receipt']) bytesFromHex(receipt[key]);
+  return receipt;
 }
 
 function savePublicJson(filename, value) {
@@ -102,10 +115,10 @@ export async function initNativeDemo() {
   }
   function renderVoters() {
     const previous = $('native-voter').value;
-    const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = 'Choose a synthetic voter';
+    const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = 'Choose a demo voter';
     const options = session?.voters.map((secret, index) => {
       const option = document.createElement('option'); option.value = String(index); option.disabled = !secret;
-      option.textContent = `Voter ${index + 1}${secret ? '' : ' — already voted'}`; return option;
+      option.textContent = `Demo voter ${index + 1}${secret ? '' : ' — already voted'}`; return option;
     }) ?? [];
     $('native-voter').replaceChildren(placeholder, ...options);
     $('native-voter').value = previous !== '' && session?.voters[Number(previous)] ? previous : '';
@@ -120,11 +133,11 @@ export async function initNativeDemo() {
     element.hidden = session?.manifest.timingMode !== 'scheduled';
     if (element.hidden) return;
     const now = Math.floor(Date.now() / 1000), phase = session.emulator.readLedger().phase;
-    const text = phase === 3n ? 'Scheduled local preview completed. The actual native circuits checked both trustee contributions and the combined tally. No proof or network transaction was created.'
-      : session.scheduleFailed ? 'The scheduled local preview stopped after an operation failed. Inspect the phase before resetting. No network transaction was created.'
-        : now < session.manifest.opensAt ? `Scheduled local preview · voting opens in ${session.manifest.opensAt - now}s. Keep this tab open.`
-          : now < session.closesAt ? `Scheduled local preview · ${session.closesAt - now}s remaining. At the deadline this tab will close voting and use trustees 1 + 3 to reveal the results.`
-            : 'Scheduled local preview · voting deadline reached. This tab is processing the frozen aggregate and trustees 1 + 3.';
+    const text = phase === 3n ? 'Timed election complete. Voting is closed and the results are ready.'
+      : session.scheduleFailed ? 'The timed election stopped before finishing. Check the election status before resetting.'
+        : now < session.manifest.opensAt ? `Timed election · voting opens in ${session.manifest.opensAt - now}s. Keep this tab open.`
+          : now < session.closesAt ? `Timed election · ${session.closesAt - now}s left to vote. Trustees 1 + 3 will reveal the results when voting closes.`
+            : 'Timed election · voting has ended. Checking both trustees and preparing the results…';
     if (element.textContent !== text) element.textContent = text;
   }
   function render() {
@@ -135,14 +148,14 @@ export async function initNativeDemo() {
     renderVoters();
     $('native-voters').textContent = session ? String(session.voters.length) : '—';
     $('native-ballots').textContent = String(state?.accepted ?? 0n);
-    $('native-phase').textContent = state ? ['Enrollment', 'Voting open', 'Voting closed', 'Finalized'][Number(phase)] : 'Not created';
+    $('native-phase').textContent = state ? ['Getting ready', 'Voting open', 'Voting closed', 'Results ready'][Number(phase)] : 'Not created';
     $('native-setup-form').hidden = !!session;
     $('native-setup-complete').hidden = !session;
     $('native-configuration').textContent = session?.configurationDigest ?? '';
     $('native-contract-address').textContent = session?.emulator.contractAddress ?? 'Not created';
-    $('native-setup-summary').textContent = session ? `${session.voters.length} synthetic credentials enrolled. ${phase === 0n ? 'Waiting for the scheduled opening time.' : 'The local election is ready.'}` : '';
+    $('native-setup-summary').textContent = session ? `${session.voters.length} demo voters are ready. ${phase === 0n ? 'Voting opens after the countdown.' : 'Your election is ready.'}` : '';
     $('native-voter-label').textContent = !session ? 'Set up an election to start voting.' : phase !== 1n
-      ? phase === 0n ? 'Voting has not opened yet.' : 'Voting is closed in this experiment.' : !canVote ? 'No further credentials can vote in this session.' : 'Choose an unused synthetic credential. Its identity is not added to the public ballot record.';
+      ? phase === 0n ? 'Voting has not opened yet.' : 'Voting is closed.' : !canVote ? 'No more demo voters can vote in this election.' : 'Choose a demo voter who has not voted yet. Voter names are not saved with ballots.';
     const receiptContext = $('native-check-source').value === 'import' ? verifiedImport : session;
     const enabled = {
       'native-election-title': !session, 'native-voter-count': !session, 'native-candidate-count': !session,
@@ -152,7 +165,7 @@ export async function initNativeDemo() {
       'native-close': !scheduled && phase === 1n && state.accepted > 0n, 'native-trustee-fieldset': !scheduled && phase === 2n,
       'native-finalize': !scheduled && phase === 2n && selectedTrustees().length === 2,
       'native-export': !!session, 'native-check-result': phase === 3n,
-      'native-receipt-input': !!receiptContext, 'native-check-receipt': !!receiptContext,
+      'native-receipt-input': !!receiptContext, 'native-receipt-file': !!receiptContext, 'native-check-receipt': !!receiptContext,
       'native-import-file': true, 'native-import-text': true, 'native-expected-digest': true, 'native-verify-import': true,
       'native-check-source': !!session || !!verifiedImport,
       'native-save-receipt': !!lastReceipt, 'native-copy-receipt': !!lastReceipt, 'native-use-receipt': !!lastReceipt,
@@ -164,9 +177,9 @@ export async function initNativeDemo() {
     $('native-check-source').querySelector('option[value="session"]').disabled = !session;
     $('native-check-source').querySelector('option[value="import"]').disabled = !verifiedImport;
     $('native-verification-context').textContent = $('native-check-source').value === 'import' && verifiedImport
-      ? `Receipt context: verified imported record “${verifiedImport.result.snapshot.manifest.title}”. Configuration: ${verifiedImport.result.snapshot.configurationDigest}.`
-      : session ? `Receipt context: this tab’s election “${session.manifest.title}”. Configuration: ${session.configurationDigest}.`
-        : 'Set up an election or verify a shared public record. No private credentials are required for an imported record.';
+      ? `Checking the uploaded record “${verifiedImport.result.snapshot.manifest.title}”. Election code: ${verifiedImport.result.snapshot.configurationDigest}.`
+      : session ? `Checking this tab’s election “${session.manifest.title}”. Election code: ${session.configurationDigest}.`
+        : 'Create an election or check an uploaded record first. You do not need voter or trustee secrets to check a shared record.';
     document.querySelectorAll('[data-native-choice-setting]').forEach(wrapper => {
       const hidden = Number(wrapper.dataset.nativeChoiceSetting) >= Number($('native-candidate-count').value);
       wrapper.hidden = hidden;
@@ -175,7 +188,7 @@ export async function initNativeDemo() {
     const trusteeCount = selectedTrustees().length;
     document.querySelectorAll('input[name="native-trustee"]').forEach(input => { input.disabled = trusteeCount === 2 && !input.checked; });
     $('native-trustee-selection').textContent = trusteeCount === 2
-      ? `Trustees ${selectedTrustees().join(' + ')} selected. ${phase === 3n ? 'Both contributions passed the local runtime checks.' : 'Both contributions will be checked.'}`
+      ? `Trustees ${selectedTrustees().join(' + ')} selected. ${phase === 3n ? 'Both contributions agree with the results.' : 'Both will help reveal the result.'}`
       : `Choose two trustees · ${trusteeCount} of 2 selected`;
     document.querySelectorAll('[data-native-nav]').forEach(button => { button.disabled = busy; });
     $('native-receipt-panel').hidden = !lastReceipt;
@@ -186,12 +199,12 @@ export async function initNativeDemo() {
         const item = document.createElement('div'); item.className = 'ballot-item';
         const heading = document.createElement('div'); heading.className = 'ballot-item-head';
         const label = document.createElement('span'); label.textContent = `Encrypted ballot ${index + 1n}`;
-        const badge = document.createElement('span'); badge.textContent = 'Native · local'; heading.append(label, badge);
+        const badge = document.createElement('span'); badge.textContent = 'Recorded'; heading.append(label, badge);
         const code = document.createElement('code'); code.textContent = hex(state.ballotReceipts.lookup(index)); item.append(heading, code);
         $('native-ballot-list').append(item);
       }
     } else {
-      const empty = document.createElement('p'); empty.className = 'notebook-empty'; empty.textContent = 'Accepted native receipts will appear here.'; $('native-ballot-list').append(empty);
+      const empty = document.createElement('p'); empty.className = 'notebook-empty'; empty.textContent = 'Your saved ballot receipts will appear here.'; $('native-ballot-list').append(empty);
     }
     if (phase === 3n) {
       $('native-result-count').textContent = `${state.accepted} encrypted ballots`;
@@ -215,7 +228,9 @@ export async function initNativeDemo() {
       if (session?.manifest.timingMode === 'scheduled') session.emulator.setTime(Math.floor(Date.now() / 1000));
       await action();
     }
-    catch { status('The native operation did not complete. Inspect the local phase before retrying.', true); }
+    catch (error) { status(error?.code === 'SETUP_WINDOW_EXPIRED'
+      ? 'Setup needs more time on this device. Close other tabs or choose fewer demo voters, then create the election again.'
+      : 'This step did not finish. Check the election status before trying again.', true); }
     finally { session?.emulator.setPrivateState({}); busy = false; render(); }
   }
   function newReceipt(receipt, index) {
@@ -244,55 +259,90 @@ export async function initNativeDemo() {
   $('native-voter').addEventListener('change', () => {
     document.querySelectorAll('input[name="native-choice"]').forEach(input => { input.checked = false; });
     lastReceipt = null; $('native-receipt-qr').replaceChildren(); $('native-receipt-hash').textContent = '';
-    status('Select a ballot option for the chosen unused credential.');
+    status('Choose a ballot option for this demo voter.');
     render();
   });
   $('native-go-vote').addEventListener('click', () => showPanel('vote'));
   $('native-setup-form').addEventListener('submit', event => {
     event.preventDefault();
-    operate('Initializing the actual native contract…', async () => {
+    operate('Creating your election…', async () => {
       const title = $('native-election-title').value.trim();
       const voterCount = Number($('native-voter-count').value), candidateCount = Number($('native-candidate-count').value);
       const timingMode = $('native-timing-mode').value;
       const durationSeconds = timingMode === 'manual' ? 600 : Number($('native-duration').value);
-      if (!['manual', 'scheduled'].includes(timingMode) || !Number.isInteger(durationSeconds) || durationSeconds < 15 || durationSeconds > 3600) { status('Choose manual mode or a scheduled duration of 15–3,600 seconds.', true); return; }
+      if (!['manual', 'scheduled'].includes(timingMode) || !Number.isInteger(durationSeconds) || durationSeconds < 15 || durationSeconds > 3600) { status('Choose manual mode or a timed election lasting 15–3,600 seconds.', true); return; }
       if (!Number.isInteger(voterCount) || voterCount < 1 || voterCount > NATIVE_CAPACITY) { status(`Choose a whole voter count from 1 to ${NATIVE_CAPACITY}.`, true); return; }
       if (!Number.isInteger(candidateCount) || candidateCount < NATIVE_MIN_CANDIDATES || candidateCount > NATIVE_MAX_CANDIDATES) { status('Choose between two and five choices.', true); return; }
       const candidates = ['a', 'b', 'c', 'd', 'e'].slice(0, candidateCount).map(letter => $(`native-choice-${letter}`).value.trim());
       if (!title || title.length > 80 || candidates.some(value => !value || value.length > 40) || new Set(candidates).size !== candidateCount) { status('Enter an election name and different choices for every option.', true); return; }
       const dealer = createDemoDealer(), administratorSecret = randomSecret32(), electionId = randomSecret32();
-      const now = Math.floor(Date.now() / 1000);
-      const opensAt = now + (timingMode === 'scheduled' ? Math.max(2, Math.ceil(voterCount / 16)) : 60), closesAt = opensAt + durationSeconds;
-      const manifest = { schema: 'midnight-ballot-lab/native-demo-manifest/v2', execution: 'emulator',
-        electionId: hex(electionId), title, candidates, threshold: 2, capacity: NATIVE_CAPACITY, syntheticVoters: voterCount,
-        timingMode, durationSeconds, opensAt, closesAt };
-      // External metadata commitment; native identity/configuration/receipt hashes
-      // are calculated by Compact, not this WebCrypto SHA-256 call.
-      const manifestDigest = await nativeManifestDigest(manifest);
-      const emulator = await createNativeEmulator({ electionId, manifestDigest, administratorSecret,
-        setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope, opensAt, closesAt, candidateCount,
-        ...(timingMode === 'scheduled' ? { initialTime: Math.floor(Date.now() / 1000) } : {}) });
+      // Prepare private credentials and their actual native identities before
+      // choosing immutable deadlines. None of these index-to-identity mappings
+      // leave this tab or enter the public operation log.
       const voters = Array.from({ length: voterCount }, randomSecret32);
+      const members = [];
       for (let index = 0; index < voters.length; index++) {
-        if (timingMode === 'scheduled') emulator.setTime(Math.floor(Date.now() / 1000));
-        emulator.call('enroll', emulator.pureCircuits.memberIdentity(electionId, voters[index]));
+        members.push(bindings.pureCircuits.memberIdentity(electionId, voters[index]));
         if ((index + 1) % 8 === 0 || index === voters.length - 1) {
-          status(`Enrolling synthetic credentials: ${index + 1} of ${voterCount}…`, false, true); await nextFrame();
+          status(`Preparing demo voters: ${index + 1} of ${voterCount}…`, false, true); await nextFrame();
         }
       }
-      emulator.setPrivateState({});
-      if (timingMode === 'manual') { emulator.setTime(opensAt + 1); emulator.call('openVoting'); }
+      let emulator, manifest, closesAt;
+      let openingLeadSeconds = Math.max(10, Math.ceil(voterCount / 8));
+      const attempts = timingMode === 'scheduled' ? 3 : 1;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        const attemptStartedAt = performance.now();
+        const opensAt = Math.ceil(Date.now() / 1000) + (timingMode === 'scheduled' ? openingLeadSeconds : 60);
+        closesAt = opensAt + durationSeconds;
+        manifest = { schema: 'midnight-ballot-lab/native-demo-manifest/v2', execution: 'emulator',
+          electionId: hex(electionId), title, candidates, threshold: 2, capacity: NATIVE_CAPACITY, syntheticVoters: voterCount,
+          timingMode, durationSeconds, opensAt, closesAt };
+        const requireSetupWindow = () => {
+          const actualTime = Math.floor(Date.now() / 1000);
+          if (timingMode === 'scheduled' && actualTime >= opensAt) throw setupWindowExpired();
+          return actualTime;
+        };
+        try {
+          // Each retry constructs a fresh, unexposed local election. Its dates
+          // and configuration are never modified after construction.
+          const manifestDigest = await nativeManifestDigest(manifest);
+          const initialTime = requireSetupWindow();
+          emulator = await createNativeEmulator({ electionId, manifestDigest, administratorSecret,
+            setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope, opensAt, closesAt, candidateCount,
+            ...(timingMode === 'scheduled' ? { initialTime } : {}) });
+          for (let index = 0; index < members.length; index++) {
+            const actualTime = requireSetupWindow();
+            if (timingMode === 'scheduled') emulator.setTime(actualTime);
+            emulator.call('enroll', members[index]);
+            if ((index + 1) % 8 === 0 || index === members.length - 1) {
+              status(`Adding demo voters: ${index + 1} of ${voterCount}…`, false, true); await nextFrame();
+            }
+          }
+          requireSetupWindow();
+          emulator.setPrivateState({});
+          if (timingMode === 'manual') { emulator.setTime(opensAt + 1); emulator.call('openVoting'); }
+          break;
+        } catch (error) {
+          emulator?.setPrivateState({}); emulator = null;
+          if (error?.code !== 'SETUP_WINDOW_EXPIRED' || attempt === attempts - 1) throw error;
+          const elapsedSeconds = Math.ceil((performance.now() - attemptStartedAt) / 1000);
+          openingLeadSeconds = Math.max(openingLeadSeconds * 2, elapsedSeconds * 2 + 5);
+          status('Setup needs more time. Restarting with a longer opening countdown…', false, true);
+          await nextFrame();
+        }
+      }
+      if (!emulator) throw setupWindowExpired();
       session = { emulator, voters, trustees: dealer.trustees, manifest, closesAt,
         configurationDigest: hex(emulator.readLedger().configurationDigest), finalizedPair: null };
-      renderChoices(); log(`Native key configuration and enrollment completed. ${voterCount} synthetic credentials.`);
-      status(timingMode === 'scheduled' ? 'Scheduled local preview initialized. Keep this tab open for automatic opening, closing and two-trustee tallying. No proofs or transactions are created.'
-        : 'Native election initialized. Generated circuits are running locally; no proofs or transactions were created.');
+      renderChoices(); log(`Election created with ${voterCount} demo voters.`);
+      status(timingMode === 'scheduled' ? 'Your timed election is ready. Voting starts after the countdown. Keep this tab open until the results appear.'
+        : 'Your election is ready. Choose a demo voter to cast the first ballot.');
       if (timingMode === 'scheduled') startSchedule();
     });
   });
   $('native-vote-form').addEventListener('submit', event => {
     event.preventDefault();
-    operate('Encrypting with native Jubjub operations…', async () => {
+    operate('Encrypting your vote…', async () => {
       if (!session || session.emulator.readLedger().phase !== 1n) throw new Error('Voting is not available');
       const voterIndex = Number($('native-voter').value);
       if ($('native-voter').value === '' || !Number.isInteger(voterIndex) || !session.voters[voterIndex]) throw new Error('Choose an unused synthetic voter');
@@ -308,6 +358,9 @@ export async function initNativeDemo() {
       const expectedReceipt = pure.receiptDigest(state.electionId, state.configurationDigest, nullifier, a, b);
       const index = state.accepted;
       emulator.setPrivateState({ voterSecret, selection, eligibilityPath: state.members.findPathForLeaf(member), ballotRandomness: randomness });
+      // Preparing the ciphertext may take time on a slow device. Enforce the
+      // actual current deadline at the call, not the earlier preparation time.
+      if (session.manifest.timingMode === 'scheduled') emulator.setTime(Math.floor(Date.now() / 1000));
       const receipt = emulator.call('castBallot');
       // Clear a successful credential and selection even if a subsequent display
       // or consistency check fails; retry must not cast the same credential.
@@ -317,14 +370,14 @@ export async function initNativeDemo() {
       lastReceipt = newReceipt(receipt, index); checkReceipt(lastReceipt);
       $('native-receipt-hash').textContent = lastReceipt.receipt;
       $('native-receipt-qr').innerHTML = qrSvg(encodeReceipt(lastReceipt));
-      log(`Encrypted ballot ${index + 1n} accepted by the generated local contract.`);
-      status('Native ballot accepted locally. Its receipt matches the ciphertext constructed from your selected input.');
+      log(`Encrypted ballot ${index + 1n} recorded.`);
+      status('Your vote is recorded and encrypted. Save your receipt before choosing another voter.');
     });
   });
-  $('native-close').addEventListener('click', () => operate('Freezing the native ciphertext aggregate…', async () => {
+  $('native-close').addEventListener('click', () => operate('Closing voting…', async () => {
     if (!session || session.manifest.timingMode !== 'manual') throw new Error('Manual closing is unavailable');
     session.emulator.setPrivateState({}); session.emulator.setTime(session.closesAt); session.emulator.call('closeVoting');
-    log('Voting closed. Native ciphertext aggregate frozen.'); status('Voting is closed. Choose two trustees to recover the aggregate.');
+    log('Voting closed. No more ballots can be cast.'); status('Voting is closed. Choose two trustees to reveal the results.');
   }));
   async function finalizePair(pairText) {
     if (!session) throw new Error('No native election');
@@ -341,10 +394,10 @@ export async function initNativeDemo() {
     const totals = recoverNativeTally(emulator, ...pair);
     if (session.manifest.timingMode === 'scheduled') emulator.setTime(Math.floor(Date.now() / 1000));
     emulator.call('finalize', ...pair, totals); session.finalizedPair = pair;
-    log(`Native aggregate finalized using trustees ${pairText.replace(',', ' + ')}.`);
-    status('Native tally equations passed in the local runtime. Only aggregate totals are displayed.');
+    log(`Results revealed with trustees ${pairText.replace(',', ' + ')}.`);
+    status('The two trustee contributions agree with the combined results.');
   }
-  $('native-finalize').addEventListener('click', () => operate('Computing native trustee shares and tally equations…', async () => {
+  $('native-finalize').addEventListener('click', () => operate('Checking both trustees and revealing the results…', async () => {
     if (session?.manifest.timingMode !== 'manual') throw new Error('Manual tallying is unavailable');
     await finalizePair(selectedTrustees().join(','));
   }));
@@ -363,45 +416,61 @@ export async function initNativeDemo() {
       const now = Math.floor(Date.now() / 1000), phase = session.emulator.readLedger().phase;
       if (phase === 3n) { clearInterval(scheduleTimer); return; }
       if ((phase === 0n || phase === 1n) && now >= session.closesAt) {
-        void operate('Closing voting and checking the scheduled trustee contributions…', async () => {
+        void operate('Closing voting and checking both trustees…', async () => {
           session.scheduleFailed = true;
           await finishScheduledElection(); session.scheduleFailed = false;
         });
       } else if (phase === 0n && now >= session.manifest.opensAt) {
-        void operate('Opening the scheduled local election…', async () => {
+        void operate('Opening voting…', async () => {
           session.scheduleFailed = true;
           if (Math.floor(Date.now() / 1000) >= session.closesAt) await finishScheduledElection();
           else {
             session.emulator.setPrivateState({}); session.emulator.call('openVoting');
-            status('Scheduled voting is open. The real clock governs this local preview.');
+            status('Voting is open. Keep this tab open until the results are ready.');
           }
           session.scheduleFailed = false;
         });
       }
     }, 250);
   }
-  $('native-save-receipt').addEventListener('click', () => { if (lastReceipt) savePublicJson('native-emulator-receipt.json', lastReceipt); });
-  $('native-copy-receipt').addEventListener('click', () => operate('Copying the public native receipt code…', async () => {
+  $('native-save-receipt').addEventListener('click', () => { if (lastReceipt) savePublicJson('midnight-ballot-receipt.json', lastReceipt); });
+  $('native-copy-receipt').addEventListener('click', () => operate('Copying your receipt…', async () => {
     if (!lastReceipt) throw new Error('No receipt');
     const code = encodeReceipt(lastReceipt);
-    try { await navigator.clipboard.writeText(code); status('Native receipt code copied.'); }
-    catch { $('native-receipt-input').value = code; $('native-receipt-check-output').textContent = ''; showPanel('check'); status('Clipboard access was unavailable. The public receipt is in the receipt field for manual copying.'); }
+    try { await navigator.clipboard.writeText(code); status('Receipt copied.'); }
+    catch { $('native-receipt-input').value = code; $('native-receipt-check-output').textContent = ''; showPanel('check'); status('Clipboard access was unavailable. Copy the receipt from the receipt field instead.'); }
   }));
-  $('native-receipt-input').addEventListener('input', () => { $('native-receipt-check-output').textContent = ''; });
+  $('native-receipt-input').addEventListener('input', () => { $('native-receipt-file').value = ''; $('native-receipt-check-output').textContent = ''; });
+  $('native-receipt-file').addEventListener('change', () => operate('Loading your receipt…', async () => {
+    const output = $('native-receipt-check-output');
+    output.textContent = ''; output.className = 'inline-status'; $('native-receipt-input').value = '';
+    try {
+      const file = $('native-receipt-file').files?.[0];
+      if (!file || file.size > 4096 || !/\.(json|txt)$/i.test(file.name)) throw new Error('Invalid receipt file');
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer()).trim();
+      decodeReceipt(text); // Shape only. Context and inclusion still need an explicit check.
+      $('native-receipt-input').value = text;
+      status('Receipt loaded. Click Check receipt to compare it with the selected record.');
+    } catch {
+      $('native-receipt-file').value = '';
+      output.className = 'inline-status fail'; output.textContent = 'Receipt file rejected. Choose a saved JSON receipt or QR text file up to 4 KiB.';
+      status('The receipt file could not be read. No receipt has been checked.', true);
+    }
+  }));
   $('native-check-source').addEventListener('change', () => {
-    $('native-receipt-check-output').textContent = ''; status('Receipt verification context changed. Check your receipt against the selected record.'); render();
+    $('native-receipt-check-output').textContent = ''; status('Election record changed. Check your receipt against the selected record.'); render();
   });
   for (const id of ['native-import-text', 'native-expected-digest']) $(id).addEventListener('input', () => {
-    invalidateImport(); status('The public record or expected digest changed. Verify again before checking imported receipts.'); render();
+    invalidateImport(); status('The record or election code changed. Check the record again before checking receipts.'); render();
   });
-  $('native-import-file').addEventListener('change', () => operate('Loading public snapshot JSON…', async () => {
+  $('native-import-file').addEventListener('change', () => operate('Loading the election record…', async () => {
     invalidateImport();
     const file = $('native-import-file').files?.[0];
-    if (!file || file.size > 8 * 1024 * 1024) { status('Choose one public JSON snapshot no larger than 8 MiB.', true); return; }
+    if (!file || file.size > 8 * 1024 * 1024) { status('Choose an election record JSON file no larger than 8 MiB.', true); return; }
     $('native-import-text').value = await file.text();
-    status('Public snapshot loaded. Verify it before checking a receipt.');
+    status('Election record loaded. Check it before checking a receipt.');
   }));
-  $('native-verify-import').addEventListener('click', () => operate('Verifying public snapshot consistency…', async () => {
+  $('native-verify-import').addEventListener('click', () => operate('Checking the shared election record…', async () => {
     invalidateImport();
     const output = $('native-check-output');
     try {
@@ -411,14 +480,14 @@ export async function initNativeDemo() {
       verifiedImport = { jsonText, expectedConfigurationDigest, result };
       $('native-check-source').value = 'import';
       output.className = 'verification-result';
-      output.textContent = `Imported public consistency checks passed for ${result.accepted} ballots. ${result.finalized
+      output.textContent = `Record checks passed for ${result.accepted} ballots. ${result.finalized
         ? `Combined totals: ${result.totals.slice(0, result.candidateCount).join(', ')}. All published trustee pairs agree.`
-        : 'This record has no finalized tally yet.'} Every voter can check their receipt against this record. These checks do not authenticate its source, prove voter eligibility, verify chain inclusion or establish election fairness.`;
-      status('Public record verified for consistency. Receipt checks now use the imported record.');
+        : 'This record has no final result yet.'} Every voter can check their receipt against this record. These checks do not prove who supplied the record, voter identity, fairness or blockchain confirmation.`;
+      status('The record’s ballots and totals agree. Receipt checks now use the uploaded record.');
     } catch {
       output.className = 'verification-result failure';
-      output.textContent = 'Public record rejected. Its format, points, configuration, receipts, aggregate or published tally is inconsistent. No imported record is selected for receipt checks.';
-      status('Public snapshot verification failed.', true);
+      output.textContent = 'Record rejected. Some election details, ballots, trustee contributions or totals do not agree. Choose a valid shared record and try again.';
+      status('The election record did not pass its checks.', true);
     }
     output.hidden = false;
   }));
@@ -427,7 +496,7 @@ export async function initNativeDemo() {
     $('native-receipt-check-output').textContent = '';
     render();
   });
-  $('native-check-receipt').addEventListener('click', () => operate('Checking the public receipt…', async () => {
+  $('native-check-receipt').addEventListener('click', () => operate('Checking your receipt…', async () => {
     const output = $('native-receipt-check-output');
     try {
       const receipt = decodeReceipt($('native-receipt-input').value.trim());
@@ -437,17 +506,17 @@ export async function initNativeDemo() {
           expectedConfigurationDigest: verifiedImport.expectedConfigurationDigest });
         if (!result.receiptMatched) throw new Error('Receipt does not match imported record');
       } else { if (!session) throw new Error('No native election'); checkReceipt(receipt); }
-      output.className = 'inline-status pass'; output.textContent = 'Receipt matches the selected public ciphertext record. No chain inclusion or ZK proof was verified.';
+      output.className = 'inline-status pass'; output.textContent = 'Your receipt matches a recorded encrypted ballot in this election. This does not prove voter identity, fairness or blockchain confirmation.';
       status('Receipt matches the selected record.');
-    } catch { output.className = 'inline-status fail'; output.textContent = 'Receipt rejected: its format, election context, accepted index or native hash does not match the selected record.'; status('Receipt did not match the selected record.'); }
+    } catch { output.className = 'inline-status fail'; output.textContent = 'This receipt does not match a recorded ballot in the selected election. Check that you chose the right election record and receipt.'; status('Receipt did not match the selected record.'); }
   }));
-  $('native-export').addEventListener('click', () => operate('Preparing the public native snapshot…', async () => {
+  $('native-export').addEventListener('click', () => operate('Preparing the election record…', async () => {
     if (!session) throw new Error('No native experiment');
     const snapshot = { ...nativePublicSnapshot(session.emulator), manifest: session.manifest };
-    savePublicJson('native-emulator-public.json', snapshot);
-    status('Public native snapshot exported. It contains no private inputs and is explicitly marked as an unauthenticated emulator record.');
+    savePublicJson('midnight-election-record.json', snapshot);
+    status('Election record downloaded. It contains public data only and can be checked in another tab.');
   }));
-  $('native-check-result').addEventListener('click', () => operate('Recomputing native public data…', async () => {
+  $('native-check-result').addEventListener('click', () => operate('Checking the ballots and results…', async () => {
     const output = $('native-check-output'); output.hidden = true;
     try {
       if (!session || !session.finalizedPair) throw new Error('No finalized native experiment');
@@ -476,12 +545,12 @@ export async function initNativeDemo() {
       const totals = recoverNativeTally(emulator, ...session.finalizedPair);
       if (totals.some((value, i) => value !== state.finalizedTotals[i]) || totals.reduce((a, b) => a + b, 0n) !== state.accepted) throw new Error('Tally mismatch');
       output.className = 'verification-result';
-      output.textContent = `Native public consistency checks passed for ${state.accepted} ballots: manifest labels, configuration, unique nullifiers and receipts, receipt hashes, summed ciphertexts and aggregate tally. No private inputs were read by this check. This does not verify native ZK proofs or authenticated chain inclusion.`;
-      status('Native public consistency checks passed.');
+      output.textContent = `Election checks passed for ${state.accepted} ballots. Election details, unique ballot receipts, encrypted ballot totals and trustee contributions agree. This checks consistency, not voter identity, fairness or blockchain confirmation.`;
+      status('The recorded ballots and results agree.');
       $('native-check-source').value = 'session';
     } catch {
-      output.className = 'verification-result failure'; output.textContent = 'Native public consistency checks failed. This record must not be treated as verified.';
-      status('Native public checks failed.', true);
+      output.className = 'verification-result failure'; output.textContent = 'The election record did not pass its checks. Do not rely on these results.';
+      status('The election checks did not pass.', true);
     }
     output.hidden = false;
   }));
@@ -490,11 +559,11 @@ export async function initNativeDemo() {
     clearInterval(scheduleTimer); scheduleTimer = null;
     session?.emulator.setPrivateState({}); session = null; lastReceipt = null; events.length = 0;
     invalidateImport(); $('native-import-file').value = ''; $('native-import-text').value = ''; $('native-expected-digest').value = '';
-    $('native-event-log').replaceChildren(); $('native-vote-form').reset(); $('native-receipt-input').value = '';
+    $('native-event-log').replaceChildren(); $('native-vote-form').reset(); $('native-receipt-input').value = ''; $('native-receipt-file').value = '';
     document.querySelectorAll('input[name="native-trustee"]').forEach(input => { input.checked = false; });
     $('native-receipt-check-output').textContent = ''; $('native-check-output').hidden = true;
     $('native-receipt-qr').replaceChildren(); $('native-receipt-hash').textContent = '';
-    renderChoices(); showPanel('setup'); render(); status('Native experiment reset. Create a new synthetic election to continue.');
+    renderChoices(); showPanel('setup'); render(); status('Election reset. Create another election when you’re ready.');
   });
   renderChoices(); render();
   return { mode: 'generated-contract-emulator', proofGenerated: false, networkTransactionSubmitted: false };

@@ -1,0 +1,39 @@
+
+> midnight-ballot-lab-isolated-devnet-acceptance@0.6.0 test:runtime
+> node stage-runtime.mjs && node --test .runtime/native/test/native-election.test.mjs
+
+{"stage":"byte-identical-native-runtime","sourceHashes":{"native/sdk-client.mjs":"cbab35c599925e0ada9dab2b98fbca597f9c06b04d5b87adcab122fa09c7dfca","native/adapter.mjs":"6bdbd467edbad74269818b240b120f711c46c26d6cfb1494e651757d22e3a68c","native/harness.mjs":"1555547bd4b4a18954f13a2a41a15ed4beef51e67463f8483a4d8c27c4d61a7f","native/record.mjs":"6b48614c74fdfe642d03e6d0ea696390dc45cb950ca42677aeac7ae3b3de69d3","native/browser-config.mjs":"e18a9c7345db32caa289a028039eb31546010800e17f6d0c1a7a0bcf5de0fe70","native/test/native-election.test.mjs":"99290e3c01519d870491264ade924c5f29c77a9325b6d188047fcff6c21048cd","managed/native-election/contract/index.js":"756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7"},"generatedRuntimeExecution":false,"proofGeneration":false,"networkSubmission":false}
+✔ constructor has no private setup; proved configureKeys is required and single use (293.355022ms)
+✔ setup enforces its deadline and nonzero canonical keys and shares (952.747117ms)
+✔ canonical native scalar boundaries use q, not the Compact Field modulus (6.200596ms)
+✔ configuration digest binds actual key commitments, administrator, metadata and schedule (164.237449ms)
+✔ only the administrator enrolls and the frozen electorate cannot change (181.718725ms)
+✔ a ballot stores all native ciphertext coordinates and its configuration-bound receipt (341.924941ms)
+✔ native circuit rejects invalid selection and zero, noncanonical or repeated masks (679.4219ms)
+✔ a new ciphertext cannot bypass a previously spent voter nullifier (327.058237ms)
+✔ membership path must be bound to the private voter secret (208.761836ms)
+✔ an earlier subset electorate root cannot be used after enrollment is frozen (213.420775ms)
+✔ mutating a Merkle sibling invalidates voter eligibility (220.658915ms)
+✔ the deadline rejects ballots even before the closing transaction (236.660372ms)
+✔ decryption requires a frozen aggregate and knowledge of the registered share (584.956495ms)
+✔ trustees 1+2 finalize the complete three-ballot aggregate (702.494159ms)
+✔ trustees 1+3 finalize the complete three-ballot aggregate (698.468602ms)
+✔ trustees 2+3 finalize the complete three-ballot aggregate (700.99107ms)
+✔ finalization rejects invalid pairs, excess counts and wrong count sums (607.09915ms)
+✔ empty configured elections have valid identity aggregates and zero totals (269.438386ms)
+✔ valid nonzero ballot randomness may cancel to an identity aggregate (543.917222ms)
+✔ native membership and nullifier hashes are domain and election separated (1.18211ms)
+✔ candidate count is constructor-bounded and changes the sealed configuration (470.801813ms)
+✔ explicit emulator initial time is enforced by the real key-setup deadline (234.477964ms)
+✔ 2 active choices preserve five encrypted lanes and zero inactive totals (760.263213ms)
+✔ 3 active choices preserve five encrypted lanes and zero inactive totals (806.535917ms)
+✔ 4 active choices preserve five encrypted lanes and zero inactive totals (809.304731ms)
+✔ 5 active choices preserve five encrypted lanes and zero inactive totals (790.359221ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12123.328652

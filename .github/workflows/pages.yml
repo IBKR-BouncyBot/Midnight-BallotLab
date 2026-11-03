@@ -35,6 +35,8 @@ jobs:
       - name: Test native adapters, receipts and input boundaries
         run: npm test 2>&1 | tee "$RUNNER_TEMP/native-boundary-tests.log"
       - name: Install and verify the pinned native toolchain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: bash scripts/ci-install-midnight.sh 2>&1 | tee "$RUNNER_TEMP/toolchain.log"
       - name: Install the reviewed dependency lockfile
         working-directory: contracts

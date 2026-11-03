@@ -1,38 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="780" viewBox="0 0 1600 780" role="img" aria-labelledby="title description">
 <title id="title">Set up election, cast a ballot, reveal results, verify election</title>
-<desc id="description">Configure two to five choices and one to 1,024 synthetic credentials. Privately choose a credential and cast a ballot. Reveal with two trustees, manually or in a scheduled local preview. Import public JSON in a fresh session and compare a receipt. Public consistency cannot authenticate missing proofs or establish election fairness.</desc>
+<desc id="description">Add your choices and demo voters. Choose a voter, cast a ballot and save its receipt. Reveal the results with two trustees or a timed election. Upload the shared election file and your receipt in a new session. These checks do not prove that an election was fair.</desc>
 <style>text{font-family:Outfit,'Segoe UI',Arial,sans-serif;fill:#fff}.muted{fill:#b8b8bd}.label{font-size:15px;letter-spacing:2px}.body{font-size:20px}</style>
 <rect width="1600" height="780" fill="#09090b"/>
 <rect x="64" y="43" width="15" height="15" fill="#0000fe"/>
 <text x="94" y="57" class="label">MIDNIGHT BALLOT LAB / THE EXPERIENCE</text>
-<text x="64" y="130" font-size="48" font-weight="600" letter-spacing="-1">Your election, from choice to public check.</text>
+<text x="64" y="130" font-size="48" font-weight="600" letter-spacing="-1">Set up. Vote. Reveal. Check.</text>
 <path d="M64 168H1536" stroke="#36363c"/>
 <g fill="#101013" stroke="#36363c"><rect x="64" y="208" width="350" height="330"/><rect x="438" y="208" width="350" height="330"/><rect x="812" y="208" width="350" height="330"/><rect x="1186" y="208" width="350" height="330"/></g>
 <g fill="#0000fe"><rect x="64" y="208" width="54" height="54"/><rect x="438" y="208" width="54" height="54"/><rect x="812" y="208" width="54" height="54"/><rect x="1186" y="208" width="54" height="54"/></g>
 <g font-size="24" font-weight="600" text-anchor="middle"><text x="91" y="244">1</text><text x="465" y="244">2</text><text x="839" y="244">3</text><text x="1213" y="244">4</text></g>
 <text x="88" y="310" font-size="28" font-weight="600">Set up election</text>
 <text x="88" y="354" class="body muted">Name it. Add 2–5 choices.</text>
-<text x="88" y="390" class="body muted">Choose 1–1,024 credentials.</text>
-<text x="88" y="445" class="body">Manual or scheduled</text>
-<text x="88" y="479" class="body muted">Local preview: 15–3,600 sec.</text>
+<text x="88" y="390" class="body muted">Choose 1–1,024 demo voters.</text>
+<text x="88" y="445" class="body">Manual or timed election</text>
+<text x="88" y="479" class="body muted">Set 15 seconds to 60 minutes.</text>
 <text x="462" y="310" font-size="28" font-weight="600">Vote / Cast a ballot</text>
-<text x="462" y="354" class="body muted">Pick an unused credential.</text>
-<text x="462" y="390" class="body muted">Click your choice and cast.</text>
-<text x="462" y="445" class="body">Save a QR or JSON receipt</text>
-<text x="462" y="479" class="body muted">No choice in the receipt.</text>
+<text x="462" y="354" class="body muted">Choose a voter.</text>
+<text x="462" y="390" class="body muted">Pick a choice and cast.</text>
+<text x="462" y="445" class="body">Save a QR or receipt file</text>
+<text x="462" y="479" class="body muted">Your choice stays off the receipt.</text>
 <text x="836" y="310" font-size="28" font-weight="600">Reveal results</text>
 <text x="836" y="354" class="body muted">Choose any two trustees.</text>
-<text x="836" y="390" class="body muted">Check the combined tally.</text>
-<text x="836" y="445" class="body">Timed preview automates it</text>
-<text x="836" y="479" class="body muted">All roles still share one tab.</text>
+<text x="836" y="390" class="body muted">See the combined totals.</text>
+<text x="836" y="445" class="body">Timed elections do this for you</text>
+<text x="836" y="479" class="body muted">Keep the browser tab open.</text>
 <text x="1210" y="310" font-size="28" font-weight="600">Verify election</text>
-<text x="1210" y="354" class="body muted">Import the public JSON.</text>
-<text x="1210" y="390" class="body muted">Compare your own receipt.</text>
-<text x="1210" y="445" class="body">Works in a fresh session</text>
-<text x="1210" y="479" class="body muted">No private credentials needed.</text>
+<text x="1210" y="354" class="body muted">Upload the election file.</text>
+<text x="1210" y="390" class="body muted">Upload or paste your receipt.</text>
+<text x="1210" y="445" class="body">Works in a new session</text>
+<text x="1210" y="479" class="body muted">No election setup needed.</text>
 <path d="M64 578H1536" stroke="#73737b"/>
 <text x="64" y="618" class="label">WHAT THE CHECK MEANS</text>
-<text x="64" y="658" font-size="25">Native hashes and equations agree with the supplied record.</text>
-<text x="64" y="697" class="body muted">A self-consistent replacement can pass. Missing eligibility and trustee-share proofs are not authenticated.</text>
-<text x="64" y="741" class="body muted">Local runtime execution ≠ proof generation ≠ accepted network transaction. No election fairness guarantee.</text>
+<text x="64" y="658" font-size="25">The checks compare the record, receipts and published totals.</text>
+<text x="64" y="697" class="body muted">A made-up record can agree with itself. Confirm the election details through a source you trust.</text>
+<text x="64" y="741" class="body muted">This demo runs in one browser. A successful check does not prove that an election was fair.</text>
 </svg>

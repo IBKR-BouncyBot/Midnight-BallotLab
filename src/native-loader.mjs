@@ -10,23 +10,23 @@ export async function loadNativeDemo({ document = globalThis.document, loadManif
   const status = document.getElementById('native-availability');
   const disable = () => document.querySelectorAll('[data-native-control]').forEach(control => { control.disabled = true; });
   disable();
-  status.textContent = 'Checking native runtime availability…';
+  status.textContent = 'Loading Midnight’s encryption tools…';
   try {
     const manifest = await loadManifest();
     if (manifest?.enabled !== true) {
-      status.textContent = 'Native mode is not built in this release. Build with the pinned Midnight toolchain or run the GitHub Pages workflow. The controls stay disabled until the actual runtime and generated contract are available.';
+      status.textContent = 'This copy of the app is missing its Midnight build. Voting is unavailable. See the technical guide to build it, or use the published app.';
       status.dataset.state = 'unavailable';
       return 'unavailable';
     }
     const application = await loadApplication();
     if (typeof application.initNativeDemo !== 'function') throw new Error('Native application entry point missing');
     await application.initNativeDemo();
-    status.textContent = 'Midnight native runtime loaded. Local emulator only: no ZK proofs are generated and no blockchain transactions are submitted.';
+    status.textContent = 'Ready. Midnight encrypts votes in your browser. This demo creates no proofs and sends no blockchain transactions.';
     status.dataset.state = 'ready';
     return 'ready';
   } catch {
     disable();
-    status.textContent = 'Native mode could not initialize. Its controls are disabled. Rebuild using the pinned compiler and runtime, and check the native build results. No substitute cryptography is running on this page.';
+    status.textContent = 'Midnight’s encryption tools could not load, so voting is unavailable. Try reloading the page. If the problem continues, check the technical guide.';
     status.dataset.state = 'error';
     return 'error';
   }

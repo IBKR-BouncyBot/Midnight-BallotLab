@@ -1,6 +1,6 @@
 {
   "name": "midnight-ballot-lab",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "type": "module",
   "description": "Native Midnight encrypted-ballot research application with generated Compact circuits, browser WASM and explicit test-network integration",

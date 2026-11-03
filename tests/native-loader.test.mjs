@@ -46,6 +46,6 @@ test('native loader: readiness is reported only after application initialization
   });
   assert.ok(initialized);
   assert.equal(result, 'ready');
-  assert.match(state.status.textContent, /no ZK proofs/);
+  assert.match(state.status.textContent, /no proofs/);
   assert.match(state.status.textContent, /no blockchain transactions/);
 });

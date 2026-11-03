@@ -1,0 +1,142 @@
+{
+  "executedAt": "2026-11-03T19:00:22.135Z",
+  "node": "v24.18.0",
+  "execution": "generated-contract-browser-emulator",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "chainInclusionVerified": false,
+  "cases": [
+    {
+      "trustees": [
+        1,
+        2
+      ],
+      "prefix": "/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 5,
+      "candidateCount": 3,
+      "receiptJsonAndTextUploads": true,
+      "invalidOversizedAndPrivateFilesRejected": true,
+      "uploadedReceiptContextChecked": true,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false
+    },
+    {
+      "trustees": [
+        1,
+        3
+      ],
+      "prefix": "/arbitrary-repository-name/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 3,
+      "candidateCount": 2,
+      "receiptJsonAndTextUploads": true,
+      "invalidOversizedAndPrivateFilesRejected": true,
+      "uploadedReceiptContextChecked": true,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": true
+    },
+    {
+      "trustees": [
+        2,
+        3
+      ],
+      "prefix": "/arbitrary-repository-name/",
+      "entry": "native.html",
+      "passed": true,
+      "accepted": 7,
+      "candidateCount": 5,
+      "receiptJsonAndTextUploads": true,
+      "invalidOversizedAndPrivateFilesRejected": true,
+      "uploadedReceiptContextChecked": true,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false
+    },
+    {
+      "case": "scheduled-local-preview",
+      "passed": true,
+      "realWallClock": true,
+      "durationSeconds": 15,
+      "configuredVoters": 5,
+      "setupCpuSlowdown": 12,
+      "accepted": 1,
+      "candidateCount": 3,
+      "trustees": [
+        1,
+        3
+      ],
+      "automaticCloseAndFinalize": true,
+      "proofGeneration": false,
+      "networkSubmission": false
+    },
+    {
+      "case": "scheduled-preview-resumed-after-deadline",
+      "passed": true,
+      "realChromiumLifecycleFrozen": true,
+      "realWallClock": true,
+      "durationSeconds": 15,
+      "accepted": 0,
+      "frozenElapsedMs": 26754,
+      "trustees": [
+        1,
+        3
+      ],
+      "automaticCloseAndFinalize": true,
+      "proofGeneration": false,
+      "networkSubmission": false
+    },
+    {
+      "failure": "disabled-build",
+      "passed": true,
+      "controlsDisabled": true
+    },
+    {
+      "failure": "missing-wasm",
+      "passed": true,
+      "controlsDisabled": true
+    }
+  ],
+  "generatedContractSha256": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7",
+  "bundleSha256": "bac7a560cdec2c301aa81df3a791ab7285e742bb790df8552188ebab110f428d",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "wasmAssets": [
+    {
+      "asset": "native-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "bytes": 1398935
+    }
+  ],
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}

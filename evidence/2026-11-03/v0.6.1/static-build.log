@@ -1,0 +1,5 @@
+
+> midnight-ballot-lab@0.6.1 build
+> node scripts/build.mjs
+
+{"built":"dist","sourceFiles":388,"sourceArchive":"dist/midnight-ballot-lab-source.zip"}

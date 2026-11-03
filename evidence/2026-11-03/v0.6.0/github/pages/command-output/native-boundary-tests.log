@@ -1,0 +1,58 @@
+
+> midnight-ballot-lab@0.6.0 test
+> node --test tests/*.test.mjs
+
+✔ Windows requires explicit WSL settings and never chooses the filesystem compressor (1.973681ms)
+✔ Windows invokes an explicit Linux binary and passes paths with spaces as single arguments (1.515906ms)
+✔ Windows fails instead of guessing a network mount or malformed executable (1.757481ms)
+✔ Windows rejects WSL selector option injection before any process starts (0.330667ms)
+✔ Linux and macOS retain direct official compact execution (0.274615ms)
+✔ A custom toolchain directory is explicit on Linux too (0.227626ms)
+✔ strict JSON preserves ordinary public-record and receipt values (2.209729ms)
+✔ duplicate fields are rejected after decoding JSON key escapes (1.630044ms)
+✔ native object construction does not invoke the __proto__ setter (0.261746ms)
+✔ public JSON transport rejects ambiguous number spellings (0.648616ms)
+✔ malformed strings, containers and non-JSON whitespace are rejected (0.405698ms)
+✔ byte limits count UTF-8 rather than UTF-16 string length (0.294894ms)
+✔ nesting is capped before either parser can exhaust the call stack (0.411466ms)
+✔ UTF-8 decoding rejects malformed bytes and preserves a forbidden BOM (4.495179ms)
+✔ native adapter only: accepts canonical scalars and rejects unsafe representations (4.138904ms)
+✔ native adapter only: dealer shares use the subgroup modulus and nonzero secrets (16.407306ms)
+✔ native adapter only: each candidate receives a distinct nonzero random scalar (1.178027ms)
+✔ native adapter only: witness callbacks reject missing or malformed private inputs (1.342851ms)
+✔ native adapter only: threshold coefficients select exactly the three supported pairs (0.31227ms)
+✔ native projection only: public export excludes all private fields and disclaims proof authentication (0.808773ms)
+✔ native projection only: invalid address and excessive ballot counts are rejected (0.357537ms)
+✔ native adapter only: candidate counts are explicit bounded integers (0.461831ms)
+✔ native loader: an unavailable build never imports code or enables voting (1.176905ms)
+✔ native loader: initialization failure disables controls even after partial setup (0.412529ms)
+✔ native loader: readiness is reported only after application initialization completes (0.358248ms)
+✔ network configuration requires an explicit supported development environment (1.429158ms)
+✔ connector discovery uses entry IDs and preserves multiple wallet choices (2.062141ms)
+✔ asset URLs preserve GitHub Pages repository subdirectories (0.368483ms)
+✔ network configuration rejects remote insecure services and credential-bearing URLs (0.462852ms)
+✔ local development permits only loopback insecure endpoints (0.252722ms)
+✔ both wallet connection and wallet service configuration must match (0.351028ms)
+✔ browser CSP limits insecure IPv6 indexers without restricting the wallet prover (0.394832ms)
+✔ private witnesses are restricted to a wallet reporting a loopback prover (0.308004ms)
+✔ public error text does not expose wallet or proof error payloads (0.376846ms)
+✔ network receipt QR round trips all supported network contexts within QR capacity (101.575053ms)
+✔ network receipt context cannot be confused with local emulator receipts (0.892115ms)
+✔ network receipt rejects malformed digest, index and noncanonical text (0.524884ms)
+✔ receipt JSON decode excludes unrelated private fields and rejects duplicate keys (1.582524ms)
+✔ QR empty: all eight masks match independent reference (10.122918ms)
+✔ QR empty: automatic mask is one of eight valid symbols (33.290619ms)
+✔ QR plain: all eight masks match independent reference (3.115325ms)
+✔ QR plain: automatic mask is one of eight valid symbols (24.014284ms)
+✔ QR maximum: all eight masks match independent reference (4.049152ms)
+✔ QR maximum: automatic mask is one of eight valid symbols (21.876542ms)
+✔ QR receipt capacity and format are explicit (0.998072ms)
+✔ SVG has four-module quiet zone and never interpolates receipt text (22.118673ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 386.989394

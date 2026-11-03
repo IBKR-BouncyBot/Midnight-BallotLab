@@ -30,6 +30,8 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install reviewed Compact toolchain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: bash scripts/ci-install-midnight.sh 2>&1 | tee "$RUNNER_TEMP/devnet-toolchain.log"
       - name: Install application graph from its lockfile
         working-directory: contracts

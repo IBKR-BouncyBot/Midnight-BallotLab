@@ -133,7 +133,7 @@ async function checkReceipt(page, value, accepted) {
   await page.locator('#native-check-receipt').click();
   await nativeOperation(page);
   assert.equal(await page.locator('#native-receipt-check-output').evaluate(el => el.classList.contains('pass')), accepted);
-  if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /No chain inclusion or ZK proof was verified/);
+  if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /does not prove voter identity, fairness or blockchain confirmation/);
 }
 
 try {
@@ -194,7 +194,8 @@ try {
     assert.equal(await page.locator('#native-title').count(), 1);
     await page.waitForFunction(() => ['ready', 'error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
     assert.equal(await page.locator('#native-availability').getAttribute('data-state'), 'ready');
-    assert.match(await page.locator('#native-availability').textContent(), /no ZK proofs.*no blockchain transactions/i);
+    assert.match(await page.locator('#native-availability').textContent(), /no proofs.*no blockchain transactions/i);
+    assert.equal(await page.locator('.version').textContent(), 'v0.6.1');
     for (const asset of native.assets) assert.ok(observed.wasmLoaded.has(publicAssetUrl(asset)));
 
     stage = 'live-native:setup';
@@ -248,12 +249,12 @@ try {
     assert.equal(await page.locator('input[name="native-trustee"]:checked').count(), 2);
     assert.equal(await page.locator('#native-trustee-2').isDisabled(), true);
     await page.locator('#native-finalize').click(); await nativeOperation(page);
-    assert.equal(await page.locator('#native-phase').textContent(), 'Finalized');
+    assert.equal(await page.locator('#native-phase').textContent(), 'Results ready');
     assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['2', '1', '2']);
     assert.equal(await page.locator('#native-finalize').isDisabled(), true);
     await page.locator('[data-native-nav="check"]').click();
     await page.locator('#native-check-result').click(); await nativeOperation(page);
-    assert.match(await page.locator('#native-check-output').textContent(), /Native public consistency checks passed for 5 ballots/);
+    assert.match(await page.locator('#native-check-output').textContent(), /Election checks passed for 5 ballots/);
     const snapshot = await downloadJson(page, '#native-export'); await nativeOperation(page);
     exactKeys(snapshot, ['schema', 'execution', 'network', 'proofGenerated', 'ledgerInclusionVerified', 'warning',
       'contractAddress', 'electionId', 'manifestDigest', 'configurationDigest', 'keysConfigured', 'administrator',
@@ -299,7 +300,7 @@ try {
     assert.equal(await page.locator('#network-availability').getAttribute('data-state'), 'ready');
     assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
     assert.match(await page.locator('#network-wallet-note').textContent(), /No compatible wallet detected/);
-    assert.match(await page.locator('#network-availability').textContent(), /Nothing has been proved or submitted/);
+    assert.match(await page.locator('#network-availability').textContent(), /No proof or transaction has been created yet/);
     assert.equal(await page.locator('#network-id').inputValue(), '');
     assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
     for (const name of ['network-choice', 'network-trustee', 'network-pair']) {
@@ -317,7 +318,7 @@ try {
     // Disposable form fixture, not a wallet credential. Clear before screenshots.
     await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
     await page.locator('#network-connect-form button[type="submit"]').click();
-    await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('did not complete'));
+    await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('could not finish'));
     await page.locator('#network-password').fill('');
     for (const selector of actionSelectors) assert.equal(await page.locator(selector).isDisabled(), true);
     assert.equal(await page.locator('#network-events').textContent(), '');

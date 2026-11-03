@@ -1,0 +1,19 @@
+2026-11-03T18:36:22.7570024Z ##[endgroup]
+2026-11-03T18:36:23.2676502Z /home/runner/work/_temp/compact-installer.sh: OK
+2026-11-03T18:36:23.2832961Z downloading compact 0.5.1 x86_64-unknown-linux-musl-static
+2026-11-03T18:36:23.9312176Z installing to /home/runner/.local/bin
+2026-11-03T18:36:23.9352068Z   compact
+2026-11-03T18:36:23.9352919Z everything's installed!
+2026-11-03T18:36:23.9394530Z compact 0.5.1
+2026-11-03T18:36:24.1615108Z GitHub API request failed (attempt 1), retrying in 1000ms: Error while fetching compact releases
+2026-11-03T18:36:25.2155634Z GitHub API request failed (attempt 2), retrying in 2000ms: Error while fetching compact releases
+2026-11-03T18:36:27.2689598Z Error: Failed to update
+2026-11-03T18:36:27.2689901Z 
+2026-11-03T18:36:27.2690156Z Caused by:
+2026-11-03T18:36:27.2690932Z     0: Failed to query backend services to collect the latest artifacts
+2026-11-03T18:36:27.2691551Z     1: Failed to load the compiler artifacts
+2026-11-03T18:36:27.2692178Z     2: Error while fetching compact releases
+2026-11-03T18:36:27.2692648Z     3: GitHub
+2026-11-03T18:36:27.2693706Z     4: API rate limit exceeded for 20.168.100.246. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)
+2026-11-03T18:36:27.2695140Z        Documentation URL: https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting
+2026-11-03T18:36:27.2711219Z ##[error]Process completed with exit code 1.

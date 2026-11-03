@@ -1,0 +1,3 @@
+{"stage":"create-timed-election","elapsedMs":3749,"phase":"Getting ready","error":false}
+{"stage":"waiting-for-actual-deadline","durationSeconds":60}
+{"status":"passed","voters":5,"cpuSlowdown":12,"durationSeconds":60}

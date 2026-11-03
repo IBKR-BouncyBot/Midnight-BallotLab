@@ -1,0 +1,100 @@
+{
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41695611384",
+  "headSha": "3839a91eeb9079bcb05d74d86ede27d03eb53d45",
+  "artifactId": "13261181287",
+  "artifactSha256": "9d6ad1833a98456a8ec8c39870d8db211beeb844771cbe9549364ba19010131f",
+  "retained": [
+    {
+      "file": "command-output/toolchain.log",
+      "sha256": "97815b22f5ff49498149e1b54275b10b6ecb0685576bdde5b9cc9ee56d7a0888"
+    },
+    {
+      "file": "command-output/dependency-install.log",
+      "sha256": "6b05374dd512d9f58f8f943a184f6fd4a10abfb5c3f64514d27a9523e43ed076"
+    },
+    {
+      "file": "command-output/dependency-tree.json",
+      "sha256": "044f56eed9a3eed781471a311dca36fa0b702bf34c7174efc3a91c880fba8492"
+    },
+    {
+      "file": "command-output/provider-api-tests.log",
+      "sha256": "f4dc34891072dc0921a0aa51b8391dc4e96663a95c0c4e8d28a9b74ba2736293"
+    },
+    {
+      "file": "command-output/devnet-dependency-install.log",
+      "sha256": "86a36cf93abdd9ded1f3a84f489083906fc3ccb24df37b61d8f54919bd220f67"
+    },
+    {
+      "file": "command-output/devnet-dependency-tree.json",
+      "sha256": "17d208af7810588b8b53be38e1b2661f17d3b59ce1004f0c5365feceaeaa1f50"
+    },
+    {
+      "file": "command-output/devnet-runtime-tests.log",
+      "sha256": "8708e94a854add9c592680bfe269b4e459ef25e00701bcc71bb2e5715e076b58"
+    },
+    {
+      "file": "command-output/native-boundary-tests.log",
+      "sha256": "b6055a41b6fad1215d9e31d096507359d9c456b45451aa82f087ea83478fe328"
+    },
+    {
+      "file": "command-output/native-election-compile.log",
+      "sha256": "93418112f2831b6da3905c756e606609bb28dbd10d0834cdcd079cca4330f787"
+    },
+    {
+      "file": "command-output/native-election-tests.log",
+      "sha256": "a0ccd98cf5de3b7e02e85b42c61765c37d38ab2cb3ea577829598945d305241a"
+    },
+    {
+      "file": "command-output/native-election-demo.log",
+      "sha256": "87b3d0c31d9515aed06c34e004de9915ed6551683914072e718d09daa7c07cb2"
+    },
+    {
+      "file": "command-output/local-proofs.log",
+      "sha256": "c6dd16e2af12ed07c6cd9a5506363483387a7eac6a6e227f90b533745149f47a"
+    },
+    {
+      "file": "command-output/native-browser-build.log",
+      "sha256": "1ce6f78f632b38dfabd78be54a7cf31dde214a8460d015b65ee5e11f0c09a74b"
+    },
+    {
+      "file": "command-output/network-browser-build.log",
+      "sha256": "d4dd4f4601b7a1d4d2e4af41fba72ba8cece40436345a502b8ea69417cf606c6"
+    },
+    {
+      "file": "command-output/native-browser-tests.log",
+      "sha256": "30576650614b2137fcd893b1eb0b97f28dc4bf1f4fe4ce0fa81b94e5c4c1c046"
+    },
+    {
+      "file": "command-output/network-browser-tests.log",
+      "sha256": "ee52d6ca19ffd7e15f85eae07f27f529b372c542f4d4ca352aea8b956f1f6872"
+    },
+    {
+      "file": "command-output/static-build.log",
+      "sha256": "f276c67d090a5bee62dc3922670baab86b61b4ab33e7f7bc63faaea2804b861d"
+    },
+    {
+      "file": "command-output/pages-packaging.log",
+      "sha256": "8cbe74dbaeb82a0d45f783d088be3fc84983405a163fab53d7f4810c63217da0"
+    },
+    {
+      "file": "reports/native-proof-evidence.json",
+      "sha256": "de42e9fc2b450f4e4849f50423989ff3937d42ff38a39a584e1df91cb2caaed6"
+    },
+    {
+      "file": "reports/native-browser-evidence.json",
+      "sha256": "d6d0f2a62ede321ece6af218ca5865af52d8ac1c0e7c6f38a35d484728bbb3ff"
+    },
+    {
+      "file": "reports/network-browser-evidence.json",
+      "sha256": "3fb13ea18aa1e1e1cef4b781bb08a805cf14fd95c13560e6c1b48fdc165521d8"
+    },
+    {
+      "file": "reports/native-build.json",
+      "sha256": "38fbeafe290ebad1a2173e5fcb9a1dbc8fcadf051d6d4941be4ef7a9394b2070"
+    },
+    {
+      "file": "reports/network-build.json",
+      "sha256": "ee74b51a84953fc85b51b7354041ad4f3a7a858b3aa5281cf35b94caf35cc128"
+    }
+  ]
+}

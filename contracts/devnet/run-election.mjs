@@ -22,7 +22,7 @@ const env = Object.freeze({ networkId: 'undeployed', walletNetworkId: 'undeploye
   proofServer: 'http://127.0.0.1:6300', faucet: undefined });
 const hex = bytes => Buffer.from(bytes).toString('hex');
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
-const output = value => process.stdout.write(JSON.stringify(value) + '\n');
+const output = value => process.stdout.write(JSON.stringify({ at: new Date().toISOString(), ...value }) + '\n');
 let stage = 'prerequisites', walletProvider, db, privateDirectory, lastSubmittedTransaction;
 let proofCompletions = 0, submissionAttempts = 0;
 const evidence = { executedAt: new Date().toISOString(), networkId: 'undeployed',
@@ -30,12 +30,13 @@ const evidence = { executedAt: new Date().toISOString(), networkId: 'undeployed'
   mode: 'external-scheduled-operator', onChainSelfExecution: false,
   independentlyVerifiedChainInclusion: false, browserWalletTested: false,
   acceptedTransactions: [], rejectedBeforeSubmission: [], proofTransactionsCompleted: 0,
-  networkSubmission: false, status: 'running' };
+  networkSubmission: false, scheduledTallyStarted: false, status: 'running' };
 
 function failureCategory(error) {
   // Inspect messages only to choose a fixed category. Never retain raw text.
   const seen = new Set(); let cursor = error; const messages = [];
   for (let count = 0; cursor && count < 8 && !seen.has(cursor); count++) {
+    if (cursor.name === 'CallTxFailedError' || cursor.name === 'DeployTxFailedError') return 'submitted-transaction-not-successful';
     seen.add(cursor); if (typeof cursor.message === 'string') messages.push(cursor.message); cursor = cursor.cause;
   }
   const text = messages.join(' ');
@@ -59,6 +60,7 @@ async function bounded(promise, timeoutMs = 360_000) {
 }
 async function operation(name, callback) {
   stage = name; evidence.currentStage = name;
+  evidence.currentStageStartedAt = new Date().toISOString();
   output({ stage: name, status: 'started' }); await save();
   return bounded(callback());
 }
@@ -158,7 +160,9 @@ try {
   const voterSecrets = Array.from({ length: 5 }, adapter.randomSecret32);
   const selections = [0n, 1n, 2n, 0n, 2n]; // Never projected to logs or evidence.
   const now = Math.max((await blockTime()).seconds, Math.floor(Date.now() / 1000));
-  const opensAt = now + 240, closesAt = opensAt + 240;
+  // Five-lane ballot proofs and confirmation took 7–8 blocks each in CI.
+  // Keep the real sealed deadline; allow eight minutes for sequential voting.
+  const opensAt = now + 240, closesAt = opensAt + 480;
   evidence.schedule = { opensAt, closesAt }; evidence.candidateCount = 3; evidence.expectedTotals = [2, 1, 2, 0, 0];
   async function accepted(name, callback) {
     const result = await operation(name, callback);
@@ -195,9 +199,11 @@ try {
   for (const receipt of receipts) assert.equal((await client.checkReceipt(receipt)).receiptMatchesIndexedState, true);
   evidence.receipts = receipts.map(({ networkId, contractAddress, configurationDigest, index, receipt, txId, blockHeight }) => ({ networkId, contractAddress, configurationDigest, index, receipt, txId, blockHeight }));
   await save();
+  evidence.scheduledTallyStarted = true; await save();
   evidence.scheduledOperator = await runScheduledNativeTally({ client, indexerUrl: env.indexer, publicDataProvider,
     trustees: [dealer.trustees[0], dealer.trustees[2]],
-    onStage: async name => { stage = name; evidence.currentStage = name; output({ stage, status: 'started' }); await save(); },
+    onStage: async name => { stage = name; evidence.currentStage = name; evidence.currentStageStartedAt = new Date().toISOString();
+      output({ stage, status: 'started' }); await save(); },
     onWaiting: async record => output({ stage, ...record }),
     onAccepted: async record => { evidence.acceptedTransactions.push(record); delete evidence.pendingSubmission;
       await save(); output({ stage: record.operation, status: 'accepted-by-local-chain', txId: record.txId, blockHeight: record.blockHeight }); },
@@ -217,11 +223,22 @@ try {
     const replayId = await bounded(walletProvider.submitTx(lastSubmittedTransaction), 30_000);
     evidence.replay = { outcome: 'submission-returned-existing-transaction', txId: replayId, newAcceptanceVerified: false };
   } catch (error) { evidence.replay = { outcome: 'submission-pipeline-rejected', category: failureCategory(error), independentNetworkRejectionVerified: false }; }
-  evidence.status = 'passed'; evidence.completedAt = new Date().toISOString(); delete evidence.currentStage;
+  evidence.status = 'passed'; evidence.completedAt = new Date().toISOString(); delete evidence.currentStage; delete evidence.currentStageStartedAt;
   await save(); output({ status: 'passed', acceptedTransactions: evidence.acceptedTransactions.length,
     observedTotals: evidence.observedTotals, evidence: 'artifacts/local-devnet/network-evidence.json', independentlyVerifiedChainInclusion: false });
 } catch (error) {
   evidence.status = 'failed'; evidence.failedStage = stage; evidence.failureCategory = failureCategory(error);
+  evidence.failedAt = new Date().toISOString();
+  if (evidence.schedule) {
+    // Record only public clock observations. A passed deadline is context,
+    // not a claimed rejection reason or confirmation of an uncertain submit.
+    evidence.wallClockDeadlineReachedAtFailure = Math.floor(Date.now() / 1000) >= evidence.schedule.closesAt;
+    try {
+      const clock = await blockTime();
+      evidence.indexedClockAtFailure = { seconds: clock.seconds, blockHeight: clock.height,
+        closingDeadlineReached: clock.seconds >= evidence.schedule.closesAt };
+    } catch { evidence.indexedClockAtFailure = null; }
+  }
   await save(); output({ status: 'failed', stage, category: evidence.failureCategory,
     acceptedTransactions: evidence.acceptedTransactions.length, evidence: 'artifacts/local-devnet/network-evidence.json' });
   process.exitCode = 1;

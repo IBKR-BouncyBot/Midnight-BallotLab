@@ -79,5 +79,5 @@ export function nativeNetworkErrorMessage(error) {
   if (error?.type === 'DAppConnectorAPIError' && error?.code === 'Rejected') {
     return 'The wallet request was rejected. No automatic retry was made.';
   }
-  return 'The native network operation did not complete. Check the selected wallet, network, local prover and service configuration. Confirm transaction status before retrying.';
+  return 'This action could not finish. Check your wallet, test network and local proving service. If a transaction was sent, check its status before trying again.';
 }

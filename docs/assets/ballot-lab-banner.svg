@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600" viewBox="0 0 1600 600" role="img" aria-labelledby="title description">
-<title id="title">Midnight Ballot Lab: choose privately, reveal together</title>
-<desc id="description">Native Midnight encrypted elections with two to five choices, one to 1,024 synthetic credentials, two-of-three trustees and fresh-session public checks. The local browser flow is not a network transaction or a guarantee of fairness.</desc>
+<title id="title">Midnight Ballot Lab: cast your vote, check the results</title>
+<desc id="description">Try encrypted voting with two to five choices and one to 1,024 demo voters. Keep a receipt, reveal totals with two trustees and check the shared election file. The demo runs in one browser. A matching record does not prove an election was fair.</desc>
 <style>text{font-family:Outfit,'Segoe UI',Arial,sans-serif;fill:#fff}.muted{fill:#b8b8bd}.label{font-size:15px;letter-spacing:2px}.body{font-size:20px}</style>
 <rect width="1600" height="600" fill="#09090b"/>
 <path d="M64 77H1536M64 523H1536M1007 110V490" stroke="#36363c"/>
 <rect x="64" y="38" width="16" height="16" fill="#0000fe"/>
 <text x="94" y="53" class="label">MIDNIGHT BALLOT LAB</text>
-<text x="64" y="182" font-size="68" font-weight="600" letter-spacing="-2">Choose privately.</text>
-<text x="64" y="263" font-size="68" font-weight="600" letter-spacing="-2">Reveal together.</text>
-<text x="68" y="321" font-size="24" class="muted">Real Midnight cryptography. An election you can explore.</text>
+<text x="64" y="182" font-size="68" font-weight="600" letter-spacing="-2">Cast your vote.</text>
+<text x="64" y="263" font-size="68" font-weight="600" letter-spacing="-2">Check the results.</text>
+<text x="68" y="321" font-size="24" class="muted">Try an election. Keep a receipt. Check the result.</text>
 <rect x="68" y="372" width="295" height="62" fill="#0000fe"/>
 <text x="215" y="411" font-size="22" font-weight="600" text-anchor="middle">2–5 choices</text>
-<text x="397" y="399" font-size="21">1–1,024 synthetic credentials</text>
-<text x="397" y="430" font-size="18" class="muted">Manual controls or a timed local preview</text>
-<text x="68" y="482" font-size="18" class="muted">Keep a receipt. Import a public record. Check its consistency.</text>
+<text x="397" y="399" font-size="21">1–1,024 demo voters</text>
+<text x="397" y="430" font-size="18" class="muted">Manual controls or a timed election</text>
+<text x="68" y="482" font-size="18" class="muted">Save your receipt. Upload the election file. Check it yourself.</text>
 <rect x="1070" y="129" width="396" height="304" fill="#101013" stroke="#73737b"/>
-<text x="1098" y="170" class="label muted">YOUR ENCRYPTED BALLOT</text>
+<text x="1098" y="170" class="label muted">YOUR BALLOT</text>
 <path d="M1098 193H1438M1098 252H1438M1098 311H1438" stroke="#36363c"/>
 <rect x="1098" y="214" width="19" height="19" fill="#0000fe"/>
 <path d="m1102 223 4 4 7-9" fill="none" stroke="#fff" stroke-width="2"/>
@@ -24,7 +24,7 @@
 <text x="1138" y="291" font-size="23" class="muted">Another choice</text>
 <rect x="1098" y="332" width="19" height="19" fill="none" stroke="#73737b"/>
 <text x="1138" y="350" font-size="23" class="muted">A different choice</text>
-<text x="1098" y="405" font-size="18" class="muted">Native encryption → public ciphertext</text>
-<text x="1070" y="478" font-size="18">2 of 3 trustees reveal the aggregate.</text>
-<text x="68" y="563" font-size="18" class="muted">Local browser execution · Public consistency is not election authentication or a fairness guarantee.</text>
+<text x="1098" y="405" font-size="18" class="muted">Your vote is encrypted before it is added.</text>
+<text x="1070" y="478" font-size="18">Two of three trustees help reveal the result.</text>
+<text x="68" y="563" font-size="18" class="muted">A local demo. Checks the record you provide; does not prove that an election was fair.</text>
 </svg>

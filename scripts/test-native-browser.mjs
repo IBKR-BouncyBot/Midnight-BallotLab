@@ -41,6 +41,8 @@ async function downloadJson(page, selector) {
   const pending = page.waitForEvent('download');
   await page.locator(selector).click();
   const download = await pending;
+  if (selector === '#native-save-receipt') assert.equal(download.suggestedFilename(), 'midnight-ballot-receipt.json');
+  if (selector === '#native-export') assert.equal(download.suggestedFilename(), 'midnight-election-record.json');
   const stream = await download.createReadStream();
   assert.ok(stream, 'Public JSON download stream is missing');
   const chunks = [];
@@ -60,11 +62,25 @@ async function waitOperation(page) {
 
 async function checkReceipt(page, text, accepted) {
   await page.locator('#native-receipt-input').fill(text);
+  await checkLoadedReceipt(page, accepted);
+}
+
+async function checkLoadedReceipt(page, accepted) {
   await page.locator('#native-check-receipt').click();
   await waitOperation(page);
   assert.equal(await page.locator('#native-receipt-check-output').evaluate(el => el.classList.contains('pass')), accepted,
     accepted ? 'Public receipt should match this election' : 'Altered public receipt should be rejected');
-  if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /No chain inclusion or ZK proof was verified/);
+  if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /does not prove voter identity, fairness or blockchain confirmation/);
+}
+
+async function uploadReceipt(page, text, name = 'saved-receipt.json', valid = true) {
+  await page.locator('#native-receipt-file').setInputFiles({ name,
+    mimeType: name.endsWith('.json') ? 'application/json' : 'text/plain', buffer: Buffer.from(text) });
+  await page.waitForFunction(() => !document.getElementById('native-status').classList.contains('working'));
+  assert.equal(await page.locator('#native-status').evaluate(element => element.classList.contains('error')), !valid);
+  assert.equal(await page.locator('#native-receipt-input').inputValue(), valid ? text.trim() : '');
+  if (valid) assert.equal(await page.locator('#native-receipt-check-output').textContent(), '', 'Uploading a receipt must not mark it verified');
+  else assert.equal(await page.locator('#native-receipt-check-output').evaluate(element => element.classList.contains('pass')), false);
 }
 
 function changeDigest(value) {
@@ -158,7 +174,8 @@ try {
       assert.equal(await page.locator('#native-title').count(), 1, 'The main entry must expose the actual native experience');
       await page.waitForFunction(() => ['ready', 'error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
       assert.equal(await page.locator('#native-availability').getAttribute('data-state'), 'ready', 'Native browser initialization must succeed');
-      assert.match(await page.locator('#native-availability').textContent(), /no ZK proofs.*no blockchain transactions/i);
+      assert.match(await page.locator('#native-availability').textContent(), /no proofs.*no blockchain transactions/i);
+      assert.equal(await page.locator('.version').textContent(), 'v0.6.1');
       const font = await page.evaluate(async () => { await document.fonts.ready; return {
         loaded: document.fonts.check('16px Outfit'), family: getComputedStyle(document.body).fontFamily }; });
       assert.equal(font.loaded, true, 'Self-hosted Outfit must load'); assert.match(font.family, /Outfit/);
@@ -237,6 +254,13 @@ try {
       await page.locator('[data-native-nav="check"]').click();
       await checkReceipt(page, qr.data, true);
       await checkReceipt(page, JSON.stringify(receipt), true);
+      await uploadReceipt(page, JSON.stringify(receipt)); await checkLoadedReceipt(page, true);
+      await uploadReceipt(page, qr.data, 'saved-receipt.txt'); await checkLoadedReceipt(page, true);
+      for (const [invalid, name] of [
+        ['not-json', 'invalid.json'], ['x'.repeat(4097), 'oversize.txt'],
+        [JSON.stringify({ ...receipt, secret: 'PRIVATE-FIELD-MUST-BE-REJECTED' }), 'private-fields.json'],
+        [JSON.stringify(receipt), 'unknown.bin'],
+      ]) await uploadReceipt(page, invalid, name, false);
       for (const field of ['contractAddress', 'electionId', 'configurationDigest', 'receipt']) {
         await checkReceipt(page, JSON.stringify({ ...receipt, [field]: changeDigest(receipt[field]) }), false);
       }
@@ -278,13 +302,13 @@ try {
       }
       await page.locator('#native-finalize').click();
       await waitOperation(page);
-      assert.equal(await page.locator('#native-phase').textContent(), 'Finalized');
+      assert.equal(await page.locator('#native-phase').textContent(), 'Results ready');
       assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), totals.map(String));
       assert.equal(await page.locator('#native-finalize').isDisabled(), true);
       await page.locator('[data-native-nav="check"]').click();
       await page.locator('#native-check-result').click();
       await waitOperation(page);
-      assert.match(await page.locator('#native-check-output').textContent(), new RegExp(`Native public consistency checks passed for ${voterCount} ballots`));
+      assert.match(await page.locator('#native-check-output').textContent(), new RegExp(`Election checks passed for ${voterCount} ballots`));
       const snapshot = await downloadJson(page, '#native-export');
       await waitOperation(page);
       exactKeys(snapshot, ['schema', 'execution', 'network', 'proofGenerated', 'ledgerInclusionVerified', 'warning',
@@ -325,9 +349,10 @@ try {
         } else await verifierPage.locator('#native-import-text').fill(publicJson);
         await verifierPage.locator('#native-expected-digest').fill(snapshot.configurationDigest);
         await verifierPage.locator('#native-verify-import').click(); await waitOperation(verifierPage);
-        assert.match(await verifierPage.locator('#native-check-output').textContent(), /Imported public consistency checks passed/);
+        assert.match(await verifierPage.locator('#native-check-output').textContent(), /Record checks passed/);
         assert.equal(await verifierPage.locator('#native-check-source').inputValue(), 'import');
         for (const savedReceipt of publicReceipts) await checkReceipt(verifierPage, JSON.stringify(savedReceipt), true);
+        await uploadReceipt(verifierPage, JSON.stringify(receipt)); await checkLoadedReceipt(verifierPage, true);
         await checkReceipt(verifierPage, qr.data, true);
         await checkReceipt(verifierPage, JSON.stringify({ ...receipt, receipt: changeDigest(receipt.receipt) }), false);
         assert.equal(await verifierPage.locator('#native-phase').textContent(), 'Not created');
@@ -344,8 +369,11 @@ try {
         await verifierPage.locator('#native-verify-import').click(); await waitOperation(verifierPage);
         await checkReceipt(verifierPage, qr.data, true);
         if (pair === '2,3') await verifierPage.screenshot({ path: join(evidenceDir, 'independent-public-verification.png'), fullPage: true });
+        await uploadReceipt(verifierPage, JSON.stringify(receipt));
         await verifierPage.locator('#native-reset').click();
         assert.equal(await verifierPage.locator('#native-import-text').inputValue(), '');
+        assert.equal(await verifierPage.locator('#native-receipt-file').inputValue(), '');
+        assert.equal(await verifierPage.locator('#native-receipt-input').inputValue(), '');
         assert.equal(await verifierPage.locator('#native-check-receipt').isDisabled(), true);
         assert.equal(await verifierPage.evaluate(() => localStorage.length + sessionStorage.length), 0);
         assert.equal(verifierErrors, 0);
@@ -378,6 +406,7 @@ try {
       await waitOperation(page);
       await page.locator('[data-native-nav="check"]').click();
       await checkReceipt(page, qr.data, false);
+      await uploadReceipt(page, JSON.stringify(receipt)); await checkLoadedReceipt(page, false);
       assert.equal(await page.evaluate(() => localStorage.length), 0, 'Demo private state must not persist in localStorage');
       assert.equal(await page.evaluate(() => sessionStorage.length), 0, 'Demo private state must not persist in sessionStorage');
       assert.equal(pageErrors, 0, 'Native page produced an uncaught browser error');
@@ -388,6 +417,7 @@ try {
       }
       assert.ok(requested.has(`${origin}${prefix}${manifest.bundle}`), 'Actual generated browser bundle must execute');
       evidence.cases.push({ trustees: pair.split(',').map(Number), prefix, entry, passed: true, accepted: voterCount, candidateCount,
+        receiptJsonAndTextUploads: true, invalidOversizedAndPrivateFilesRejected: true, uploadedReceiptContextChecked: true,
         freshTabPublicVerification: true, everyReceiptChecked: true, tamperedSnapshotRejected: true,
         clickableCardsChecked: true, keyboardSelectionChecked: true, exactTwoTrusteesChecked: true,
         renderedQrDecoded: true, receiptContextRejections: true, reset: true, wasmLoaded: loadedWasm.size, mobileViewportChecked });
@@ -399,11 +429,13 @@ try {
   const scheduledContext = await browser.newContext({ acceptDownloads: true });
   try {
     const page = await scheduledContext.newPage(); page.setDefaultTimeout(120_000);
+    const throttling = await scheduledContext.newCDPSession(page);
+    await throttling.send('Emulation.setCPUThrottlingRate', { rate: 12 });
     let pageErrors = 0; page.on('pageerror', () => { pageErrors++; });
     await page.goto(`${origin}/arbitrary-repository-name/index.html`, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
-    await page.locator('#native-candidate-count').selectOption('2');
-    await page.locator('#native-voter-count').fill('1');
+    assert.equal(await page.locator('#native-candidate-count').inputValue(), '3');
+    assert.equal(await page.locator('#native-voter-count').inputValue(), '5');
     await page.locator('#native-timing-mode').selectOption('scheduled');
     for (const duration of ['14', '3601']) {
       await page.locator('#native-duration').fill(duration);
@@ -412,7 +444,9 @@ try {
     await page.locator('#native-duration').fill('15');
     const startedAt = Date.now();
     await page.locator('#native-create').click(); await waitOperation(page);
-    assert.match(await page.locator('#native-schedule-status').textContent(), /Scheduled local preview/);
+    await throttling.send('Emulation.setCPUThrottlingRate', { rate: 1 }); await throttling.detach();
+    assert.equal(await page.locator('#native-voters').textContent(), '5');
+    assert.match(await page.locator('#native-schedule-status').textContent(), /Timed election/);
     await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Voting open');
     assert.equal(await page.locator('#native-close').isDisabled(), true, 'Scheduled preview must not expose manual clock advancement');
     await page.locator('#native-go-vote').click();
@@ -421,9 +455,9 @@ try {
     await page.locator('#native-cast').click(); await waitOperation(page);
     const receipt = await downloadJson(page, '#native-save-receipt');
     assert.equal(await page.locator('#native-finalize').isDisabled(), true);
-    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Finalized');
+    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Results ready');
     assert.ok(Date.now() - startedAt >= 15_000, 'Scheduled test must wait for the actual wall-clock duration');
-    assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '1']);
+    assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '1', '0']);
     await page.locator('[data-native-nav="check"]').click();
     await page.locator('#native-check-result').click(); await waitOperation(page);
     await checkReceipt(page, JSON.stringify(receipt), true);
@@ -437,7 +471,7 @@ try {
     await writeFile(join(evidenceDir, 'public-scheduled-preview.json'), JSON.stringify(snapshot, null, 2) + '\n');
     assert.equal(pageErrors, 0);
     evidence.cases.push({ case: 'scheduled-local-preview', passed: true, realWallClock: true, durationSeconds: 15,
-      accepted: 1, candidateCount: 2, trustees: [1, 3], automaticCloseAndFinalize: true, proofGeneration: false, networkSubmission: false });
+      configuredVoters: 5, setupCpuSlowdown: 12, accepted: 1, candidateCount: 3, trustees: [1, 3], automaticCloseAndFinalize: true, proofGeneration: false, networkSubmission: false });
     console.log(JSON.stringify({ stage: 'scheduled-local-preview', passed: true }));
   } finally { await scheduledContext.close(); }
 
@@ -452,16 +486,19 @@ try {
     await page.locator('#native-timing-mode').selectOption('scheduled');
     await page.locator('#native-duration').fill('15');
     await page.locator('#native-create').click(); await waitOperation(page);
-    assert.equal(await page.locator('#native-phase').textContent(), 'Enrollment');
+    assert.equal(await page.locator('#native-phase').textContent(), 'Getting ready');
+    await page.locator('[data-native-nav="check"]').click();
+    const beforeSuspension = await downloadJson(page, '#native-export'); await waitOperation(page);
     // Freeze the real Chromium page lifecycle, without replacing Date, timers,
     // application state or native calls. Wall-clock time continues normally.
     const lifecycle = await resumedContext.newCDPSession(page);
     await lifecycle.send('Page.setWebLifecycleState', { state: 'frozen' });
     const frozenAt = Date.now();
-    await new Promise(resolveWait => setTimeout(resolveWait, 18_000));
-    assert.ok(Date.now() - frozenAt >= 18_000);
+    const resumeAfter = Number(beforeSuspension.closesAt) * 1000 + 1000;
+    await new Promise(resolveWait => setTimeout(resolveWait, Math.max(0, resumeAfter - Date.now())));
+    assert.ok(Date.now() >= resumeAfter, 'Real wall-clock closing deadline must pass while Chromium is frozen');
     await lifecycle.send('Page.setWebLifecycleState', { state: 'active' });
-    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Finalized');
+    await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Results ready');
     await lifecycle.detach();
     assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '0']);
     await page.locator('[data-native-nav="check"]').click();
@@ -472,6 +509,7 @@ try {
     assert.ok(Date.now() >= Number(snapshot.closesAt) * 1000);
     evidence.cases.push({ case: 'scheduled-preview-resumed-after-deadline', passed: true,
       realChromiumLifecycleFrozen: true, realWallClock: true, durationSeconds: 15, accepted: 0,
+      frozenElapsedMs: Date.now() - frozenAt,
       trustees: [1, 3], automaticCloseAndFinalize: true, proofGeneration: false, networkSubmission: false });
     console.log(JSON.stringify({ stage: 'scheduled-preview-resumed-after-deadline', passed: true }));
   } finally { await resumedContext.close(); }

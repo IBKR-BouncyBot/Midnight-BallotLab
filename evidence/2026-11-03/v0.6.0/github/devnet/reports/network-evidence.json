@@ -1,0 +1,132 @@
+{
+  "executedAt": "2026-11-03T18:39:38.102Z",
+  "networkId": "undeployed",
+  "environment": "fresh-isolated-local-development-chain",
+  "confirmationSource": "configured-local-indexer",
+  "mode": "external-scheduled-operator",
+  "onChainSelfExecution": false,
+  "independentlyVerifiedChainInclusion": false,
+  "browserWalletTested": false,
+  "acceptedTransactions": [
+    {
+      "operation": "deploy",
+      "txId": "00c49e97433ad171fe3321bb0714233a4bc27d52c95066ac103519250dc1761f41",
+      "blockHeight": "5",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "configure-keys",
+      "txId": "00dbc84d90dcee6a6f48387ede20f064c4ecb6a09838793737a0f64a6b2c863e9d",
+      "blockHeight": "11",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-1",
+      "txId": "00ae6eb8091ba0a4d1aa168981c28e743571d7c48df661d95fac6afca8bc2bd986",
+      "blockHeight": "15",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-2",
+      "txId": "0048454b0ea87b8e8abccd116c528eb6762b9f9fe3aa86ce44db9c4fa22d65f0c9",
+      "blockHeight": "19",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-3",
+      "txId": "00fa23ea62e11a7f8610f0c3fa1a351d46ab8af122533cce3f6a3f985f01de559a",
+      "blockHeight": "23",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-4",
+      "txId": "00ea0495552ee5de812dc392003dce46e20d0e3e1fdb0cb9493e5f33d3b42385e0",
+      "blockHeight": "27",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-5",
+      "txId": "001485e47b74a03e366538d413076b81ee0c6355c37d71df8d4a4e127773b3b604",
+      "blockHeight": "31",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "open-voting",
+      "txId": "0041856201343a754ea97a5b06c11e9d59a9cc5ac76f051f35cff26cc855a48872",
+      "blockHeight": "48",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-1",
+      "txId": "005868ddbfe99cde93c2a9439f8e2124760908be3684550870134cd4906db17350",
+      "blockHeight": "56",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-2",
+      "txId": "008eb89c4125ac1347845c4b7e9d3aab70ac2dd7b2a866ec090066c47873213206",
+      "blockHeight": "63",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-3",
+      "txId": "00a01bf1d5d8557e8aa50c8cc45934fc47471bffc51e6c29c8c45e96ba48ac67a1",
+      "blockHeight": "70",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-4",
+      "txId": "0049802792cf0c5b8c411d096e1520a866ff79ac59f644812cad7d3aaaaae883eb",
+      "blockHeight": "77",
+      "status": "SucceedEntirely"
+    }
+  ],
+  "rejectedBeforeSubmission": [],
+  "proofTransactionsCompleted": 12,
+  "networkSubmission": true,
+  "status": "failed",
+  "sourceHashes": {
+    "native/sdk-client.mjs": "cbab35c599925e0ada9dab2b98fbca597f9c06b04d5b87adcab122fa09c7dfca",
+    "native/adapter.mjs": "6bdbd467edbad74269818b240b120f711c46c26d6cfb1494e651757d22e3a68c",
+    "native/harness.mjs": "1555547bd4b4a18954f13a2a41a15ed4beef51e67463f8483a4d8c27c4d61a7f",
+    "native/record.mjs": "6b48614c74fdfe642d03e6d0ea696390dc45cb950ca42677aeac7ae3b3de69d3",
+    "native/browser-config.mjs": "e18a9c7345db32caa289a028039eb31546010800e17f6d0c1a7a0bcf5de0fe70",
+    "native/test/native-election.test.mjs": "99290e3c01519d870491264ade924c5f29c77a9325b6d188047fcff6c21048cd",
+    "managed/native-election/contract/index.js": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7"
+  },
+  "operatorSourceSha256": "303c02871f38200d074f2b9672d59d9bdfca0d3e448b87f6c6ba9ebbfae4929d",
+  "runnerSourceSha256": "ed533627af37c6dd778cd4e4a5c66c61a8f16e91eae2c500f1f513fb754bc9cf",
+  "lockfileSha256": "01f79c0e0cf2d333a51032115f37bf838e4c8d69eef5df299565206fca7f329b",
+  "versions": {
+    "compact-runtime": "0.16.0",
+    "midnight-js-contracts": "4.1.1",
+    "testkit-js": "4.1.1",
+    "wallet-sdk": "1.2.0",
+    "ledger-v8": "8.1.2",
+    "onchain-runtime-v3": "3.1.1",
+    "zkir-v2": "2.1.1"
+  },
+  "node": "v24.22.1",
+  "suppressedLibraryConsoleCalls": 2,
+  "currentStage": "cast-5",
+  "schedule": {
+    "opensAt": 1793731421,
+    "closesAt": 1793731661
+  },
+  "candidateCount": 3,
+  "expectedTotals": [
+    2,
+    1,
+    2,
+    0,
+    0
+  ],
+  "contractAddress": "b21252a2dc841030712dfe30e80561e8e72003a09f7575022b5add81ce22c616",
+  "configurationDigest": "81977afd71d4e67dc6b010b5b7428a4b6b51f0f7788e97fb8aebf505e4f785a2",
+  "pendingSubmission": {
+    "operation": "cast-5",
+    "txId": "00c89bd5131e9411f2fd7a8c65b1381fd8fdebc85cba6a7c6c1017832d02228a92"
+  },
+  "failedStage": "cast-5",
+  "failureCategory": "operation-failed-details-withheld"
+}

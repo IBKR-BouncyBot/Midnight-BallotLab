@@ -15,11 +15,11 @@ export async function loadNetworkApplication({ document = globalThis.document,
     if (manifest?.enabled !== true) throw new Error('Network bundle not built');
     const application = await loadApplication();
     await application.initNetworkApplication();
-    status.textContent = 'Real Midnight.js loaded. Select a test network and wallet. Nothing has been proved or submitted yet.';
+    status.textContent = 'Ready to connect. Choose a test network and wallet below. No proof or transaction has been created yet.';
     status.dataset.state = 'ready';
   } catch {
     disable();
-    status.textContent = 'The network application is unavailable in this build. Generate the real contract, keys and browser bundle before connecting a wallet.';
+    status.textContent = 'The network tools could not load, so wallet connections are unavailable. Try reloading, or check the technical guide for this build.';
     status.dataset.state = 'unavailable';
   }
 }

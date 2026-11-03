@@ -117,7 +117,7 @@ try {
       assert.equal(font.loaded, true); assert.match(font.family, /Outfit/);
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined', 'Acceptance profile must have no injected wallet');
       assert.match(await page.locator('#network-wallet-note').textContent(), /No compatible wallet detected/);
-      assert.match(await page.locator('#network-availability').textContent(), /Nothing has been proved or submitted/);
+      assert.match(await page.locator('#network-availability').textContent(), /No proof or transaction has been created/);
       assert.equal(await page.locator('#network-id').inputValue(), '', 'No network may be selected by default');
       assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
       for (const [fieldset, name] of [['network-selection', 'network-choice'], ['network-trustee', 'network-trustee'], ['network-pair', 'network-pair']]) {
@@ -150,7 +150,7 @@ try {
       // Synthetic storage-password fixture, never a wallet seed or real account.
       await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
       await page.locator('#network-connect-form button[type="submit"]').click();
-      await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('did not complete'));
+      await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('could not finish'));
       await page.locator('#network-password').fill('');
       evidence.lastBrowserCounters = { path: prefix, pageErrors, consoleErrors, consoleCategories: [...consoleCategories],
         remoteRequests: [...requests].filter(url => new URL(url).origin !== origin).length };

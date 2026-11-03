@@ -2,36 +2,36 @@
 
 ![Midnight Ballot Lab — encrypted votes, shared results](docs/assets/ballot-lab-banner.svg)
 
-**Choose privately. Keep a receipt. Reveal the total together.**
+**Cast your vote. Keep a receipt. Check the results.**
 
-Midnight Ballot Lab makes encrypted voting something you can see and try. Give your election a name, add your choices, cast encrypted ballots and reveal the combined result with two of three trustees. Every voter can save a receipt and check the public election record in a fresh browser session. Real Midnight cryptography runs in your browser, with a Compact contract checking the rules.
+Create an election, add your choices and try voting with real Midnight encryption. Keep a receipt for each vote, reveal the totals with two of three trustees, and check the shared election record—even in a new browser session.
 
 ### [Open the app →](https://ibkr-bouncybot.github.io/Midnight-BallotLab/)
 
-The interactive lab needs no wallet or funds. Choose **2–5 candidates** and **1–1,024 synthetic voter credentials**. The main experience runs locally in your browser; the separate development-network client uses actual wallet, prover and network services.
+Choose **2–5 choices** and **1–1,024 demo voters**. The main app is a local demonstration: all voters and trustees share one browser, and no wallet or funds are needed. It does not send votes to a blockchain.
 
 ## Try an election in a few clicks
 
-1. **Set up election.** Name the election, enter 2–5 choices and select the number of synthetic voters. Choose manual controls or a timed local preview.
-2. **Vote / Cast a ballot.** Choose an unused credential from the private session dropdown, click a choice and save its QR or JSON receipt.
-3. **Reveal results.** In manual mode, select any two trustee cards. A scheduled local preview closes and reveals automatically after its chosen duration.
-4. **Verify election.** Export the public record. Anyone can import it in a fresh session, recompute its public checks and compare their own receipt—without a private credential.
+1. **Set up election.** Add a name and your choices, then choose how many demo voters can take part. Pick manual controls or **Timed election**.
+2. **Vote / Cast a ballot.** Choose a voter, click a choice and cast the ballot. Save the receipt as a QR code or file.
+3. **Reveal results.** Select any two trustee cards to reveal the totals. A timed election closes and reveals automatically; keep the tab open.
+4. **Verify election.** Upload the shared election file. Under **Check your own receipt**, upload a receipt file (JSON or text), or paste its contents. You can do this in a new session without setting up an election.
 
-![Set up election, cast a ballot, reveal results and independently check the public record](docs/assets/how-it-works.svg)
+![Set up election, cast a ballot, reveal results and check the shared record](docs/assets/how-it-works.svg)
 
 ## What makes it interesting?
 
 | Feature | What you can explore |
 | --- | --- |
-| **Encrypted ballots** | Choices are encoded and encrypted with Midnight's native cryptographic operations. The public record contains ciphertexts rather than plain choices. |
-| **Your election, your labels** | Configure 2–5 choices and 1–1,024 synthetic credentials. Five encrypted lanes keep the contract layout fixed; unused candidate totals must remain zero. |
-| **One vote per credential** | The contract checks membership and rejects reuse of the same credential in an election. A credential is not proof of a unique person. |
-| **Manual or timed preview** | Explore each step manually, or use a local countdown of 15–3,600 seconds. Timing does not create separate trustee custody or a hosted service. |
-| **Two-of-three tallying** | Any two registered trustees can provide the contributions needed to reveal and check the combined result. |
-| **QR receipts** | A receipt identifies an encrypted ballot and its election. Check it against the loaded record without putting the choice in the receipt. |
-| **Independent public checks** | Import a public JSON record without the original session. Check native points, configuration, ballot commitments, aggregate ciphertexts and trustee tally equations, then compare a receipt. |
+| **Encrypted votes** | Midnight encrypts each vote. The shared record contains encrypted ballots, without a list of who chose what. |
+| **Your own choices** | Add 2–5 choices with your own labels and up to 1,024 demo voters. |
+| **One vote per demo voter** | A voter cannot cast twice in the same election. Demo voters do not establish anyone's real identity or eligibility. |
+| **Timed election** | Set a countdown from 15 seconds to 60 minutes, or use manual controls to explore each step. |
+| **Two trustees reveal the result** | Any two of the three trustees can help reveal the combined totals. |
+| **A receipt you can keep** | Save a QR code or receipt file. It identifies the encrypted ballot and election without including the choice. |
+| **Check it yourself** | Upload the election file, check that its record and totals agree, then compare your receipt. No original session is needed. |
 
-![Any two of three trustees can combine their contributions to reveal the aggregate tally](docs/assets/threshold-tally.svg)
+![Any two of three trustees help reveal the combined result](docs/assets/threshold-tally.svg)
 
 ## From a browser experiment to a test network
 
@@ -39,15 +39,15 @@ The main app executes generated Compact contract code and official Midnight WebA
 
 These are separate milestones: **running cryptography**, **generating a proof**, and **having a transaction accepted by a network**. Recorded runs include browser/WASM execution, eight standalone circuit proofs and complete isolated devnet elections with 17 accepted transactions and a `[2, 1, 2]` tally. These results belong to the exact source revisions in the [execution report](docs/CONTINUATION_RESULTS.md) and [GitHub run evidence](docs/GITHUB_EXECUTION.md); changes receive fresh checks. Network transactions used the Node wallet integration. Browser-wallet transactions still need validation.
 
-The development-network operator can schedule closing and finalization against actual node time. It requires two externally supplied synthetic trustee shares and running local services. The browser countdown is a separate local preview.
+For the separate test-network flow, an external operator can wait for the deadline and submit the closing and result transactions. It needs two test trustee secrets and running wallet, prover and network services. GitHub Pages does not run that operator.
 
 GitHub Pages hosts the frontend. It does not supply a prover, run a Midnight node or deploy the contract. Hosting is independent of ChatGPT Sites.
 
 ## A hands-on research prototype
 
-This lab helps explain and test the mechanics; it is not a certified election system. The browser demonstration holds voter and trustee roles together, and its key dealer knows every secret share. Two cooperating trustees could decrypt individual ballots outside the app. Real use would require separate security, identity, device and operational safeguards.
+This lab helps explain and test encrypted voting; it is not a certified election system. One browser holds all demo voter and trustee secrets. The setup process knows the full decryption key, and two cooperating trustees could decrypt individual ballots outside the app. Real elections need separate identity, device, trustee and operational safeguards.
 
-A successful public check means the supplied record is **internally consistent**. Its export contains no authenticated ballot or trustee-share proofs, so a self-consistent replacement record can pass. Compare the election configuration and your receipt through an independently trusted channel. These checks do not establish eligibility, honest enrollment, blockchain inclusion, cast-as-intended voting or election fairness. The lab makes no claim of coercion resistance or fraud impossibility. Read the [verification guide](docs/PUBLIC_VERIFICATION.md) and [security boundaries](docs/THREAT_MODEL.md) before adapting it.
+A successful check means **the supplied record agrees with its receipts and totals**. It does not prove that the election was fair. A made-up record can agree with itself, so confirm the election details through a source you trust and keep your own receipt. The export does not include proofs that establish voter eligibility, genuine trustee contributions or blockchain acceptance. The checks also cannot prove that a device recorded the intended choice, prevent coercion or guarantee that fraud is impossible. The [verification guide](docs/PUBLIC_VERIFICATION.md) and [security boundaries](docs/THREAT_MODEL.md) explain these limits.
 
 ## Build, test and explore the source
 

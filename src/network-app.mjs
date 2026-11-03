@@ -18,11 +18,11 @@ const scalar = value => {
 };
 const stages = Object.freeze({
   'wallet-connected': 'Wallet connected. No transaction submitted.',
-  'proving-provider-started': 'The SDK prepared a transaction; the wallet proving provider is running.',
-  'proving-provider-completed': 'Proving provider returned. This is not network acceptance; deployment needs no contract-call proof.',
-  'wallet-approval-requested': 'Wallet approval and fee balancing requested.',
-  'wallet-balanced': 'Wallet returned a balanced, signed transaction.',
-  'submission-returned': 'Wallet submission returned. Awaiting indexer confirmation.',
+  'proving-provider-started': 'Preparing the transaction and any required proofs…',
+  'proving-provider-completed': 'Transaction preparation finished. The network has not accepted it yet.',
+  'wallet-approval-requested': 'Check your wallet to approve the transaction and its fee.',
+  'wallet-balanced': 'Your wallet signed the transaction.',
+  'submission-returned': 'Transaction submitted. Waiting for confirmation from your indexer…',
 });
 
 function savePublicJson(filename, value) {
@@ -88,10 +88,10 @@ export async function initNetworkApplication() {
   };
   const run = async operation => {
     if (busy) return;
-    busy = true; refreshControls(); status('Operation in progress. Keep this page open.');
+    busy = true; refreshControls(); status('Working… Keep this page open until the action finishes.');
     try { await operation(); }
     catch (error) { status(client?.pendingBallotReceipt
-      ? 'This session has a pending ballot with an uncertain submission outcome. Check its receipt without resubmitting. Before ending the session or trying again, check the transaction status through your wallet or a trusted network service.'
+      ? 'Your vote was sent, but its status is uncertain. Use “Check pending vote” and check your wallet before trying again or closing this page.'
       : nativeNetworkErrorMessage(error)); }
     finally { busy = false; refreshControls(); }
   };
@@ -99,7 +99,7 @@ export async function initNetworkApplication() {
   const confirmed = (label, result) => {
     if (typeof result?.txId !== 'string') throw new Error('Missing SDK transaction identifier');
     event(`${label}: configured indexer confirmed ${result.txId} at block ${result.blockHeight}.`);
-    status(`${label} confirmed by the configured indexer. Independent chain inclusion has not been verified.`);
+    status(`${label}: your indexer reports confirmation. This app has not independently verified the blockchain.`);
   };
   const refreshState = async () => {
     state = await client.readPublicLedger();
@@ -122,8 +122,8 @@ export async function initNetworkApplication() {
     }
     const duplicates = new Set(wallets.map(item => item.rdns)).size !== wallets.length;
     $('network-wallet-note').textContent = !wallets.length ? 'No compatible wallet detected. Install or unlock a DApp Connector API 4 wallet in this browser.'
-      : duplicates ? 'Several entries claim the same wallet identity. Review your installed extensions and choose carefully.'
-        : 'Choose the installed wallet you intend to use; extension identity is not authenticated by this page.';
+      : duplicates ? 'More than one extension uses this wallet name. Check your installed extensions before choosing.'
+        : 'Choose your wallet. This page cannot verify who published a browser extension.';
   };
   document.querySelectorAll('input[name="network-choice"], input[name="network-pair"]').forEach(input => input.addEventListener('change', refreshControls));
   document.querySelectorAll('input[name="network-trustee"]').forEach(input => input.addEventListener('change', () => {
@@ -146,7 +146,7 @@ export async function initNetworkApplication() {
         onStage: stage => { if (stages[stage]) event(stages[stage]); },
       });
       client = createNativeSdkClient(session.providers, session);
-      status(`Connected to ${session.networkId}. Deploy or join a test election. No proof or network transaction has been completed.`);
+      status(`Connected to ${session.networkId}. Create or join a test election. No proof or transaction has been completed yet.`);
     });
   });
   click('network-disconnect', async () => {
@@ -154,18 +154,18 @@ export async function initNetworkApplication() {
     for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) $(id).value = '';
     resetSessionDisplay();
     $('network-public-state').textContent = 'Local session ended';
-    status('Local session ended and private input fields cleared. Wallet permissions and encrypted browser storage remain; revoke permissions in the wallet if needed.');
+    status('Disconnected and cleared the private fields. Saved encrypted keys and wallet permissions remain; remove permissions in your wallet if you want to revoke access.');
   });
   click('network-join', async () => {
     manifest = null; latestReceipt = null; resetSessionDisplay();
     await client.join($('network-address').value.trim().toLowerCase(), bytes($('network-digest').value.trim()));
-    await refreshState(); status('Verifier keys and configuration match the indexed contract. Initial state and chain authenticity require separate verification.');
+    await refreshState(); status('The contract keys and settings match your indexer’s record. Its initial setup and blockchain history still need independent checks.');
   });
-  click('network-generate-admin', async () => { $('network-admin').value = hex(randomSecret32()); status('Synthetic administrator credential created in this tab. Retain it securely before leaving.'); });
-  click('network-generate-voter', async () => { $('network-voter').value = hex(randomSecret32()); status('Synthetic voter credential created in this tab. It has not been enrolled.'); });
+  click('network-generate-admin', async () => { $('network-admin').value = hex(randomSecret32()); status('Administrator key created. Keep it somewhere secure before leaving this page.'); });
+  click('network-generate-voter', async () => { $('network-voter').value = hex(randomSecret32()); status('Voter key created. Register this voter before casting a vote.'); });
   click('network-generate-dealer', async () => {
     dealer = createDemoDealer(); $('network-setup-secret').value = String(dealer.setupSecret); $('network-setup-slope').value = String(dealer.setupSlope);
-    status('Centralized synthetic dealer created all three private shares in this tab. No keys have been submitted.');
+    status('Created all three trustee key shares in this tab. Use “Register trustee keys” to send the public keys to the network.');
   });
   click('network-deploy', async () => {
     const choices = $('network-choices').value.split(/\r?\n/).map(value => value.trim());
@@ -214,14 +214,14 @@ export async function initNetworkApplication() {
     const code = encodeNetworkReceipt(latestReceipt);
     $('network-receipt-code').textContent = code; $('network-receipt-qr').innerHTML = qrSvg(code);
     $('network-receipt-panel').hidden = false; await refreshState();
-    status('Pending ballot matches the indexed ciphertext. No new transaction was submitted. Its transaction reference and independent chain inclusion remain unverified.');
+    status('Your pending vote matches the encrypted ballot returned by the indexer. Nothing was submitted again. Its transaction reference and blockchain inclusion have not been independently verified.');
   });
   click('network-close', async () => { confirmed('Voting closed', await client.closeVoting()); await refreshState(); });
   click('network-use-share', async () => {
     const trustee = selectedValue('network-trustee');
     if (!/^[123]$/.test(trustee)) throw new Error('Choose one trustee');
     $('network-share').value = String(dealer.trustees.find(item => item.index === BigInt(trustee)).secretShare);
-    status('Selected synthetic share loaded privately. No trustee contribution has been submitted.');
+    status('Loaded this demo trustee’s private share. It has not been submitted.');
   });
   click('network-submit-share', async () => {
     const trustee = selectedValue('network-trustee');
@@ -236,7 +236,7 @@ export async function initNetworkApplication() {
     const totals = await client.recoverTally(first, second);
     confirmed('Tally finalized', await client.finalize(first, second, totals)); await refreshState();
   });
-  click('network-read', async () => { await refreshState(); status('Public state refreshed from the configured indexer. Independent chain inclusion is unverified.'); });
+  click('network-read', async () => { await refreshState(); status('Updated the election record from your indexer. The blockchain has not been independently verified.'); });
   click('network-export', async () => {
     const ledger = client.configurationDigest ? await client.refreshConfiguration() : await client.readPublicLedger();
     let boundManifest = null;
@@ -251,11 +251,11 @@ export async function initNetworkApplication() {
       warning: 'An indexer observation is not authenticated chain evidence or a portable native proof package.',
       ...publicFields, ...(boundManifest ? { electionManifest: boundManifest } : {}),
     });
-    status('Public indexer observation saved. It is not an independently authenticated election record.');
+    status('Election record downloaded. It contains what your indexer reported, without independent authentication.');
   });
   click('network-check-receipt', async () => {
     await client.checkReceipt(decodeNetworkReceipt($('network-receipt-input').value.trim()));
-    status('Receipt matches the configured indexer ciphertext and pinned configuration. Transaction reference and independent chain inclusion are unverified.');
+    status('Your receipt matches the encrypted ballot and election settings returned by the indexer. Its transaction reference and blockchain inclusion have not been independently verified.');
   });
   refreshWallets(); refreshControls();
 }

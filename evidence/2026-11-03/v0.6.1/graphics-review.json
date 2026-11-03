@@ -1,0 +1,45 @@
+{
+  "recordedAt": "2026-11-03T19:00:23.224Z",
+  "version": "0.6.1",
+  "scope": "Actual local file rendering and visual review; no hosted-origin request.",
+  "renderer": {
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4"
+  },
+  "checks": {
+    "xmlDocumentsParsed": 3,
+    "renderedGraphics": 3,
+    "textBoundsPassed": 3,
+    "visualReviewsCompleted": 3
+  },
+  "font": "Outfit, Segoe UI, Arial, sans-serif fallback; no external assets.",
+  "files": [
+    {
+      "source": "docs/assets/ballot-lab-banner.svg",
+      "sourceSha256": "f7fab509391af518bdaa9d5e0b94a91e13b17f5481fd026694ea705df36b289e",
+      "retainedRender": "evidence/2026-11-03/v0.6.1/public/docs-graphics/ballot-lab-banner.png",
+      "renderSha256": "1e940fc9e83306eb6296d868efa6057337f6c1faba9a08b2ce0148770cb28dd9",
+      "renderedAt": "2026-11-03T18:59:49.267Z",
+      "textWithin1600PixelCanvas": true,
+      "visualReview": "Readable plain-language text, no clipping or overlap observed; near-black, white and electric blue."
+    },
+    {
+      "source": "docs/assets/how-it-works.svg",
+      "sourceSha256": "5029d6128d0459cdc971341cd98ddd9ee9342dd362cba96a4ef71cf43853ce27",
+      "retainedRender": "evidence/2026-11-03/v0.6.1/public/docs-graphics/how-it-works.png",
+      "renderSha256": "1136014b7272cce6bcf6fa8b53aee333374e77a65842556770999515fc149142",
+      "renderedAt": "2026-11-03T18:59:49.422Z",
+      "textWithin1600PixelCanvas": true,
+      "visualReview": "Readable plain-language text, no clipping or overlap observed; near-black, white and electric blue."
+    },
+    {
+      "source": "docs/assets/threshold-tally.svg",
+      "sourceSha256": "ad99ff9366ecc9143ebe15fd50256895832290313afa0d22fcf76d71358d505b",
+      "retainedRender": "evidence/2026-11-03/v0.6.1/public/docs-graphics/threshold-tally.png",
+      "renderSha256": "2db3be0e617ff9af048fca62c2101d85bee5a9052215468a8ff3b92e6b4e71d2",
+      "renderedAt": "2026-11-03T18:59:49.569Z",
+      "textWithin1600PixelCanvas": true,
+      "visualReview": "Readable plain-language text, no clipping or overlap observed; near-black, white and electric blue."
+    }
+  ]
+}

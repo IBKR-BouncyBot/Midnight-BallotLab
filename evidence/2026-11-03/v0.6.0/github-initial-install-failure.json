@@ -1,0 +1,11 @@
+{
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41695362560",
+  "headSha": "3839a91eeb9079bcb05d74d86ede27d03eb53d45",
+  "jobId": 126124340614,
+  "status": "failed",
+  "stage": "Install and verify the pinned native toolchain",
+  "cause": "Compact CLI compiler-release lookup exceeded the runner IP's unauthenticated GitHub API rate limit.",
+  "nativeCompileExecuted": false,
+  "evidence": "github-toolchain-rate-limit.log",
+  "remediation": "Provide the ephemeral contents-read GitHub Actions token only to the toolchain-install step through the CLI-supported GITHUB_TOKEN environment variable. Keep installer checksum and compiler pins unchanged."
+}
