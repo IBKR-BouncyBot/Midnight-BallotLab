@@ -1,5 +1,7 @@
 # GitHub execution — 3 November 2026
 
+See the [privacy redaction note](PRIVACY_REDACTION.md) for the distinction between original tested commit identifiers and the subsequently cleaned repository history.
+
 Version 0.6.1 passed its affected local gates after the copy, receipt-upload and timed-setup changes: seven native-browser scenarios, four network-browser cases, 46 boundary tests and packaging (55 references, 388 files). Coverage includes receipt JSON/text uploads and invalid/private/oversized-file rejection, five-voter setup at CPU slowdown ×12, real 15-second closing and frozen-browser resume after the deadline. A real Chromium test with five voters at CPU slowdown ×12 reproduced a 2,621 ms setup failure; [the report](../evidence/2026-11-03/v0.6.1/timed-setup-before-fix.json) retains the failing bundle hash. The [after-fix diagnostic](../evidence/2026-11-03/v0.6.1/timed-setup-after-fix.json) passed the full real 60-second flow with five voters and CPU slowdown ×12 throughout: setup took 3,749 ms, followed by a ballot and automatic two-trustee finalization, with zero browser errors or remote requests. The first network-browser run's stale wording assertion failed; its report remains retained, and the corrected assertion passed all four cases on rerun. Hosted compatibility and Pages deployment passed for 0.6.1 at `fa94c3a19b4791441208ceae54a121faff2c588b`; its devnet acceptance also passed with 17 accepted transactions and automatic closing/tallying by the external operator.
 
 ## Version 0.6.1 hosted execution

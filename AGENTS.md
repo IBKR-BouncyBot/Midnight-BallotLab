@@ -6,6 +6,8 @@ Midnight Ballot Lab is a native Midnight application with encrypted ballots, two
 
 Source is hosted at `https://github.com/IBKR-BouncyBot/Midnight-BallotLab`; the frontend is served through ordinary GitHub Pages at `https://ibkr-bouncybot.github.io/Midnight-BallotLab/`. Read the owning source and fresh execution reports before making claims. Commit-specific test provenance is retained in Git history and `docs/GITHUB_EXECUTION.md`.
 
+Use only the public owner alias `IBKR-BouncyBot` in notices, documentation and Git author metadata. Do not publish the owner's personal name, personal email or operating-system username. Redact personal filesystem prefixes from retained logs and downloadable archives; do not change their test results. See `docs/PRIVACY_REDACTION.md` for historical evidence handling.
+
 ## Evidence and workflow
 
 - Native compilation, generated-runtime tests, browser/WASM checks, circuit proofs and isolated development-network acceptance have recorded passes. Read `docs/CONTINUATION_RESULTS.md` and exact retained evidence for stage boundaries and tested commits. Rerun affected checks after changes; do not infer compatibility from syntax or pins.

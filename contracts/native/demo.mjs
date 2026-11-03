@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Runs the REAL generated Compact code locally. Never submits a transaction. */
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDemoDealer, freshBallotRandomness, randomSecret32 } from './adapter.mjs';
 import { createNativeEmulator, nativePublicSnapshot, recoverNativeTally, loadNativeModules } from './harness.mjs';
@@ -59,7 +59,7 @@ async function main() {
   await mkdir(dirname(output), { recursive: true });
   await writeFile(output, JSON.stringify(snapshot, null, 2) + '\n');
   console.log(JSON.stringify({ execution: 'generated-contract-emulator', ballots: snapshot.accepted,
-    candidateCount: snapshot.candidateCount, tally: snapshot.finalizedTotals, publicSnapshot: output,
+    candidateCount: snapshot.candidateCount, tally: snapshot.finalizedTotals, publicSnapshot: basename(output),
     nativeProofGenerated: false, networkTransactionSubmitted: false,
     note: 'All synthetic roles run in one process. Public snapshot is not a proof or authenticated chain record.' }, null, 2));
 }
