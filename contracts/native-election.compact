@@ -1,5 +1,5 @@
 // NATIVE RESEARCH CONTRACT: fresh execution stages are in docs/CONTINUATION_RESULTS.md.
-// This is a separate three-choice protocol, NOT the browser's MODP protocol.
+// Three-choice encrypted voting with native Jubjub operations and threshold tallying.
 // It uses Compact's Jubjub operations and proves encryption/decryption relations
 // in the native circuits. Key configuration uses a centralized private dealer;
 // independent distributed key generation and production operations remain work.

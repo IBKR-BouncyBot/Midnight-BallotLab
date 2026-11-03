@@ -1,11 +1,17 @@
-# Fresh continuation execution — 3 November 2026
+# Native execution evidence — 3 November 2026
 
-This report concerns commands executed during this continuation. The original 0.3.0 handover results are historical and are not counted as fresh tests.
+This report summarizes completed native-contract, proving, network and browser runs. It describes the tested source recorded in the linked reports, not unverified changes.
+
+## Current application verification
+
+Version 0.5.0 passed fresh local verification. Compact 0.31.1 compiled all seven native circuits, producing 14 key files and 14 ZKIR files. All 45 native input/receipt/configuration tests, 20 actual generated-contract tests and three installed-provider API tests passed. The example accepted five ballots and finalized `[2,1,2]`. Both browser bundles built successfully.
+
+The updated interface passed five real Chromium cases covering ballot-card clicks, keyboard operation, all three trustee pairs, exactly-two selection, reset, a 390-pixel mobile viewport and fail-closed prerequisites. The network client passed four initialization/failure-handling cases. These results are retained under [`evidence/2026-11-03/v0.5.0/`](../evidence/2026-11-03/v0.5.0/). Hosted 0.5.0 verification and deployment remain pending. The proof and network runs below remain tied to their recorded source hashes and commits.
+
+The [GitHub Pages application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) has a verified deployment at commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`: all three hosted workflows and real Chromium checks at the HTTPS URL passed. [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) records exact run links, tool versions and artifact provenance. Completed local proving and network evidence is reported separately below.
 
 ## Provenance and environment
 
-- The provided continuation ZIP passed its verifier: 65 files matched their recorded checksums before edits.
-- Recorded baseline: `5882d228f11f8b2022ca3ee6ad29bd05eb88965d`, version 0.3.0; no Git history was included.
 - Windows host: Node 24.18.0, npm 11.16.0, Python 3.14.6.
 - Installed Ubuntu 24.04 through WSL 3.0.3.0; Linux kernel 6.18.54.1.
 - Official devtools installer 0.5.1 verified against SHA-256 `85e74a53ae4a67b31fa4d854f3b6ffb4c29f7c53e3372c5008b6a4729a8b4a73`.
@@ -20,9 +26,6 @@ This report concerns commands executed during this continuation. The original 0.
 | Generated artifact/runtime compatibility check | Exit 0 |
 | Actual generated native contract tests | 20 passed, 0 failed/skipped |
 | Native example | Exit 0; five ballots; tally `[2,1,2]`; public snapshot only |
-| Retained admission contract | Full compile exit 0; 11 generated tests passed |
-| Final root regression suite | 117 passed, 0 failed/skipped; local protocol, interface, input and provider-boundary tests |
-| Python legacy reference tests | 11 passed after selecting the installed Python interpreter |
 | Installed official provider API tests | 3 passed; fail-before-wallet-access behavior with actual SDK imports |
 | Isolated devnet graph generated-runtime tests | 20 passed using byte-identical source/bindings with the separate wallet dependency graph; no transaction implied |
 | Standalone circuit proof generation | Eight nonempty proof responses across all seven native circuit types; public hashes/byte counts/timings retained |
@@ -38,13 +41,13 @@ This report concerns commands executed during this continuation. The original 0.
 | Devnet negative cases | Invalid choice, duplicate credential, wrong trustee share and changed tally rejected before proof/submission; finalized transaction replay rejected by the submission pipeline, without independently verified network rejection |
 | Clean isolated-devnet lockfile reinstall | `npm ci --ignore-scripts` passed after acceptance; all 20 generated-runtime tests passed again |
 
-The final reruns are recorded in `evidence/2026-11-03/*-final.log` and the current public browser/proof artifacts. The earlier 116-test root pass and intermediate failed runs are retained separately; the final root result is 117. The native browser runs execute the generated contract locally and do not make proofs. The standalone proof run uses the official local proving provider and does not submit transactions. The network browser run verifies actual SDK loading and failure handling without a connected wallet. None is relabeled as network acceptance.
+Native command evidence is retained under `evidence/2026-11-03` alongside public browser/proof reports. The native browser runs execute the generated contract locally and do not make proofs. The standalone proof run uses the official local proving provider and does not submit transactions. The network browser run verifies actual SDK loading and failure handling without a connected wallet. None is relabeled as network acceptance.
 
 ## Exact tested application versions
 
 | Component | Version |
 | --- | --- |
-| Application source | 0.4.0 continuation of recorded 0.3.0 baseline |
+| Current application source | 0.5.0; exact source hashes and commits retained for each execution stage |
 | Compact devtools | 0.5.1 |
 | Compact compiler / language | 0.31.1 / 0.23.0 |
 | Compact runtime | 0.16.0 |
@@ -57,7 +60,7 @@ The final reruns are recorded in `evidence/2026-11-03/*-final.log` and the curre
 | Playwright / Chromium | 1.64.1 / 156.0.8078.4 |
 | QR decoder / PNG decoder used by browser acceptance | jsQR 1.4.0 / pngjs 7.0.0 |
 | Local Node / npm / Python | 24.18.0 / 11.16.0 / 3.14.6 |
-| Prepared GitHub runner | Ubuntu 24.04, Node 24, Python 3.12; hosted execution pending |
+| Executed GitHub runner | Ubuntu 24.04, Node 24.22.1, npm 11.19.1, Python 3.12.15; all three initial hosted workflows passed |
 
 The isolated local-devnet wallet runner follows the current official examples in a separate graph: wallet SDK 1.2.0, testkit/Midnight.js 4.1.1, Compact runtime 0.16.0, ledger-v8 8.1.2, on-chain runtime-v3 3.1.1 and ZKIR-v2 2.1.1. Its 20 generated-runtime cases passed using byte-identical source/bindings. That graph is not substituted into the already tested application graph; network transaction outcomes remain separate.
 
@@ -74,7 +77,6 @@ This is source inspection of the named upstream releases, alongside verified off
 - Windows had no supported compiler environment. Installed WSL/Ubuntu. Windows `compact.exe` is unrelated and is excluded by the explicit WSL launcher.
 - The first compiler extraction lacked `unzip`; installed it and used a fresh task-specific compiler cache after the incomplete download.
 - The real compiler rejected a potential disclosure of tally parameters in a ledger-dependent short-circuit check. `finalize` now declares its already-public totals before those checks. Bounds, sum checks and all pair equations remain enforced.
-- The initial root suite passed 95 tests and failed 11 because `python3` could not be launched. The independent Python checks subsequently passed using `C:\Python314\python.exe`; Windows now defaults to `python` while respecting explicit interpreter overrides.
 - Actual network-browser execution exposed an unbound `process` reference from an SDK browser dependency. The bundle now uses the installed `process/browser` and `Buffer` implementations; cryptographic operations remain in the actual Midnight runtime/WASM.
 - Chromium rejected IPv6 literal CSP host sources. The unsupported sources were removed and insecure IPv6 indexer configuration now fails validation. Root/subdirectory network-browser loading then passed with zero page/console errors and no remote requests.
 
@@ -82,13 +84,13 @@ This is source inspection of the named upstream releases, alongside verified off
 
 Raw compiler/test/build evidence is retained under `evidence/2026-11-03`. Public native examples and browser acceptance artifacts are under `artifacts`. Key reports are `artifacts/native-proof-evidence.json`, `artifacts/native-browser/result.json` and `artifacts/network-browser/evidence.json`. They record the actual generated-binding/bundle/asset hashes where relevant. Witnesses, private contexts, unproven transactions and proof preimages are never written to evidence. Proof-server verbose request logging is disabled.
 
-The latest lockfile reviews are `evidence/2026-11-03/application-lockfile-review.json` and `devnet-lockfile-review.json`. They cover 162 application package entries and 383 isolated-devnet package entries respectively, with integrity metadata present and npm-registry source URLs throughout. The earlier `dependency-review.json` covered an intermediate 124-entry graph and is historical, not the final review. Final dependency trees and audits are retained separately for both graphs.
+The latest lockfile reviews are `evidence/2026-11-03/application-lockfile-review.json` and `devnet-lockfile-review.json`. They cover 162 application package entries and 383 isolated-devnet package entries respectively, with integrity metadata present and npm-registry source URLs throughout. Final dependency trees and audits are retained separately for both graphs.
 
 The review records package integrity fields, registry locations, lifecycle-script declarations and runtime versions. Installs used `--ignore-scripts`. The application audit reports zero vulnerabilities. The separate devnet graph initially included a high-severity `ws` advisory; updating its direct dependency to 8.22.1 removed the high-severity finding. Eight moderate package entries remain through testkit's testcontainers/archive/glob/minimatch dependency chain. The acceptance runner does not invoke the testcontainers/container-archive path, but those dependencies remain installed; this is a scope distinction, not proof that the advisories are harmless. No forced, untested dependency downgrade was applied. These reviews and audit snapshots do not certify dependency or election security.
 
 ## Selected deployment targets and pending stages
 
-The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab) and a fresh isolated local devnet. The GitHub repository is reachable and empty; authenticated write/Actions/Pages access is still being established. No push, hosted workflow run or Pages deployment is claimed yet, and no deployment URL is asserted.
+The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab) and a fresh isolated local devnet. Authentication, source publication and Pages setup completed. The initial Pages, compatibility and devnet workflows all passed at commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`. The [live application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) passed three deployed-browser cases, including 30 HTTP asset checks and the five-ballot native WASM flow. See [the hosted execution report](GITHUB_EXECUTION.md) for exact evidence.
 
 The fresh isolated local-devnet election completed successfully on 3 November 2026 at 17:14:25.928 UTC. The configured local indexer confirmed all 17 transactions as `SucceedEntirely`, from deployment at block 8 through finalization at block 100. Sixteen contract proof transactions completed; five encrypted ballots produced five matching receipts, and trustees 1 and 3 finalized `[2,1,2]` in phase 3. The four invalid operations were rejected before a proof or submission. Replaying the finalized transaction was rejected by the submission pipeline; independent network rejection of that replay was not verified.
 
@@ -99,7 +101,7 @@ The chain was the official local `undeployed` development environment. The publi
 - Finalization transaction: `00bac1e2a610d2f5e409caba2ba55b3fac5f49aa3c0120b945fabd41bf401f328f`, block `100`.
 - Isolated graph lockfile SHA-256: `94236d8b50f3545f214bfbb878e4d831500a0dd65eb5c147211a446e24ef9ecd`.
 
-This is actual local node/indexer/wallet/prover acceptance, separate from the eight standalone circuit proofs and the browser's local execution. It does not establish independently authenticated chain inclusion, a browser-wallet transaction or public Preview/Preprod deployment. The node, indexer and prover were stopped after verification, preserving their local data; they are not persistent hosted services. A separate manual GitHub workflow for the same real acceptance path is prepared and locally linted but has not run on GitHub.
+This is actual local node/indexer/wallet/prover acceptance, separate from the eight standalone circuit proofs and the browser's local execution. It does not establish independently authenticated chain inclusion, a browser-wallet transaction or public Preview/Preprod deployment. The node, indexer and prover were stopped after verification, preserving their local data; they are not persistent hosted services. The separate [GitHub devnet run](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41684480267) also passed with 17 accepted transactions and 16 proof transactions on its own fresh chain, finalizing at block 99. Its different contract address and full public transaction list are retained in [the hosted report](../evidence/2026-11-03/github/devnet/reports/network-evidence.json).
 
 The main browser experience remains local generated-contract execution with actual native Midnight WASM. It does not generate network proofs or submit ballots. The separate network page contains real wallet/provider integration and passed SDK-loading/failure-handling tests, but no transaction through an actual browser wallet has been validated. The Node devnet runner is a separate acceptance path and does not fill that browser-wallet evidence gap.
 

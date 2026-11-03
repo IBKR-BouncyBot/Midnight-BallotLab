@@ -4,8 +4,9 @@ import { decodeJsonUtf8, parseStrictJson } from '../src/json.mjs';
 
 test('strict JSON preserves ordinary public-record and receipt values', () => {
   const value = {
-    schema: 'ballot-lab/receipt/v1', electionId: 'Research 🌙',
-    electionHash: 'a'.repeat(64), ballotId: 'b'.repeat(64),
+    schema: 'midnight-ballot-lab/native-receipt/v1', networkId: 'undeployed',
+    configurationDigest: 'a'.repeat(64), receipt: 'b'.repeat(64),
+    title: 'Research 🌙',
     escaped: 'A "quoted" label \\ slash\nline',
     nested: [{ tally: [2, 1, 2] }, { tally: [0, -1, 9007199254740991, -9007199254740991] }],
     enabled: true, disabled: false, empty: null,
@@ -33,7 +34,7 @@ test('native object construction does not invoke the __proto__ setter', () => {
   assert.equal(Object.prototype.polluted, undefined);
 });
 
-test('number spellings match the reference verifier integer-only transport', () => {
+test('public JSON transport rejects ambiguous number spellings', () => {
   for (const source of ['0.0', '1.000000000000000000001', '1e0', '1E+0', '1e-0']) {
     assert.throws(() => parseStrictJson(source), /Fractional or exponent-form/);
   }

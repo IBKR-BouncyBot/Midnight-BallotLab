@@ -87,13 +87,17 @@ export async function initNativeDemo() {
   function renderChoices() {
     const candidates = session?.manifest.candidates ?? ['Option A', 'Option B', 'Option C'];
     $('native-choices').replaceChildren(...candidates.map((candidate, index) => {
-      const label = document.createElement('label'); label.className = 'candidate-card';
+      const label = document.createElement('label'); label.className = 'candidate-card selection-card';
       const input = document.createElement('input'); input.type = 'radio'; input.name = 'native-choice'; input.value = String(index); input.required = true;
-      const text = document.createElement('span'); text.textContent = candidate;
+      input.id = `native-choice-${index}`; label.htmlFor = input.id;
+      const text = document.createElement('span'); text.className = 'selection-copy';
+      const title = document.createElement('strong'); title.textContent = candidate;
+      const hint = document.createElement('small'); hint.textContent = 'Select this choice'; text.append(title, hint);
       const letter = document.createElement('span'); letter.className = 'candidate-letter'; letter.textContent = String.fromCharCode(65 + index);
       label.append(input, text, letter); return label;
     }));
   }
+  const selectedTrustees = () => [...document.querySelectorAll('input[name="native-trustee"]:checked')].map(input => input.value);
   function render() {
     const state = session?.emulator.readLedger();
     const phase = state?.phase;
@@ -110,13 +114,19 @@ export async function initNativeDemo() {
     const enabled = {
       'native-election-title': !session, 'native-choice-a': !session, 'native-choice-b': !session, 'native-choice-c': !session,
       'native-create': !session, 'native-go-vote': !!session, 'native-choice-fieldset': canVote, 'native-cast': canVote,
-      'native-close': phase === 1n && state.accepted > 0n, 'native-trustee-pair': phase === 2n, 'native-finalize': phase === 2n,
+      'native-close': phase === 1n && state.accepted > 0n, 'native-trustee-fieldset': phase === 2n,
+      'native-finalize': phase === 2n && selectedTrustees().length === 2,
       'native-export': !!session, 'native-check-result': phase === 3n,
       'native-receipt-input': !!session, 'native-check-receipt': !!session,
       'native-save-receipt': !!lastReceipt, 'native-copy-receipt': !!lastReceipt, 'native-use-receipt': !!lastReceipt,
       'native-reset': true,
     };
     for (const [id, allowed] of Object.entries(enabled)) $(id).disabled = busy || !allowed;
+    const trusteeCount = selectedTrustees().length;
+    document.querySelectorAll('input[name="native-trustee"]').forEach(input => { input.disabled = trusteeCount === 2 && !input.checked; });
+    $('native-trustee-selection').textContent = trusteeCount === 2
+      ? `Trustees ${selectedTrustees().join(' + ')} selected. ${phase === 3n ? 'Both contributions passed the local runtime checks.' : 'Both contributions will be checked.'}`
+      : `Choose two trustees · ${trusteeCount} of 2 selected`;
     document.querySelectorAll('[data-native-nav]').forEach(button => { button.disabled = busy; });
     $('native-receipt-panel').hidden = !lastReceipt;
     $('native-results').hidden = phase !== 3n;
@@ -151,7 +161,7 @@ export async function initNativeDemo() {
     if (busy) return;
     busy = true; render(); status(label, false, true);
     try { await nextFrame(); await action(); }
-    catch { status('The native operation did not complete. No substitute protocol was used. Inspect the local phase before retrying; generated-runtime compatibility may require a rebuild.', true); }
+    catch { status('The native operation did not complete. Inspect the local phase before retrying.', true); }
     finally { session?.emulator.setPrivateState({}); busy = false; render(); }
   }
   function newReceipt(receipt, index) {
@@ -174,6 +184,7 @@ export async function initNativeDemo() {
   }
 
   document.querySelectorAll('[data-native-nav]').forEach(button => button.addEventListener('click', () => showPanel(button.dataset.nativeNav)));
+  document.querySelectorAll('input[name="native-trustee"]').forEach(input => input.addEventListener('change', render));
   $('native-go-vote').addEventListener('click', () => showPanel('vote'));
   $('native-setup-form').addEventListener('submit', event => {
     event.preventDefault();
@@ -235,7 +246,7 @@ export async function initNativeDemo() {
   }));
   $('native-finalize').addEventListener('click', () => operate('Computing native trustee shares and tally equations…', async () => {
     if (!session) throw new Error('No native election');
-    const pairText = $('native-trustee-pair').value;
+    const pairText = selectedTrustees().join(',');
     if (!['1,2', '1,3', '2,3'].includes(pairText)) throw new Error('Invalid trustee pair');
     const pair = pairText.split(',').map(BigInt), emulator = session.emulator;
     for (const index of pair) {
@@ -317,6 +328,7 @@ export async function initNativeDemo() {
     if (busy) return;
     session?.emulator.setPrivateState({}); session = null; lastReceipt = null; events.length = 0;
     $('native-event-log').replaceChildren(); $('native-vote-form').reset(); $('native-receipt-input').value = '';
+    document.querySelectorAll('input[name="native-trustee"]').forEach(input => { input.checked = false; });
     $('native-receipt-check-output').textContent = ''; $('native-check-output').hidden = true;
     $('native-receipt-qr').replaceChildren(); $('native-receipt-hash').textContent = '';
     renderChoices(); showPanel('setup'); render(); status('Native experiment reset. Create a new synthetic election to continue.');

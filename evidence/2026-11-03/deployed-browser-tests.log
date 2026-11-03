@@ -1,0 +1,4 @@
+{"stage":"live-http-assets","status":"passed","assets":30}
+{"stage":"live-native-flow","status":"passed"}
+{"stage":"live-network-no-wallet","status":"passed"}
+{"status":"passed","cases":3,"url":"https://ibkr-bouncybot.github.io/Midnight-BallotLab/","evidence":"artifacts/deployed-browser/evidence.json","proofGeneration":false,"networkSubmission":false}

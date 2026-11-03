@@ -1,0 +1,543 @@
+{
+  "executedAt": "2026-11-03T17:33:41.358Z",
+  "node": "v24.18.0",
+  "execution": "live-github-pages-generated-contract-and-sdk-browser",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "chainInclusionVerified": false,
+  "httpAssets": [
+    {
+      "path": "index (project URL)",
+      "status": 200,
+      "bytes": 15163,
+      "sha256": "111867ddb7809c6ac10efc23f8c12292022293719a88a82875f89b741fb8ae20",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "content-length": "4514",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-3b3b\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "826C:651BC:20F2FC:212BDA:6AEA1AF8"
+      }
+    },
+    {
+      "path": "network.html",
+      "status": 200,
+      "bytes": 14181,
+      "sha256": "d0501cd50c4f2f9455202260963ae763394525428cce101c8d27ffa6b41faa3e",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "content-length": "4180",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-3765\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "2146:374B32:E0BA:10234:6AEA1AF9"
+      }
+    },
+    {
+      "path": "native-build.json",
+      "status": 200,
+      "bytes": 337,
+      "sha256": "38fbeafe290ebad1a2173e5fcb9a1dbc8fcadf051d6d4941be4ef7a9394b2070",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "244",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-151\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "2624:D1995:20D67D:210F1B:6AEA1AF9"
+      }
+    },
+    {
+      "path": "network-build.json",
+      "status": 200,
+      "bytes": 4252,
+      "sha256": "5058819e9e3986126e2cb0c29002e5096425cfe7b2b39a7718b22dc3cd5bebb9",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "1525",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-109c\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "6512:11008D:20B0BA:20E95A:6AEA1AF9"
+      }
+    },
+    {
+      "path": "native-bundle.mjs",
+      "status": 200,
+      "bytes": 513640,
+      "sha256": "ed1a3734c5b54c27f7ffe72fac97eb1ca4b982cc9f34e1e8b73a7b94c68b62f7",
+      "headers": {
+        "content-type": "text/javascript; charset=utf-8",
+        "content-length": "58352",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-7d668\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "AD80:139BF6:20C06D:20F947:6AEA1AF9"
+      }
+    },
+    {
+      "path": "network-bundle.mjs",
+      "status": 200,
+      "bytes": 2815367,
+      "sha256": "e642ebe4f252a92684ea150d35677f03487bf520300dd2b9b197fe58430146cc",
+      "headers": {
+        "content-type": "text/javascript; charset=utf-8",
+        "content-length": "493277",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-2af587\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "0A3A:270B36:2111F9:214AA5:6AEA1AF8"
+      }
+    },
+    {
+      "path": "native-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "status": 200,
+      "bytes": 1398935,
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "headers": {
+        "content-type": "application/wasm",
+        "content-length": "416642",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-155897\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "833C:171191:E9EB:10B4F:6AEA1AF9"
+      }
+    },
+    {
+      "path": "network-assets/midnight_ledger_wasm_bg-88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638.wasm",
+      "status": 200,
+      "bytes": 10143782,
+      "sha256": "88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638",
+      "headers": {
+        "content-type": "application/wasm",
+        "content-length": "4651550",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-9ac826\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "86CA:5A1F9:EFCB:1119B:6AEA1AFA"
+      }
+    },
+    {
+      "path": "network-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "status": 200,
+      "bytes": 1398935,
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "headers": {
+        "content-type": "application/wasm",
+        "content-length": "416642",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-155897\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "9C48:3A0876:DC53:FE04:6AEA1AFA"
+      }
+    },
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "status": 200,
+      "bytes": 21573410,
+      "sha256": "228613e7730b1b62ab6a7694b9d3f9072400d458d0367faf174d5b638ce1f192",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "21456212",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-1492f22\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "412C:11EEDD:22391D:22726C:6AEA1AFA"
+      }
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "status": 200,
+      "bytes": 2311,
+      "sha256": "0d1a7b8a5651d5bf83ff3025e5552a29e0bc63083b74daccfc8361677f33f10a",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "2339",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-907\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "DF96:FB4C7:2096EF:20D003:6AEA1AFB"
+      }
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "status": 200,
+      "bytes": 3228,
+      "sha256": "8ca0f5c4e56e3989ff81e202a340782a9339a684b820b996b907ca2e2aca9c84",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1547",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-c9c\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "38B8:11EEDD:223BA8:2274FF:6AEA1AFC"
+      }
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "status": 200,
+      "bytes": 2824229,
+      "sha256": "738109033d128c383634cbc5a861a693b401d11c46ff086a914c16b024de84aa",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "2798297",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-2b1825\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "7560:1AF583:E597:10760:6AEA1AFC"
+      }
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "status": 200,
+      "bytes": 2119,
+      "sha256": "3f08326a7adbcd61783fef8b05c08ac49cac0cbce4d7d6527e1a41a0422dabb7",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "2144",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-847\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "E4C0:9BD62:F1C2:11381:6AEA1AFC"
+      }
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "status": 200,
+      "bytes": 677,
+      "sha256": "10db3aeb9fdb678f42dfe9a070e4cdd789ca6760f5fd75f450dd67429826559f",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "416",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-2a5\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "E078:342C7F:CF0B:F0A6:6AEA1AFC"
+      }
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "status": 200,
+      "bytes": 39784,
+      "sha256": "61f7f7eaab4df0639345706166f606dff14c658a6cdb171248b2f29ec8d94cdc",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "39677",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-9b68\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "2568:2AB5D6:E672:10811:6AEA1AFC"
+      }
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "status": 200,
+      "bytes": 1351,
+      "sha256": "dbbaa94f32d1f33432fd73b1984d7b62d1bffbb3bd4515c764260ba42ba4cb11",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1201",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-547\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "59E8:DEA91:20EBB4:2124D0:6AEA1AFC"
+      }
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "status": 200,
+      "bytes": 461,
+      "sha256": "d3e20c9a17c6169d3868aae2693ae0d5dcd23ed62955a624b29726bfcc7d826e",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "255",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-1cd\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "7C1E:FB4C7:2098F9:20D219:6AEA1AFD"
+      }
+    },
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "status": 200,
+      "bytes": 21611723,
+      "sha256": "cde3172cf608c7f85918c05449cfbce8acf96afa44b760417d03936efcab0299",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "21466843",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-149c4cb\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "6526:233F6C:E3EC:1057B:6AEA1AFD"
+      }
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "status": 200,
+      "bytes": 2311,
+      "sha256": "ce873ca725c29a5d8de8f10c80bddee155b2d664bf95c8741def98ea48db2e37",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "2339",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-907\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "2660:377DDC:DD92:FF1F:6AEA1AFE"
+      }
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "status": 200,
+      "bytes": 3397,
+      "sha256": "2b5da548a6e479acd6ad0f426ce6485a582b5a9d61aa33520ff43babcc8366eb",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1559",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-d45\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "D1A8:48DDC:21E023:221930:6AEA1AFE"
+      }
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "status": 200,
+      "bytes": 39799,
+      "sha256": "470430a495ab69f79d3d851b1db5636681f2bfafb96df8b4efb23744ea97e600",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "39666",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-9b77\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "5FDC:1A159:E5E2:10752:6AEA1AFE"
+      }
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "status": 200,
+      "bytes": 1351,
+      "sha256": "d92dee9f8f15338c002ab0f583c1be37340a2711c934e1023b469b22fd5b9be6",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1204",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-547\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "5DB6:25FA4:E184:102C3:6AEA1AFE"
+      }
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "status": 200,
+      "bytes": 367,
+      "sha256": "52ee71823187b9e63331662ac02f3d13fd51d6929ffcac4cfdbcf79b3e682ff7",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "251",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-16f\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "9B86:45A40:D60E:F7CA:6AEA1AFF"
+      }
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "status": 200,
+      "bytes": 1349576,
+      "sha256": "a7ffbd6cc4952d9d7a07f182fee703057c2f248b281a3d26bfe96cf2c9a959ec",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1343898",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-1497c8\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "1536:9D77B:218ACB:21C3E3:6AEA1AFF"
+      }
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "status": 200,
+      "bytes": 1591,
+      "sha256": "ae5af711f1ce6e7bd852f3ded26006df19b7ca06fb7900eb53bbfa8c9594937d",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1616",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-637\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "5CE6:25CBD6:215BA9:21943C:6AEA1AFE"
+      }
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "status": 200,
+      "bytes": 1355,
+      "sha256": "9411a0ea499f660071a3d5f9656bea069ca7e161f785e05fc61f401ccc9c7b4a",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "765",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1ada-54b\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:14 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "0B7C:D1995:20E0F7:2119C6:6AEA1AFF"
+      }
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "status": 200,
+      "bytes": 5402702,
+      "sha256": "f76e0082412c964b7875fa03d117d74831af7cc0d5cb0128266e11cbc4f0e7ac",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "5381451",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-52704e\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "0AA8:80168:E846:109FB:6AEA1AFF"
+      }
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "status": 200,
+      "bytes": 1591,
+      "sha256": "59ad4343126100ced26654eb597b8cd07b66da7a5a73ccc08b48d5c46c4338e8",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1616",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-637\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "FCA6:12BEE4:223EEF:2277AC:6AEA1AFF"
+      }
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "status": 200,
+      "bytes": 1963,
+      "sha256": "f9d08f1d6708405d271350bea8f0ed6e552cc955348c4a7e3f8073545fcb2d9c",
+      "headers": {
+        "content-type": "application/octet-stream",
+        "content-length": "1164",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=600",
+        "etag": "W/\"6aea1adb-7ab\"",
+        "last-modified": "Tue, 03 Nov 2026 17:33:15 GMT",
+        "strict-transport-security": "max-age=31556952",
+        "x-github-request-id": "5E16:D656E:D879:FA0C:6AEA1B00"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "case": "live-http-manifests-bundles-wasm-and-circuit-assets",
+      "status": "passed",
+      "wasmAssets": 3,
+      "circuitAssets": 21,
+      "integrityScope": "served manifests and content-addressed WASM; bundle digests recorded"
+    },
+    {
+      "case": "live-native-five-ballot-threshold-flow",
+      "status": "passed",
+      "accepted": 5,
+      "trusteePair": [
+        1,
+        3
+      ],
+      "finalizedTotals": [
+        2,
+        1,
+        2
+      ],
+      "renderedQrDecoded": true,
+      "receiptRoundTrips": true,
+      "alteredReceiptRejected": true,
+      "publicExportAllowlist": true,
+      "mobileViewportWidth": 390,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "incidentalFaviconErrors": 0,
+      "offSiteRequests": 0
+    },
+    {
+      "case": "live-network-real-sdk-no-wallet-failure",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "actionsDisabled": true,
+      "noTransactionEvents": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "incidentalFaviconErrors": 0,
+      "offSiteRequests": 0
+    }
+  ],
+  "url": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+  "versions": {
+    "compiler": "0.31.1",
+    "runtime": "0.16.0",
+    "sdk": "4.1.1"
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "status": "passed"
+}

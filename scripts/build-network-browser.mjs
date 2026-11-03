@@ -78,7 +78,10 @@ try {
     '/@midnight-ntwrk/midnight-js-dapp-connector-proof-provider/']) {
     if (!inputs.some(path => path.includes(required))) throw new Error(`Required real implementation absent: ${required}`);
   }
-  if (inputs.some(path => /(?:^|\/)src\/(?:crypto|protocol|app)\.mjs$/.test(path))) throw new Error('Legacy protocol entered the network bundle');
+  const browserSources = new Set(['src/network-app.mjs', 'src/network-receipt.mjs', 'src/json.mjs', 'src/qr.mjs']);
+  if (inputs.some(path => path.startsWith('src/') && !browserSources.has(path))) {
+    throw new Error('Network bundle contains an unreviewed browser source');
+  }
   if (wasmAssets.size < 2) throw new Error('Expected both real onchain-runtime and ledger WASM');
   const output = result.outputFiles.find(file => resolve(file.path) === bundlePath);
   if (!output?.contents.length || result.outputFiles.length !== 1) throw new Error('Unexpected or empty network output');

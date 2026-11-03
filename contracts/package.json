@@ -1,6 +1,6 @@
 {
   "name": "midnight-ballot-lab-contract-source",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -11,7 +11,7 @@
     "compile:native": "node scripts/compile.mjs native",
     "check:artifacts": "node scripts/check-artifacts.mjs",
     "check:artifacts:native": "node scripts/check-artifacts.mjs native",
-    "test": "node --test test/election.test.mjs",
+    "test": "node --test native/test/*.test.mjs",
     "test:native": "node --test native/test/*.test.mjs",
     "demo:native": "node native/demo.mjs",
     "build:browser:native": "node ../scripts/build-native-browser.mjs"

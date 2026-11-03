@@ -4,7 +4,7 @@
 Playwright. It requires the actual generated contract, a successful native
 browser bundle, and the packaged Midnight WASM assets. Missing prerequisites are
 failures. The script never enables the native build flag, creates generated
-contract code, or substitutes the legacy JavaScript encryption implementation.
+contract code, or supplies replacement cryptography.
 
 Run from the repository root after installing the supported Compact toolchain:
 
@@ -29,7 +29,7 @@ or external QR service is used.
 The acceptance cases cover:
 
 - Actual WASM loaded from the page origin at root and a GitHub repository path;
-  the native `index.html` main experience and retained `native.html` entry both run.
+  the native `index.html` main experience and `native.html` entry both run.
 - Invalid duplicate labels rejected before setup; actual key setup and five
   synthetic voter credentials enrolled through generated code.
 - All candidate choices cast through the native UI, cleared after submission,

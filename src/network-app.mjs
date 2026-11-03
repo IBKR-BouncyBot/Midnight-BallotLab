@@ -44,9 +44,12 @@ export async function initNetworkApplication() {
   const controls = [...document.querySelectorAll('[data-network-control]')];
   let wallets = [], session = null, client = null, state = null, busy = false;
   let dealer = null, latestReceipt = null, manifest = null;
+  const selectedValue = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? '';
+  const clearSelection = name => document.querySelectorAll(`input[name="${name}"]`).forEach(input => { input.checked = false; });
   const resetSessionDisplay = () => {
-    $('network-selection').value = '';
-    for (let index = 0; index < 3; index++) $('network-selection').options[index + 1].textContent = `Choice ${index}`;
+    ['network-choice', 'network-trustee', 'network-pair'].forEach(clearSelection);
+    $('network-share').value = '';
+    for (let index = 0; index < 3; index++) $(`network-choice-label-${index}`).textContent = `Choice ${index}`;
     $('network-receipt-panel').hidden = true;
     $('network-receipt-code').textContent = '';
     $('network-receipt-qr').replaceChildren();
@@ -66,9 +69,15 @@ export async function initNetworkApplication() {
     for (const id of requireClient) $(id).disabled = busy || !client || Boolean(client.contractAddress);
     for (const id of requireContract) $(id).disabled = busy || !client?.contractAddress;
     for (const id of requireConfigured) $(id).disabled = busy || !client?.configurationDigest;
-    $('network-cast').disabled = busy || !client?.configurationDigest || Boolean(client.pendingBallotReceipt);
+    const canChooseBallot = !busy && Boolean(client?.configurationDigest) && state?.phase === 1n && !client.pendingBallotReceipt;
+    $('network-selection').disabled = !canChooseBallot;
+    $('network-cast').disabled = !canChooseBallot || !/^[012]$/.test(selectedValue('network-choice'));
+    $('network-trustee').disabled = busy || !client?.configurationDigest;
+    $('network-pair').disabled = busy || !client?.configurationDigest;
+    $('network-submit-share').disabled = busy || !client?.configurationDigest || !/^[123]$/.test(selectedValue('network-trustee'));
+    $('network-finalize').disabled = busy || !client?.configurationDigest || !['1,2', '1,3', '2,3'].includes(selectedValue('network-pair'));
     $('network-configure').disabled = busy || !client?.contractAddress || state?.keysConfigured === true;
-    $('network-use-share').disabled = busy || !dealer;
+    $('network-use-share').disabled = busy || !dealer || !/^[123]$/.test(selectedValue('network-trustee'));
     $('network-save-receipt').disabled = busy || !latestReceipt;
     $('network-recover-receipt').disabled = busy || !client?.pendingBallotReceipt;
     $('network-disconnect').disabled = busy || !session;
@@ -110,6 +119,10 @@ export async function initNetworkApplication() {
       : duplicates ? 'Several entries claim the same wallet identity. Review your installed extensions and choose carefully.'
         : 'Choose the installed wallet you intend to use; extension identity is not authenticated by this page.';
   };
+  document.querySelectorAll('input[name="network-choice"], input[name="network-pair"]').forEach(input => input.addEventListener('change', refreshControls));
+  document.querySelectorAll('input[name="network-trustee"]').forEach(input => input.addEventListener('change', () => {
+    $('network-share').value = ''; refreshControls();
+  }));
   $('network-refresh-wallets').addEventListener('click', refreshWallets);
   $('network-connect-form').addEventListener('submit', eventObject => {
     eventObject.preventDefault();
@@ -161,7 +174,7 @@ export async function initNetworkApplication() {
       opensAt: BigInt(Math.floor(opens / 1000)), closesAt: BigInt(Math.floor(closes / 1000)) });
     manifest = deploymentManifest;
     confirmed('Deployment', result); await refreshState();
-    choices.forEach((choice, index) => { $('network-selection').options[index + 1].textContent = `${index}: ${choice}`; });
+    choices.forEach((choice, index) => { $(`network-choice-label-${index}`).textContent = choice; });
   });
   click('network-configure', async () => {
     const result = await client.configureKeys({ administratorSecret: bytes($('network-admin').value),
@@ -176,17 +189,18 @@ export async function initNetworkApplication() {
   });
   click('network-open', async () => { confirmed('Voting opened', await client.openVoting()); await refreshState(); });
   click('network-cast', async () => {
-    if (!/^[012]$/.test($('network-selection').value)) throw new Error('Choose a candidate');
+    const selection = selectedValue('network-choice');
+    if (!/^[012]$/.test(selection)) throw new Error('Choose a candidate');
     latestReceipt = null;
     $('network-receipt-panel').hidden = true;
     $('network-receipt-code').textContent = '';
     $('network-receipt-qr').replaceChildren();
     try {
-      latestReceipt = await client.castBallot({ voterSecret: bytes($('network-voter').value), selection: BigInt($('network-selection').value) });
+      latestReceipt = await client.castBallot({ voterSecret: bytes($('network-voter').value), selection: BigInt(selection) });
       const code = encodeNetworkReceipt(latestReceipt);
       $('network-receipt-code').textContent = code; $('network-receipt-qr').innerHTML = qrSvg(code);
       $('network-receipt-panel').hidden = false; confirmed('Ballot', latestReceipt); await refreshState();
-    } finally { $('network-selection').value = ''; }
+    } finally { clearSelection('network-choice'); }
   });
   click('network-save-receipt', async () => { savePublicJson('midnight-network-receipt.json', latestReceipt); status('Public receipt saved.'); });
   click('network-recover-receipt', async () => {
@@ -198,15 +212,21 @@ export async function initNetworkApplication() {
   });
   click('network-close', async () => { confirmed('Voting closed', await client.closeVoting()); await refreshState(); });
   click('network-use-share', async () => {
-    $('network-share').value = String(dealer.trustees.find(trustee => trustee.index === BigInt($('network-trustee').value)).secretShare);
+    const trustee = selectedValue('network-trustee');
+    if (!/^[123]$/.test(trustee)) throw new Error('Choose one trustee');
+    $('network-share').value = String(dealer.trustees.find(item => item.index === BigInt(trustee)).secretShare);
     status('Selected synthetic share loaded privately. No trustee contribution has been submitted.');
   });
   click('network-submit-share', async () => {
-    confirmed('Trustee contribution', await client.submitDecryption(BigInt($('network-trustee').value), scalar($('network-share').value)));
+    const trustee = selectedValue('network-trustee');
+    if (!/^[123]$/.test(trustee)) throw new Error('Choose one trustee');
+    confirmed('Trustee contribution', await client.submitDecryption(BigInt(trustee), scalar($('network-share').value)));
     $('network-share').value = ''; await refreshState();
   });
   click('network-finalize', async () => {
-    const [first, second] = $('network-pair').value.split(',').map(BigInt);
+    const pair = selectedValue('network-pair');
+    if (!['1,2', '1,3', '2,3'].includes(pair)) throw new Error('Choose a trustee pair');
+    const [first, second] = pair.split(',').map(BigInt);
     const totals = await client.recoverTally(first, second);
     confirmed('Tally finalized', await client.finalize(first, second, totals)); await refreshState();
   });

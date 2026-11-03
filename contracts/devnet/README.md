@@ -2,7 +2,7 @@
 
 This package exercises the existing generated Compact contract and SDK client on an explicitly selected fresh local `undeployed` chain. It is separate from the browser dependency graph. It does not connect to Preview, Preprod or mainnet. No public-network funds or user wallet credentials are required.
 
-Read [the service plan](../../docs/LOCAL_DEVNET_PLAN.md) before starting the reviewed loopback node/indexer services and local prover. The public readiness probe is separate from contract acceptance:
+Read [the native network guide](../../docs/NATIVE_NETWORK.md) before starting the reviewed loopback node/indexer services and local prover. The public readiness probe is separate from contract acceptance:
 
 ```sh
 node contracts/devnet/probe.mjs

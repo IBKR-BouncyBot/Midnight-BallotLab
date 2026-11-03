@@ -1,0 +1,109 @@
+1.0.400: Pulling from midnightntwrk/midnight-node
+2429f72af8e6: Pulling fs layer
+c887071ae31a: Pulling fs layer
+24221420d914: Pulling fs layer
+37b99ab32bb1: Pulling fs layer
+2ad60d7cc535: Pulling fs layer
+b53939d99420: Pulling fs layer
+d0958c77a1a8: Pulling fs layer
+b476dabc0767: Pulling fs layer
+0af96b9a779b: Pulling fs layer
+eb2a3f840e22: Pulling fs layer
+0293dfd69ab8: Pulling fs layer
+8003d1df4a12: Pulling fs layer
+7c66a989840a: Pulling fs layer
+6ad52fadf329: Pulling fs layer
+b4f7c70f8cd1: Pulling fs layer
+37b99ab32bb1: Waiting
+eb2a3f840e22: Waiting
+d0958c77a1a8: Waiting
+0293dfd69ab8: Waiting
+b476dabc0767: Waiting
+8003d1df4a12: Waiting
+0af96b9a779b: Waiting
+2ad60d7cc535: Waiting
+7c66a989840a: Waiting
+b53939d99420: Waiting
+6ad52fadf329: Waiting
+b4f7c70f8cd1: Waiting
+24221420d914: Verifying Checksum
+24221420d914: Download complete
+2429f72af8e6: Verifying Checksum
+2429f72af8e6: Download complete
+37b99ab32bb1: Verifying Checksum
+37b99ab32bb1: Download complete
+2ad60d7cc535: Download complete
+b53939d99420: Verifying Checksum
+d0958c77a1a8: Verifying Checksum
+d0958c77a1a8: Download complete
+b476dabc0767: Verifying Checksum
+b476dabc0767: Download complete
+eb2a3f840e22: Verifying Checksum
+eb2a3f840e22: Download complete
+c887071ae31a: Verifying Checksum
+c887071ae31a: Download complete
+0293dfd69ab8: Verifying Checksum
+0293dfd69ab8: Download complete
+8003d1df4a12: Verifying Checksum
+8003d1df4a12: Download complete
+7c66a989840a: Verifying Checksum
+7c66a989840a: Download complete
+6ad52fadf329: Verifying Checksum
+6ad52fadf329: Download complete
+0af96b9a779b: Verifying Checksum
+0af96b9a779b: Download complete
+b4f7c70f8cd1: Verifying Checksum
+b4f7c70f8cd1: Download complete
+2429f72af8e6: Pull complete
+c887071ae31a: Pull complete
+24221420d914: Pull complete
+37b99ab32bb1: Pull complete
+2ad60d7cc535: Pull complete
+b53939d99420: Pull complete
+d0958c77a1a8: Pull complete
+b476dabc0767: Pull complete
+0af96b9a779b: Pull complete
+eb2a3f840e22: Pull complete
+0293dfd69ab8: Pull complete
+8003d1df4a12: Pull complete
+7c66a989840a: Pull complete
+6ad52fadf329: Pull complete
+b4f7c70f8cd1: Pull complete
+Digest: sha256:915b117f955859a0ab7f34230ca12b43ef7474c84e29463256efcfc7b757040f
+Status: Downloaded newer image for midnightntwrk/midnight-node:1.0.400
+docker.io/midnightntwrk/midnight-node:1.0.400
+4.3.5: Pulling from midnightntwrk/indexer-standalone
+0c8d55a45c0d: Pulling fs layer
+c607e7f9f41d: Pulling fs layer
+fec82d5fbc52: Pulling fs layer
+808c9a96bd5b: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+808c9a96bd5b: Waiting
+4f4fb700ef54: Waiting
+fec82d5fbc52: Verifying Checksum
+fec82d5fbc52: Download complete
+c607e7f9f41d: Verifying Checksum
+c607e7f9f41d: Download complete
+4f4fb700ef54: Download complete
+0c8d55a45c0d: Verifying Checksum
+0c8d55a45c0d: Download complete
+808c9a96bd5b: Verifying Checksum
+808c9a96bd5b: Download complete
+0c8d55a45c0d: Pull complete
+c607e7f9f41d: Pull complete
+fec82d5fbc52: Pull complete
+808c9a96bd5b: Pull complete
+4f4fb700ef54: Pull complete
+Digest: sha256:1c69c6632df859140a4019af9d7ebb81cb6073b1d39194d3eabaa1b320883499
+Status: Downloaded newer image for midnightntwrk/indexer-standalone:4.3.5
+docker.io/midnightntwrk/indexer-standalone:4.3.5
+midnight-ballot-lab-devnet-node healthy
+midnight-ballot-lab-devnet-indexer healthy
+midnight-ballot-lab-devnet-indexer midnightntwrk/indexer-standalone:4.3.5 Up 6 seconds (healthy)
+midnight-ballot-lab-devnet-node midnightntwrk/midnight-node:1.0.400 Up 12 seconds (healthy)
+midnight-ballot-lab-devnet-prover midnightntwrk/proof-server Up 23 seconds
+midnightntwrk/midnight-node@sha256:915b117f955859a0ab7f34230ca12b43ef7474c84e29463256efcfc7b757040f
+
+midnightntwrk/indexer-standalone@sha256:1c69c6632df859140a4019af9d7ebb81cb6073b1d39194d3eabaa1b320883499
+
+Services healthy. Run the public readiness probe; wallet/proving/transaction acceptance is separate.

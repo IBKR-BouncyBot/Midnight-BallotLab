@@ -39,20 +39,6 @@ const reference = [
     ]
   },
   {
-    "name": "receipt",
-    "text": "mbl1:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
-    "hashes": [
-      "33a9c0f7948046b0ec389d7404462db5304d8d7a9e59b744d3d483bbb4fc17c2",
-      "fe73a7e9912c0171f8741f9e23ff15e231ca9e789e5d29deb590d1b0e875040c",
-      "bce4a43313636b7dce5f16df12a2dcc462642046e5f45dcff5b8bf3fad184bdc",
-      "0f8725dff34cd5fd220846ad4cc62f1b77c9fa929822b6e3e1668205cb4ddb30",
-      "e3d8ef11d00fcd80babcb6426887ba7adab7433792173865dc0cc834ce5e6ea5",
-      "6aafb46a4f2ce2d2f1e58ab157978f0313c147aabf4991f03a6d36baa683cd69",
-      "45874f49e129acb70a2ec05e6a185d206a03689716c711fe97e5e165124f7bef",
-      "68ce4440f9da5a6b0c4e937613242d16a712e68eb8270c77f4f8bb0382126a92"
-    ]
-  },
-  {
     "name": "maximum",
     "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "hashes": [

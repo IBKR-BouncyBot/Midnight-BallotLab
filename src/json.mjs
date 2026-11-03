@@ -1,9 +1,8 @@
-/** Strict JSON transport for public protocol data; no cryptography lives here.
- * Reject ambiguous object fields and number spellings consistently with the
- * Python reference verifier, before native JSON.parse creates any objects.
+/** Strict JSON transport for public native election data.
+ * Reject ambiguous object fields and number spellings before JSON.parse
+ * creates any objects.
  */
 export const BROWSER_JSON_LIMIT = 8 * 1024 * 1024;
-export const CLI_JSON_LIMIT = 64 * 1024 * 1024;
 const DEFAULT_MAX_DEPTH = 64;
 
 function checkLimit(maxBytes) {

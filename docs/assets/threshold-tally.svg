@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="590" viewBox="0 0 1600 590" role="img" aria-labelledby="title description">
+  <title id="title">Two-of-three trustee tally: trustees 1 and 3 recover example totals 2, 1, 2</title>
+  <desc id="description">Three trustee cards show trustees 1 and 3 selected. The full encrypted aggregate and their two valid contributions pass native contract checks to recover example totals of 2, 1, and 2. Any of the three pairs works. In the demo all roles share one browser and the dealer knows all secret shares; two colluding trustees can decrypt individual ballots outside the app. This is not distributed key generation or election certification.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#141426"/><stop offset="1" stop-color="#0a0a10"/></linearGradient>
+    <linearGradient id="selected" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#303055"/><stop offset="1" stop-color="#202034"/></linearGradient>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1L6 4L1 7" fill="none" stroke="#a8a8ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <g id="person" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cy="-10" r="11"/><path d="M-21 24v-6a21 21 0 0 1 42 0v6"/></g>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; fill: #f5f5ff; }
+      .muted { fill: #b9b9ce; } .violet { fill: #b0b0ff; }
+      .eyebrow { font-size: 14px; letter-spacing: 2px; font-weight: 600; }
+    </style>
+  </defs>
+  <rect width="1600" height="590" rx="28" fill="url(#background)"/>
+  <text x="72" y="49" class="eyebrow violet">MIDNIGHT BALLOT LAB / TWO-OF-THREE</text>
+  <text x="72" y="107" font-size="43" font-weight="600" letter-spacing="-1.2">Any two trustees. One aggregate tally.</text>
+  <text x="74" y="146" font-size="20" class="muted">Example: trustees 1 + 3. The same protocol accepts 1 + 2 or 2 + 3.</text>
+
+  <rect x="72" y="193" width="148" height="197" rx="19" fill="url(#selected)" stroke="#aaaaff" stroke-width="2"/>
+  <rect x="246" y="193" width="148" height="197" rx="19" fill="#191923" stroke="#4b4b60"/>
+  <rect x="420" y="193" width="148" height="197" rx="19" fill="url(#selected)" stroke="#aaaaff" stroke-width="2"/>
+  <g color="#c5c5ff"><use href="#person" transform="translate(146 262)"/><use href="#person" transform="translate(494 262)"/></g>
+  <g color="#77778e"><use href="#person" transform="translate(320 262)"/></g>
+  <text x="146" y="322" text-anchor="middle" font-size="21" font-weight="600">Trustee 1</text>
+  <text x="320" y="322" text-anchor="middle" font-size="21" font-weight="600" class="muted">Trustee 2</text>
+  <text x="494" y="322" text-anchor="middle" font-size="21" font-weight="600">Trustee 3</text>
+  <g fill="#b0b0ff"><circle cx="101" cy="222" r="11"/><circle cx="449" cy="222" r="11"/></g>
+  <g fill="none" stroke="#222238" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m96 222 4 4 7-9"/><path d="m444 222 4 4 7-9"/></g>
+  <circle cx="275" cy="222" r="10" fill="none" stroke="#626279" stroke-width="2"/>
+  <text x="146" y="356" text-anchor="middle" font-size="15" class="violet">Selected</text>
+  <text x="320" y="356" text-anchor="middle" font-size="15" class="muted">Not selected</text>
+  <text x="494" y="356" text-anchor="middle" font-size="15" class="violet">Selected</text>
+
+  <path d="M584 289h33" fill="none" stroke="#a8a8ff" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="632" y="193" width="344" height="197" rx="20" fill="#212139" stroke="#7575ab"/>
+  <rect x="772" y="221" width="64" height="34" rx="8" fill="#b0b0ff"/>
+  <path d="M786 221v-5a18 18 0 0 1 36 0v5" fill="none" stroke="#b0b0ff" stroke-width="4"/>
+  <circle cx="804" cy="237" r="4" fill="#242440"/>
+  <text x="804" y="288" text-anchor="middle" font-size="22" font-weight="600">Full encrypted aggregate</text>
+  <text x="804" y="323" text-anchor="middle" font-size="19" class="violet">+ 2 valid contributions</text>
+  <path d="M660 340h288" stroke="#57577b"/>
+  <text x="804" y="369" text-anchor="middle" font-size="18" class="muted">Native contract checks</text>
+  <path d="M993 289h46" fill="none" stroke="#a8a8ff" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="1056" y="193" width="472" height="197" rx="20" fill="#202037" stroke="#7575ab"/>
+  <text x="1086" y="230" font-size="23" font-weight="600">Combined tally</text>
+  <path d="M1091 345h215" stroke="#64648f" stroke-width="2"/>
+  <g fill="#b0b0ff"><rect x="1105" y="267" width="42" height="78" rx="5"/><rect x="1175" y="306" width="42" height="39" rx="5"/><rect x="1245" y="267" width="42" height="78" rx="5"/></g>
+  <g font-size="18" text-anchor="middle" class="muted"><text x="1126" y="372">A</text><text x="1196" y="372">B</text><text x="1266" y="372">C</text></g>
+  <rect x="1340" y="274" width="158" height="62" rx="12" fill="#303051" stroke="#626291"/>
+  <text x="1419" y="314" text-anchor="middle" font-size="28" font-weight="600" class="violet">[2, 1, 2]</text>
+  <text x="1419" y="362" text-anchor="middle" font-size="15" class="muted">5 example ballots</text>
+
+  <rect x="72" y="434" width="1456" height="112" rx="16" fill="#181824" stroke="#44445b"/>
+  <text x="97" y="463" class="eyebrow violet">RESEARCH LIMITS</text>
+  <text x="97" y="494" font-size="18" class="muted">Demo roles share one browser; the centralized dealer knows every secret share.</text>
+  <text x="97" y="523" font-size="18" class="muted">Two colluding trustees can decrypt individual ballots outside the app. This is not distributed key generation.</text>
+  <text x="74" y="575" font-size="14" class="muted">Illustrative five-ballot tally · contract checks do not establish election legitimacy or certification.</text>
+</svg>

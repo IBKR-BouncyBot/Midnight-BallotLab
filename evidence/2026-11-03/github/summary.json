@@ -1,0 +1,40 @@
+{
+  "repository": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab",
+  "deploymentUrl": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+  "runs": [
+    {
+      "workflow": "native",
+      "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41684474674",
+      "headSha": "b33b6e4896a12d211cc9b0040acdaf01c5a89ac5",
+      "conclusion": "success",
+      "artifactId": "13253668336",
+      "retainedFiles": 22
+    },
+    {
+      "workflow": "pages",
+      "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41684485038",
+      "headSha": "b33b6e4896a12d211cc9b0040acdaf01c5a89ac5",
+      "conclusion": "success",
+      "artifactId": "13254448147",
+      "retainedFiles": 17
+    },
+    {
+      "workflow": "devnet",
+      "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41684480267",
+      "headSha": "b33b6e4896a12d211cc9b0040acdaf01c5a89ac5",
+      "conclusion": "success",
+      "artifactId": "13255237907",
+      "retainedFiles": 16
+    }
+  ],
+  "liveBrowserCases": 3,
+  "hostedDevnetAcceptedTransactions": 17,
+  "hostedDevnetProofTransactions": 16,
+  "hostedDevnetTally": [
+    2,
+    1,
+    2
+  ],
+  "browserWalletTested": false,
+  "independentChainInclusionVerified": false
+}

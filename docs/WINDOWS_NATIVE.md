@@ -42,8 +42,6 @@ npm --prefix contracts ci --ignore-scripts
 npm --prefix contracts run compile:native
 npm --prefix contracts run test:native
 npm --prefix contracts run demo:native
-npm --prefix contracts run compile
-npm --prefix contracts test
 npm test
 npm run build
 npm --prefix contracts run build:browser:native
@@ -60,14 +58,8 @@ layouts are not guessed: run Node inside WSL for those layouts instead.
 On Linux/macOS the same compile script invokes `compact` directly, with an
 optional absolute `COMPACT_DIRECTORY` to choose a separate toolchain directory.
 
-The Python reference tests now select `python` on Windows and `python3` on
-Linux/macOS. `PYTHON` overrides that choice, followed by
-`CODEX_PRIMARY_RUNTIME_PYTHON`. For example:
-
-```powershell
-$env:PYTHON = (Get-Command python).Source
-node --test tests/reference.test.mjs
-```
+Python is used for static packaging checks. Use `python` or `py -3` on Windows
+according to your installation, and `python3` on Linux/macOS.
 
 For the actual browser acceptance test, keep the browser cache inside the
 workspace if desired and use the same setting for installation and execution:
@@ -83,9 +75,6 @@ The browser gate requires a successfully compiled/bundled native build. See
 runtime execution, browser execution, proof generation and accepted network
 transaction are separate milestones.
 
-The launcher-selection and Python reference tests were run locally during this
-continuation: 17 passed, zero failed or skipped. This verifies launch selection
-and the retained legacy Python verifier; it is not native cryptography evidence.
 Actual compile/runtime/browser results are recorded separately in
 [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md). Sandboxed processes can be
 denied access to the WSL service even when WSL works in a normal terminal; that

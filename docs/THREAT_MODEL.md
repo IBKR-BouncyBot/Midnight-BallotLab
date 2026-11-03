@@ -1,40 +1,33 @@
-# Threat model and limits
+# Security assumptions and limits
 
-## Demonstrated objective
+Midnight Ballot Lab encrypts three-choice ballots using native Jubjub operations and constrains their aggregation and two-of-three trustee tally in Compact. Its generated runtime, standalone circuit proofs and development-network transactions have separate evidence. A successful execution is not an independent security audit.
 
-Verify that a well-formed public transcript produces the reported tally under the fixed mathematical protocol and configured manifest. The reader can inspect the source and run the CLI without private keys. Ballot choices remain encrypted in the exported public record.
+## Trust assumptions
 
-## Explicit assumptions
+- Devices and their cryptographically secure random-number generators must remain trustworthy. Scalar bounds and distinctness checks cannot prove that randomness is unpredictable.
+- Voter credentials must be issued to the intended electorate. Membership proves possession of an enrolled secret; it does not establish that credentials correspond to unique eligible humans.
+- The application, generated contract, verifier keys and expected configuration digest must be authentic.
+- The configured prover receives private witnesses and must be trusted. Keep proving local unless the privacy properties of another service have been explicitly addressed.
+- Trustees must protect their shares. Two colluding trustees can decrypt individual ciphertexts outside the contract's aggregate-only interface.
 
-- The discrete-logarithm problem in the selected group is hard and SHA-256 behaves as required for the Fiat–Shamir constructions.
-- CSPRNG output is unpredictable; devices and their random-number generators are not compromised.
-- At least the required trustee secrecy assumptions hold outside the demonstration. Two colluding trustees in the 2-of-3 scheme can decrypt individual ballots. In this local demo, all trustee shares are held together by design.
-- The verifier software and the election manifest hash used for comparison are authentic.
-- The synthetic credential issuer enrolled the intended electorate and did not mint additional credentials. The demo proves authorization by listed pseudonymous keys, not that those keys correspond to unique eligible humans.
+The demonstration uses a central dealer that knows the complete decryption key. All synthetic roles share one browser tab. Separate trustee custody and independently reviewed distributed key generation are required for meaningful organizational separation.
 
-## Not provided
+## Public checks
 
-- National-election certification or independent security audit.
-- Constant-time secret-key operations. JavaScript BigInt arithmetic is not a constant-time cryptographic library.
-- Receipt-freeness or coercion resistance. A voter device can retain choices and encryption randomness; this implementation must not be described as preventing transferable proof of a vote.
-- A cast-as-intended mechanism, such as a reviewed ballot challenge protocol or independent voter-verifiable paper record.
-- Anonymous credential membership in the browser demonstrator. Public pseudonymous keys reveal participation to anyone who can link them to people.
-- Distributed key generation: the demo dealer generates the trustees' shares in one process.
-- Persistence, remote ballot collection, network resilience, censorship resistance, authentication of an official electoral register, or a public-chain connection.
-- Long-term post-quantum ballot secrecy.
+Receipts bind the election configuration and exact ciphertext. Public checks can compare a receipt with the current runtime ledger and check internal consistency. A copied public snapshot does not authenticate an external election or establish proof generation, canonical chain inclusion, honest initialization or maintenance history.
 
-## What a valid result does not establish
+Network confirmation comes from the configured indexer. Independently authenticating initial state, accepted chain state, circuit provenance, verifier keys, key setup and maintenance authority remains separate work. A reported transaction hash alone is not acceptance.
 
-A mathematically valid record can still be for a fabricated election with fabricated voter keys. It can omit submissions that never entered the accepted set. An internal manifest hash is not independent evidence of authenticity: an attacker can replace the manifest, generate new keys and create another internally consistent election. Use an expected hash established through an independent channel. A hash anchor also does not make the record available; all necessary public ciphertexts and proofs must be preserved.
+The tally reveals information by design. Unanimous totals or totals for small groups can reveal individual choices even if the cryptography operates correctly.
 
-Privacy excludes what the public result logically reveals. Unanimous totals and totals for tiny groups can identify choices even with perfect cryptography.
+## Data handling
 
-## Public and private data
+Public records contain only allowlisted election metadata, configuration digest, public keys, ciphertexts, nullifiers, receipt commitments, aggregates, trustee contributions and tally. Public network evidence contains transaction identifiers and confirmed block heights.
 
-Public: manifest, synthetic public credential keys, ballot ciphertexts and proofs, nullifiers, signatures, accepted ballot fingerprints, decryption shares and their proofs, aggregate, tally, verification report.
+Private choices, ballot randomness, voter credential secrets, trustee secrets, private contexts, proof preimages and witness data must never appear in public exports, receipts, logs or source bundles. JavaScript cannot promise secure memory erasure. Refreshing the local browser session discards its in-memory state; export public records before ending a demonstration.
 
-Private: voter credential signing secrets, plaintext choices, ballot randomness, trustee secret shares. These must not appear in public JSON exports, receipts, logs or the downloadable source bundle.
+## Unsupported claims
 
-## Midnight integration boundary
+The application does not provide election certification, an independent audit, a cast-as-intended protocol, receipt-freeness, coercion resistance, long-term post-quantum secrecy or fraud impossibility. It does not authenticate a national electoral register or provide availability, censorship-resistance or throughput guarantees.
 
-The retained admission starter uses Midnight-specific membership logic. Version 0.3.0 adds a separate native encrypted-election source candidate; it has not been compiled, proved or deployed. See NATIVE_MIDNIGHT.md for its dealer, initialization, verifier-key and proving assumptions. It is not an adapter for the browser's finite-field protocol. The new native source defines constrained finalization, but its generated constraints and execution remain unverified; the browser demo does not invoke it. Do not enable finalization by replacing it with an administrator signature or a boolean assertion supplied by a caller.
+Pages hosts the frontend only. The native browser session does not generate network proofs or submit ballots. The separate browser-wallet integration requires further transaction validation with an actual compatible wallet. Local development chains and their test resources are not public-network deployments or real funds.

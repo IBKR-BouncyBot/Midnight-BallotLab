@@ -117,6 +117,13 @@ try {
       assert.match(await page.locator('#network-availability').textContent(), /Nothing has been proved or submitted/);
       assert.equal(await page.locator('#network-id').inputValue(), '', 'No network may be selected by default');
       assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
+      for (const [fieldset, name] of [['network-selection', 'network-choice'], ['network-trustee', 'network-trustee'], ['network-pair', 'network-pair']]) {
+        assert.equal(await page.locator(`#${fieldset}`).evaluate(element => element.tagName), 'FIELDSET');
+        assert.equal(await page.locator(`#${fieldset} label.selection-card`).count(), 3);
+        assert.equal(await page.locator(`input[name="${name}"]:checked`).count(), 0);
+        for (const input of await page.locator(`input[name="${name}"]`).all()) assert.equal(await input.isDisabled(), true,
+          'Ballot and trustee cards must remain disabled without a connected election');
+      }
       for (const selector of ['#network-deploy', '#network-join', '#network-cast', '#network-finalize']) {
         assert.equal(await page.locator(selector).isDisabled(), true, 'Network actions need an actual connected wallet');
       }
@@ -150,7 +157,7 @@ try {
       assert.equal(consoleErrors, 0, 'Unexpected browser console errors');
       evidence.cases.push({ case: 'actual-sdk-load-and-no-wallet-failure', path: prefix, status: 'passed',
         wasmLoaded: wasmResponses.size, circuitAssetsServed: manifest.circuitAssets.length,
-        pageErrors, consoleErrors, remoteRequests: 0 });
+        ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true, pageErrors, consoleErrors, remoteRequests: 0 });
     } finally { await context.close(); }
   }
 

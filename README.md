@@ -1,30 +1,61 @@
-# Midnight Ballot Lab 0.4.0
+# Midnight Ballot Lab
 
-A research application built with the real Midnight Compact compiler, generated contract code and Midnight WebAssembly cryptography. It encrypts three-choice ballots with native Jubjub operations, enforces eligibility and one vote per credential, and checks a two-of-three trustee tally.
+![Midnight Ballot Lab — encrypted votes, shared results](docs/assets/ballot-lab-banner.svg)
 
-The starting point was version 0.3.0, recorded source commit `5882d228f11f8b2022ca3ee6ad29bd05eb88965d`. The continuation ZIP did not contain Git history. See [fresh execution evidence](docs/CONTINUATION_RESULTS.md); the original [handover](docs/CODEX_HANDOVER.md) and [historical verification](docs/HANDOVER_VERIFICATION.md) remain preserved.
+**Choose privately. Keep a receipt. Reveal the total together.**
 
-## Experiences
+Midnight Ballot Lab makes encrypted voting something you can see and try. Cast a ballot, watch it become encrypted, save a QR receipt, and select two of three trustees to reveal the result. It runs real Midnight cryptography in your browser, with a Compact smart contract checking the rules.
 
-- **Native browser experiment:** actual generated Compact circuits and the official runtime/WASM execute locally. Five synthetic voter credentials, encrypted ballots, QR/JSON receipts, each trustee pair, public consistency checks and exports. This mode creates no ZK proofs or network transactions.
-- **Development network client:** `network.html` uses the actual Midnight.js wallet, proving, indexer, asset and submission providers. A compatible wallet, explicit test network and local prover are required. Connection, proving, submission and configured-indexer confirmation are distinct stages. See [network setup and limits](docs/NATIVE_NETWORK.md).
-- **Verified local devnet runner:** the actual Node wallet/prover integration completed 17 accepted transactions, including 16 proved contract calls, five ballots and a `[2,1,2]` threshold tally. Its isolated wallet dependency graph, public receipts and transaction evidence are documented in [the execution report](docs/CONTINUATION_RESULTS.md). An actual browser-wallet transaction remains untested.
-- **Legacy JavaScript experiment:** retained for regression comparison and its independent Python verifier. Its MODP cryptography is not Midnight-native, and its verifier does not validate native snapshots.
+### [Open the app →](https://ibkr-bouncybot.github.io/Midnight-BallotLab/)
 
-Both native modes preserve the Midnight-inspired styling. Native modes never fall back to the legacy cryptography. Missing generated code, WASM or required services produces an error.
+The interactive browser lab needs no wallet or funds. It runs locally in your browser using five sample voter credentials. It does not send votes to a blockchain.
 
-## Build and validate
+## Try an election in a few clicks
 
-The supported ledger-8 set checked on 3 November 2026 is Compact devtools **0.5.1**, compiler **0.31.1**, language **0.23.0**, compact-runtime **0.16.0**, onchain-runtime-v3 **3.0.0**, Midnight.js **4.1.1** and proof-server **8.1.3**. DApp Connector API is **4.0.1**. Newer compiler/runtime releases targeting ledger 9 are not interchangeable with this set. [Official compatibility matrix](https://docs.midnight.network/relnotes/support-matrix).
+1. **Create an election.** The lab prepares its keys, three trustees and five sample voters.
+2. **Click your choice.** Cast each ballot and keep its receipt as a QR code or JSON file.
+3. **Pick two trustees.** Click any two trustee cards to unlock the combined tally.
+4. **Explore the checks.** Check a receipt against the election record and export the public data.
 
-Install Node 24 and Python, and install the official Compact tooling on Linux/macOS or inside WSL on Windows. Use [Windows setup](docs/WINDOWS_NATIVE.md) for this checkout's explicit WSL launcher. Do not invoke Windows' unrelated `compact.exe` file-compression utility.
+![Five steps: prepare an election, encrypt a vote, keep a receipt, choose two trustees, reveal the tally](docs/assets/how-it-works.svg)
+
+## What makes it interesting?
+
+| Feature | What you can explore |
+| --- | --- |
+| **Encrypted ballots** | Choices are encoded and encrypted with Midnight's native cryptographic operations. The public record contains ciphertexts rather than plain choices. |
+| **One vote per credential** | The contract checks membership and rejects reuse of the same credential in an election. A credential is not proof of a unique person. |
+| **Two-of-three tallying** | Any two registered trustees can provide the contributions needed to reveal and check the combined result. |
+| **QR receipts** | A receipt identifies an encrypted ballot and its election. Check it against the loaded record without putting the choice in the receipt. |
+| **Visible checks** | Inspect receipt matching, ciphertext totals and trustee tally equations, with clear limits on what these checks establish. |
+
+![Any two of three trustees can combine their contributions to reveal the aggregate tally](docs/assets/threshold-tally.svg)
+
+## From a browser experiment to a test network
+
+The main app executes generated Compact contract code and official Midnight WebAssembly locally. A separate [development network client](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) connects the real Midnight.js wallet, prover, indexer and transaction providers. It requires a compatible wallet, configured test services and a local prover.
+
+These are separate milestones: **running cryptography**, **generating a proof**, and **having a transaction accepted by a network**. The project has recorded all three: browser/WASM execution, eight standalone circuit proofs, and a complete isolated devnet election with 17 accepted transactions and a `[2, 1, 2]` tally. The accepted transactions used the Node wallet integration; browser-wallet transactions still need validation. See the [execution report](docs/CONTINUATION_RESULTS.md) and [GitHub run evidence](docs/GITHUB_EXECUTION.md) for exact tested commits and versions.
+
+GitHub Pages hosts the frontend. It does not supply a prover, run a Midnight node or deploy the contract. Hosting is independent of ChatGPT Sites.
+
+## A hands-on research prototype
+
+This lab helps explain and test the mechanics; it is not a certified election system. The browser demonstration holds voter and trustee roles together, and its key dealer knows every secret share. Two cooperating trustees could decrypt individual ballots outside the app. Real use would require separate security, identity, device and operational safeguards.
+
+A receipt check confirms consistency with the loaded record. It does not independently prove blockchain inclusion or that a device recorded the intended choice. The lab makes no claim of coercion resistance or fraud impossibility. Read the [security boundaries](docs/THREAT_MODEL.md) before adapting it.
+
+## Build, test and explore the source
+
+The application uses Compact compiler **0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1** and proof-server **8.1.3**. Exact dependency graphs are pinned in npm-generated lockfiles. Follow the [native setup guide](docs/NATIVE_MIDNIGHT.md), [Windows instructions](docs/WINDOWS_NATIVE.md), [network guide](docs/NATIVE_NETWORK.md) or [GitHub Pages guide](docs/GITHUB_PAGES.md).
+
+With the pinned Compact toolchain, Node 24 and Python installed:
 
 ```sh
-compact update 0.31.1
 npm --prefix contracts ci --ignore-scripts
-npm --prefix contracts run compile:native
+npm --prefix contracts run compile
 npm --prefix contracts run test:native
-npm --prefix contracts run demo:native
+npm run demo
 npm test
 npm run build
 npm --prefix contracts run build:browser:native
@@ -36,33 +67,13 @@ python3 scripts/check_pages.py
 python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
 ```
 
-Build order matters: the root static build clears `dist` and writes disabled native/network manifests. The separate bundlers enable their manifests only after packaging actual generated code and real assets. Repeat both bundlers after every static build. Use `python` on Windows or set `PYTHON` to the desired interpreter.
+Run both browser bundlers after each static build. The build only enables the app when real generated code and assets are present. Use `python` instead of `python3` on Windows if needed.
 
-Both npm lockfiles were generated by npm and reproduced with `npm ci --ignore-scripts`. Review the [application graph](evidence/2026-11-03/application-lockfile-review.json), [isolated wallet graph](evidence/2026-11-03/devnet-lockfile-review.json) and separate final audit reports under `evidence/2026-11-03`. The application audit reports zero known vulnerabilities; the isolated devnet graph retains eight moderate findings in testkit's transitive container/archive helpers. These audit snapshots do not certify application security.
-
-## GitHub hosting
-
-The included Actions workflows install the pinned compiler, use `npm ci`, test actual generated code, bundle the frontend and gate Pages publication on native browser checks. Pages serves static files and public proving assets; it supplies no node, prover, wallet or contract deployment. Ordinary GitHub hosting is independent of ChatGPT Sites. See [GitHub Pages instructions](docs/GITHUB_PAGES.md) and the fresh evidence report for actual deployment status.
-
-## Security boundaries
-
-The contract retains administrator-authorized key setup, canonical nonzero subgroup scalars, voter-secret-bound membership, frozen electorate roots, unique nullifiers, constrained one-hot ciphertexts, election/configuration-bound receipts, full ciphertext aggregation, registered trustee contributions and bounded threshold tally equations for all three pairs.
-
-Private choices, randomness, administrator/voter credentials, trustee secrets and proof preimages do not belong in logs, source control or public exports. A prover receives private witnesses: use the local prover with verbose logging disabled. The browser demo holds all roles in one process; its centralized dealer knows the master secret and every share. It is not distributed key generation. Two colluding trustees can decrypt individual ballots outside the contract.
-
-Public consistency checks do not authenticate initial state, maintenance policy or chain inclusion. An indexer response and transaction identifier alone are not independent chain verification. Native snapshots are not portable proof packages. This prototype does not establish one eligible person per credential, cast-as-intended assurance, secure devices, coercion resistance, election certification or fraud impossibility. It has not undergone an independent security audit.
-
-## Source map
-
-| Path | Purpose |
+| Start here | Explore |
 | --- | --- |
-| `contracts/native-election.compact` | Native election constraints |
-| `contracts/native/harness.mjs` | Actual generated-contract local execution |
-| `contracts/native/adapter.mjs` | CSPRNG inputs, scalar bounds and private witnesses |
-| `contracts/native/sdk-client.mjs` | Real Midnight.js contract operations and receipt recovery |
-| `contracts/native/browser-providers.mjs` | Wallet/prover/indexer/provider bootstrap |
-| `src/native-app.mjs` | Native browser experiment |
-| `src/network-app.mjs` | Explicit development network interface |
-| `scripts/test-native-browser.mjs` | Real Chromium/WASM acceptance test |
-| `contracts/managed/` | Generated bindings and public proving material; rebuild, do not fabricate |
-| `evidence/2026-11-03/` | Fresh command output and dependency review |
+| [Compact contract](contracts/native-election.compact) | Eligibility, encryption, receipts, aggregation and tally constraints |
+| [Native implementation](contracts/native/) | Generated-contract execution, private inputs and Midnight.js integration |
+| [Browser application](src/native-app.mjs) | Clickable voting, trustee selection and public checks |
+| [Automated checks](.github/workflows/) | Compilation, runtime tests, real browser checks, proving and devnet acceptance |
+
+Private choices, randomness, credentials, secret shares and proof witnesses stay out of public exports and test logs. See the developer guides for prover handling and the remaining integration limits.

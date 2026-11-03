@@ -172,10 +172,16 @@ try {
 
       stage = `trustees-${pair.replace(',', '-')}:five-native-ballots`;
       await page.locator('#native-go-vote').click();
+      assert.equal(await page.locator('#native-choices label.selection-card').count(), 3);
+      if (pair === '1,2') await page.locator('#native-choice-fieldset').screenshot({ path: join(evidenceDir, 'native-choice-cards.png') });
       // Synthetic acceptance inputs stay in this test process; they are never
       // copied into browser console, screenshots, traces, or result evidence.
       for (const [index, candidate] of [0, 1, 2, 0, 2].entries()) {
-        await page.locator(`input[name="native-choice"][value="${candidate}"]`).check();
+        const choice = page.locator(`input[name="native-choice"][value="${candidate}"]`);
+        if (index === 0 && pair === '1,2') { await choice.focus(); await choice.press('Space'); }
+        else await page.locator(`#native-choices label:has(input[value="${candidate}"])`).click();
+        assert.equal(await choice.isChecked(), true, 'Card click or keyboard Space must select the ballot');
+        assert.equal(await page.locator('input[name="native-choice"]:checked').count(), 1);
         await page.locator('#native-cast').click();
         await waitOperation(page);
         assert.equal(await page.locator('#native-ballots').textContent(), String(index + 1));
@@ -216,7 +222,30 @@ try {
       await page.locator('#native-close').click();
       await waitOperation(page);
       assert.equal(await page.locator('#native-phase').textContent(), 'Voting closed');
-      await page.locator('#native-trustee-pair').selectOption(pair);
+      assert.equal(await page.locator('input[name="native-trustee"]:checked').count(), 0);
+      assert.equal(await page.locator('#native-finalize').isDisabled(), true, 'Choose exactly two trustees before tallying');
+      const selectedPair = pair.split(',');
+      const firstTrustee = page.locator(`#native-trustee-${selectedPair[0]}`);
+      await firstTrustee.focus(); await firstTrustee.press('Space');
+      assert.equal(await firstTrustee.isChecked(), true);
+      assert.equal(await page.locator('#native-finalize').isDisabled(), true, 'One trustee must not enable tally');
+      await page.locator(`label[for="native-trustee-${selectedPair[1]}"]`).click();
+      assert.equal(await page.locator('input[name="native-trustee"]:checked').count(), 2);
+      const unused = ['1', '2', '3'].find(value => !selectedPair.includes(value));
+      assert.equal(await page.locator(`#native-trustee-${unused}`).isDisabled(), true, 'A third selection must be unavailable');
+      await page.locator(`label[for="native-trustee-${selectedPair[1]}"]`).click();
+      assert.equal(await page.locator(`#native-trustee-${unused}`).isDisabled(), false);
+      assert.equal(await page.locator('#native-finalize').isDisabled(), true);
+      await page.locator(`label[for="native-trustee-${selectedPair[1]}"]`).click();
+      assert.equal(await page.locator('#native-finalize').isDisabled(), false);
+      if (pair === '1,3') {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const width = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
+          content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) }));
+        assert.ok(width.content <= width.viewport + 1, 'Trustee cards must fit mobile width');
+        await page.locator('#native-trustee-fieldset').screenshot({ path: join(evidenceDir, 'native-trustee-cards-mobile.png') });
+        await page.setViewportSize({ width: 1365, height: 1000 });
+      }
       await page.locator('#native-finalize').click();
       await waitOperation(page);
       assert.equal(await page.locator('#native-phase').textContent(), 'Finalized');
@@ -269,6 +298,7 @@ try {
       assert.equal(await page.locator('#native-ballots').textContent(), '0');
       assert.equal(await page.locator('#native-receipt-input').inputValue(), '');
       assert.equal(await page.locator('#native-receipt-qr svg').count(), 0);
+      assert.equal(await page.locator('input[name="native-trustee"]:checked').count(), 0, 'Reset must clear trustee selection');
       await page.locator('#native-create').click();
       await waitOperation(page);
       await page.locator('[data-native-nav="check"]').click();
@@ -280,9 +310,10 @@ try {
       for (const urlText of requested) {
         const url = new URL(urlText);
         assert.equal(url.origin, origin, 'Native emulator must not send data to another origin');
-        assert.ok(!/\/(?:crypto|protocol|app)\.mjs$/.test(url.pathname), 'Legacy cryptography must not supply native mode');
       }
+      assert.ok(requested.has(`${origin}${prefix}${manifest.bundle}`), 'Actual generated browser bundle must execute');
       evidence.cases.push({ trustees: pair.split(',').map(Number), prefix, entry, passed: true, accepted: 5,
+        clickableCardsChecked: true, keyboardSelectionChecked: true, exactTwoTrusteesChecked: true,
         renderedQrDecoded: true, receiptContextRejections: true, reset: true, wasmLoaded: loadedWasm.size, mobileViewportChecked });
       console.log(JSON.stringify({ stage: `trustees-${pair.replace(',', '-')}`, passed: true }));
     } finally { await context.close(); }

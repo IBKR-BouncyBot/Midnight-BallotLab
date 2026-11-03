@@ -1,0 +1,26 @@
+{
+  "executedAt": "2026-11-03T17:58:28.944Z",
+  "reports": [
+    {
+      "name": "ballot-lab-banner",
+      "title": "Midnight Ballot Lab — Encrypted votes. Shared results.",
+      "textCount": 16,
+      "externalAssets": 0,
+      "clippedText": []
+    },
+    {
+      "name": "how-it-works",
+      "title": "How Midnight Ballot Lab works",
+      "textCount": 32,
+      "externalAssets": 0,
+      "clippedText": []
+    },
+    {
+      "name": "threshold-tally",
+      "title": "Two-of-three trustee tally: trustees 1 and 3 recover example totals 2, 1, 2",
+      "textCount": 22,
+      "externalAssets": 0,
+      "clippedText": []
+    }
+  ]
+}

@@ -28,12 +28,12 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Set up Python reference verifier
+      - name: Set up Python packaging checks
         uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - name: Test local cryptographic protocol and interface handlers
-        run: npm test 2>&1 | tee "$RUNNER_TEMP/local-tests.log"
+      - name: Test native adapters, receipts and input boundaries
+        run: npm test 2>&1 | tee "$RUNNER_TEMP/native-boundary-tests.log"
       - name: Install and verify the pinned native toolchain
         run: bash scripts/ci-install-midnight.sh 2>&1 | tee "$RUNNER_TEMP/toolchain.log"
       - name: Install the reviewed dependency lockfile
@@ -80,7 +80,7 @@ jobs:
             ${{ runner.temp }}/dependency-install.log
             ${{ runner.temp }}/dependency-tree.json
             ${{ runner.temp }}/provider-api-tests.log
-            ${{ runner.temp }}/local-tests.log
+            ${{ runner.temp }}/native-boundary-tests.log
             ${{ runner.temp }}/native-election-compile.log
             ${{ runner.temp }}/native-election-tests.log
             ${{ runner.temp }}/native-election-demo.log

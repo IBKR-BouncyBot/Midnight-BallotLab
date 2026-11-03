@@ -1,0 +1,11 @@
+✔ official SDK provider bootstrap validates storage password before requesting wallet access (0.8599ms)
+✔ official SDK provider bootstrap rejects mainnet before requesting wallet access (0.1217ms)
+✔ official SDK provider bootstrap rejects incompatible connector APIs before wallet access (0.1407ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 734.4998

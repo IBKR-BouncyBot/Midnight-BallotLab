@@ -4,10 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { compactInvocation } from './compact-launcher.mjs';
 
 const cwd = fileURLToPath(new URL('..', import.meta.url));
-const targets = { admission: ['election.compact', 'election'], native: ['native-election.compact', 'native-election'] };
-const target = process.argv[2] ?? 'admission';
-if (!Object.hasOwn(targets, target) || process.argv.length > 3) throw new Error('Expected compile target admission or native');
-const [source, directory] = targets[target];
+const target = process.argv[2] ?? 'native';
+if (target !== 'native' || process.argv.length > 3) throw new Error('Expected the native compile target');
+const source = 'native-election.compact', directory = 'native-election';
 const pins = JSON.parse(await readFile(new URL('../toolchain.json', import.meta.url), 'utf8'));
 if (!/^\d+\.\d+\.\d+$/.test(pins.compiler)) throw new Error('Invalid pinned compiler version');
 const selector = `+${pins.compiler}`;
@@ -29,7 +28,7 @@ if (version.error || version.status !== 0) {
   }
   console.log(`Using Compact toolchain ${pins.compiler}: ${reported}`);
   // Generated output is disposable. Removing it prevents a failed or partial
-  // compile from being mistaken for a successful build from older artifacts.
+  // compile from being mistaken for a successful build using residual output.
   await rm(new URL(`../managed/${directory}/`, import.meta.url), { recursive: true, force: true });
   const result = spawnSync(launch.command, [
     ...launch.args, 'compile', selector, source, `managed/${directory}`,

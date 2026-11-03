@@ -8,7 +8,7 @@ await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(join(root, 'src'), dist, { recursive: true });
 // This entry imports real generated bindings and must be bundled separately.
-// The baseline site never attempts to run an unbuilt native entry.
+// The static shell never attempts to run an unbuilt native entry.
 await rm(join(dist, 'native-app.mjs'), { force: true });
 await rm(join(dist, 'network-app.mjs'), { force: true });
 await rm(join(dist, 'network-receipt.mjs'), { force: true });
@@ -23,12 +23,11 @@ await writeFile(join(dist, 'network-build.json'), JSON.stringify({
 await cp(join(root, 'docs'), join(dist, 'docs'), { recursive: true });
 // Keep relative links from the published compatibility guide usable.
 await mkdir(join(dist, 'contracts'), { recursive: true });
-for (const name of ['README.md', 'ADAPTER_GAP.md', 'native-election.compact']) {
+for (const name of ['README.md', 'native-election.compact']) {
   await cp(join(root, 'contracts', name), join(dist, 'contracts', name));
 }
 await mkdir(join(dist, 'contracts', 'native'), { recursive: true });
 await cp(join(root, 'contracts', 'native', 'README.md'), join(dist, 'contracts', 'native', 'README.md'));
-await cp(join(root, 'examples'), join(dist, 'examples'), { recursive: true }).catch(e => { if (e.code !== 'ENOENT') throw e; });
 // GitHub Pages should publish the generated files without Jekyll processing.
 await writeFile(join(dist, '.nojekyll'), '');
 
@@ -45,7 +44,7 @@ function crc32(bytes) {
 async function list(dir) {
   const files = [];
   for (const entry of (await readdir(dir, {withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))) {
-    if (['node_modules', '__pycache__', '.git', 'managed', '.runtime', 'private-state', '.npm-cache', 'logs'].includes(entry.name) || /\.(?:pyc|secret\.json)$/.test(entry.name)) continue;
+    if (['node_modules', '__pycache__', '.git', 'managed', '.runtime', 'private-state', '.npm-cache', 'logs', 'artifacts', 'dist'].includes(entry.name) || /\.(?:pyc|secret\.json)$/.test(entry.name)) continue;
     if (entry.isSymbolicLink()) throw new Error('Symlinks are excluded from release');
     const path = join(dir, entry.name);
     if (entry.isDirectory()) files.push(...await list(path)); else files.push(path);
@@ -53,7 +52,7 @@ async function list(dir) {
   return files;
 }
 const sourcePaths = [];
-for (const path of ['src', 'contracts', 'tests', 'scripts', 'docs', 'examples', '.github', 'evidence']) {
+for (const path of ['src', 'contracts', 'tests', 'scripts', 'docs', '.github', 'evidence']) {
   sourcePaths.push(...await list(join(root,path)).catch(e=>{if(e.code==='ENOENT')return [];throw e;}));
 }
 for (const name of ['README.md','LICENSE','package.json','.gitignore','.gitattributes','AGENTS.md']) sourcePaths.push(join(root,name));

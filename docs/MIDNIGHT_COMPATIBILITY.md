@@ -1,6 +1,6 @@
-# Midnight compatibility review — 0.4.0 continuation
+# Midnight toolchain compatibility
 
-Updated 3 November 2026 from installed packages, real compiler output and fresh execution evidence. Native compilation, generated-contract tests, the native browser/WASM flow, standalone circuit proof generation and isolated local-devnet transaction acceptance have passed. Browser-wallet validation and GitHub deployment remain pending. The main page runs the actual generated native contract locally; the older JavaScript protocol remains explicitly labeled at `legacy.html`. Read [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md) for current run results.
+Updated 3 November 2026 from installed packages, real compiler output and fresh execution evidence. Native compilation, generated-contract tests, the native browser/WASM flow, standalone circuit proof generation and isolated local-devnet transaction acceptance passed locally and on GitHub. Pages deployment and actual browser checks at the live URL also passed. Browser-wallet validation remains pending. The main page runs the actual generated native contract locally. Read [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md) and [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for separate local and hosted results.
 
 ## Pinned target
 
@@ -12,8 +12,6 @@ Do not substitute a latest compiler/runtime: the matrix identifies compiler 0.34
 
 | Component | Implemented / verification status |
 |---|---|
-| Legacy browser protocol | Retained at `legacy.html`; local RFC 3526 encryption/proofs, not Midnight-native or submitted to a chain. |
-| `contracts/election.compact` | Retained admission-only contract; compiled and all 11 generated-runtime tests passed. Accepts opaque digests, so it is not a full election. |
 | `contracts/native-election.compact` | Native three-choice election: full compilation passed, all 20 generated-runtime tests passed, and all seven circuit types produced standalone local proofs. |
 | Native witness/input adapter | Real private-input callbacks and subgroup scalar sampling. Dependency-free boundary tests executed. |
 | Native emulator harness | Executes actual generated bindings/runtime. Five-ballot example passed with tally `[2,1,2]`; no replacement implementation. |
@@ -22,8 +20,7 @@ Do not substitute a latest compiler/runtime: the matrix identifies compiler 0.34
 | Native SDK client | Real Midnight.js 4.1.1 provider assembly and browser wallet/election UI implemented. Four real SDK/WASM loading and failure-handling browser cases passed. Separate Node wallet acceptance confirmed 17 transactions on the fresh local devnet; an actual browser-wallet transaction remains untested. |
 | Standalone local proving | Proof-server 8.1.3 generated eight proofs across all seven circuit types; mismatched preimage/circuit material was rejected. No wallet or network transaction involved. |
 | Native snapshot export | Explicit public allowlist; no private state/proof witness export. Snapshots mark proof generation and chain authentication false. Projection tests are not native execution. |
-| Independent local algebra tests | Check integer-scaled two-of-three equations and scalar bounds in an abstract cyclic-group model. They do not execute Compact or Jubjub. |
-| GitHub Pages | Workflows require native/runtime/browser gates and reviewed lockfile installation; no legacy-only opt-out. User selected `IBKR-BouncyBot/Midnight-BallotLab`; access, hosted CI and deployment are pending. Hosting supplies no node/prover infrastructure. |
+| GitHub Pages | All three initial hosted workflows passed at commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`. The [deployed application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) passed real Chromium checks. Native/runtime/browser gates and reviewed lockfile installation remain required. Hosting supplies no node/prover infrastructure. |
 
 ## Review findings addressed in source
 
@@ -35,13 +32,13 @@ Do not substitute a latest compiler/runtime: the matrix identifies compiler 0.34
 - Trustee calls use the complete frozen on-ledger aggregate; they accept no caller-selected subset. Finalization checks two registered contributions and bounded totals summing to accepted ballots.
 - The configuration digest binds metadata, administrator, deadlines and actual key commitments. Native receipts bind that configuration and ciphertexts. SDK client joins require an expected configuration digest in addition to the SDK's verifier-key comparison.
 
-The continuation's actual compiler rejected a possible disclosure of totals inside a ledger-dependent short-circuit expression. The fix discloses the already-public final totals before the comparisons; all total bounds, sum constraints and trustee pair equations remain enforced. Fresh native tests and local proofs then passed. These results are not an independent audit of constraint soundness. Authentication of initial state, verifier keys/code, real setup transaction, network and maintenance policy remains necessary. Matching verifier keys alone does not establish honest initialization.
+The actual compiler rejected a possible disclosure of totals inside a ledger-dependent short-circuit expression. The fix discloses the already-public final totals before the comparisons; all total bounds, sum constraints and trustee pair equations remain enforced. Fresh native tests and local proofs then passed. These results are not an independent audit of constraint soundness. Authentication of initial state, verifier keys/code, real setup transaction, network and maintenance policy remains necessary. Matching verifier keys alone does not establish honest initialization.
 
 ## Execution boundary
 
-The historical 0.3.0 environment could not install the toolchain. This continuation installed official devtools/compiler in Ubuntu 24.04 under WSL, installed exact npm dependencies, generated and reviewed the lockfile, and executed the native stages described above. Historical failures remain in the handover and old verification report; they are not the current execution state.
+Official devtools/compiler were installed in Ubuntu 24.04 under WSL, exact npm dependencies were installed from the reviewed lockfile, and the native stages above executed. Reports identify the tested source and versions; new changes require their own checks.
 
-Compiler/runtime execution, standalone proof generation and network acceptance are reported separately. The configured local indexer confirmed 17 transactions in the user-selected fresh devnet, including finalization at block 100 with tally `[2,1,2]`; this does not establish independently authenticated chain inclusion. No hosted GitHub result or browser-wallet acceptance is claimed yet. The compiler scripts enforce explicit versions, clean disposable old output, require actual generated assets and import the actual runtime. They create no placeholder circuits or keys. No mainnet or real funds are authorized.
+Compiler/runtime execution, standalone proof generation and network acceptance are reported separately. The configured local indexer confirmed 17 transactions in the user-selected fresh devnet, finalizing `[2,1,2]` at block 100. A separate successful GitHub devnet run confirmed 17 transactions on its own chain and finalized at block 99. Neither establishes independently authenticated chain inclusion or an actual browser-wallet transaction. The compiler scripts enforce explicit versions, clean disposable old output, require actual generated assets and import the actual runtime. They create no placeholder circuits or keys. No mainnet or real funds are authorized.
 
 Read [NATIVE_MIDNIGHT.md](NATIVE_MIDNIGHT.md) for commands, exact native semantics, central-dealer limits and the remaining implementation/testing work.
 

@@ -2,6 +2,8 @@
 
 `network.html` is a separate real Midnight.js client. `native.html` runs generated Compact circuits locally and does not generate proofs or send network transactions. The network page becomes available only when its actual bundle and generated assets are built. Loading the page does not connect a wallet.
 
+The [live GitHub Pages network page](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) passed actual SDK/WASM loading and no-wallet failure checks. The separate hosted Node wallet acceptance workflow also completed 17 confirmed transactions and 16 proof transactions, finalizing `[2,1,2]` at block 99 on its own fresh local development chain. [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) retains its precise address, transaction IDs, first tested commit and run links. This does not fill the actual browser-wallet transaction gap.
+
 ## Dependencies and APIs inspected
 
 The supplied compiler/runtime/SDK pins remain the supported ledger-8 combination in the official [compatibility matrix](https://docs.midnight.network/relnotes/support-matrix), checked on 3 November 2026: Compact 0.31.1, compact-runtime 0.16.0, onchain-runtime-v3 3.0.0 and Midnight.js 4.1.1. Do not substitute the newer ledger-9 compiler/runtime while using this SDK/network combination.

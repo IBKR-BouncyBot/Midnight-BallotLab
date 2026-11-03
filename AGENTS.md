@@ -1,22 +1,22 @@
-# Midnight Ballot Lab continuation
+# Midnight Ballot Lab
 
-## Goal and starting point
+## Product and repository
 
-The user wants actual Midnight code, native cryptography in the browser, and source/frontend hosting on GitHub. Read `docs/CODEX_HANDOVER.md` and `docs/HANDOVER_VERIFICATION.md` before implementation. Baseline: 0.3.0, source commit `5882d228f11f8b2022ca3ee6ad29bd05eb88965d`.
+Midnight Ballot Lab is a native Midnight application with encrypted ballots, two-of-three trustee tallying, QR receipts and public checks. Use real generated Compact contracts, Midnight cryptography and browser WASM throughout. Keep the product focused on this application and its current user journey.
 
-This portable checkout contains no prior Git history or ChatGPT Sites binding. Use the repository selected by the user in the current environment. The handover files were added to a copy; the 58 baseline source files were preserved.
+Source is hosted at `https://github.com/IBKR-BouncyBot/Midnight-BallotLab`; the frontend is served through ordinary GitHub Pages at `https://ibkr-bouncybot.github.io/Midnight-BallotLab/`. Read the owning source and fresh execution reports before making claims. Commit-specific test provenance is retained in Git history and `docs/GITHUB_EXECUTION.md`.
 
 ## Evidence and workflow
 
-- Fresh native compilation, generated-runtime tests, browser/WASM checks and local circuit proofs have passed in this continuation. Read `docs/CONTINUATION_RESULTS.md` and the exact retained evidence for stage boundaries; do not infer compatibility from syntax checks or version pins.
+- Native compilation, generated-runtime tests, browser/WASM checks, circuit proofs and isolated development-network acceptance have recorded passes. Read `docs/CONTINUATION_RESULTS.md` and exact retained evidence for stage boundaries and tested commits. Rerun affected checks after changes; do not infer compatibility from syntax or pins.
 - Install the official toolchain first; verify the current support matrix and the intended network. Start with the recorded pins, changing them only as a consistent, documented set.
 - Run the actual compiler, generated-contract tests and demo, fix demonstrated failures, then bundle and exercise the real browser/WASM path.
 - Root `npm test` covers local JavaScript and adapter logic, not generated native contracts.
 - Root `npm run build` clears `dist/` and disables both browser builds. Run `npm --prefix contracts run build:browser:native` and `node scripts/build-network-browser.mjs` afterward.
 - Do not fabricate generated bindings, proof keys, native test results or a dependency lockfile. Review and commit a real lockfile after installation.
-- Missing native prerequisites must remain failures. Never substitute the legacy protocol or a mock and label it native.
+- Missing native prerequisites must remain failures. Never substitute mock cryptography or manually enable a success flag.
 - Separate emulator success, proof generation, network acceptance, independent public verification and GitHub deployment in reports.
-- Keep the Midnight styling and existing regression coverage. Once verified, make native execution the main experience and retain any legacy path only with clear labeling.
+- Keep the Midnight styling and a clear native election experience. Describe user-facing behavior in plain language and keep implementation detail in developer documentation.
 
 ## Contract boundaries to preserve
 

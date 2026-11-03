@@ -4,10 +4,9 @@ import { readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
-const targets = { admission: 'election', native: 'native-election' };
-const target = process.argv[2] ?? 'admission';
-if (!Object.hasOwn(targets, target) || process.argv.length > 3) throw new Error('Expected artifact target admission or native');
-const generated = new URL(`../managed/${targets[target]}/`, import.meta.url);
+const target = process.argv[2] ?? 'native';
+if (target !== 'native' || process.argv.length > 3) throw new Error('Expected the native artifact target');
+const generated = new URL('../managed/native-election/', import.meta.url);
 
 async function regularFiles(directory) {
   const files = [];
