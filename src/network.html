@@ -24,6 +24,7 @@
         <form id="network-connect-form">
           <label for="network-wallet">Installed wallet</label><select id="network-wallet" data-network-control disabled></select>
           <button type="button" class="text-button" id="network-refresh-wallets" data-network-control disabled>Refresh wallet list</button><p id="network-wallet-note" class="field-note"></p>
+          <p class="field-note">Requires a Midnight-enabled wallet with DApp Connector API 4, such as the Lace wallet described in Midnight’s browser guide. Browser-wallet transactions have not yet been verified for this app. <a href="https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/docs/NATIVE_NETWORK.md#wallet-compatibility">Wallet requirements and test status ↗</a></p>
           <label for="network-id">Network</label><select id="network-id" data-network-control disabled required><option value="">Select a development network</option><option value="undeployed">Local development (undeployed)</option><option value="preview">Preview</option><option value="preprod">Preprod</option></select>
           <label for="network-indexer">Indexer address (HTTPS, or HTTP on your device)</label><input id="network-indexer" type="url" required autocomplete="off" data-network-control disabled>
           <label for="network-indexer-ws">Indexer WebSocket URL</label><input id="network-indexer-ws" type="url" required autocomplete="off" data-network-control disabled>

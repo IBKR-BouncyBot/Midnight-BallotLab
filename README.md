@@ -83,6 +83,20 @@ Run both browser bundlers after each static build. The build only enables the ap
 
 Private choices, randomness, credentials, secret shares and proof witnesses stay out of public exports and test logs. See the developer guides for prover handling and the remaining integration limits.
 
+## Buy me a coffee
+
+If the lab has been useful, you can support IBKR-BouncyBot with a little ADA. It's completely optional.
+
+**ADA · Cardano mainnet**
+
+Scan the QR code or copy the address below. The [support section](https://ibkr-bouncybot.github.io/Midnight-BallotLab/#support) also has a copy button.
+
+<img src="src/assets/support-ada-qr.svg" width="220" height="220" alt="QR code for the Cardano mainnet ADA support address">
+
+```text
+addr1q85w2v474ywzx868s69pghygek3vrhxm69e7c6ysuf28qhv8kmj5wd059grxl82f8h5mtyzl87cvqj8ldv2e0las7tnsdej9ax
+```
+
 ## Noncommercial license
 
 You can study, modify and share the project for noncommercial purposes under [PolyForm Noncommercial 1.0.0](LICENSE). Commercial use requires separate written permission from IBKR-BouncyBot. This restriction applies to project-owned material; [third-party components keep their own licenses](THIRD_PARTY_NOTICES.md).

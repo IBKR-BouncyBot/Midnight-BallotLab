@@ -1,0 +1,43 @@
+{
+  "executedAt": "2026-11-03T20:34:31.413Z",
+  "execution": "real-local-chromium",
+  "walletConnected": false,
+  "fundsTransferred": false,
+  "hostedRequests": false,
+  "cases": [
+    {
+      "case": "rendered-qr-and-readonly-address",
+      "status": "passed",
+      "qrWidth": 220,
+      "qrHeight": 221
+    },
+    {
+      "case": "actual-clipboard-copy",
+      "status": "passed",
+      "exactAddress": true
+    },
+    {
+      "case": "mobile-layout-and-qr",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "clipboard-policy-denied-select-fallback",
+      "status": "passed",
+      "mechanism": "real Permissions-Policy denial; no API replacement",
+      "entireAddressSelected": true
+    }
+  ],
+  "address": "addr1q85w2v474ywzx868s69pghygek3vrhxm69e7c6ysuf28qhv8kmj5wd059grxl82f8h5mtyzl87cvqj8ldv2e0las7tnsdej9ax",
+  "bundleSha256": "0a45a5d6367b06441b3c1b69bd78543aff97195c5ab6837b28169698f09e29b4",
+  "qrSvgSha256": "3f2491a3fa1371eddc73bf934fe9f0b32e601a9d2e1a262b9f76b3389f7164ee",
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "browserCounters": {
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "offOriginRequests": 0
+  },
+  "status": "passed"
+}

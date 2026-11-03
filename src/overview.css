@@ -88,6 +88,22 @@ body { background: var(--black); }
 .result-fill { background: var(--blue); border-radius: 0; }
 .verification-result, .success-card { border-radius: 4px; }
 .page-footer { border-color: #333; font-size: 13px; }
+.support-panel { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 48px; align-items: center; margin-top: 56px; padding: 40px 0; border-top: 1px solid #333; scroll-margin-top: 24px; }
+.support-panel .eyebrow { margin: 0 0 12px; }
+.support-panel h2 { margin: 0 0 16px; font-size: clamp(30px, 4vw, 42px); font-weight: 400; letter-spacing: -1px; }
+.support-panel .support-intro { max-width: 620px; margin: 0 0 20px; color: #bdbdbd; font-size: 16px; line-height: 1.6; }
+.support-panel label { display: block; margin-bottom: 10px; color: #ddd; font-size: 13px; }
+.support-panel textarea { display: block; width: 100%; min-width: 0; margin: 0 0 16px; padding: 14px; resize: vertical; border: 1px solid #454545; border-radius: 3px; background: #181818; color: #fff; font: 14px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+.support-panel .support-note { margin: 12px 0 0; color: #aaa; font-size: 13px; line-height: 1.6; }
+.support-panel .support-status { min-height: 1.5em; margin: 10px 0 0; color: #d5d5ff; font-size: 13px; }
+.support-qr { margin: 0; text-align: center; }
+.support-qr img { display: block; width: 220px; max-width: 100%; height: auto; border-radius: 4px; }
+.support-qr figcaption { margin-top: 12px; color: #bdbdbd; font-size: 13px; }
+@media (max-width: 700px) {
+  .support-panel { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 36px; padding-block: 32px; }
+  .support-panel textarea { font-size: 16px; }
+  .support-qr { justify-self: center; }
+}
 @media (max-width: 960px) {
   .masthead { padding: 20px 26px; }
   .page { padding-inline: 26px; }

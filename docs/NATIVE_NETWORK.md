@@ -6,6 +6,18 @@ The [GitHub Pages network page](https://ibkr-bouncybot.github.io/Midnight-Ballot
 
 Version 0.6.1 includes sealed 2–5 candidate-count handling, five fixed ciphertext lanes and an external scheduled local-devnet operator. Its successful network run waited for actual indexed time after the sealed closing deadline, then submitted closing, trustee contributions 1 + 3 and finalization. The preceding 0.6.0 failure at its fifth ballot remains separately retained; it is not relabeled as passing. The local browser's scheduled preview and public JSON verifier are separate features; neither submits a network transaction or authenticates a network record.
 
+## Wallet compatibility
+
+**Midnight-enabled Lace is the documented candidate, not a wallet verified with this application.** The official [Midnight browser guide](https://docs.midnight.network/guides/browser-dapp) describes Lace 2.4.3 with DApp Connector API 4.x. The [official browser-store listing](https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk) is 2.5.0 as checked on 3 November 2026; [Lace's 2.5 announcement](https://www.lace.io/blog/lace-2-5-more-control-smoother-transactions) describes its Midnight features. Neither version has completed a browser-wallet transaction in this application's retained tests.
+
+The wallet picker discovers API-4 entries under `window.midnight`, including their name and `rdns`; it does not certify a wallet publisher. Other wallets are conditional candidates only if they implement the required API and satisfy these checks. A Cardano-only wallet or CIP-30 connection under `window.cardano` is not supported. Having ADA or Cardano NIGHT does not provide the Midnight connector used here.
+
+- The wallet must connect to the selected `undeployed`, `preview` or `preprod` network and expose shielded/unshielded addresses, wallet-delegated proving, transaction balancing and submission. Mainnet is rejected.
+- The wallet must report a loopback HTTP(S) `proverServerUri` in `getConfiguration()`. API 4 makes this field optional and deprecated, so a wallet that omits it currently fails closed even if it otherwise implements API 4. The application uses `getProvingProvider()` for proving. See the official [DApp Connector release notes](https://github.com/midnightntwrk/midnight-dapp-connector-api/releases). A reported URL does not attest to the wallet or prover process.
+- A working indexer for the selected network, a running local prover and usable development-network DUST are separate requirements. Installing an extension does not supply these services.
+
+Fresh [installed-provider boundary tests](../evidence/2026-11-03/wallet-readiness/provider-boundaries.log) passed three cases, and [real Chromium checks](../evidence/2026-11-03/wallet-readiness/network-browser.json) passed four loading/no-wallet cases. They verify loading and rejection behavior only: no real browser wallet was connected, and no wallet proof or transaction was produced. The successful Node-wallet development-chain run is separate evidence.
+
 ## Dependencies and APIs inspected
 
 The supplied compiler/runtime/SDK pins remain the supported ledger-8 combination in the official [compatibility matrix](https://docs.midnight.network/relnotes/support-matrix), checked on 3 November 2026: Compact 0.31.1, compact-runtime 0.16.0, onchain-runtime-v3 3.0.0 and Midnight.js 4.1.1. Do not substitute the newer ledger-9 compiler/runtime while using this SDK/network combination.
