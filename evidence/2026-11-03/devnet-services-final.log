@@ -1,0 +1,17 @@
+1.0.400: Pulling from midnightntwrk/midnight-node
+Digest: sha256:915b117f955859a0ab7f34230ca12b43ef7474c84e29463256efcfc7b757040f
+Status: Image is up to date for midnightntwrk/midnight-node:1.0.400
+docker.io/midnightntwrk/midnight-node:1.0.400
+4.3.5: Pulling from midnightntwrk/indexer-standalone
+Digest: sha256:1c69c6632df859140a4019af9d7ebb81cb6073b1d39194d3eabaa1b320883499
+Status: Image is up to date for midnightntwrk/indexer-standalone:4.3.5
+docker.io/midnightntwrk/indexer-standalone:4.3.5
+midnight-ballot-lab-devnet-node healthy
+midnight-ballot-lab-devnet-indexer healthy
+midnight-ballot-lab-devnet-indexer midnightntwrk/indexer-standalone:4.3.5 Up 7 seconds (healthy)
+midnight-ballot-lab-devnet-node midnightntwrk/midnight-node:1.0.400 Up 16 seconds (healthy)
+midnightntwrk/midnight-node@sha256:915b117f955859a0ab7f34230ca12b43ef7474c84e29463256efcfc7b757040f
+
+midnightntwrk/indexer-standalone@sha256:1c69c6632df859140a4019af9d7ebb81cb6073b1d39194d3eabaa1b320883499
+
+Services healthy. Run the public readiness probe; wallet/proving/transaction acceptance is separate.

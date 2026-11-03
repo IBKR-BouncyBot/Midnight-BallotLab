@@ -1,0 +1,98 @@
+name: Local devnet transaction acceptance
+
+# Explicit, isolated test-chain execution. No public-network wallet or secrets.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  devnet:
+    name: Prove and submit the native election on a fresh local chain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Set up Python for toolchain evidence
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install reviewed Compact toolchain
+        run: bash scripts/ci-install-midnight.sh 2>&1 | tee "$RUNNER_TEMP/devnet-toolchain.log"
+      - name: Install application graph from its lockfile
+        working-directory: contracts
+        run: npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/application-dependency-install.log"
+      - name: Compile the real native contract and keys
+        run: npm --prefix contracts run compile:native 2>&1 | tee "$RUNNER_TEMP/devnet-native-compile.log"
+      - name: Test generated native contract in application graph
+        run: npm --prefix contracts run test:native 2>&1 | tee "$RUNNER_TEMP/application-native-tests.log"
+      - name: Install isolated wallet graph from its lockfile
+        working-directory: contracts/devnet
+        run: |
+          npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/devnet-dependency-install.log"
+          npm ls --all --json > "$RUNNER_TEMP/devnet-dependency-tree.json"
+      - name: Test byte-identical generated code in wallet graph
+        run: npm --prefix contracts/devnet run test:runtime 2>&1 | tee "$RUNNER_TEMP/devnet-runtime-tests.log"
+      - name: Record both reviewed dependency graphs
+        run: node scripts/review-lockfiles.mjs 2>&1 | tee "$RUNNER_TEMP/lockfile-review.log"
+      - name: Start pinned loopback proof server
+        # Official proof-server 8.1.3. Never enable verbose request-body logging.
+        run: |
+          docker run --detach --name midnight-ballot-lab-devnet-prover \
+            --label org.midnight-ballot-lab.devnet=true \
+            --publish 127.0.0.1:6300:6300 --log-driver none \
+            --env NUM_WORKERS=1 --env NO_FETCH_PARAMS=true \
+            --env MIDNIGHT_PROOF_SERVER_NUM_WORKERS=1 \
+            --env MIDNIGHT_PROOF_SERVER_NO_FETCH_PARAMS=true \
+            midnightntwrk/proof-server@sha256:0f4ab0716985eaebbe55a970348f52ff05ffd8a96631ed7232bd0c4ba02c115c
+      - name: Start fresh node and indexer with verified image digests
+        run: bash contracts/devnet/services.sh up 2>&1 | tee "$RUNNER_TEMP/devnet-services.log"
+      - name: Verify actual loopback service readiness
+        run: node contracts/devnet/probe.mjs 2>&1 | tee "$RUNNER_TEMP/devnet-readiness.log"
+      - name: Execute real wallet proving and network transactions
+        # Uses the official local genesis fixture only in memory, waits for actual
+        # block time, and records indexer-confirmed public transaction outcomes.
+        # A browser wallet and independent canonical-chain verification are separate.
+        run: node contracts/devnet/run-election.mjs --isolated-local-devnet 2>&1 | tee "$RUNNER_TEMP/devnet-acceptance.log"
+      - name: Stop only this job's labeled services
+        if: always()
+        run: bash scripts/ci-stop-devnet.sh 2>&1 | tee "$RUNNER_TEMP/devnet-cleanup.log"
+      - name: Preserve public transaction and build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-devnet-acceptance-evidence
+          path: |
+            contracts/package-lock.json
+            contracts/devnet/package-lock.json
+            contracts/toolchain.json
+            evidence/2026-11-03/application-lockfile-review.json
+            evidence/2026-11-03/devnet-lockfile-review.json
+            ${{ runner.temp }}/devnet-toolchain.log
+            ${{ runner.temp }}/application-dependency-install.log
+            ${{ runner.temp }}/devnet-native-compile.log
+            ${{ runner.temp }}/application-native-tests.log
+            ${{ runner.temp }}/devnet-dependency-install.log
+            ${{ runner.temp }}/devnet-dependency-tree.json
+            ${{ runner.temp }}/devnet-runtime-tests.log
+            ${{ runner.temp }}/lockfile-review.log
+            ${{ runner.temp }}/devnet-services.log
+            ${{ runner.temp }}/devnet-readiness.log
+            ${{ runner.temp }}/devnet-acceptance.log
+            ${{ runner.temp }}/devnet-cleanup.log
+            artifacts/local-devnet-readiness.json
+            artifacts/local-devnet/network-evidence.json
+          if-no-files-found: error
+          retention-days: 30

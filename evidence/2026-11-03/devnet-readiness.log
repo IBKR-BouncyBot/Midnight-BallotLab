@@ -1,0 +1,1 @@
+{"schema":"midnight-ballot-lab/local-devnet-readiness/v1","startedAt":"2026-11-03T17:00:22.400Z","networkId":"undeployed","status":"failed","protocolCompatibility":"not-established-by-readiness-probe","walletConnected":false,"proofGenerated":false,"transactionSubmitted":false,"reason":"public-loopback-readiness-not-established","completedAt":"2026-11-03T17:03:23.317Z"}

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="description" content="A local browser experiment using generated Midnight Compact circuits and native Jubjub encryption. Synthetic voters only; no network or proof generation.">
+  <title>Native Midnight · Ballot Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to workspace</a>
+  <header class="masthead">
+    <a class="brand" href="./" aria-label="Ballot Lab home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>ballot<span class="brand-light">lab</span><small>MIDNIGHT VOTING RESEARCH</small></span></a>
+    <div class="masthead-links"><span class="version">NATIVE · v0.4.0</span><a href="./network.html">Test network <span aria-hidden="true">↗</span></a><a href="./legacy.html">Legacy demo</a><a href="./midnight-ballot-lab-source.zip" download>Source <span aria-hidden="true">↓</span></a></div>
+  </header>
+  <div class="mode-strip"><span class="status-dot"></span><strong>Native Compact emulator</strong><span class="strip-divider">/</span><span>Local browser · synthetic voters · no blockchain transaction</span></div>
+  <main id="main" class="page">
+    <section class="hero" aria-labelledby="native-title">
+      <div><p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> MIDNIGHT NATIVE CRYPTOGRAPHY</p><h1 id="native-title">Native encryption.<br><em>In your browser.</em></h1><p class="hero-copy">Run the compiled election circuits locally. Encrypt a choice with Midnight’s native Jubjub operations, retain a receipt and recover the aggregate with two trustees.</p></div>
+      <div class="hero-note"><div class="privacy-orbit" aria-hidden="true"><span class="orbit-ring orbit-ring-one"></span><span class="orbit-ring orbit-ring-two"></span><span class="orbit-ring orbit-ring-three"></span><span class="orbit-point orbit-point-one"></span><span class="orbit-point orbit-point-two"></span><span class="orbit-point orbit-point-three"></span><div class="orbit-core"><span>2<span class="orbit-divider">/</span>3</span><small>NATIVE TRUSTEE SHARES</small></div></div><p>Actual generated circuits.<br>One local experiment.</p><small>This mode creates no ZK proofs.<br>No wallet or network connection.</small></div>
+    </section>
+    <section class="native-implementation" aria-labelledby="native-load-heading">
+      <div><p class="eyebrow">EXECUTION STATUS</p><h2 id="native-load-heading">Your local native runtime.</h2><p id="native-availability" role="status" aria-live="polite">Checking whether this build contains the compiled native contract and Midnight runtime…</p></div>
+      <div class="native-build-note"><strong>Every role lives in this tab</strong><p>The browser holds all five synthetic credentials and all trustee shares. This experiment does not separate real participants or protect a voter from this device. Refreshing or resetting loses the session.</p><a class="button secondary" href="./docs/NATIVE_MIDNIGHT.md">Native build guide <span aria-hidden="true">↗</span></a></div>
+    </section>
+    <noscript><div class="global-status error">JavaScript is required to load the native runtime. No voting controls are active.</div></noscript>
+    <section class="metrics" aria-label="Local native election status"><div><span class="metric-label">SYNTHETIC CREDENTIALS</span><strong id="native-voters">—</strong></div><div><span class="metric-label">NATIVE ENCRYPTED BALLOTS</span><strong id="native-ballots">0</strong></div><div><span class="metric-label">LOCAL ELECTION PHASE</span><strong id="native-phase" class="metric-word">Not created</strong></div></section>
+    <div class="workspace">
+      <nav class="steps" aria-label="Native workflow">
+        <button type="button" class="step active" data-native-nav="setup" data-native-control aria-current="step" disabled><span>01</span><div>Set up<small>Five synthetic voters</small></div></button>
+        <button type="button" class="step" data-native-nav="vote" data-native-control disabled><span>02</span><div>Cast a ballot<small>Native encrypted choice</small></div></button>
+        <button type="button" class="step" data-native-nav="tally" data-native-control disabled><span>03</span><div>Recover tally<small>Two native shares</small></div></button>
+        <button type="button" class="step" data-native-nav="check" data-native-control disabled><span>04</span><div>Check locally<small>Public data only</small></div></button>
+      </nav>
+      <div class="work-main">
+        <div id="native-status" class="global-status" role="status" aria-live="polite" hidden></div>
+        <section class="panel" data-native-panel="setup" aria-labelledby="native-setup-heading">
+          <div class="panel-head"><p class="eyebrow">01 / SET UP</p><span class="panel-tag">Actual runtime</span></div>
+          <h2 id="native-setup-heading">Create a native experiment.</h2><p class="section-copy">Configure native trustee keys and enroll five synthetic voter identities through the generated contract.</p>
+          <form id="native-setup-form"><label for="native-election-title">Experiment name</label><input id="native-election-title" value="A native shared decision" maxlength="80" required data-native-control disabled>
+            <label for="native-choice-a">Choice A</label><input id="native-choice-a" value="Option A" maxlength="40" required data-native-control disabled>
+            <label for="native-choice-b">Choice B</label><input id="native-choice-b" value="Option B" maxlength="40" required data-native-control disabled>
+            <label for="native-choice-c">Choice C</label><input id="native-choice-c" value="Option C" maxlength="40" required data-native-control disabled>
+            <div class="callout"><span aria-hidden="true">↳</span><p>A local demonstration dealer creates all trustee secrets. The simulated clock advances as you open and close voting. No real election schedule is enforced outside this tab.</p></div>
+            <button class="button primary" type="submit" id="native-create" data-native-control disabled>Create native election <span aria-hidden="true">→</span></button>
+          </form>
+          <div id="native-setup-complete" hidden><div class="success-card"><span class="success-icon" aria-hidden="true">✓</span><div><h3>Native election initialized</h3><p>Five credentials enrolled. Voting is open in the local emulator.</p></div></div><label for="native-configuration">Native configuration digest</label><code id="native-configuration" class="fingerprint"></code><p class="field-note">This native hash binds the metadata, deadlines, administrator and trustee public keys. It is not a blockchain transaction ID.</p><div class="button-row"><button type="button" class="button primary" id="native-go-vote" data-native-control disabled>Cast a native ballot <span aria-hidden="true">→</span></button></div></div>
+        </section>
+        <section class="panel" data-native-panel="vote" hidden aria-labelledby="native-vote-heading">
+          <div class="panel-head"><p class="eyebrow">02 / CAST A BALLOT</p><span class="panel-tag">Native Jubjub</span></div><h2 id="native-vote-heading">Choose. Encrypt. Keep a receipt.</h2><p class="section-copy">Fresh private randomness masks each candidate entry. Generated Compact code constrains one selected choice and rejects repeat credentials.</p>
+          <p id="native-voter-label" class="field-note">Create an election to start voting.</p>
+          <form id="native-vote-form"><fieldset id="native-choice-fieldset" data-native-control disabled><legend>Select one of the three choices</legend><div class="candidate-options" id="native-choices"></div></fieldset><div class="button-row"><button class="button primary" type="submit" id="native-cast" data-native-control disabled>Encrypt & cast locally <span aria-hidden="true">→</span></button></div></form>
+          <p class="field-note">Each cast uses the next synthetic credential. The choice is cleared afterward. The public notebook shows receipts without voter names or choices.</p>
+          <section id="native-receipt-panel" class="receipt-panel" hidden aria-labelledby="native-receipt-heading"><div class="receipt-head"><div><p class="eyebrow">NATIVE EMULATOR RECEIPT</p><h3 id="native-receipt-heading">Keep this code.</h3></div><span class="panel-tag">Accepted locally</span></div><div class="receipt-body"><div id="native-receipt-qr" class="receipt-qr" aria-label="Native local receipt QR code"></div><div><p>This code identifies the encrypted ballot in this local experiment.</p><code id="native-receipt-hash" class="fingerprint"></code><div class="button-row compact"><button type="button" class="button secondary" id="native-save-receipt" data-native-control disabled>Save receipt</button><button type="button" class="text-button" id="native-copy-receipt" data-native-control disabled>Copy QR code text</button></div></div></div><p class="field-note">The receipt binds the contract address, election and configuration. It contains no choice or encryption randomness and is not a Midnight transaction receipt.</p></section>
+        </section>
+        <section class="panel" data-native-panel="tally" hidden aria-labelledby="native-tally-heading">
+          <div class="panel-head"><p class="eyebrow">03 / RECOVER TALLY</p><span class="panel-tag">2 of 3 trustees</span></div><h2 id="native-tally-heading">Open the aggregate.<br>Keep ballots encrypted.</h2><p class="section-copy">Close voting to freeze the accepted ciphertexts. Two selected trustee shares decrypt the aggregate through generated native circuits.</p>
+          <div class="close-card"><div><h3>Freeze this experiment</h3><p>Closing advances the emulator clock to the deadline. It prevents further ballots in this session.</p></div><button type="button" class="button secondary" id="native-close" data-native-control disabled>Close voting</button></div>
+          <label for="native-trustee-pair">Trustee pair</label><select id="native-trustee-pair" data-native-control disabled><option value="1,2">Trustees 1 + 2</option><option value="1,3" selected>Trustees 1 + 3</option><option value="2,3">Trustees 2 + 3</option></select><p class="field-note">All shares are held by this browser. The contract checks that each submitted secret matches its configured public key.</p>
+          <div class="button-row"><button type="button" class="button primary" id="native-finalize" data-native-control disabled>Run native tally checks <span aria-hidden="true">→</span></button></div>
+          <section id="native-results" hidden aria-labelledby="native-results-heading"><div class="results-heading"><div><p class="eyebrow">LOCAL AGGREGATE</p><h3 id="native-results-heading">Experiment result</h3></div><span id="native-result-count" class="panel-tag"></span></div><div id="native-result-bars" class="result-bars"></div><p class="field-note">These totals passed generated runtime checks. No ZK proof was generated or accepted by a network.</p></section>
+        </section>
+        <section class="panel" data-native-panel="check" hidden aria-labelledby="native-check-heading">
+          <div class="panel-head"><p class="eyebrow">04 / CHECK LOCALLY</p><span class="panel-tag">Public data only</span></div><h2 id="native-check-heading">Inspect the local record.</h2><p class="section-copy">Recompute native receipt hashes, sum the ciphertexts and compare the recovered tally with the published totals. These checks use this session’s public emulator state.</p>
+          <div class="button-row"><button type="button" class="button primary" id="native-check-result" data-native-control disabled>Check native public data <span aria-hidden="true">→</span></button><button type="button" class="button secondary" id="native-export" data-native-control disabled>Export public snapshot <span aria-hidden="true">↓</span></button></div>
+          <div id="native-check-output" class="verification-result" role="status" aria-live="polite" hidden></div>
+          <div class="callout"><span aria-hidden="true">↳</span><p>This is consistency checking, not verification of a native proof or authenticated chain inclusion. A saved snapshot alone cannot establish voter eligibility, ballot validity or election legitimacy. Arbitrary public snapshot imports are not supported in this mode.</p></div>
+          <section class="receipt-check" aria-labelledby="native-receipt-check-heading"><h3 id="native-receipt-check-heading">Check a native receipt</h3><p>Paste a receipt JSON file’s contents or the QR text. It must belong to this current local experiment.</p><label for="native-receipt-input">Receipt code</label><textarea id="native-receipt-input" rows="4" maxlength="4096" placeholder="mbne1:… or a native emulator receipt JSON object" spellcheck="false" data-native-control disabled></textarea><div class="button-row"><button type="button" class="button secondary" id="native-check-receipt" data-native-control disabled>Check local inclusion</button><button type="button" class="text-button" id="native-use-receipt" data-native-control disabled>Use latest receipt</button></div><p id="native-receipt-check-output" class="inline-status" role="status" aria-live="polite"></p></section>
+        </section>
+      </div>
+      <aside class="record-panel" aria-label="Native public notebook"><div class="record-title"><span class="status-dot"></span><h2>Native notebook</h2></div><p class="record-intro">Public ciphertext receipts.<br>No private inputs exported.</p><div class="record-meta"><span>LOCAL CONTRACT ADDRESS</span><code id="native-contract-address">Not created</code></div><div class="ballot-list" id="native-ballot-list"><p class="notebook-empty">Create an election to begin.</p></div><div class="event-log" id="native-event-log" aria-live="polite"></div><div class="notebook-footer"><span class="tiny-grid" aria-hidden="true"></span><p>Native runtime checks.<br>No proofs or blockchain connection.</p></div></aside>
+    </div>
+    <footer class="page-footer"><p>Midnight Ballot Lab <span>·</span> Native emulator</p><div><button type="button" id="native-reset" data-native-control disabled>Reset native experiment</button><a href="./docs/NATIVE_MIDNIGHT.md">Native setup guide ↗</a><a href="./midnight-ballot-lab-source.zip" download>Inspect source ↗</a></div><p class="footer-note">Independent research prototype. Not audited or suitable for real elections. All synthetic secrets live in this tab; refreshing clears the session. The centralized demo key dealer does not provide independent trustee custody.</p></footer>
+  </main>
+  <script type="module" src="./native-loader.mjs"></script>
+</body>
+</html>

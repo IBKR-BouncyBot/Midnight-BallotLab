@@ -1,0 +1,233 @@
+{
+  "executedAt": "2026-11-03T17:04:48.734Z",
+  "networkId": "undeployed",
+  "environment": "fresh-isolated-local-development-chain",
+  "confirmationSource": "configured-local-indexer",
+  "independentlyVerifiedChainInclusion": false,
+  "browserWalletTested": false,
+  "acceptedTransactions": [
+    {
+      "operation": "deploy",
+      "txId": "00b99f8355c835a24d79325f76ac145c8a1d03bc2b12290e54e701e29c8c2e90d3",
+      "blockHeight": "8",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "configure-keys",
+      "txId": "000a1090a7c36cadbf686c30c2cd958f9f4593b4f85c439f3842c2e3764143016b",
+      "blockHeight": "12",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-1",
+      "txId": "009974badcffbd20a8fd6052b55e6b75a286f84a702ef1dbc77e5ad919e9cde76b",
+      "blockHeight": "15",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-2",
+      "txId": "00cdd1c0c94116cf0a2160df6057f55dceef9cac41cdeaebfd399a51cb1cc344b8",
+      "blockHeight": "18",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-3",
+      "txId": "00b3ab6b78b5a0866f85d25f94c8762bba670773851dfd30ae2ee4fb249e196d01",
+      "blockHeight": "21",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-4",
+      "txId": "0038af259890a10d58cc8349fa444d0c8094fdabf685ca45290731d68d5ec520bd",
+      "blockHeight": "24",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-5",
+      "txId": "00d321544ddca35137ef581d3229b964bcc595dc9bd8ec8e01d100441a58fc1be4",
+      "blockHeight": "27",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "open-voting",
+      "txId": "00b5d4decaa710885be9c3248b8f0353ffb38f2264a9d3ea9a4b93684a2826be15",
+      "blockHeight": "51",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-1",
+      "txId": "00489c175e7f9b36383ece1748d775473a14de339f42e2c1eeeb7692c5563e89e6",
+      "blockHeight": "55",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-2",
+      "txId": "001a40b8d26f2aaae0872f6a12c6cfecd626d994edfa7df09d03534297a6ea4cb9",
+      "blockHeight": "59",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-3",
+      "txId": "00f9f0efb8bde11ce654834eae09989b3c6739995feef74be7a35c26db34488cb6",
+      "blockHeight": "63",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-4",
+      "txId": "00702da5e85323280e291d374e77c9459970a8e56419b8d20d5e3cc530eabf3fac",
+      "blockHeight": "67",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-5",
+      "txId": "00a4ef6ea977a63d78be695858168734cd07d8835f90f87b256b6737a93b9ed404",
+      "blockHeight": "71",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "close-voting",
+      "txId": "005bc9423a4b44fc5f3f2dd0a02a95abd8d771e08a2ab20c8f168c722f68a679e6",
+      "blockHeight": "91",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "trustee-1",
+      "txId": "0079dfb334eb8ceca9ed243e4540b82ea2420392ed828781d94352dd7fe75f05a4",
+      "blockHeight": "94",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "trustee-3",
+      "txId": "007e994a3db2bc23169d12e70073a934438fedc73313b55f0c8c52d80d0776b725",
+      "blockHeight": "97",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "finalize",
+      "txId": "00bac1e2a610d2f5e409caba2ba55b3fac5f49aa3c0120b945fabd41bf401f328f",
+      "blockHeight": "100",
+      "status": "SucceedEntirely"
+    }
+  ],
+  "rejectedBeforeSubmission": [
+    {
+      "operation": "reject-invalid-choice",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    },
+    {
+      "operation": "reject-duplicate-credential",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    },
+    {
+      "operation": "reject-wrong-trustee-share",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    },
+    {
+      "operation": "reject-changed-tally",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    }
+  ],
+  "proofTransactionsCompleted": 16,
+  "networkSubmission": true,
+  "status": "passed",
+  "sourceHashes": {
+    "native/sdk-client.mjs": "b76cb997495e2268d46de95d4ab437cc86f0a3ef38817c058787cac3fd59c05c",
+    "native/adapter.mjs": "7118fe592b8efb9298944aabf5f4a756db27805997bf510ce0565f8e575ef8f6",
+    "native/harness.mjs": "0df57202e4ced6f8ea7de1a7bad50950ff56be85001652fb2c91e2b3c638efba",
+    "native/record.mjs": "76425054ee0f87a244bd280f26e584264ceefd93a9afd40fe84f918034b016da",
+    "native/browser-config.mjs": "e18a9c7345db32caa289a028039eb31546010800e17f6d0c1a7a0bcf5de0fe70",
+    "native/test/native-election.test.mjs": "1fc30f9bda9c51a69429768aa17a088981a6b7250e95c1fdfb6ef1e2712f8ef0",
+    "managed/native-election/contract/index.js": "8bafc2695b00c303f2adc4b4d90145020dd7e0dc6aacf94bd2ae3a0382074880"
+  },
+  "lockfileSha256": "94236d8b50f3545f214bfbb878e4d831500a0dd65eb5c147211a446e24ef9ecd",
+  "versions": {
+    "compact-runtime": "0.16.0",
+    "midnight-js-contracts": "4.1.1",
+    "testkit-js": "4.1.1",
+    "wallet-sdk": "1.2.0",
+    "ledger-v8": "8.1.2",
+    "onchain-runtime-v3": "3.1.1",
+    "zkir-v2": "2.1.1"
+  },
+  "node": "v24.18.0",
+  "suppressedLibraryConsoleCalls": 4,
+  "schedule": {
+    "opensAt": 1793725734,
+    "closesAt": 1793725974
+  },
+  "expectedTotals": [
+    2,
+    1,
+    2
+  ],
+  "contractAddress": "56a26175be9ab2149981d797c4075be2b868bc1c3ceb24001c642d45b40485cf",
+  "configurationDigest": "c0209483e01ff1752403739693570136cd6e7bd291d94d7d2257c054a46e6b64",
+  "receipts": [
+    {
+      "networkId": "undeployed",
+      "contractAddress": "56a26175be9ab2149981d797c4075be2b868bc1c3ceb24001c642d45b40485cf",
+      "configurationDigest": "c0209483e01ff1752403739693570136cd6e7bd291d94d7d2257c054a46e6b64",
+      "index": 0,
+      "receipt": "9d754aa494571056743cc689fdd89a8aaa09b5e2445cc7b583760c1465e35fd3",
+      "txId": "00489c175e7f9b36383ece1748d775473a14de339f42e2c1eeeb7692c5563e89e6",
+      "blockHeight": "55"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "56a26175be9ab2149981d797c4075be2b868bc1c3ceb24001c642d45b40485cf",
+      "configurationDigest": "c0209483e01ff1752403739693570136cd6e7bd291d94d7d2257c054a46e6b64",
+      "index": 1,
+      "receipt": "83de2095e731dc1f21e7f5fc89107dba1ee84f59877de7ca21d44fdcb4ad4b6f",
+      "txId": "001a40b8d26f2aaae0872f6a12c6cfecd626d994edfa7df09d03534297a6ea4cb9",
+      "blockHeight": "59"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "56a26175be9ab2149981d797c4075be2b868bc1c3ceb24001c642d45b40485cf",
+      "configurationDigest": "c0209483e01ff1752403739693570136cd6e7bd291d94d7d2257c054a46e6b64",
+      "index": 2,
+      "receipt": "cebab4aa0257d37731cc86dbb99f36d2241cea4ea270dd14bec1a3412e6c1183",
+      "txId": "00f9f0efb8bde11ce654834eae09989b3c6739995feef74be7a35c26db34488cb6",
+      "blockHeight": "63"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "56a26175be9ab2149981d797c4075be2b868bc1c3ceb24001c642d45b40485cf",
+      "configurationDigest": "c0209483e01ff1752403739693570136cd6e7bd291d94d7d2257c054a46e6b64",
+      "index": 3,
+      "receipt": "a1052e877c9fa01380e529dd8f122fb6f641badd36da419ba171324e613989d2",
+      "txId": "00702da5e85323280e291d374e77c9459970a8e56419b8d20d5e3cc530eabf3fac",
+      "blockHeight": "67"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "56a26175be9ab2149981d797c4075be2b868bc1c3ceb24001c642d45b40485cf",
+      "configurationDigest": "c0209483e01ff1752403739693570136cd6e7bd291d94d7d2257c054a46e6b64",
+      "index": 4,
+      "receipt": "d149e39bd15c9572631b23dd6ab1e0ea4e18f50522d28627e1d55374c8294f56",
+      "txId": "00a4ef6ea977a63d78be695858168734cd07d8835f90f87b256b6737a93b9ed404",
+      "blockHeight": "71"
+    }
+  ],
+  "observedTotals": [
+    2,
+    1,
+    2
+  ],
+  "acceptedBallots": 5,
+  "finalPhase": 3,
+  "replay": {
+    "outcome": "submission-pipeline-rejected",
+    "category": "operation-failed-details-withheld",
+    "independentNetworkRejectionVerified": false
+  },
+  "completedAt": "2026-11-03T17:14:25.928Z"
+}

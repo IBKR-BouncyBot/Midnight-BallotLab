@@ -1,0 +1,6 @@
+{
+  "schema": "ballot-lab/receipt/v1",
+  "electionId": "synthetic-election-cli-v1",
+  "electionHash": "82a55913e421bbc2ac7a46685c14d502956da1b9354361ea2fbd2dbaad69391c",
+  "ballotId": "36e92d9b70859d1853fa649885a801c5773ec8c074c8d898bb466f19db85291c"
+}

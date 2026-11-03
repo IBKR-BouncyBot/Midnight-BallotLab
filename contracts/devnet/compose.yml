@@ -1,0 +1,59 @@
+# Local-only services. The existing proof-server 8.1.3 on 127.0.0.1:6300 is reused.
+# Adapted from the official midnight-examples hello-world compose recipe.
+# This file is an alternative to services.sh; do not start both.
+services:
+  node:
+    image: midnightntwrk/midnight-node:1.0.400
+    ports:
+      - '127.0.0.1:9944:9944'
+    environment:
+      CFG_PRESET: dev
+      SIDECHAIN_BLOCK_BENEFICIARY: 04bcf7ad3be7a5c790460be82a713af570f22e0f801f6659ab8e84a52be6969e
+      RUST_LOG: warn
+      RUST_BACKTRACE: '0'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -sf -H 'Content-Type: application/json'
+          -d '{"id":1,"jsonrpc":"2.0","method":"chain_getHeader","params":[]}'
+          http://localhost:9944 | grep -Eq '"number"[[:space:]]*:[[:space:]]*"0x0*[1-9a-fA-F]'
+      interval: 2s
+      timeout: 5s
+      retries: 90
+      start_period: 5s
+    logging:
+      driver: none
+    networks: [isolated]
+  indexer:
+    image: midnightntwrk/indexer-standalone:4.3.5
+    ports:
+      - '127.0.0.1:8088:8088'
+    environment:
+      RUST_LOG: warn
+      RUST_BACKTRACE: '0'
+      APP__INFRA__NODE__URL: ws://node:9944
+      APP__APPLICATION__NETWORK_ID: undeployed
+      APP__INFRA__STORAGE__PASSWORD: '${MIDNIGHT_DEVNET_STORAGE_PASSWORD:?Set an ephemeral local service password}'
+      APP__INFRA__PUB_SUB__PASSWORD: '${MIDNIGHT_DEVNET_PUBSUB_PASSWORD:?Set an ephemeral local service password}'
+      APP__INFRA__LEDGER_STATE_STORAGE__PASSWORD: '${MIDNIGHT_DEVNET_LEDGER_PASSWORD:?Set an ephemeral local service password}'
+      APP__INFRA__SECRET: '${MIDNIGHT_DEVNET_INDEXER_SECRET:?Set an ephemeral 32-byte hexadecimal service secret}'
+      APP__INFRA__SPO_NODE__URL: ws://node:9944
+      APP__INFRA__SPO_NODE__BLOCKFROST_ID: e2e-test-dummy-id
+    healthcheck:
+      test: [CMD-SHELL, 'test -f /var/run/indexer-standalone/running']
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 10s
+    depends_on:
+      node:
+        condition: service_healthy
+    logging:
+      driver: none
+    networks: [isolated]
+networks:
+  isolated:
+    # Docker 29 internal networks suppress published-port forwarding.
+    # Host ports above remain bound to loopback; dev selects a separate chain.
+    driver: bridge

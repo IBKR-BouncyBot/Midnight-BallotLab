@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="theme-color" content="#0b0b10"><meta name="description" content="Midnight Ballot Lab development network client. Real wallet and prover required.">
+  <title>Midnight Ballot Lab · Development network</title><link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to workspace</a>
+  <header class="masthead"><a class="brand" href="./index.html" aria-label="Ballot Lab home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>ballot<span class="brand-light">lab</span><small>MIDNIGHT VOTING RESEARCH</small></span></a><div class="masthead-links"><span class="version">TEST NETWORKS</span><a href="./native.html">Local native experiment ↗</a></div></header>
+  <div class="mode-strip"><span class="status-dot"></span><strong>Development network client</strong><span class="strip-divider">/</span><span>Wallet · trusted local prover · separate network transactions</span></div>
+  <main id="main" class="page">
+    <section class="hero"><div><p class="eyebrow">MIDNIGHT / DEVELOPMENT NETWORK</p><h1>Prove a ballot.<br><em>Follow its transaction.</em></h1><p class="hero-copy">A research client for actual Compact contracts, a connected wallet and a local prover. Test networks only. Each accepted circuit call needs a wallet-approved transaction.</p></div><div class="hero-note"><p>Distinct evidence at every stage</p><small>Local execution, a prover response, submission and indexer confirmation are different events. An indexer observation is not independent chain verification.</small></div></section>
+    <div id="network-availability" class="global-status" role="status" aria-live="polite">Checking network application build…</div>
+    <div id="network-status" class="global-status" role="status" aria-live="polite" hidden></div>
+    <noscript><p>JavaScript and the real native browser build are required.</p></noscript>
+    <div class="workspace"><div class="work-main">
+      <section class="panel" aria-labelledby="connect-heading">
+        <div class="panel-head"><p class="eyebrow">01 / CONNECT</p><span class="panel-tag">Real wallet</span></div>
+        <h2 id="connect-heading">Choose your test environment.</h2>
+        <form id="network-connect-form">
+          <label for="network-wallet">Installed wallet</label><select id="network-wallet" data-network-control disabled></select>
+          <button type="button" class="text-button" id="network-refresh-wallets" data-network-control disabled>Refresh wallet list</button><p id="network-wallet-note" class="field-note"></p>
+          <label for="network-id">Network</label><select id="network-id" data-network-control disabled required><option value="">Select a development network</option><option value="undeployed">Local development (undeployed)</option><option value="preview">Preview</option><option value="preprod">Preprod</option></select>
+          <label for="network-indexer">Indexer HTTPS URL (HTTP on loopback)</label><input id="network-indexer" type="url" required autocomplete="off" data-network-control disabled>
+          <label for="network-indexer-ws">Indexer WebSocket URL</label><input id="network-indexer-ws" type="url" required autocomplete="off" data-network-control disabled>
+          <label for="network-password">Local private-store password</label><input id="network-password" type="password" minlength="16" autocomplete="off" required data-network-control disabled>
+          <p class="field-note">Use at least 16 characters and three character classes. The SDK encrypts its signing keys in this browser. Do not enter a wallet seed. Configure the wallet's prover to a trusted loopback service such as localhost:6300; this client rejects remote proving destinations.</p>
+          <button class="button primary" type="submit" data-network-control disabled>Connect selected wallet →</button><button class="button secondary" type="button" id="network-disconnect" data-network-control disabled>End local session</button>
+        </form>
+      </section>
+      <section class="panel" aria-labelledby="contract-heading">
+        <div class="panel-head"><p class="eyebrow">02 / CONTRACT</p><span class="panel-tag">Separate deployment</span></div><h2 id="contract-heading">Deploy or join an election.</h2>
+        <label for="network-address">Contract address</label><input id="network-address" spellcheck="false" maxlength="64" data-network-control disabled>
+        <label for="network-digest">Expected configuration digest</label><input id="network-digest" spellcheck="false" maxlength="64" data-network-control disabled>
+        <p class="field-note">For a join, obtain both values from a separately authenticated election record. The client checks verifier keys and configuration consistency; it cannot establish honest initial state, maintenance history or chain authenticity from an indexer alone.</p>
+        <button class="button secondary" type="button" id="network-join" data-network-control disabled>Join and check configuration</button>
+        <details><summary>Deploy a new synthetic test election</summary>
+          <label for="network-title">Election name</label><input id="network-title" value="Midnight network experiment" maxlength="80" data-network-control disabled>
+          <label for="network-choices">Three choices, one per line</label><textarea id="network-choices" rows="3" maxlength="122" data-network-control disabled>Option A&#10;Option B&#10;Option C</textarea>
+          <label for="network-opens">Voting opens (your local time)</label><input id="network-opens" type="datetime-local" data-network-control disabled>
+          <label for="network-closes">Voting closes (your local time)</label><input id="network-closes" type="datetime-local" data-network-control disabled>
+          <label for="network-admin">Administrator secret (64 hexadecimal characters)</label><input id="network-admin" type="password" autocomplete="off" maxlength="64" data-network-control disabled>
+          <button class="text-button" type="button" id="network-generate-admin" data-network-control disabled>Generate synthetic administrator secret</button>
+          <p class="field-note">Retain your administrator credential securely before leaving. This page does not export private credentials or custody backups. Deployment alone does not prove key configuration.</p>
+          <button class="button primary" type="button" id="network-deploy" data-network-control disabled>Deploy test contract →</button>
+          <label for="network-setup-secret">Private dealer master scalar</label><input id="network-setup-secret" type="password" autocomplete="off" data-network-control disabled>
+          <label for="network-setup-slope">Private dealer coefficient scalar</label><input id="network-setup-slope" type="password" autocomplete="off" data-network-control disabled>
+          <button class="text-button" type="button" id="network-generate-dealer" data-network-control disabled>Generate synthetic dealer and three shares</button>
+          <p class="field-note">The demonstration dealer knows every share. This is not distributed key generation. Two trustees can collude to decrypt individual ballots outside the contract.</p>
+          <button class="button primary" type="button" id="network-configure" data-network-control disabled>Prove and configure trustee keys →</button>
+        </details>
+      </section>
+      <section class="panel" aria-labelledby="vote-heading">
+        <div class="panel-head"><p class="eyebrow">03 / VOTER</p><span class="panel-tag">Encrypted ballot</span></div><h2 id="vote-heading">Enroll, then cast.</h2>
+        <label for="network-voter">Voter secret (64 hexadecimal characters)</label><input id="network-voter" type="password" autocomplete="off" maxlength="64" data-network-control disabled>
+        <button class="text-button" type="button" id="network-generate-voter" data-network-control disabled>Generate synthetic voter credential</button>
+        <p class="field-note">Enrollment needs the administrator secret above and must complete before the real network opening time. The voter needs the same private credential when casting. For a joined election, authenticate the meaning of choices 0–2 against its manifest before voting.</p>
+        <div class="button-row"><button class="button secondary" type="button" id="network-enroll" data-network-control disabled>Enroll this credential</button><button class="button secondary" type="button" id="network-open" data-network-control disabled>Open voting after deadline</button></div>
+        <label for="network-selection">Private choice</label><select id="network-selection" data-network-control disabled><option value="">Select one choice</option><option value="0">Choice 0</option><option value="1">Choice 1</option><option value="2">Choice 2</option></select>
+        <button class="button primary" type="button" id="network-cast" data-network-control disabled>Encrypt, prove and submit ballot →</button>
+        <button class="button secondary" type="button" id="network-recover-receipt" data-network-control disabled>Check this session's pending ballot</button>
+        <p class="field-note">An uncertain submission locks further casts in this session so its expected receipt is preserved. Recover it without submitting again. Check transaction status independently before ending the session or attempting a new cast.</p>
+        <section id="network-receipt-panel" class="receipt-panel" hidden><h3>Receipt matched indexed ciphertext</h3><div id="network-receipt-qr" class="receipt-qr"></div><code id="network-receipt-code" class="fingerprint"></code><button class="button secondary" type="button" id="network-save-receipt" data-network-control disabled>Save public receipt</button><p class="field-note">QR and JSON identify this ballot, network, contract and configuration. The QR excludes the transaction ID; checking it does not independently verify chain inclusion.</p></section>
+      </section>
+      <section class="panel" aria-labelledby="tally-heading">
+        <div class="panel-head"><p class="eyebrow">04 / TRUSTEES</p><span class="panel-tag">2 of 3</span></div><h2 id="tally-heading">Freeze and tally the full set.</h2>
+        <p class="field-note">The network clock governs closing. This page cannot advance it. Each trustee contribution proves knowledge of its registered secret share and uses the complete frozen aggregate.</p>
+        <button class="button secondary" type="button" id="network-close" data-network-control disabled>Close after voting deadline</button>
+        <label for="network-trustee">Trustee number</label><select id="network-trustee" data-network-control disabled><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+        <label for="network-share">Private trustee scalar</label><input id="network-share" type="password" autocomplete="off" data-network-control disabled>
+        <button class="text-button" type="button" id="network-use-share" data-network-control disabled>Use this session's synthetic share</button><button class="button primary" type="button" id="network-submit-share" data-network-control disabled>Prove and submit contribution →</button>
+        <label for="network-pair">Published trustee pair</label><select id="network-pair" data-network-control disabled><option value="1,2">1 + 2</option><option value="1,3">1 + 3</option><option value="2,3">2 + 3</option></select>
+        <button class="button primary" type="button" id="network-finalize" data-network-control disabled>Recover totals, prove and finalize →</button>
+      </section>
+      <section class="panel" aria-labelledby="check-heading"><div class="panel-head"><p class="eyebrow">05 / PUBLIC CHECKS</p><span class="panel-tag">Indexed state</span></div><h2 id="check-heading">Read with accurate limits.</h2>
+        <div class="button-row"><button class="button secondary" type="button" id="network-read" data-network-control disabled>Refresh public state</button><button class="button secondary" type="button" id="network-export" data-network-control disabled>Export public observation</button></div>
+        <label for="network-receipt-input">Network QR text or receipt JSON</label><textarea id="network-receipt-input" rows="4" maxlength="4096" spellcheck="false" data-network-control disabled></textarea><button class="button secondary" type="button" id="network-check-receipt" data-network-control disabled>Check against indexed state</button>
+        <p class="field-note">Exports contain public ciphertexts and trustee contributions, never choices, randomness, private contexts or proof witnesses. They are observations from the configured indexer, not portable proof packages. Keep the page open until a transaction finishes; after an uncertain result, check its status before retrying.</p>
+      </section>
+    </div><aside class="record-panel"><div class="record-title"><span class="status-dot"></span><h2>Public operation status</h2></div><p class="record-intro">No private inputs in this notebook.</p><pre id="network-public-state" style="white-space:pre-wrap;overflow-wrap:anywhere">Not connected</pre><div id="network-events" class="event-log" aria-live="polite"></div></aside></div>
+    <footer class="page-footer"><p>Midnight Ballot Lab · Development client</p><p class="footer-note">Research prototype. No election certification, coercion resistance or guarantee against fraud. GitHub Pages hosts these files; it supplies neither a Midnight contract nor a prover.</p></footer>
+  </main><script type="module" src="./network-loader.mjs"></script>
+</body>
+</html>

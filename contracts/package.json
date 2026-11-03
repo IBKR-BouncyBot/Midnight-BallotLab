@@ -1,0 +1,47 @@
+{
+  "name": "midnight-ballot-lab-contract-source",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "compile": "node scripts/compile.mjs",
+    "compile:native": "node scripts/compile.mjs native",
+    "check:artifacts": "node scripts/check-artifacts.mjs",
+    "check:artifacts:native": "node scripts/check-artifacts.mjs native",
+    "test": "node --test test/election.test.mjs",
+    "test:native": "node --test native/test/*.test.mjs",
+    "demo:native": "node native/demo.mjs",
+    "build:browser:native": "node ../scripts/build-native-browser.mjs"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "4.0.1",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "4.1.1",
+    "assert": "2.1.0",
+    "buffer": "6.0.3",
+    "events": "3.3.0",
+    "process": "0.11.10"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "jsqr": "1.4.0",
+    "playwright": "1.64.1",
+    "pngjs": "7.0.0"
+  },
+  "overrides": {
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+  }
+}

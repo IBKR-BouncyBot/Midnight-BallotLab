@@ -1,0 +1,12 @@
+node_modules/
+dist/
+artifacts/
+private-state/
+*.secret.json
+.DS_Store
+__pycache__/
+*.pyc
+contracts/managed/
+.npm-cache/
+.browser-cache/
+logs/

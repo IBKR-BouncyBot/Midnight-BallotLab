@@ -1,0 +1,127 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test native election and build static site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Set up Python reference verifier
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Test local cryptographic protocol and interface handlers
+        run: npm test 2>&1 | tee "$RUNNER_TEMP/local-tests.log"
+      - name: Install and verify the pinned native toolchain
+        run: bash scripts/ci-install-midnight.sh 2>&1 | tee "$RUNNER_TEMP/toolchain.log"
+      - name: Install the reviewed dependency lockfile
+        working-directory: contracts
+        run: |
+          npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/dependency-install.log"
+          npm ls --all --json > "$RUNNER_TEMP/dependency-tree.json"
+      - name: Check installed wallet and provider APIs
+        run: node --test contracts/test/browser-providers-api.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
+      - name: Compile the actual native election and generate its keys
+        working-directory: contracts
+        run: npm run compile:native 2>&1 | tee "$RUNNER_TEMP/native-election-compile.log"
+      - name: Run generated native election tests
+        working-directory: contracts
+        run: npm run test:native 2>&1 | tee "$RUNNER_TEMP/native-election-tests.log"
+      - name: Run generated native election example
+        working-directory: contracts
+        run: npm run demo:native 2>&1 | tee "$RUNNER_TEMP/native-election-demo.log"
+      - name: Build browser site and source download
+        run: npm run build 2>&1 | tee "$RUNNER_TEMP/static-build.log"
+      - name: Bundle the actual Midnight native browser mode
+        run: npm --prefix contracts run build:browser:native 2>&1 | tee "$RUNNER_TEMP/native-browser-build.log"
+      - name: Bundle the Midnight.js network client
+        run: node scripts/build-network-browser.mjs 2>&1 | tee "$RUNNER_TEMP/network-browser-build.log"
+      - name: Require native output and check project-path assets
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; if (JSON.parse(fs.readFileSync("dist/native-build.json", "utf8")).enabled !== true) throw new Error("Native browser build is required for Pages");'
+          python3 scripts/check_pages.py 2>&1 | tee "$RUNNER_TEMP/pages-packaging.log"
+      - name: Install real Chromium for browser acceptance
+        run: node contracts/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Exercise native WASM election in real Chromium
+        run: node scripts/test-native-browser.mjs 2>&1 | tee "$RUNNER_TEMP/native-browser-tests.log"
+      - name: Exercise network client initialization and fail-closed controls
+        run: node scripts/test-network-browser.mjs 2>&1 | tee "$RUNNER_TEMP/network-browser-tests.log"
+      - name: Preserve build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-build-evidence
+          path: |
+            contracts/package-lock.json
+            contracts/toolchain.json
+            ${{ runner.temp }}/toolchain.log
+            ${{ runner.temp }}/dependency-install.log
+            ${{ runner.temp }}/dependency-tree.json
+            ${{ runner.temp }}/provider-api-tests.log
+            ${{ runner.temp }}/local-tests.log
+            ${{ runner.temp }}/native-election-compile.log
+            ${{ runner.temp }}/native-election-tests.log
+            ${{ runner.temp }}/native-election-demo.log
+            ${{ runner.temp }}/static-build.log
+            ${{ runner.temp }}/native-browser-build.log
+            ${{ runner.temp }}/network-browser-build.log
+            ${{ runner.temp }}/native-browser-tests.log
+            ${{ runner.temp }}/network-browser-tests.log
+            ${{ runner.temp }}/pages-packaging.log
+            artifacts/native-emulator-public.json
+            artifacts/native-browser/
+            artifacts/network-browser/
+            dist/native-build.json
+            dist/network-build.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy GitHub Pages frontend
+    needs: build
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Publish tested static artifact
+        id: deployment
+        uses: actions/deploy-pages@v4

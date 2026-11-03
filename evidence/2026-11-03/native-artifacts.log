@@ -1,0 +1,5 @@
+
+> midnight-ballot-lab-contract-source@0.3.0 check:artifacts:native
+> node scripts/check-artifacts.mjs native
+
+{"check":"generated-native-artifacts","target":"native","files":{"compiler":1,"keys":14,"zkir":14},"runtimeImport":"passed","proofExecution":"not-tested","ledgerSubmission":"not-tested"}

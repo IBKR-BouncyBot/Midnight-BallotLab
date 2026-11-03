@@ -1,0 +1,27 @@
+Exception: native-election.compact line 320 char 48:
+  potential witness-value disclosure must be declared but is not:
+    witness value potentially disclosed:
+      the value of parameter totals of exported circuit finalize at line 314 char 58
+    nature of the disclosure:
+      performing this ledger operation might disclose the boolean value of the result of a
+      comparison involving the witness value
+    via this path through the program:
+      the comparison at line 320 char 10
+      the conditional branch at line 320 char 10
+Exception: native-election.compact line 320 char 73:
+  potential witness-value disclosure must be declared but is not:
+    witness value potentially disclosed:
+      the value of parameter totals of exported circuit finalize at line 314 char 58
+    nature of the disclosure:
+      performing this ledger operation might disclose the boolean value of the result of a
+      comparison involving the witness value
+    via this path through the program:
+      the comparison at line 320 char 35
+      the conditional branch at line 320 char 10
+    nature of the disclosure:
+      performing this ledger operation might disclose the boolean value of the boolean value
+      of the result of a comparison involving the witness value
+    via this path through the program:
+      the comparison at line 320 char 10
+      the conditional expression at line 320 char 10
+      the conditional branch at line 320 char 10

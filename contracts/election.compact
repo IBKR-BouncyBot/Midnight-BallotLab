@@ -1,0 +1,124 @@
+// SOURCE STARTER ONLY: not compiled, proved, deployed, or connected to the demo.
+// This is an anonymous ADMISSION ledger. It does NOT validate encrypted ballots
+// or finalize a tally. See README.md and ADAPTER_GAP.md before extending it.
+pragma language_version 0.23.0;
+
+import CompactStandardLibrary;
+
+// Phase 0 = enrollment, 1 = accepting commitments, 2 = closed awaiting a
+// separately implemented tally-proof protocol. There is no finalized phase.
+export sealed ledger electionId: Bytes<32>;
+export sealed ledger manifestDigest: Bytes<32>;
+export sealed ledger administrator: Bytes<32>;
+export sealed ledger opensAt: Uint<64>;
+export sealed ledger closesAt: Uint<64>;
+export ledger phase: Uint<8>;
+// Only the CURRENT root is accepted; old small enrollment subsets must not
+// identify a voter. Enrollment freezes before this tree is used for voting.
+export ledger members: MerkleTree<10, Bytes<32>>;
+export ledger enrolled: Set<Bytes<32>>;
+export ledger spent: Set<Bytes<32>>;
+export ledger accepted: Uint<32>;
+// Insertion order is explicit. A digest alone does not ensure data availability.
+export ledger recordDigests: Map<Uint<32>, Bytes<32>>;
+export ledger recordNullifiers: Map<Uint<32>, Bytes<32>>;
+export ledger receipts: Set<Bytes<32>>;
+
+witness administratorSecret(): Bytes<32>;
+witness voterSecret(): Bytes<32>;
+witness eligibilityPath(): MerkleTreePath<10, Bytes<32>>;
+
+export pure circuit administratorIdentity(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "ballot-lab:admin:v1"), sk]);
+}
+
+export pure circuit memberIdentity(id: Bytes<32>, sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "ballot-lab:member:v1"), id, sk]);
+}
+
+export pure circuit voterNullifier(id: Bytes<32>, sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "ballot-lab:nullifier:v1"), id, sk]);
+}
+
+export pure circuit receiptDigest(
+  id: Bytes<32>, nul: Bytes<32>, record: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>([pad(32, "ballot-lab:receipt:v1"), id, nul, record]);
+}
+
+constructor(
+  id: Bytes<32>, manifest: Bytes<32>, adminIdentity: Bytes<32>,
+  opening: Uint<64>, closing: Uint<64>
+) {
+  assert(opening < closing, "invalid voting window");
+  assert(id != default<Bytes<32>>, "empty election id");
+  assert(manifest != default<Bytes<32>>, "empty manifest digest");
+  assert(adminIdentity != default<Bytes<32>>, "empty administrator identity");
+  electionId = disclose(id);
+  manifestDigest = disclose(manifest);
+  administrator = disclose(adminIdentity);
+  opensAt = disclose(opening);
+  closesAt = disclose(closing);
+  phase = 0;
+  accepted = 0;
+}
+
+export circuit enroll(member: Bytes<32>): [] {
+  assert(administratorIdentity(administratorSecret()) == administrator, "administrator required");
+  assert(phase == 0, "enrollment is frozen");
+  assert(blockTimeLt(opensAt), "enrollment deadline passed");
+  assert(enrolled.size() < 1024, "prototype electorate is full");
+  assert(member != default<Bytes<32>>, "empty member identity");
+  const identity = disclose(member);
+  assert(!enrolled.member(identity), "member already enrolled");
+  enrolled.insert(identity);
+  members.insert(identity);
+}
+
+// Anyone can open the already sealed election during its specified window.
+// No administrator can delay it, close it early, or extend its deadline here.
+export circuit openVoting(): [] {
+  assert(phase == 0, "election already opened or closed");
+  assert(blockTimeGte(opensAt), "voting has not started");
+  assert(blockTimeLt(closesAt), "voting deadline passed");
+  assert(!enrolled.isEmpty(), "no voters enrolled");
+  phase = 1;
+}
+
+// IMPORTANT: record is an opaque externally computed digest. Admission does
+// not establish encryption validity, a 0/1 plaintext, or correct tallying.
+// Do not present an accepted commitment as a validated vote.
+export circuit acceptCommitment(record: Bytes<32>): Bytes<32> {
+  assert(phase == 1, "election is not accepting commitments");
+  assert(blockTimeGte(opensAt), "voting has not started");
+  assert(blockTimeLt(closesAt), "voting deadline passed");
+  assert(accepted < 1024, "prototype ballot capacity reached");
+  assert(record != default<Bytes<32>>, "empty record digest");
+
+  const secret = voterSecret();
+  const path = eligibilityPath();
+  assert(path.leaf == memberIdentity(electionId, secret), "path not bound to voter secret");
+  assert(members.checkRoot(disclose(merkleTreePathRoot<10, Bytes<32>>(path))), "unknown electorate root");
+
+  const nul = disclose(voterNullifier(electionId, secret));
+  assert(!spent.member(nul), "voter already submitted a commitment");
+  const digest = disclose(record);
+  const receipt = disclose(receiptDigest(electionId, nul, digest));
+  spent.insert(nul);
+  recordDigests.insert(accepted, digest);
+  recordNullifiers.insert(accepted, nul);
+  receipts.insert(receipt);
+  accepted = (accepted + 1) as Uint<32>;
+  return receipt;
+}
+
+// Also closes an election that was never opened. Commitment admission itself
+// checks the deadline, so delayed invocation cannot admit late commitments.
+export circuit closeVoting(): [] {
+  assert(phase != 2, "election already closed");
+  assert(blockTimeGte(closesAt), "voting has not ended");
+  phase = 2;
+}
+
+// Deliberately no finalize circuit, totals, trustee secret, or trusted boolean
+// proof-valid witness. Finalization is unavailable until a real verifier exists.

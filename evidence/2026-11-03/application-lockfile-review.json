@@ -1,0 +1,48 @@
+{
+  "graph": "application",
+  "lockfileVersion": 3,
+  "packageEntries": 162,
+  "packageLockSha256": "a453299ebdcad213701c4dde7fec4a6f8104b93911ffc225e9ec3e5d648d9198",
+  "missingIntegrity": [],
+  "unexpectedRegistries": [],
+  "lifecycleScripts": [
+    "node_modules/classic-level",
+    "node_modules/esbuild",
+    "node_modules/msgpackr-extract"
+  ],
+  "lifecycleScriptsExecuted": false,
+  "directDependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "4.0.1",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "4.1.1",
+    "assert": "2.1.0",
+    "buffer": "6.0.3",
+    "events": "3.3.0",
+    "process": "0.11.10"
+  },
+  "runtimeVersions": [
+    {
+      "name": "node_modules/@midnight-ntwrk/compact-runtime",
+      "version": "0.16.0"
+    },
+    {
+      "name": "node_modules/@midnight-ntwrk/ledger-v8",
+      "version": "8.1.0"
+    },
+    {
+      "name": "node_modules/@midnight-ntwrk/onchain-runtime-v3",
+      "version": "3.0.0"
+    }
+  ],
+  "scope": "Integrity metadata, registry sources and package versions; not a security certification."
+}

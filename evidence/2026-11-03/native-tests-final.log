@@ -1,0 +1,32 @@
+
+> midnight-ballot-lab-contract-source@0.4.0 test:native
+> node --test native/test/*.test.mjs
+
+✔ constructor has no private setup; proved configureKeys is required and single use (119.2443ms)
+✔ setup enforces its deadline and nonzero canonical keys and shares (421.2438ms)
+✔ canonical native scalar boundaries use q, not the Compact Field modulus (2.0942ms)
+✔ configuration digest binds actual key commitments, administrator, metadata and schedule (71.6418ms)
+✔ only the administrator enrolls and the frozen electorate cannot change (81.9569ms)
+✔ a ballot stores all native ciphertext coordinates and its configuration-bound receipt (141.778ms)
+✔ native circuit rejects invalid selection and zero, noncanonical or repeated masks (138.8946ms)
+✔ a new ciphertext cannot bypass a previously spent voter nullifier (133.1189ms)
+✔ membership path must be bound to the private voter secret (92.6112ms)
+✔ an earlier subset electorate root cannot be used after enrollment is frozen (86.5191ms)
+✔ mutating a Merkle sibling invalidates voter eligibility (99.3214ms)
+✔ the deadline rejects ballots even before the closing transaction (104.7963ms)
+✔ decryption requires a frozen aggregate and knowledge of the registered share (237.8781ms)
+✔ trustees 1+2 finalize the complete three-ballot aggregate (284.2894ms)
+✔ trustees 1+3 finalize the complete three-ballot aggregate (266.3251ms)
+✔ trustees 2+3 finalize the complete three-ballot aggregate (270.926ms)
+✔ finalization rejects invalid pairs, excess counts and wrong count sums (236.6204ms)
+✔ empty configured elections have valid identity aggregates and zero totals (102.0268ms)
+✔ valid nonzero ballot randomness may cancel to an identity aggregate (201.2032ms)
+✔ native membership and nullifier hashes are domain and election separated (0.2353ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3233.2973

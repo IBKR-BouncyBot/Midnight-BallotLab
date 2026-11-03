@@ -1,0 +1,781 @@
+{
+  "version": "0.3.0",
+  "name": "midnight-ballot-lab-contract-source",
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": {
+      "version": "0.16.0",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/compact-runtime/-/compact-runtime-0.16.0.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/onchain-runtime-v3": {
+          "version": "3.0.0",
+          "resolved": "https://registry.npmjs.org/@midnight-ntwrk/onchain-runtime-v3/-/onchain-runtime-v3-3.0.0.tgz",
+          "overridden": true
+        },
+        "@types/object-inspect": {
+          "version": "1.13.0",
+          "resolved": "https://registry.npmjs.org/@types/object-inspect/-/object-inspect-1.13.0.tgz",
+          "overridden": false
+        },
+        "object-inspect": {
+          "version": "1.13.4",
+          "resolved": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.13.4.tgz",
+          "overridden": false
+        }
+      }
+    },
+    "@midnight-ntwrk/dapp-connector-api": {
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/dapp-connector-api/-/dapp-connector-api-4.0.1.tgz",
+      "overridden": false
+    },
+    "@midnight-ntwrk/midnight-js-contracts": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-contracts/-/midnight-js-contracts-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/midnight-js-network-id": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-protocol": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-types": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-utils": {
+          "version": "4.1.1"
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-dapp-connector-proof-provider/-/midnight-js-dapp-connector-proof-provider-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/dapp-connector-api": {
+          "version": "4.0.1"
+        },
+        "@midnight-ntwrk/midnight-js-protocol": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-types": {
+          "version": "4.1.1"
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-fetch-zk-config-provider/-/midnight-js-fetch-zk-config-provider-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/midnight-js-types": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-utils": {
+          "version": "4.1.1"
+        },
+        "cross-fetch": {
+          "version": "4.1.0",
+          "resolved": "https://registry.npmjs.org/cross-fetch/-/cross-fetch-4.1.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "node-fetch": {
+              "version": "2.7.0",
+              "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.7.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "encoding": {},
+                "whatwg-url": {
+                  "version": "5.0.0",
+                  "resolved": "https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "tr46": {
+                      "version": "0.0.3",
+                      "resolved": "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz",
+                      "overridden": false
+                    },
+                    "webidl-conversions": {
+                      "version": "3.0.1",
+                      "resolved": "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz",
+                      "overridden": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-indexer-public-data-provider/-/midnight-js-indexer-public-data-provider-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@apollo/client": {
+          "version": "4.3.6",
+          "resolved": "https://registry.npmjs.org/@apollo/client/-/client-4.3.6.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@graphql-typed-document-node/core": {
+              "version": "3.2.0"
+            },
+            "@wry/caches": {
+              "version": "1.0.1",
+              "resolved": "https://registry.npmjs.org/@wry/caches/-/caches-1.0.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "tslib": {
+                  "version": "2.9.1"
+                }
+              }
+            },
+            "@wry/equality": {
+              "version": "0.5.7",
+              "resolved": "https://registry.npmjs.org/@wry/equality/-/equality-0.5.7.tgz",
+              "overridden": false,
+              "dependencies": {
+                "tslib": {
+                  "version": "2.9.1"
+                }
+              }
+            },
+            "@wry/trie": {
+              "version": "0.5.0",
+              "resolved": "https://registry.npmjs.org/@wry/trie/-/trie-0.5.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "tslib": {
+                  "version": "2.9.1"
+                }
+              }
+            },
+            "graphql-tag": {
+              "version": "2.12.7",
+              "resolved": "https://registry.npmjs.org/graphql-tag/-/graphql-tag-2.12.7.tgz",
+              "overridden": false,
+              "dependencies": {
+                "graphql": {
+                  "version": "16.14.2"
+                },
+                "tslib": {
+                  "version": "2.9.1"
+                }
+              }
+            },
+            "graphql-ws": {
+              "version": "6.4.1"
+            },
+            "graphql": {
+              "version": "16.14.2"
+            },
+            "optimism": {
+              "version": "0.18.1",
+              "resolved": "https://registry.npmjs.org/optimism/-/optimism-0.18.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@wry/caches": {
+                  "version": "1.0.1"
+                },
+                "@wry/context": {
+                  "version": "0.7.4",
+                  "resolved": "https://registry.npmjs.org/@wry/context/-/context-0.7.4.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "tslib": {
+                      "version": "2.9.1"
+                    }
+                  }
+                },
+                "@wry/trie": {
+                  "version": "0.5.0"
+                },
+                "tslib": {
+                  "version": "2.9.1"
+                }
+              }
+            },
+            "react-dom": {},
+            "react": {},
+            "rxjs": {
+              "version": "7.8.2"
+            },
+            "subscriptions-transport-ws": {},
+            "tslib": {
+              "version": "2.9.1",
+              "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.9.1.tgz",
+              "overridden": false
+            }
+          }
+        },
+        "@graphql-typed-document-node/core": {
+          "version": "3.2.0",
+          "resolved": "https://registry.npmjs.org/@graphql-typed-document-node/core/-/core-3.2.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "graphql": {
+              "version": "16.14.2"
+            }
+          }
+        },
+        "@midnight-ntwrk/midnight-js-network-id": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-protocol": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-types": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-utils": {
+          "version": "4.1.1"
+        },
+        "buffer": {
+          "version": "6.0.3",
+          "resolved": "https://registry.npmjs.org/buffer/-/buffer-6.0.3.tgz",
+          "overridden": false,
+          "dependencies": {
+            "base64-js": {
+              "version": "1.5.1",
+              "resolved": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
+              "overridden": false
+            },
+            "ieee754": {
+              "version": "1.2.1",
+              "resolved": "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz",
+              "overridden": false
+            }
+          }
+        },
+        "cross-fetch": {
+          "version": "4.1.0"
+        },
+        "graphql-ws": {
+          "version": "6.4.1",
+          "resolved": "https://registry.npmjs.org/graphql-ws/-/graphql-ws-6.4.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@fastify/websocket": {},
+            "crossws": {},
+            "graphql": {
+              "version": "16.14.2"
+            },
+            "ws": {
+              "version": "8.22.1"
+            }
+          }
+        },
+        "graphql": {
+          "version": "16.14.2",
+          "resolved": "https://registry.npmjs.org/graphql/-/graphql-16.14.2.tgz",
+          "overridden": false
+        },
+        "isomorphic-ws": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/isomorphic-ws/-/isomorphic-ws-5.0.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "ws": {
+              "version": "8.22.1"
+            }
+          }
+        },
+        "rxjs": {
+          "version": "7.8.2",
+          "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-7.8.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "tslib": {
+              "version": "2.9.1"
+            }
+          }
+        },
+        "ws": {
+          "version": "8.22.1",
+          "resolved": "https://registry.npmjs.org/ws/-/ws-8.22.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "bufferutil": {},
+            "utf-8-validate": {}
+          }
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-level-private-state-provider/-/midnight-js-level-private-state-provider-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/midnight-js-protocol": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-types": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-utils": {
+          "version": "4.1.1"
+        },
+        "@noble/ciphers": {
+          "version": "2.4.0",
+          "resolved": "https://registry.npmjs.org/@noble/ciphers/-/ciphers-2.4.0.tgz",
+          "overridden": false
+        },
+        "@noble/hashes": {
+          "version": "2.4.0",
+          "resolved": "https://registry.npmjs.org/@noble/hashes/-/hashes-2.4.0.tgz",
+          "overridden": false
+        },
+        "abstract-level": {
+          "version": "3.1.1",
+          "resolved": "https://registry.npmjs.org/abstract-level/-/abstract-level-3.1.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "buffer": {
+              "version": "6.0.3"
+            },
+            "is-buffer": {
+              "version": "2.0.5",
+              "resolved": "https://registry.npmjs.org/is-buffer/-/is-buffer-2.0.5.tgz",
+              "overridden": false
+            },
+            "level-supports": {
+              "version": "6.2.0",
+              "resolved": "https://registry.npmjs.org/level-supports/-/level-supports-6.2.0.tgz",
+              "overridden": false
+            },
+            "level-transcoder": {
+              "version": "1.0.1",
+              "resolved": "https://registry.npmjs.org/level-transcoder/-/level-transcoder-1.0.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "buffer": {
+                  "version": "6.0.3"
+                },
+                "module-error": {
+                  "version": "1.0.2"
+                }
+              }
+            },
+            "maybe-combine-errors": {
+              "version": "1.0.0",
+              "resolved": "https://registry.npmjs.org/maybe-combine-errors/-/maybe-combine-errors-1.0.0.tgz",
+              "overridden": false
+            },
+            "module-error": {
+              "version": "1.0.2",
+              "resolved": "https://registry.npmjs.org/module-error/-/module-error-1.0.2.tgz",
+              "overridden": false
+            }
+          }
+        },
+        "buffer": {
+          "version": "6.0.3"
+        },
+        "level": {
+          "version": "10.0.0",
+          "resolved": "https://registry.npmjs.org/level/-/level-10.0.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "abstract-level": {
+              "version": "3.1.1"
+            },
+            "browser-level": {
+              "version": "3.0.0",
+              "resolved": "https://registry.npmjs.org/browser-level/-/browser-level-3.0.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "abstract-level": {
+                  "version": "3.1.1"
+                }
+              }
+            },
+            "classic-level": {
+              "version": "3.0.0",
+              "resolved": "https://registry.npmjs.org/classic-level/-/classic-level-3.0.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "abstract-level": {
+                  "version": "3.1.1"
+                },
+                "module-error": {
+                  "version": "1.0.2"
+                },
+                "napi-macros": {
+                  "version": "2.2.2",
+                  "resolved": "https://registry.npmjs.org/napi-macros/-/napi-macros-2.2.2.tgz",
+                  "overridden": false
+                },
+                "node-gyp-build": {
+                  "version": "4.8.4",
+                  "resolved": "https://registry.npmjs.org/node-gyp-build/-/node-gyp-build-4.8.4.tgz",
+                  "overridden": false
+                }
+              }
+            }
+          }
+        },
+        "superjson": {
+          "version": "2.2.6",
+          "resolved": "https://registry.npmjs.org/superjson/-/superjson-2.2.6.tgz",
+          "overridden": false,
+          "dependencies": {
+            "copy-anything": {
+              "version": "4.1.5",
+              "resolved": "https://registry.npmjs.org/copy-anything/-/copy-anything-4.1.5.tgz",
+              "overridden": false
+            }
+          }
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-network-id": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-network-id/-/midnight-js-network-id-4.1.1.tgz",
+      "overridden": false
+    },
+    "@midnight-ntwrk/midnight-js-protocol": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-protocol/-/midnight-js-protocol-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/compact-js": {
+          "version": "2.5.1",
+          "resolved": "https://registry.npmjs.org/@midnight-ntwrk/compact-js/-/compact-js-2.5.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@effect/platform": {
+              "version": "0.95.0",
+              "resolved": "https://registry.npmjs.org/@effect/platform/-/platform-0.95.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "effect": {
+                  "version": "3.22.4"
+                },
+                "find-my-way-ts": {
+                  "version": "0.1.6",
+                  "resolved": "https://registry.npmjs.org/find-my-way-ts/-/find-my-way-ts-0.1.6.tgz",
+                  "overridden": false
+                },
+                "msgpackr": {
+                  "version": "1.12.1",
+                  "resolved": "https://registry.npmjs.org/msgpackr/-/msgpackr-1.12.1.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "msgpackr-extract": {
+                      "version": "3.0.6",
+                      "resolved": "https://registry.npmjs.org/msgpackr-extract/-/msgpackr-extract-3.0.6.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@msgpackr-extract/msgpackr-extract-darwin-arm64": {},
+                        "@msgpackr-extract/msgpackr-extract-darwin-x64": {},
+                        "@msgpackr-extract/msgpackr-extract-linux-arm": {},
+                        "@msgpackr-extract/msgpackr-extract-linux-arm64": {},
+                        "@msgpackr-extract/msgpackr-extract-linux-x64": {},
+                        "@msgpackr-extract/msgpackr-extract-win32-x64": {
+                          "version": "3.0.6",
+                          "resolved": "https://registry.npmjs.org/@msgpackr-extract/msgpackr-extract-win32-x64/-/msgpackr-extract-win32-x64-3.0.6.tgz",
+                          "overridden": false
+                        },
+                        "node-gyp-build-optional-packages": {
+                          "version": "5.2.2",
+                          "resolved": "https://registry.npmjs.org/node-gyp-build-optional-packages/-/node-gyp-build-optional-packages-5.2.2.tgz",
+                          "overridden": false,
+                          "dependencies": {
+                            "detect-libc": {
+                              "version": "2.1.2",
+                              "resolved": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
+                              "overridden": false
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "multipasta": {
+                  "version": "0.2.9",
+                  "resolved": "https://registry.npmjs.org/multipasta/-/multipasta-0.2.9.tgz",
+                  "overridden": false
+                }
+              }
+            },
+            "@midnight-ntwrk/compact-runtime": {
+              "version": "0.16.0"
+            },
+            "@midnight-ntwrk/ledger-v8": {
+              "version": "8.1.0"
+            },
+            "@midnight-ntwrk/platform-js": {
+              "version": "2.2.4"
+            },
+            "effect": {
+              "version": "3.22.4"
+            },
+            "tslib": {
+              "version": "2.9.1"
+            }
+          }
+        },
+        "@midnight-ntwrk/compact-runtime": {
+          "version": "0.16.0"
+        },
+        "@midnight-ntwrk/ledger-v8": {
+          "version": "8.1.0",
+          "resolved": "https://registry.npmjs.org/@midnight-ntwrk/ledger-v8/-/ledger-v8-8.1.0.tgz",
+          "overridden": false
+        },
+        "@midnight-ntwrk/onchain-runtime-v3": {
+          "version": "3.0.0"
+        },
+        "@midnight-ntwrk/platform-js": {
+          "version": "2.2.4",
+          "resolved": "https://registry.npmjs.org/@midnight-ntwrk/platform-js/-/platform-js-2.2.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@effect/platform": {
+              "version": "0.95.0"
+            },
+            "effect": {
+              "version": "3.22.4"
+            },
+            "tslib": {
+              "version": "2.9.1"
+            }
+          }
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-types": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-types/-/midnight-js-types-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/midnight-js-protocol": {
+          "version": "4.1.1"
+        },
+        "effect": {
+          "version": "3.22.4",
+          "resolved": "https://registry.npmjs.org/effect/-/effect-3.22.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@standard-schema/spec": {
+              "version": "1.1.0",
+              "resolved": "https://registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz",
+              "overridden": false
+            },
+            "fast-check": {
+              "version": "3.23.2",
+              "resolved": "https://registry.npmjs.org/fast-check/-/fast-check-3.23.2.tgz",
+              "overridden": false,
+              "dependencies": {
+                "pure-rand": {
+                  "version": "6.1.0",
+                  "resolved": "https://registry.npmjs.org/pure-rand/-/pure-rand-6.1.0.tgz",
+                  "overridden": false
+                }
+              }
+            }
+          }
+        },
+        "pino": {
+          "version": "10.4.0",
+          "resolved": "https://registry.npmjs.org/pino/-/pino-10.4.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@pinojs/redact": {
+              "version": "0.4.0",
+              "resolved": "https://registry.npmjs.org/@pinojs/redact/-/redact-0.4.0.tgz",
+              "overridden": false
+            },
+            "atomic-sleep": {
+              "version": "1.0.0",
+              "resolved": "https://registry.npmjs.org/atomic-sleep/-/atomic-sleep-1.0.0.tgz",
+              "overridden": false
+            },
+            "on-exit-leak-free": {
+              "version": "2.1.2",
+              "resolved": "https://registry.npmjs.org/on-exit-leak-free/-/on-exit-leak-free-2.1.2.tgz",
+              "overridden": false
+            },
+            "pino-abstract-transport": {
+              "version": "3.0.0",
+              "resolved": "https://registry.npmjs.org/pino-abstract-transport/-/pino-abstract-transport-3.0.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "split2": {
+                  "version": "4.2.0",
+                  "resolved": "https://registry.npmjs.org/split2/-/split2-4.2.0.tgz",
+                  "overridden": false
+                }
+              }
+            },
+            "pino-std-serializers": {
+              "version": "7.1.0",
+              "resolved": "https://registry.npmjs.org/pino-std-serializers/-/pino-std-serializers-7.1.0.tgz",
+              "overridden": false
+            },
+            "process-warning": {
+              "version": "5.1.1",
+              "resolved": "https://registry.npmjs.org/process-warning/-/process-warning-5.1.1.tgz",
+              "overridden": false
+            },
+            "quick-format-unescaped": {
+              "version": "4.0.4",
+              "resolved": "https://registry.npmjs.org/quick-format-unescaped/-/quick-format-unescaped-4.0.4.tgz",
+              "overridden": false
+            },
+            "real-require": {
+              "version": "1.0.0",
+              "resolved": "https://registry.npmjs.org/real-require/-/real-require-1.0.0.tgz",
+              "overridden": false
+            },
+            "safe-stable-stringify": {
+              "version": "2.5.0",
+              "resolved": "https://registry.npmjs.org/safe-stable-stringify/-/safe-stable-stringify-2.5.0.tgz",
+              "overridden": false
+            },
+            "sonic-boom": {
+              "version": "4.2.1",
+              "resolved": "https://registry.npmjs.org/sonic-boom/-/sonic-boom-4.2.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "atomic-sleep": {
+                  "version": "1.0.0"
+                }
+              }
+            },
+            "thread-stream": {
+              "version": "4.2.1",
+              "resolved": "https://registry.npmjs.org/thread-stream/-/thread-stream-4.2.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "real-require": {
+                  "version": "1.0.0"
+                }
+              }
+            }
+          }
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        }
+      }
+    },
+    "@midnight-ntwrk/midnight-js-utils": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/@midnight-ntwrk/midnight-js-utils/-/midnight-js-utils-4.1.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@midnight-ntwrk/midnight-js-network-id": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/midnight-js-protocol": {
+          "version": "4.1.1"
+        },
+        "@midnight-ntwrk/wallet-sdk-address-format": {
+          "version": "3.1.2",
+          "resolved": "https://registry.npmjs.org/@midnight-ntwrk/wallet-sdk-address-format/-/wallet-sdk-address-format-3.1.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@midnight-ntwrk/ledger-v8": {
+              "version": "8.1.0"
+            },
+            "@scure/base": {
+              "version": "2.4.0",
+              "resolved": "https://registry.npmjs.org/@scure/base/-/base-2.4.0.tgz",
+              "overridden": false
+            },
+            "@subsquid/scale-codec": {
+              "version": "4.0.1",
+              "resolved": "https://registry.npmjs.org/@subsquid/scale-codec/-/scale-codec-4.0.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@subsquid/util-internal-hex": {
+                  "version": "1.2.3",
+                  "resolved": "https://registry.npmjs.org/@subsquid/util-internal-hex/-/util-internal-hex-1.2.3.tgz",
+                  "overridden": false
+                },
+                "@subsquid/util-internal-json": {
+                  "version": "1.2.4",
+                  "resolved": "https://registry.npmjs.org/@subsquid/util-internal-json/-/util-internal-json-1.2.4.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@subsquid/util-internal-hex": {
+                      "version": "1.2.3"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "esbuild": {
+      "version": "0.25.12",
+      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.12.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@esbuild/aix-ppc64": {},
+        "@esbuild/android-arm": {},
+        "@esbuild/android-arm64": {},
+        "@esbuild/android-x64": {},
+        "@esbuild/darwin-arm64": {},
+        "@esbuild/darwin-x64": {},
+        "@esbuild/freebsd-arm64": {},
+        "@esbuild/freebsd-x64": {},
+        "@esbuild/linux-arm": {},
+        "@esbuild/linux-arm64": {},
+        "@esbuild/linux-ia32": {},
+        "@esbuild/linux-loong64": {},
+        "@esbuild/linux-mips64el": {},
+        "@esbuild/linux-ppc64": {},
+        "@esbuild/linux-riscv64": {},
+        "@esbuild/linux-s390x": {},
+        "@esbuild/linux-x64": {},
+        "@esbuild/netbsd-arm64": {},
+        "@esbuild/netbsd-x64": {},
+        "@esbuild/openbsd-arm64": {},
+        "@esbuild/openbsd-x64": {},
+        "@esbuild/openharmony-arm64": {},
+        "@esbuild/sunos-x64": {},
+        "@esbuild/win32-arm64": {},
+        "@esbuild/win32-ia32": {},
+        "@esbuild/win32-x64": {
+          "version": "0.25.12",
+          "resolved": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.12.tgz",
+          "overridden": false
+        }
+      }
+    },
+    "events": {
+      "version": "3.3.0",
+      "resolved": "https://registry.npmjs.org/events/-/events-3.3.0.tgz",
+      "overridden": false
+    },
+    "jsqr": {
+      "version": "1.4.0",
+      "resolved": "https://registry.npmjs.org/jsqr/-/jsqr-1.4.0.tgz",
+      "overridden": false
+    },
+    "playwright": {
+      "version": "1.64.1",
+      "resolved": "https://registry.npmjs.org/playwright/-/playwright-1.64.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "playwright-core": {
+          "version": "1.64.1",
+          "resolved": "https://registry.npmjs.org/playwright-core/-/playwright-core-1.64.1.tgz",
+          "overridden": false
+        }
+      }
+    },
+    "pngjs": {
+      "version": "7.0.0",
+      "resolved": "https://registry.npmjs.org/pngjs/-/pngjs-7.0.0.tgz",
+      "overridden": false
+    }
+  }
+}
