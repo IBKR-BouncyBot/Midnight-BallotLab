@@ -6,7 +6,7 @@ Version 0.6.1 passed its affected local gates after the copy, receipt-upload and
 
 ## Version 0.6.1 hosted execution
 
-Commit [`fa94c3a19b4791441208ceae54a121faff2c588b`](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/commit/fa94c3a19b4791441208ceae54a121faff2c588b) is the source for these runs:
+Commit `fa94c3a19b4791441208ceae54a121faff2c588b` is the source for these runs:
 
 | Workflow | GitHub run | Recorded state |
 | --- | --- | --- |
@@ -38,7 +38,7 @@ Version 0.6.0 passed local verification and hosted compatibility/Pages deploymen
 
 ## Version 0.6.0 hosted execution
 
-Commit [`3839a91eeb9079bcb05d74d86ede27d03eb53d45`](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/commit/3839a91eeb9079bcb05d74d86ede27d03eb53d45) is the source for these runs:
+Commit `3839a91eeb9079bcb05d74d86ede27d03eb53d45` is the source for these runs:
 
 | Workflow | GitHub run | Recorded state |
 | --- | --- | --- |
@@ -58,7 +58,7 @@ Version 0.5.0 passed fresh local compilation, 45 native boundary tests, 20 gener
 
 ## Version 0.5.0 hosted execution
 
-Commit [`a904ea5c1688952fe3bfd459e51e9a1cf49db436`](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/commit/a904ea5c1688952fe3bfd459e51e9a1cf49db436) is the source for these runs:
+Commit `a904ea5c1688952fe3bfd459e51e9a1cf49db436` is the source for these runs:
 
 | Workflow | GitHub run | Recorded state |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ The [compatibility provenance](../evidence/2026-11-03/v0.5.0/github/native/prove
 
 ## Commit-specific execution records
 
-The hosted source is [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab) on `main`. The completed runs below tested commit [`b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/commit/b33b6e4896a12d211cc9b0040acdaf01c5a89ac5). GitHub Pages uses GitHub Actions as the build source. Local commands have their own evidence in [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md).
+The hosted source is [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab) on `main`. The completed runs below tested commit `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`. GitHub Pages uses GitHub Actions as the build source. Local commands have their own evidence in [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md).
 
 ## Hosted runs
 

@@ -60,7 +60,7 @@ try {
     nodePaths: [join(contracts, 'node_modules')], mainFields: ['browser', 'module', 'main'],
     conditions: ['browser', 'import'],
     inject: [join(root, 'scripts/network-browser-globals.mjs')],
-    plugins: [nativeWasmPlugin(wasmAssets, { assetFolder: 'network-assets', browserPackages: {
+    plugins: [nativeWasmPlugin(wasmAssets, { projectRoot: root, assetFolder: 'network-assets', browserPackages: {
       // These are actual installed browser implementations, not empty Node stubs.
       events: requireContracts.resolve('events/'), buffer: requireContracts.resolve('buffer/'),
       assert: requireContracts.resolve('assert/'),

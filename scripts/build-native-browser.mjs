@@ -45,7 +45,7 @@ try {
     absWorkingDir: root, entryPoints: [source], outfile: bundlePath,
     bundle: true, platform: 'browser', format: 'esm', target: 'es2022',
     nodePaths: [join(contracts, 'node_modules')], mainFields: ['browser', 'module', 'main'],
-    conditions: ['browser', 'import'], plugins: [nativeWasmPlugin(assets)],
+    conditions: ['browser', 'import'], plugins: [nativeWasmPlugin(assets, { projectRoot: root })],
     splitting: false, write: false, metafile: true, sourcemap: false,
     minify: false, legalComments: 'inline', logLevel: 'warning',
   });

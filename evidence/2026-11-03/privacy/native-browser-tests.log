@@ -1,0 +1,8 @@
+{"stage":"trustees-1-2","passed":true}
+{"stage":"trustees-1-3","passed":true}
+{"stage":"trustees-2-3","passed":true}
+{"stage":"scheduled-local-preview","passed":true}
+{"stage":"scheduled-preview-resumed-after-deadline","passed":true}
+{"stage":"fail-closed:disabled-build","passed":true}
+{"stage":"fail-closed:missing-wasm","passed":true}
+{"nativeBrowserAcceptance":"passed","cases":7,"proofGeneration":false,"networkSubmission":false}

@@ -1,10 +1,10 @@
 // Packages real installed WASM and preserves its imports/exports; no fallback.
 import { readFile } from 'node:fs/promises';
-import { basename, dirname, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { builtinModules } from 'node:module';
 import { createHash } from 'node:crypto';
 
-export function nativeWasmPlugin(assets, { assetFolder = 'native-assets', browserPackages = {} } = {}) {
+export function nativeWasmPlugin(assets, { projectRoot, assetFolder = 'native-assets', browserPackages = {} } = {}) {
 const builtins = new Set(builtinModules.flatMap(name => [name, name.replace(/^node:/, '')]));
 
 async function nativeAsset(path) {
@@ -22,6 +22,7 @@ async function nativeAsset(path) {
   return {
     name: 'actual-native-wasm',
     setup(build) {
+      const root = resolve(projectRoot ?? build.initialOptions.absWorkingDir ?? process.cwd());
       build.onResolve({ filter: /.*/ }, args => {
         if (Object.hasOwn(browserPackages, args.path)) return { path: browserPackages[args.path] };
         if (args.path.startsWith('node:') || builtins.has(args.path)) {
@@ -36,10 +37,19 @@ async function nativeAsset(path) {
         });
         if (resolved.errors.length) return { errors: resolved.errors };
         if (resolved.external || !resolved.path) return { errors: [{ text: 'WASM must resolve to a local installed package file' }] };
-        return { path: resolved.path, namespace: 'native-wasm' };
+        const modulePath = relative(root, resolved.path);
+        if (!modulePath || isAbsolute(modulePath) || modulePath === '..' || modulePath.startsWith(`..${sep}`)) {
+          return { errors: [{ text: 'Native WASM module must be inside the project root' }] };
+        }
+        // Custom namespace IDs appear in bundled comments and initializer names.
+        // Keep filesystem prefixes only in private build metadata, not module IDs.
+        return { path: modulePath.split(sep).join('/'), namespace: 'native-wasm',
+          pluginData: { wasmFile: resolved.path } };
       });
       build.onLoad({ filter: /.*/, namespace: 'native-wasm' }, async args => {
-        const { module, location } = await nativeAsset(args.path);
+        const wasmFile = args.pluginData?.wasmFile;
+        if (typeof wasmFile !== 'string' || !isAbsolute(wasmFile)) throw new Error('Native WASM filesystem resolution is missing');
+        const { module, location } = await nativeAsset(wasmFile);
         const modules = [...new Set(WebAssembly.Module.imports(module).map(item => item.module))];
         const exports = WebAssembly.Module.exports(module);
         // Preserve the real binary's imports and exports. Missing JS glue fails
@@ -49,7 +59,7 @@ async function nativeAsset(path) {
         const bindings = exports.map(({ name }, i) =>
           `const nativeExport${i} = nativeInstance.exports[${JSON.stringify(name)}];\nexport { nativeExport${i} as ${JSON.stringify(name)} };`).join('\n');
         return {
-          loader: 'js', resolveDir: dirname(args.path), watchFiles: [args.path],
+          loader: 'js', resolveDir: dirname(wasmFile), watchFiles: [wasmFile],
           contents: `${imports}\nconst nativeResponse = await fetch(new URL(${JSON.stringify(`./${location}`)}, import.meta.url));
 if (!nativeResponse.ok) throw new Error('Native WASM asset could not be loaded');
 const { instance: nativeInstance } = await WebAssembly.instantiate(await nativeResponse.arrayBuffer(), { ${importObject} });

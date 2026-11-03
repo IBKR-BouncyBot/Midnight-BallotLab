@@ -11,6 +11,10 @@ On 3 November 2026, the owner's personal name was replaced with this alias in pr
 
 These are privacy-redacted copies of earlier command output. Ballot counts, results and execution status were not changed. The demonstration now logs only the output filename, avoiding personal machine paths in future reports.
 
+Browser builds also use project-relative identifiers for native WASM modules. The actual filesystem location stays inside build metadata. This prevents the bundler from embedding personal machine paths in downloadable JavaScript. A real-esbuild regression checks unchanged official WASM bytes, path privacy and rejection of modules outside the project root.
+
 History redaction changes Git commit identifiers. Original commit identifiers and artifact digests in execution reports remain historical evidence of the runs actually performed; they do not claim that those runs executed a rewritten commit. Affected downloadable site artifacts are removed and replaced with a fresh build. Clean test-evidence artifacts remain available.
 
 Existing clones should be replaced or carefully rebased onto the cleaned history. Merging the previous history can restore the removed data. Removal from the repository does not erase copies already downloaded elsewhere or guarantee removal from GitHub's cached commit views.
+
+Fresh local Chromium checks after the packaging change passed all seven native-election cases and all four network-client cases. Reports are retained under [`evidence/2026-11-03/privacy/`](../evidence/2026-11-03/privacy/). Initial attempts could not locate Chromium; their discovery-stage logs are retained separately. Reruns used the existing browser cache. These checks execute the real browser runtime; they do not generate circuit proofs or submit network transactions. Earlier proof and devnet evidence retains its original scope.

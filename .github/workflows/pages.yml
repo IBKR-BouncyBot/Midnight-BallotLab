@@ -44,7 +44,7 @@ jobs:
           npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/dependency-install.log"
           npm ls --all --json > "$RUNNER_TEMP/dependency-tree.json"
       - name: Check installed wallet and provider APIs
-        run: node --test contracts/test/browser-providers-api.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
+        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
       - name: Compile the actual native election and generate its keys
         working-directory: contracts
         run: npm run compile:native 2>&1 | tee "$RUNNER_TEMP/native-election-compile.log"
