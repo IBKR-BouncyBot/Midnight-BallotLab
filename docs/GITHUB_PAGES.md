@@ -2,7 +2,7 @@
 
 The project is a static website: HTML, CSS and JavaScript execute in each visitor's browser. GitHub Pages can serve it without a backend, wallet, paid token or custom secret. It does not provide a shared election database, persistent private state, a Midnight node or a proof server.
 
-The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab). The 0.5.0 deployment and all three workflows completed successfully at `a904ea5c1688952fe3bfd459e51e9a1cf49db436`. Direct HTTPS browser evidence for the [live application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) is tied to `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`; it is not a direct-origin test of later changes. Version 0.6.0 is undergoing fresh verification. See [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for exact run links, versions and evidence.
+The user selected [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab). The 0.6.1 deployment, hosted compatibility and isolated devnet acceptance completed successfully at `fa94c3a19b4791441208ceae54a121faff2c588b`. Direct HTTPS browser evidence for the [live application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) is tied to `b33b6e4896a12d211cc9b0040acdaf01c5a89ac5`; it is not a direct-origin test of later changes. Version 0.6.1 passed its actual browser suites on the CI runners; the separate devnet run confirmed 17 transactions and automatic closing/tallying through an external operator. See [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) for exact run links, versions and evidence.
 
 ## Publish from the included source
 

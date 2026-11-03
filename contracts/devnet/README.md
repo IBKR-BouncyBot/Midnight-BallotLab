@@ -2,6 +2,8 @@
 
 This package exercises the existing generated Compact contract and SDK client on an explicitly selected fresh local `undeployed` chain. It is separate from the browser dependency graph. It does not connect to Preview, Preprod or mainnet. No public-network funds or user wallet credentials are required.
 
+Version 0.6.1 completed the actual [GitHub acceptance run](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41699843169) at commit `fa94c3a19b4791441208ceae54a121faff2c588b`: 17 accepted transactions, 16 completed proof transactions, five ballots and phase 3 totals `[2,1,2,0,0]` at block 137. The external operator waited for real indexed time beyond the sealed closing deadline, then submitted closing, trustee shares 1 + 3 and finalization. The [public report](../../evidence/2026-11-03/v0.6.1/github/devnet/reports/network-evidence.json) records `automaticCloseAndTally: true` and `onChainSelfExecution: false`. Browser-wallet validation and independent chain inclusion remain unverified. The preceding 0.6.0 failure at the fifth ballot remains preserved separately.
+
 Read [the native network guide](../../docs/NATIVE_NETWORK.md) before starting the reviewed loopback node/indexer services and local prover. The public readiness probe is separate from contract acceptance:
 
 ```sh

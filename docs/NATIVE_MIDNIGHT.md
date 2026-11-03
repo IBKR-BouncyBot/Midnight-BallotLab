@@ -1,6 +1,6 @@
 # Native Midnight implementation
 
-The native election in `contracts/native-election.compact` uses Compact 0.31.1 / language 0.23.0 / runtime 0.16.0 and ledger 8. Version 0.6.0 compiles all seven circuits with 2–5 active choices and five fixed ciphertext lanes. Its combined 40-case native suite passed, including 26 generated-contract and 14 public-verifier cases; 26 isolated-runtime cases and eight actual standalone proofs also passed. Proof, browser and network results are tied to the source revisions in [the execution report](CONTINUATION_RESULTS.md); a successful compile is not evidence for those later stages. The main browser page uses the actual generated contract and native WASM locally. The browser-wallet path remains unvalidated.
+The native election in `contracts/native-election.compact` uses Compact 0.31.1 / language 0.23.0 / runtime 0.16.0 and ledger 8. Version 0.6.1 compiles all seven circuits with 2–5 active choices and five fixed ciphertext lanes. Its combined 40-case native suite passed, including 26 generated-contract and 14 public-verifier cases; 26 isolated-runtime cases and eight actual standalone proofs also passed. Proof, browser and network results are tied to the source revisions in [the execution report](CONTINUATION_RESULTS.md); a successful compile is not evidence for those later stages. The main browser page uses the actual generated contract and native WASM locally. The browser-wallet path remains unvalidated.
 
 ## What is implemented in the source
 
@@ -98,7 +98,7 @@ The demo still uses a **central dealer that knows the complete key**. Separate t
 
 ## Verification scope
 
-Official pinned packages run under Ubuntu 24.04 in WSL and in GitHub Actions. Completed compilation, runtime, browser, proof, devnet and Pages runs are retained by source revision in the execution report. The current 0.6.0 compilation, native/isolated tests, standalone proofs, seven native-browser and four network-browser cases have fresh passing results. Its network transaction acceptance and hosted CI/deployment stages remain pending. Browser-wallet validation remains pending. Configured-indexer confirmations are not independently authenticated chain inclusion.
+Official pinned packages run under Ubuntu 24.04 in WSL and in GitHub Actions. Completed compilation, runtime, browser, proof, devnet and Pages runs are retained by source revision in the execution report. Version 0.6.1 passed full compilation, 40 native cases, 26 isolated-runtime cases, eight standalone proofs, seven native-browser and four network-browser cases. Hosted compatibility, Pages deployment and the separate 17-transaction Node wallet acceptance all passed at `fa94c3a19b4791441208ceae54a121faff2c588b`. The external scheduled operator finalized `[2,1,2,0,0]` at block 137 after actual indexed time passed the closing deadline. Browser-wallet validation remains pending. Configured-indexer confirmations are not independently authenticated chain inclusion.
 
 The root suite checks native input adapters, secret exclusion in public projection, receipts, loader behavior and configuration boundaries. Those tests are distinct from generated native tests and are not a cryptographic security audit. [CONTINUATION_RESULTS.md](CONTINUATION_RESULTS.md) records completed runs and their scope; changes require fresh verification.
 

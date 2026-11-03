@@ -1,0 +1,52 @@
+
+> midnight-ballot-lab-contract-source@0.6.1 test:native
+> node --test native/test/*.test.mjs
+
+✔ constructor has no private setup; proved configureKeys is required and single use (238.767792ms)
+✔ setup enforces its deadline and nonzero canonical keys and shares (634.901088ms)
+✔ canonical native scalar boundaries use q, not the Compact Field modulus (4.097771ms)
+✔ configuration digest binds actual key commitments, administrator, metadata and schedule (104.016436ms)
+✔ only the administrator enrolls and the frozen electorate cannot change (111.811342ms)
+✔ a ballot stores all native ciphertext coordinates and its configuration-bound receipt (218.341319ms)
+✔ native circuit rejects invalid selection and zero, noncanonical or repeated masks (401.671024ms)
+✔ a new ciphertext cannot bypass a previously spent voter nullifier (190.80507ms)
+✔ membership path must be bound to the private voter secret (127.149845ms)
+✔ an earlier subset electorate root cannot be used after enrollment is frozen (120.227816ms)
+✔ mutating a Merkle sibling invalidates voter eligibility (129.562444ms)
+✔ the deadline rejects ballots even before the closing transaction (133.188333ms)
+✔ decryption requires a frozen aggregate and knowledge of the registered share (379.588474ms)
+✔ trustees 1+2 finalize the complete three-ballot aggregate (424.258926ms)
+✔ trustees 1+3 finalize the complete three-ballot aggregate (463.343362ms)
+✔ trustees 2+3 finalize the complete three-ballot aggregate (415.642686ms)
+✔ finalization rejects invalid pairs, excess counts and wrong count sums (390.470291ms)
+✔ empty configured elections have valid identity aggregates and zero totals (185.057301ms)
+✔ valid nonzero ballot randomness may cancel to an identity aggregate (334.440944ms)
+✔ native membership and nullifier hashes are domain and election separated (0.387555ms)
+✔ candidate count is constructor-bounded and changes the sealed configuration (296.405599ms)
+✔ explicit emulator initial time is enforced by the real key-setup deadline (139.091856ms)
+✔ 2 active choices preserve five encrypted lanes and zero inactive totals (454.646216ms)
+✔ 3 active choices preserve five encrypted lanes and zero inactive totals (523.895866ms)
+✔ 4 active choices preserve five encrypted lanes and zero inactive totals (652.709806ms)
+✔ 5 active choices preserve five encrypted lanes and zero inactive totals (469.226155ms)
+✔ fresh public import verifies a real 2-choice native election without private state (960.823389ms)
+✔ fresh public import verifies a real 3-choice native election without private state (279.232855ms)
+✔ fresh public import verifies a real 4-choice native election without private state (941.444902ms)
+✔ fresh public import verifies a real 5-choice native election without private state (994.602099ms)
+✔ all three public trustee pairs are checked when all contributions are published (1676.527483ms)
+✔ a nonfinalized import verifies its public contents without reporting a tally (1005.979312ms)
+✔ receipt checks work against a transport copy in a fresh verifier (1974.954332ms)
+✔ manifest digest is deterministic under field reordering and rejects private/ambiguous metadata (1.67092ms)
+✔ canonical schema rejects duplicate JSON fields, hidden/private fields and changed execution claims (42.526067ms)
+✔ official WASM point gate rejects off-curve, torsion, noncanonical and forbidden identity points (9.91933ms)
+✔ untrusted point types are checked even when a canonical point is already cached (151.071101ms)
+✔ configuration and registered trustee key relations are independently recomputed (372.27933ms)
+✔ ciphertext receipts, aggregate totals and transcript uniqueness reject tampering (835.451313ms)
+✔ self-consistent substituted contributions do not become authenticated proofs or fairness (263.317201ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10404.333509

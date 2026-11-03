@@ -1,0 +1,80 @@
+{
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41699843307",
+  "headSha": "fa94c3a19b4791441208ceae54a121faff2c588b",
+  "artifactId": "13262832883",
+  "artifactSha256": "ce7b5973dd497035bee84e53e953d45f78b122139ace7fffaaa7ea7cac7bfda0",
+  "retained": [
+    {
+      "file": "command-output/toolchain.log",
+      "sha256": "85a1041e4709c740225bab53c136c25c976a765516b5278e2e85d8c4c3ff7cc9"
+    },
+    {
+      "file": "command-output/dependency-install.log",
+      "sha256": "3d27a1e6573366876c1060ea3ca2a127726940110857b48570addd21d6f1c47a"
+    },
+    {
+      "file": "command-output/dependency-tree.json",
+      "sha256": "dcef76f048c248ebde7b05231a5e360cebc6b171a10048bf50dea11d8e7bdbe3"
+    },
+    {
+      "file": "command-output/provider-api-tests.log",
+      "sha256": "709fffdcc0d1c4058f4ad2901c9091e7ec9abc5ac104e743bc29c1380c53dc8c"
+    },
+    {
+      "file": "command-output/native-boundary-tests.log",
+      "sha256": "b4e9eefd66a1bbe99a871090513b9148ab57864961138736c71915fdc1930e70"
+    },
+    {
+      "file": "command-output/native-election-compile.log",
+      "sha256": "9ec175cc2fdcb48f2635f9a4e31f06a8d9423b7cbdde6d0f91be2b337578d4be"
+    },
+    {
+      "file": "command-output/native-election-tests.log",
+      "sha256": "f83ce2a2d441f535c2e3f3bcc6659e5d13cedd816db88c2a685282128bd1a891"
+    },
+    {
+      "file": "command-output/native-election-demo.log",
+      "sha256": "7065d65f513c5f329f47b16130048cd17ed1b8087d30d5c9ece5ed7628969b5c"
+    },
+    {
+      "file": "command-output/static-build.log",
+      "sha256": "7d745a25f04aa274399de57bf50e3a95f40583601eef2181e9638d517efadd35"
+    },
+    {
+      "file": "command-output/native-browser-build.log",
+      "sha256": "18d0a22c42f9d7c85da2cee24752621855e06235247215343b50ffda4940eea1"
+    },
+    {
+      "file": "command-output/network-browser-build.log",
+      "sha256": "101f7252c4f3e231e908596ea0e87621fb9db0fc4328dd721e694a40631f9ff9"
+    },
+    {
+      "file": "command-output/native-browser-tests.log",
+      "sha256": "30576650614b2137fcd893b1eb0b97f28dc4bf1f4fe4ce0fa81b94e5c4c1c046"
+    },
+    {
+      "file": "command-output/network-browser-tests.log",
+      "sha256": "ee52d6ca19ffd7e15f85eae07f27f529b372c542f4d4ca352aea8b956f1f6872"
+    },
+    {
+      "file": "command-output/pages-packaging.log",
+      "sha256": "1055ea4410cebe3da6c4817e4efbcd4d94b063f37185d8e34eaa675ec6bd3edb"
+    },
+    {
+      "file": "reports/native-browser-evidence.json",
+      "sha256": "d9e9257d173855eef51027db0aeec764591b5bedfc0fec2c13eabfc1c7a546ca"
+    },
+    {
+      "file": "reports/network-browser-evidence.json",
+      "sha256": "12c9dc3849aed82356e391670109c2d40fe94380574a31ff0ba3b39025e7604b"
+    },
+    {
+      "file": "reports/native-build.json",
+      "sha256": "38fbeafe290ebad1a2173e5fcb9a1dbc8fcadf051d6d4941be4ef7a9394b2070"
+    },
+    {
+      "file": "reports/network-build.json",
+      "sha256": "ee74b51a84953fc85b51b7354041ad4f3a7a858b3aa5281cf35b94caf35cc128"
+    }
+  ]
+}

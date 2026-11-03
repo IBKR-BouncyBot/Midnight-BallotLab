@@ -1,0 +1,267 @@
+{
+  "executedAt": "2026-11-03T19:07:32.051Z",
+  "networkId": "undeployed",
+  "environment": "fresh-isolated-local-development-chain",
+  "confirmationSource": "configured-local-indexer",
+  "mode": "external-scheduled-operator",
+  "onChainSelfExecution": false,
+  "independentlyVerifiedChainInclusion": false,
+  "browserWalletTested": false,
+  "acceptedTransactions": [
+    {
+      "operation": "deploy",
+      "txId": "0072ce35796968efe77c5a602ce0055470b6d2bbb0e66da03bd2eddcfec0c73194",
+      "blockHeight": "5",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "configure-keys",
+      "txId": "003fc64a2b73f8a88a616838ae6cd6b8eb84aa909aea364fe08bab42770b27154c",
+      "blockHeight": "10",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-1",
+      "txId": "00a87dbfef7c50ba7c89d5bd01724620e53734d582f840196b55889333c12ba26b",
+      "blockHeight": "13",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-2",
+      "txId": "004e44f887c4fc84e6a53eda26c0592d0592afeeec9f74a95c862113e0993a2280",
+      "blockHeight": "16",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-3",
+      "txId": "008c45b1096a88413a324b2fd35e87cb9474819484eae07a72cbb057d251107e98",
+      "blockHeight": "19",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-4",
+      "txId": "003d0e45916298ab4ab6c65a153453d7a2adad9c7fc5b7e7474da416f95b921e71",
+      "blockHeight": "22",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "enroll-5",
+      "txId": "00499d44b6d0529ed81737f10e87d340474a361298cd459467fda909fe4f26178f",
+      "blockHeight": "25",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "open-voting",
+      "txId": "000ead08750355f3b7472548d1556ddf463607d84ae5be7f0397159e9faad4276d",
+      "blockHeight": "47",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-1",
+      "txId": "001c59130be5b43ab3f10a36ad8b54d2d8d7005856a4af3b6e3167ebd38fa1d311",
+      "blockHeight": "53",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-2",
+      "txId": "005f43bd3657f577294a6ea29744d8c17b4b3690e9415cdabbccde442e5db42b60",
+      "blockHeight": "58",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-3",
+      "txId": "00cac77e50a0a3e4cfc3de6f287d8a46040884b1125ab27e4aac4df573fd5f24e0",
+      "blockHeight": "63",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-4",
+      "txId": "0014d08b6ecd2d501cfbd863b83e796cf92b8350cb01014072ecd50b74730c788c",
+      "blockHeight": "68",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "cast-5",
+      "txId": "002bb112525432c2321530b2295a273b195de9560aff589e3b6d735d9286799512",
+      "blockHeight": "73",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "close-voting",
+      "txId": "00c267f10b03505c36f7aeff46c3761c694503684cc5e1e89be4a49f1214ca9cc5",
+      "blockHeight": "127",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "trustee-1",
+      "txId": "00f4dfa760a9d1510503036546b2ecbab5e48563382b809935236456c7b5bee38a",
+      "blockHeight": "130",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "trustee-3",
+      "txId": "00d3eeadb3aa08cc33537fb76673d12a8ce804cd1d6e9eda04fe5aa6df22b6491c",
+      "blockHeight": "133",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "finalize",
+      "txId": "005447c309a6e35d7c8d9f8c2e049b2c70070dc022b6b5d048d1f3241674f28ea7",
+      "blockHeight": "137",
+      "status": "SucceedEntirely"
+    }
+  ],
+  "rejectedBeforeSubmission": [
+    {
+      "operation": "reject-invalid-choice",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    },
+    {
+      "operation": "reject-duplicate-credential",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    },
+    {
+      "operation": "reject-wrong-trustee-share",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    },
+    {
+      "operation": "reject-changed-tally",
+      "rejected": true,
+      "proofGenerated": false,
+      "submitted": false
+    }
+  ],
+  "proofTransactionsCompleted": 16,
+  "networkSubmission": true,
+  "scheduledTallyStarted": true,
+  "status": "passed",
+  "sourceHashes": {
+    "native/sdk-client.mjs": "cbab35c599925e0ada9dab2b98fbca597f9c06b04d5b87adcab122fa09c7dfca",
+    "native/adapter.mjs": "6bdbd467edbad74269818b240b120f711c46c26d6cfb1494e651757d22e3a68c",
+    "native/harness.mjs": "1555547bd4b4a18954f13a2a41a15ed4beef51e67463f8483a4d8c27c4d61a7f",
+    "native/record.mjs": "6b48614c74fdfe642d03e6d0ea696390dc45cb950ca42677aeac7ae3b3de69d3",
+    "native/browser-config.mjs": "b254711f22e0aae5852d68127848c90c0d2ea6662f61ef72fad3ed2aef8ec789",
+    "native/test/native-election.test.mjs": "99290e3c01519d870491264ade924c5f29c77a9325b6d188047fcff6c21048cd",
+    "managed/native-election/contract/index.js": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7"
+  },
+  "operatorSourceSha256": "303c02871f38200d074f2b9672d59d9bdfca0d3e448b87f6c6ba9ebbfae4929d",
+  "runnerSourceSha256": "ab1cbbd9534ffb49c194108ed75e13156539d8fc68e32e9c64e9e43c7e1f6832",
+  "lockfileSha256": "8b831d2255e3a83307cce1acb0a7316974c1570b2903a6e683e1bb32414732ac",
+  "versions": {
+    "compact-runtime": "0.16.0",
+    "midnight-js-contracts": "4.1.1",
+    "testkit-js": "4.1.1",
+    "wallet-sdk": "1.2.0",
+    "ledger-v8": "8.1.2",
+    "onchain-runtime-v3": "3.1.1",
+    "zkir-v2": "2.1.1"
+  },
+  "node": "v24.22.1",
+  "suppressedLibraryConsoleCalls": 4,
+  "schedule": {
+    "opensAt": 1793733094,
+    "closesAt": 1793733574
+  },
+  "candidateCount": 3,
+  "expectedTotals": [
+    2,
+    1,
+    2,
+    0,
+    0
+  ],
+  "contractAddress": "c15231e6160d7c4b708a070585ae780941e6d486381540e2a1227dc0e92f61f5",
+  "configurationDigest": "6b08f93465ce4e8bb4418e561c752f262a04514a1cd895f8f78959916bfd8ea2",
+  "receipts": [
+    {
+      "networkId": "undeployed",
+      "contractAddress": "c15231e6160d7c4b708a070585ae780941e6d486381540e2a1227dc0e92f61f5",
+      "configurationDigest": "6b08f93465ce4e8bb4418e561c752f262a04514a1cd895f8f78959916bfd8ea2",
+      "index": 0,
+      "receipt": "7c9215f52b3d3369930639ed0967b7f43cfc990038f905e4ab54547004a8d3f1",
+      "txId": "001c59130be5b43ab3f10a36ad8b54d2d8d7005856a4af3b6e3167ebd38fa1d311",
+      "blockHeight": "53"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "c15231e6160d7c4b708a070585ae780941e6d486381540e2a1227dc0e92f61f5",
+      "configurationDigest": "6b08f93465ce4e8bb4418e561c752f262a04514a1cd895f8f78959916bfd8ea2",
+      "index": 1,
+      "receipt": "684bf16591ea4b1925fc520cb9081364e534437cdff0098388332851da43af9a",
+      "txId": "005f43bd3657f577294a6ea29744d8c17b4b3690e9415cdabbccde442e5db42b60",
+      "blockHeight": "58"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "c15231e6160d7c4b708a070585ae780941e6d486381540e2a1227dc0e92f61f5",
+      "configurationDigest": "6b08f93465ce4e8bb4418e561c752f262a04514a1cd895f8f78959916bfd8ea2",
+      "index": 2,
+      "receipt": "e8bd792ed3f30277915af6e99b054c7ce5ed4a08818263bc9a14d5ef16739444",
+      "txId": "00cac77e50a0a3e4cfc3de6f287d8a46040884b1125ab27e4aac4df573fd5f24e0",
+      "blockHeight": "63"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "c15231e6160d7c4b708a070585ae780941e6d486381540e2a1227dc0e92f61f5",
+      "configurationDigest": "6b08f93465ce4e8bb4418e561c752f262a04514a1cd895f8f78959916bfd8ea2",
+      "index": 3,
+      "receipt": "b15df7555c7b8070ca6bb739bc7f5fe3603b0f61cb908f42f1dc4ece8842aa0c",
+      "txId": "0014d08b6ecd2d501cfbd863b83e796cf92b8350cb01014072ecd50b74730c788c",
+      "blockHeight": "68"
+    },
+    {
+      "networkId": "undeployed",
+      "contractAddress": "c15231e6160d7c4b708a070585ae780941e6d486381540e2a1227dc0e92f61f5",
+      "configurationDigest": "6b08f93465ce4e8bb4418e561c752f262a04514a1cd895f8f78959916bfd8ea2",
+      "index": 4,
+      "receipt": "aad0088442852a780d34d91d38ddd7d1290b6ef25ff928d810cfde7322f83242",
+      "txId": "002bb112525432c2321530b2295a273b195de9560aff589e3b6d735d9286799512",
+      "blockHeight": "73"
+    }
+  ],
+  "scheduledOperator": {
+    "mode": "external-scheduled-operator",
+    "networkId": "undeployed",
+    "startedAt": "2026-11-03T19:14:45.400Z",
+    "opensAt": 1793733094,
+    "closesAt": 1793733574,
+    "closedAfterIndexedTime": 1793733576,
+    "finishedAt": "2026-11-03T19:21:08.724Z",
+    "automaticCloseAndTally": true,
+    "onChainSelfExecution": false,
+    "trusteePair": [
+      1,
+      3
+    ],
+    "totals": [
+      2,
+      1,
+      2,
+      0,
+      0
+    ],
+    "confirmationSource": "configured-local-indexer",
+    "independentlyVerifiedChainInclusion": false
+  },
+  "observedTotals": [
+    2,
+    1,
+    2,
+    0,
+    0
+  ],
+  "acceptedBallots": 5,
+  "finalPhase": 3,
+  "replay": {
+    "outcome": "submission-pipeline-rejected",
+    "category": "operation-failed-details-withheld",
+    "independentNetworkRejectionVerified": false
+  },
+  "completedAt": "2026-11-03T19:21:09.753Z"
+}

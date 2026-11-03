@@ -1,0 +1,72 @@
+{
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41699843169",
+  "headSha": "fa94c3a19b4791441208ceae54a121faff2c588b",
+  "artifactId": "13263408473",
+  "artifactSha256": "fcc73e6ad64014fd775a4ed8f16ded09e878ce9a370a750935c2ed5f6e13c7e1",
+  "retained": [
+    {
+      "file": "reports/application-lockfile-review.json",
+      "sha256": "0060c0e2d52a72a7f5a0336fedf2404bfe12b4527acf4db83ef4fddeb8df1224"
+    },
+    {
+      "file": "reports/devnet-lockfile-review.json",
+      "sha256": "6f94f68d13fc9b2ab29f7eb0114f36be1c5045c677a40471a80f82c2c0d977c2"
+    },
+    {
+      "file": "command-output/devnet-toolchain.log",
+      "sha256": "97815b22f5ff49498149e1b54275b10b6ecb0685576bdde5b9cc9ee56d7a0888"
+    },
+    {
+      "file": "command-output/application-dependency-install.log",
+      "sha256": "73341f3d2e0f45cd501041d542006bf45a1a3c0d1fa8dfbd4125398e2c44d132"
+    },
+    {
+      "file": "command-output/devnet-native-compile.log",
+      "sha256": "9ec175cc2fdcb48f2635f9a4e31f06a8d9423b7cbdde6d0f91be2b337578d4be"
+    },
+    {
+      "file": "command-output/application-native-tests.log",
+      "sha256": "eb88631fa5fd2d37d77425001305e5a533e2a119c87c8d0127768b1e0442f50d"
+    },
+    {
+      "file": "command-output/devnet-dependency-install.log",
+      "sha256": "25bf62c7d771f3eed8cfdd4a45d6c706df447555838d1e7a970b08805f28eb3e"
+    },
+    {
+      "file": "command-output/devnet-dependency-tree.json",
+      "sha256": "01176c9767e9ad0a282ddf373dc25fc59eba82fccee40790f29a68f5951d601b"
+    },
+    {
+      "file": "command-output/devnet-runtime-tests.log",
+      "sha256": "403f30c61aaa4de3b0526acad81a05f335687236502b8dcf827de787249c1444"
+    },
+    {
+      "file": "command-output/lockfile-review.log",
+      "sha256": "7e227bfa84e757b84a0049ea0c8afbe50bee824633e7554a72cd2b9e392e426e"
+    },
+    {
+      "file": "command-output/devnet-services.log",
+      "sha256": "34a1023d92f23a4dac73fe24499c2ad7fda22efb043bda3112d0484734f7bf06"
+    },
+    {
+      "file": "command-output/devnet-readiness.log",
+      "sha256": "58134846f407b57f91040ebdf5e99a67ea74fc0f5930d2a3bcf514220eb3e501"
+    },
+    {
+      "file": "command-output/devnet-acceptance.log",
+      "sha256": "de7cb18397e21ce8f5713e22342161cc9a9a32c4d7bf1644cf87a65505014750"
+    },
+    {
+      "file": "command-output/devnet-cleanup.log",
+      "sha256": "967a7906b11a135d5e6ede9b14c9b190f2f8df0fa911ab1cae055039b6748e2f"
+    },
+    {
+      "file": "reports/readiness.json",
+      "sha256": "fc39aa4d4e7d6930fb91830269be7e72c727af521dabad784dc430d780f7ce28"
+    },
+    {
+      "file": "reports/network-evidence.json",
+      "sha256": "3d79f556ba7544fbb8a25c3fc672c7fd489cbdf66ed68882cb5ff43b9f87347b"
+    }
+  ]
+}

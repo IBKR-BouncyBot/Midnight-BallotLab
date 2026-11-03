@@ -1,0 +1,91 @@
+{
+  "schema": "midnight-ballot-lab/local-circuit-proofs/v1",
+  "startedAt": "2026-11-03T19:08:01.888Z",
+  "execution": "generated-contract-circuit-proofs",
+  "status": "passed",
+  "proofs": [
+    {
+      "circuit": "configureKeys",
+      "constraintCheck": "passed",
+      "proofBytes": 4860,
+      "proofSha256": "cc1807fe3029f3542eaca7a3381cb158349e12a3a6f9418b672cc85dd8b7f0e7",
+      "elapsedMs": 14441
+    },
+    {
+      "circuit": "enroll",
+      "constraintCheck": "passed",
+      "proofBytes": 4508,
+      "proofSha256": "095fb4da063f419bec2b558a0cc4e49311580ddd6db54721d97fb267d4627e5e",
+      "elapsedMs": 2841
+    },
+    {
+      "circuit": "openVoting",
+      "constraintCheck": "passed",
+      "proofBytes": 2940,
+      "proofSha256": "74e32456e91ffe04999fb263f3d105935271f9bedb4b9a9094aa30f33c951a0e",
+      "elapsedMs": 654
+    },
+    {
+      "circuit": "castBallot",
+      "constraintCheck": "passed",
+      "proofBytes": 4860,
+      "proofSha256": "2dff369ef0ac366a6e2864f13c3ed1ebba68cff7e1fd90f3627ee3d0f1a9de4f",
+      "elapsedMs": 27170
+    },
+    {
+      "circuit": "closeVoting",
+      "constraintCheck": "passed",
+      "proofBytes": 2940,
+      "proofSha256": "80b3bea9e631689aa11e91bcd2517ee198a01f6ff9e35e82bb87e5076fdf6903",
+      "elapsedMs": 61
+    },
+    {
+      "circuit": "submitDecryption",
+      "constraintCheck": "passed",
+      "proofBytes": 3324,
+      "proofSha256": "0c9fa7398dc5ca0c55ce8152be8512ce4078fec811b319645f26aa6bca501572",
+      "elapsedMs": 1474
+    },
+    {
+      "circuit": "submitDecryption",
+      "constraintCheck": "passed",
+      "proofBytes": 3324,
+      "proofSha256": "036ed2fb218ea2206ca66dc969109cf2434ed526af3b6f98fa1f7bed56dbf681",
+      "elapsedMs": 1285
+    },
+    {
+      "circuit": "finalize",
+      "constraintCheck": "passed",
+      "proofBytes": 3324,
+      "proofSha256": "da81e1fed67d19b7d59086ebc59b657d998eb71b57164b33728f81f7698ee2b5",
+      "elapsedMs": 7144
+    }
+  ],
+  "negativeChecks": [
+    {
+      "case": "castBallot preimage with enroll circuit material",
+      "outcome": "rejected by proof server check",
+      "proofRequested": false
+    },
+    {
+      "case": "wrong registered trustee share",
+      "outcome": "rejected by generated circuit before proof request",
+      "proofRequested": false
+    }
+  ],
+  "networkSubmission": "not-attempted",
+  "networkAcceptance": "not-tested",
+  "independentProofVerification": "not-tested",
+  "versions": {
+    "compiler": "0.31.1",
+    "runtime": "0.16.0",
+    "midnightJs": "4.1.1",
+    "node": "v24.22.1",
+    "proofServer": "8.1.3"
+  },
+  "contractSourceSha256": "78200f0fdd6c884785395ba5ca6a8b58e2d302b5c24db51462ea83998482fbc3",
+  "generatedBindingSha256": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7",
+  "candidateCount": 5,
+  "finishedAt": "2026-11-03T19:08:57.129Z",
+  "distinctCircuitsProved": 7
+}

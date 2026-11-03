@@ -2,7 +2,7 @@
 
 This directory uses the generated bindings for [`../native-election.compact`](../native-election.compact). The contract performs ballot encryption and threshold decryption with Midnight's native Jubjub operations, and derives identities, nullifiers and receipts with Compact's typed hashes. It has 2–5 active choices, five fixed ciphertext lanes, up to 1,024 voters and two-of-three trustees.
 
-Version 0.6.0 adds candidate-count binding and independent public-record verification. The new source compiled with Compact 0.31.1; all 40 native cases (26 generated-contract and 14 public-verifier cases), 26 isolated-runtime cases and eight real standalone circuit proofs passed locally. Browser, proof and network outcomes must be read against their exact tested revisions in [CONTINUATION_RESULTS.md](../../docs/CONTINUATION_RESULTS.md). Missing native prerequisites fail explicitly. An actual browser-wallet transaction remains untested.
+Version 0.6.1 includes candidate-count binding and independent public-record verification. It passed Compact 0.31.1 compilation, all 40 native cases (26 generated-contract and 14 public-verifier cases), 26 isolated-runtime cases, eight real standalone proofs, seven native-browser and four network-browser cases. Hosted compatibility, Pages deployment and the separate 17-transaction devnet acceptance also passed, including automatic external closing/tallying to `[2,1,2,0,0]`. Browser, proof and network outcomes must be read against their exact tested revisions in [CONTINUATION_RESULTS.md](../../docs/CONTINUATION_RESULTS.md). Missing native prerequisites fail explicitly. An actual browser-wallet transaction remains untested.
 
 ## Run with the actual toolchain
 
