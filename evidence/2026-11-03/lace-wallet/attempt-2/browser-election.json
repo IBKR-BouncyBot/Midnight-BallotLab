@@ -1,0 +1,465 @@
+{
+  "schema": "midnight-ballot-lab/real-lace-local-acceptance/v1",
+  "startedAt": "2026-11-03T21:16:54.040Z",
+  "networkId": "undeployed",
+  "flow": "real-application-ui-and-extension-approval",
+  "status": "passed",
+  "operations": [
+    {
+      "operation": "Deployment",
+      "startedAt": "2026-11-03T21:19:08.951Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": false,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:19:09.646Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:19:09.737Z",
+      "txId": "0096fa2d7542caeae1f460a2927ab51a32d8382f3a259777547084228faf0b1a05",
+      "blockHeight": "468",
+      "confirmationRecordedAt": "2026-11-03T21:19:32.806Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Key configuration",
+      "startedAt": "2026-11-03T21:19:32.810Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:19:41.379Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:19:41.446Z",
+      "txId": "00e01fc80ebce894922d5e6b60b9a7b0dcf0546c56f429e13d99bb62172529cb2a",
+      "blockHeight": "473",
+      "confirmationRecordedAt": "2026-11-03T21:20:02.058Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Enrollment",
+      "startedAt": "2026-11-03T21:20:02.062Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:20:05.288Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:20:05.396Z",
+      "txId": "0078d96edc18413ea238454f0d42ad8e0b1ec57a1f0ab8a08b409e18fbb63205bb",
+      "blockHeight": "477",
+      "confirmationRecordedAt": "2026-11-03T21:20:25.994Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Voting opened",
+      "startedAt": "2026-11-03T21:23:13.090Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:23:15.411Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:23:15.503Z",
+      "txId": "00fff171d6ad7a77704bf8d1f452a934db438cfd728b651dee6b408dbc9e1e3ab1",
+      "blockHeight": "509",
+      "confirmationRecordedAt": "2026-11-03T21:23:37.945Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Ballot",
+      "startedAt": "2026-11-03T21:23:37.969Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:23:52.961Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:23:53.028Z",
+      "txId": "00e3accda7a37de828b8bc49202335bd23c5d17b98ed4831ac457a6bea449d29f0",
+      "blockHeight": "515",
+      "confirmationRecordedAt": "2026-11-03T21:24:13.881Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Voting closed",
+      "startedAt": "2026-11-03T21:27:13.195Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:27:15.285Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:27:15.366Z",
+      "txId": "0099c901497a0eb0efb2f5b3fcb42c4aabaa96d8053f3b7046be6f46b0d5a60a09",
+      "blockHeight": "549",
+      "confirmationRecordedAt": "2026-11-03T21:27:37.818Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Trustee contribution",
+      "trusteeIndex": 1,
+      "startedAt": "2026-11-03T21:27:37.859Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:27:41.075Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:27:41.142Z",
+      "txId": "00c088e42babc5edcb75e09861121156686613b90a6090fc070caff2efb665ce09",
+      "blockHeight": "553",
+      "confirmationRecordedAt": "2026-11-03T21:28:03.196Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Trustee contribution",
+      "trusteeIndex": 3,
+      "startedAt": "2026-11-03T21:28:03.235Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:28:05.976Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:28:06.051Z",
+      "txId": "00b5c171ca538a3855f1d68ad971da2bc186694a4457401008d9745ba706e92481",
+      "blockHeight": "557",
+      "confirmationRecordedAt": "2026-11-03T21:28:27.288Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    },
+    {
+      "operation": "Tally finalized",
+      "startedAt": "2026-11-03T21:28:27.309Z",
+      "status": "indexer-accepted",
+      "contractCallProofRequired": true,
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalAt": "2026-11-03T21:28:33.507Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:28:33.576Z",
+      "txId": "008f8f2aaa657eb52ccc7ac7981e909c38cdc1ce625feefa61dc7a77c0a6bae728",
+      "blockHeight": "562",
+      "confirmationRecordedAt": "2026-11-03T21:28:56.655Z",
+      "preparationStarted": true,
+      "preparationCompleted": true,
+      "walletSigned": true,
+      "submissionReturned": true
+    }
+  ],
+  "publicNetworkDnsBlocked": true,
+  "transactionsRetried": 0,
+  "privateDataLogged": false,
+  "proverResponses": [
+    {
+      "at": "2026-11-03T21:19:11.657Z",
+      "operationOrdinal": 1,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:19:36.817Z",
+      "operationOrdinal": 2,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:19:37.610Z",
+      "operationOrdinal": 2,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:19:40.832Z",
+      "operationOrdinal": 2,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:19:43.403Z",
+      "operationOrdinal": 2,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:20:03.051Z",
+      "operationOrdinal": 3,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:20:03.807Z",
+      "operationOrdinal": 3,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:20:04.603Z",
+      "operationOrdinal": 3,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:20:07.248Z",
+      "operationOrdinal": 3,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:13.613Z",
+      "operationOrdinal": 4,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:14.328Z",
+      "operationOrdinal": 4,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:14.633Z",
+      "operationOrdinal": 4,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:17.504Z",
+      "operationOrdinal": 4,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:45.355Z",
+      "operationOrdinal": 5,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:46.172Z",
+      "operationOrdinal": 5,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:52.161Z",
+      "operationOrdinal": 5,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:23:54.879Z",
+      "operationOrdinal": 5,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:13.707Z",
+      "operationOrdinal": 6,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:14.406Z",
+      "operationOrdinal": 6,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:14.827Z",
+      "operationOrdinal": 6,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:17.237Z",
+      "operationOrdinal": 6,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:38.840Z",
+      "operationOrdinal": 7,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:39.593Z",
+      "operationOrdinal": 7,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:40.433Z",
+      "operationOrdinal": 7,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:27:42.988Z",
+      "operationOrdinal": 7,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:03.632Z",
+      "operationOrdinal": 8,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:04.412Z",
+      "operationOrdinal": 8,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:05.128Z",
+      "operationOrdinal": 8,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:07.912Z",
+      "operationOrdinal": 8,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:29.667Z",
+      "operationOrdinal": 9,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:30.452Z",
+      "operationOrdinal": 9,
+      "path": "/check",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:32.726Z",
+      "operationOrdinal": 9,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "at": "2026-11-03T21:28:35.411Z",
+      "operationOrdinal": 9,
+      "path": "/prove",
+      "method": "POST",
+      "status": 200
+    }
+  ],
+  "walletVersion": "2.5.0",
+  "apiVersion": "4.0.1",
+  "extensionArchiveSha256": "5e3e993dc126ea09428abb7411b9571f7e1d3200deea20d50d2f94cb52524383",
+  "runnerSha256": "5b0738326b82319f3fd2a0501557e33395cf8abf56c932d0cca9b820181ff90e",
+  "networkBundleSha256": "5eef605afdb5fe1db64984cd79cbd546d3107f1d6b0cd7faac105306cddd03b6",
+  "playwright": "1.64.1",
+  "currentStage": "validate-public-final-record",
+  "chromium": "156.0.8078.4",
+  "walletCreated": true,
+  "connection": {
+    "walletName": "lace",
+    "rdns": "io.lace.wallet",
+    "apiVersion": "4.0.1",
+    "configuration": {
+      "networkId": "undeployed",
+      "indexerUri": "http://localhost:8088/api/v4/graphql",
+      "indexerWsUri": "ws://localhost:8088/api/v4/graphql/ws",
+      "substrateNodeUri": "http://localhost:9944",
+      "proverServerUri": "http://localhost:6300"
+    },
+    "connection": {
+      "status": "connected",
+      "networkId": "undeployed"
+    },
+    "dustAddress": "mn_dust_undeployed1wdjvjdr03hzjtq7t6aljs6gxgmcakm0sn7pssy2qd27rmcft05c9uc9dhvy",
+    "unshieldedAddress": "mn_addr_undeployed1ymz4xukw7dw0n3aewmynzp6fccy6tcenm7y4ghueqmwd0x9s8u3qjqyxzd",
+    "dustBalance": {
+      "balance": "0",
+      "cap": "0"
+    }
+  },
+  "walletConnected": true,
+  "fundedBalance": {
+    "balance": "39681599999912849",
+    "cap": "500000000000000000000"
+  },
+  "schedule": {
+    "opensAt": 1793740980,
+    "closesAt": 1793741220
+  },
+  "candidateCount": 2,
+  "voterCount": 1,
+  "contractAddress": "fc77ec059e52c19ece739daeafdc205b74b8c4b50b52fce5696199fb8929324a",
+  "publicState": {
+    "network": "undeployed",
+    "contractAddress": "fc77ec059e52c19ece739daeafdc205b74b8c4b50b52fce5696199fb8929324a",
+    "keysConfigured": true,
+    "configurationDigest": "96b1169691a5e99552064170f2e2dae537246fdd5d9dd8a2a5585b1e713bdfe1",
+    "candidateCount": 2,
+    "phase": 3,
+    "accepted": 1,
+    "opensAt": "1793740980",
+    "closesAt": "1793741220",
+    "totals": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "source": "configured-indexer",
+    "independentlyVerified": false
+  },
+  "receiptCheckedAgainstIndexer": true,
+  "renderedQrIndependentlyDecoded": true,
+  "completedAt": "2026-11-03T21:28:56.764Z",
+  "publicExportPrivacyChecked": true,
+  "finalizedTotals": [
+    0,
+    1,
+    0,
+    0,
+    0
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "checkedAt": "2026-11-03T21:03:28.796837+00:00",
+  "comparison": "current local dist files versus downloaded deployed Pages artifact",
+  "repository": "IBKR-BouncyBot/Midnight-BallotLab",
+  "headSha": "f510608ece6b34b3206b3a1b99f05806ed248d95",
+  "runId": 41714965017,
+  "artifactId": 13268254934,
+  "artifactSha256": "47369c2cf344a5c9637d3a0b9943054584747588b631d8f6885001add6002405",
+  "coreFileCount": 3,
+  "loaderFileCount": 1,
+  "wasmFileCount": 2,
+  "circuitAssetCount": 21,
+  "buildJsonContentEqual": true,
+  "allComparedBytesIdentical": true,
+  "files": [
+    {
+      "path": "network-bundle.mjs",
+      "localBytes": 2847808,
+      "deployedBytes": 2847808,
+      "localSha256": "5eef605afdb5fe1db64984cd79cbd546d3107f1d6b0cd7faac105306cddd03b6",
+      "deployedSha256": "5eef605afdb5fe1db64984cd79cbd546d3107f1d6b0cd7faac105306cddd03b6",
+      "byteIdentical": true
+    },
+    {
+      "path": "network.html",
+      "localBytes": 18477,
+      "deployedBytes": 18477,
+      "localSha256": "126ecce484f4f83bcbe1c748e099fbe62dbf1a1fa8059e4ce662e41002071ae1",
+      "deployedSha256": "126ecce484f4f83bcbe1c748e099fbe62dbf1a1fa8059e4ce662e41002071ae1",
+      "byteIdentical": true
+    },
+    {
+      "path": "network-build.json",
+      "localBytes": 4253,
+      "deployedBytes": 4253,
+      "localSha256": "ee74b51a84953fc85b51b7354041ad4f3a7a858b3aa5281cf35b94caf35cc128",
+      "deployedSha256": "ee74b51a84953fc85b51b7354041ad4f3a7a858b3aa5281cf35b94caf35cc128",
+      "byteIdentical": true
+    },
+    {
+      "path": "network-loader.mjs",
+      "localBytes": 1418,
+      "deployedBytes": 1418,
+      "localSha256": "aaf6aba500e58b94715e6abce9c1bb9cdb6692f2b6b28f614c3c24b305b22dd9",
+      "deployedSha256": "aaf6aba500e58b94715e6abce9c1bb9cdb6692f2b6b28f614c3c24b305b22dd9",
+      "byteIdentical": true
+    },
+    {
+      "path": "network-assets/midnight_ledger_wasm_bg-88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638.wasm",
+      "localBytes": 10143782,
+      "deployedBytes": 10143782,
+      "localSha256": "88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638",
+      "deployedSha256": "88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638",
+      "byteIdentical": true
+    },
+    {
+      "path": "network-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "localBytes": 1398935,
+      "deployedBytes": 1398935,
+      "localSha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "deployedSha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "localBytes": 21583889,
+      "deployedBytes": 21583889,
+      "localSha256": "d4671180b4c9acd6906b3c97486dc97cce6fc1a1ec7cd54e9a060d9d93256b1c",
+      "deployedSha256": "d4671180b4c9acd6906b3c97486dc97cce6fc1a1ec7cd54e9a060d9d93256b1c",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "localBytes": 2311,
+      "deployedBytes": 2311,
+      "localSha256": "9a8a2b0161333a799f138f9cc9558070307d5673c09fc944d9fcd782166c802a",
+      "deployedSha256": "9a8a2b0161333a799f138f9cc9558070307d5673c09fc944d9fcd782166c802a",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "localBytes": 5118,
+      "deployedBytes": 5118,
+      "localSha256": "37b40bf5f1d671ddb8b2b05a9506832bd802c1012673ad306a9a3ac094acc88a",
+      "deployedSha256": "37b40bf5f1d671ddb8b2b05a9506832bd802c1012673ad306a9a3ac094acc88a",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "localBytes": 2824231,
+      "deployedBytes": 2824231,
+      "localSha256": "bbf0cc28fb04325ef60607268e89ab333d229379bb0464a4ad341017f3f9fb6a",
+      "deployedSha256": "bbf0cc28fb04325ef60607268e89ab333d229379bb0464a4ad341017f3f9fb6a",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "localBytes": 2119,
+      "deployedBytes": 2119,
+      "localSha256": "b470e120b4b2383f0308093a510a31d042536adef44f64e6a57b45a58ffd3903",
+      "deployedSha256": "b470e120b4b2383f0308093a510a31d042536adef44f64e6a57b45a58ffd3903",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "localBytes": 677,
+      "deployedBytes": 677,
+      "localSha256": "57825fff7c84c7ac7bef6e50545cebf6c2b994fb8ae61c7aa4f4ade0045665d1",
+      "deployedSha256": "57825fff7c84c7ac7bef6e50545cebf6c2b994fb8ae61c7aa4f4ade0045665d1",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "localBytes": 39815,
+      "deployedBytes": 39815,
+      "localSha256": "dbdd56ce8ee7660c4b88f5fa4f92049c77d5fcc57d794cfd0e5ae23eec0a45dc",
+      "deployedSha256": "dbdd56ce8ee7660c4b88f5fa4f92049c77d5fcc57d794cfd0e5ae23eec0a45dc",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "localBytes": 1351,
+      "deployedBytes": 1351,
+      "localSha256": "8c791aff6f25f7b85e716a2eccf3f709d133e3dce774f500adf1698e06a51fbf",
+      "deployedSha256": "8c791aff6f25f7b85e716a2eccf3f709d133e3dce774f500adf1698e06a51fbf",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "localBytes": 463,
+      "deployedBytes": 463,
+      "localSha256": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb",
+      "deployedSha256": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "localBytes": 42701779,
+      "deployedBytes": 42701779,
+      "localSha256": "915506f640bddc7c50ba21c03d2aeb119d7aa04cbc19c24d2362a95121b1f3e7",
+      "deployedSha256": "915506f640bddc7c50ba21c03d2aeb119d7aa04cbc19c24d2362a95121b1f3e7",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "localBytes": 2311,
+      "deployedBytes": 2311,
+      "localSha256": "bcc71d275ad591ea9685ea07edea95b8f8103f5ce491e5207f4df94ceec71768",
+      "deployedSha256": "bcc71d275ad591ea9685ea07edea95b8f8103f5ce491e5207f4df94ceec71768",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "localBytes": 4788,
+      "deployedBytes": 4788,
+      "localSha256": "6b3fe9762445e623de3d8a61f3e0c2ec62982ab1a5c0ce82a3d1a2db05def0d4",
+      "deployedSha256": "6b3fe9762445e623de3d8a61f3e0c2ec62982ab1a5c0ce82a3d1a2db05def0d4",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "localBytes": 39799,
+      "deployedBytes": 39799,
+      "localSha256": "5195f6f6d3c1e9859084a64502b569cf90c0751239821fcd35934085bee10be4",
+      "deployedSha256": "5195f6f6d3c1e9859084a64502b569cf90c0751239821fcd35934085bee10be4",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "localBytes": 1351,
+      "deployedBytes": 1351,
+      "localSha256": "b9df6a64bfbc1aedaab445553adae78abfd28270ebdf47000501cbd6e94e2b9d",
+      "deployedSha256": "b9df6a64bfbc1aedaab445553adae78abfd28270ebdf47000501cbd6e94e2b9d",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "localBytes": 367,
+      "deployedBytes": 367,
+      "localSha256": "88966fcf98cfa388d42d87825a09456d6f18066efeec6dae7d686514e90c78b9",
+      "deployedSha256": "88966fcf98cfa388d42d87825a09456d6f18066efeec6dae7d686514e90c78b9",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "localBytes": 2668409,
+      "deployedBytes": 2668409,
+      "localSha256": "b56283c88cb1f886e095a255901dec970e6b02dc6e4fc409d2999edecbb88435",
+      "deployedSha256": "b56283c88cb1f886e095a255901dec970e6b02dc6e4fc409d2999edecbb88435",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "localBytes": 1591,
+      "deployedBytes": 1591,
+      "localSha256": "b046dae1c5d4b3cf174d1d9c1b6d1a07ec56015a2e8d6a67ae1c5c22c07a80e1",
+      "deployedSha256": "b046dae1c5d4b3cf174d1d9c1b6d1a07ec56015a2e8d6a67ae1c5c22c07a80e1",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "localBytes": 1683,
+      "deployedBytes": 1683,
+      "localSha256": "708c2562588fa80d35d83b03122c2156f10fd7e9634e4005e1f1fa880df606b3",
+      "deployedSha256": "708c2562588fa80d35d83b03122c2156f10fd7e9634e4005e1f1fa880df606b3",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "localBytes": 10597369,
+      "deployedBytes": 10597369,
+      "localSha256": "27bfc36a2b986da4192450440c38fb51a545763e021bebf8bb86717bbc4efa1f",
+      "deployedSha256": "27bfc36a2b986da4192450440c38fb51a545763e021bebf8bb86717bbc4efa1f",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "localBytes": 1591,
+      "deployedBytes": 1591,
+      "localSha256": "120b8072921ca04d74b128621fb6edc81f8363860be306db72bf8fa83ab51b9d",
+      "deployedSha256": "120b8072921ca04d74b128621fb6edc81f8363860be306db72bf8fa83ab51b9d",
+      "byteIdentical": true
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "localBytes": 3316,
+      "deployedBytes": 3316,
+      "localSha256": "eb2ba4cd0917c192c8788866110c32d01fea996219ec0159da3caa62e43f93ac",
+      "deployedSha256": "eb2ba4cd0917c192c8788866110c32d01fea996219ec0159da3caa62e43f93ac",
+      "byteIdentical": true
+    }
+  ],
+  "directHostedOriginRequested": false,
+  "limitations": [
+    "This comparison records local dist bytes at inspection time, not an independent browser response capture.",
+    "Matching bytes do not verify hosted-origin wallet permissions, service access or transaction acceptance."
+  ],
+  "status": "passed"
+}

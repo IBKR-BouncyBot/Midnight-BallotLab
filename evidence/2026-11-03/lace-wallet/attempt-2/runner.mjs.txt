@@ -1,0 +1,335 @@
+/** Actual signed Lace + unchanged application UI. Local test funds only.
+ * Durable Node process: failures retain browser/private memory until explicit stop.
+ * No wallet API replacement, transaction retry, clock changes or secret checkpoint.
+ */
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
+import { readFile, writeFile, mkdir, mkdtemp, cp, access } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve, sep, extname } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createInterface } from 'node:readline';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const base = join(root, 'artifacts/lace-wallet');
+const args = process.argv.slice(2);
+assert.equal(args.length, 3);
+assert.equal(args[0], '--isolated-local-devnet');
+assert.equal(args[1], '--attempt');
+assert.match(args[2], /^[a-z][a-z0-9-]{0,35}$/);
+const output = resolve(base, args[2]);
+assert.ok(output.startsWith(base + sep));
+const requireContracts = createRequire(join(root, 'contracts/package.json'));
+const { chromium } = requireContracts('playwright');
+const { PNG } = requireContracts('pngjs');
+const { default: jsQR } = await import(pathToFileURL(requireContracts.resolve('jsqr')).href);
+const { decodeNetworkReceipt } = await import(pathToFileURL(join(root, 'src/network-receipt.mjs')).href);
+const extensionId = 'gafhhkghbfjjkeiendhlofajokpaflmk';
+const report = { schema: 'midnight-ballot-lab/real-lace-local-acceptance/v1', startedAt: new Date().toISOString(),
+  networkId: 'undeployed', flow: 'real-application-ui-and-extension-approval', status: 'preparing', operations: [],
+  publicNetworkDnsBlocked: true, transactionsRetried: 0, privateDataLogged: false, proverResponses: [] };
+const emit = value => process.stdout.write(JSON.stringify({ at: new Date().toISOString(), ...value }) + '\n');
+const delay = ms => new Promise(done => setTimeout(done, ms));
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+let context, app, wallet, server, origin, stage = 'prerequisites', canSave = false, stopped = false;
+let walletPassword, appPassword;
+const save = async () => { if (canSave) await writeFile(join(output, 'browser-election.json'), JSON.stringify(report, null, 2) + '\n'); };
+async function setStage(value) { stage = value; report.currentStage = stage; await save(); emit({ stage }); }
+async function poll(check, timeout = 300_000) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) { const value = await check(); if (value) return value; await delay(200); }
+  throw new Error('bounded-stage-timeout');
+}
+async function publicApi() {
+  return app.evaluate(async () => {
+    const wallet = Object.values(window.midnight || {}).find(item => item.rdns === 'io.lace.wallet');
+    if (!wallet) throw new Error('Wallet absent');
+    const api = await wallet.connect('undeployed');
+    const config = await api.getConfiguration(), connection = await api.getConnectionStatus();
+    const dust = await api.getDustAddress(), unshielded = await api.getUnshieldedAddress();
+    const balance = await api.getDustBalance();
+    return { walletName: wallet.name, rdns: wallet.rdns, apiVersion: wallet.apiVersion,
+      configuration: { networkId: config.networkId, indexerUri: config.indexerUri, indexerWsUri: config.indexerWsUri,
+        substrateNodeUri: config.substrateNodeUri, proverServerUri: config.proverServerUri },
+      connection: { status: connection.status, networkId: connection.networkId },
+      dustAddress: dust.dustAddress, unshieldedAddress: unshielded.unshieldedAddress,
+      dustBalance: { balance: String(balance.balance), cap: String(balance.cap) } };
+  });
+}
+function validateLocal(metadata) {
+  assert.equal(metadata.apiVersion, '4.0.1');
+  assert.equal(metadata.connection.status, 'connected');
+  assert.equal(metadata.connection.networkId, 'undeployed');
+  assert.equal(metadata.configuration.networkId, 'undeployed');
+  assert.match(metadata.dustAddress, /^mn_dust_undeployed1/);
+  assert.match(metadata.unshieldedAddress, /^mn_addr_undeployed1/);
+  for (const [field, port] of [['indexerUri', '8088'], ['indexerWsUri', '8088'], ['substrateNodeUri', '9944'], ['proverServerUri', '6300']]) {
+    const uri = new URL(metadata.configuration[field]);
+    assert.ok(['localhost', '127.0.0.1'].includes(uri.hostname));
+    assert.equal(uri.port, port); assert.equal(uri.username, ''); assert.equal(uri.password, '');
+  }
+}
+async function popup(route, timeout = 300_000) {
+  return poll(async () => {
+    const pages = context.pages().filter(page => page.url().includes(route));
+    assert.ok(pages.length <= 1);
+    if (pages[0] && await pages[0].getByTestId('dapp-connector-primary-button').isVisible().catch(() => false)) return pages[0];
+    const status = await app.locator('#network-status').textContent();
+    if (status.includes('could not finish') || status.includes('uncertain')) throw new Error('app-unconfirmed');
+  }, timeout);
+}
+async function operation(label, button, extra = {}) {
+  await setStage(label);
+  const deadline = Date.now() + 300_000;
+  const remaining = () => { const value = deadline - Date.now(); if (value <= 0) throw new Error('bounded-stage-timeout'); return value; };
+  const op = { operation: label, ...extra, startedAt: new Date().toISOString(), status: 'requested',
+    contractCallProofRequired: label !== 'Deployment', ledgerInclusionIndependentlyVerified: false };
+  report.operations.push(op); await save();
+  // Exactly one click initiates the operation. No retry on timeout or uncertain outcome.
+  await app.locator('#' + button).click();
+  const approval = await popup('#/prove-midnight-transaction', remaining());
+  assert.equal((await approval.getByTestId('dapp-info-url').textContent()).trim(), origin);
+  await approval.getByTestId('dapp-connector-primary-button').click();
+  op.walletApprovalAt = new Date().toISOString(); await save();
+  await approval.getByTestId('authentication-prompt-input-value').waitFor({ state: 'visible', timeout: Math.min(30_000, remaining()) });
+  await approval.getByTestId('authentication-prompt-input-value').fill(walletPassword);
+  await approval.getByTestId('authentication-prompt-button-confirm').click();
+  op.walletPasswordConfirmedAt = new Date().toISOString(); await save();
+  await poll(async () => {
+    const status = await app.locator('#network-status').textContent();
+    if (status.startsWith(label + ': your indexer reports confirmation')) return true;
+    if (status.includes('could not finish') || status.includes('uncertain')) throw new Error('app-unconfirmed');
+  }, remaining());
+  const events = await app.locator('#network-events p').allTextContents();
+  const event = events.find(value => value.startsWith(label + ': configured indexer confirmed '));
+  const match = /confirmed ([a-f0-9]{64,128}) at block (\d+)\./.exec(event || '');
+  assert.ok(match);
+  op.txId = match[1]; op.blockHeight = match[2]; op.status = 'indexer-accepted';
+  op.confirmationRecordedAt = new Date().toISOString();
+  const previousConfirmation = events.findIndex((value, index) => index > 0 && value.includes(': configured indexer confirmed '));
+  const stages = events.slice(0, previousConfirmation < 0 ? events.length : previousConfirmation);
+  op.preparationStarted = stages.includes('Preparing the transaction and any required proofs…');
+  op.preparationCompleted = stages.includes('Transaction preparation finished. The network has not accepted it yet.');
+  op.walletSigned = stages.includes('Your wallet signed the transaction.');
+  op.submissionReturned = stages.includes('Transaction submitted. Waiting for confirmation from your indexer…');
+  assert.ok(op.preparationStarted && op.preparationCompleted && op.walletSigned && op.submissionReturned);
+  await app.waitForFunction(() => !document.getElementById('network-read').disabled, null, { timeout: 30_000 });
+  report.contractAddress = await app.locator('#network-address').inputValue();
+  report.publicState = JSON.parse(await app.locator('#network-public-state').textContent());
+  await save(); emit({ stage: label, status: 'indexer-accepted', txId: op.txId, blockHeight: op.blockHeight });
+}
+async function waitUntil(seconds, label) {
+  await setStage(label);
+  // Require both real wall time and the actual indexed block timestamp.
+  // Neither the browser clock nor the contract's sealed deadline is changed.
+  const deadline = Math.max(Date.now(), (seconds + 6) * 1000) + 300_000;
+  for (;;) {
+    if (Date.now() >= (seconds + 6) * 1000) {
+      const response = await fetch('http://127.0.0.1:8088/api/v4/graphql', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: '{ block { timestamp } }' }), signal: AbortSignal.timeout(5000) });
+      assert.ok(response.ok);
+      const value = await response.json(), timestamp = value?.data?.block?.timestamp;
+      assert.ok(!value.errors && Number.isSafeInteger(timestamp));
+      if (timestamp >= seconds * 1000) return;
+    }
+    if (Date.now() >= deadline) throw new Error('bounded-stage-timeout');
+    await delay(1000);
+  }
+}
+const receiptKeys = ['schema', 'networkId', 'contractAddress', 'index', 'receipt', 'configurationDigest', 'txId', 'blockHeight',
+  'confirmationSource', 'ledgerInclusionIndependentlyVerified', 'transactionReferenceVerified'];
+const recordKeys = ['schema', 'source', 'networkId', 'proofPackageIncluded', 'ledgerInclusionIndependentlyVerified', 'warning',
+  'contractAddress', 'electionId', 'manifestDigest', 'configurationDigest', 'keysConfigured', 'administrator', 'opensAt', 'closesAt',
+  'phase', 'accepted', 'candidateCount', 'publicKey', 'coefficientKey', 'trusteeKeys', 'aggregateA', 'aggregateB', 'ballots',
+  'decryptionShares', 'finalizedTotals', 'electionManifest'];
+function keys(value, allowed) { assert.ok(value && typeof value === 'object' && !Array.isArray(value)); assert.deepEqual(Object.keys(value).sort(), [...allowed].sort()); }
+async function download(button) {
+  const pending = app.waitForEvent('download'); await app.locator('#' + button).click();
+  const item = await pending; const location = await item.path(); assert.ok(location);
+  const bytes = await readFile(location); assert.ok(bytes.length < 8 * 1024 * 1024);
+  return { bytes, value: JSON.parse(bytes.toString('utf8')) };
+}
+async function stop() {
+  if (stopped) return; stopped = true;
+  await context?.close(); if (server) await new Promise(done => server.close(done));
+  walletPassword = undefined; appPassword = undefined;
+}
+async function hold() {
+  emit({ stage: 'held-for-review', commands: ['status', 'stop'], browserStateRetained: true });
+  const lines = createInterface({ input: process.stdin });
+  for await (const command of lines) {
+    if (command.trim() === 'status') emit({ stage: report.currentStage, status: report.status, accepted: report.operations.filter(op => op.status === 'indexer-accepted').length });
+    if (command.trim() === 'stop') { await stop(); lines.close(); return; }
+  }
+  // A detached stdin must not discard private state before root review.
+  await new Promise(() => {});
+}
+try {
+  let exists = false; try { await access(join(output, 'browser-election.json')); exists = true; } catch { /* New attempt only. */ }
+  assert.equal(exists, false); await mkdir(output, { recursive: true }); canSave = true; await save();
+  const acquisition = JSON.parse(await readFile(join(base, 'acquisition.json'), 'utf8'));
+  assert.equal(acquisition.developerSignatureVerified, true); assert.equal(acquisition.webStorePublisherSignatureVerified, true);
+  assert.equal(hash(await readFile(join(base, 'lace-official.zip'))), acquisition.archiveSha256);
+  const shortRoot = await mkdtemp(join(tmpdir(), 'mbl-lace-'));
+  const extension = join(shortRoot, 'extension'); await cp(join(base, 'e'), extension, { recursive: true });
+  const extensionManifest = JSON.parse(await readFile(join(extension, 'manifest.json'), 'utf8'));
+  assert.equal(extensionManifest.version, '2.5.0');
+  report.walletVersion = extensionManifest.version; report.apiVersion = '4.0.1';
+  report.extensionArchiveSha256 = acquisition.archiveSha256;
+  report.runnerSha256 = hash(await readFile(fileURLToPath(import.meta.url)));
+  const networkBuild = JSON.parse(await readFile(join(root, 'dist/network-build.json'), 'utf8'));
+  assert.equal(networkBuild.enabled, true);
+  assert.equal(networkBuild.bundle, 'network-bundle.mjs');
+  report.networkBundleSha256 = hash(await readFile(join(root, 'dist', networkBuild.bundle)));
+  report.playwright = requireContracts('playwright/package.json').version;
+  await setStage('start-genuine-extension');
+  context = await chromium.launchPersistentContext(join(shortRoot, 'profile'), {
+    executablePath: join(root, '.browser-cache/chromium-1248/chrome-win64/chrome.exe'), channel: 'chromium', headless: true,
+    args: ['--disable-extensions-except=' + extension, '--load-extension=' + extension,
+      '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1'],
+    viewport: { width: 1280, height: 960 }, acceptDownloads: true });
+  context.setDefaultTimeout(30_000); report.chromium = context.browser().version();
+  context.on('response', response => {
+    try { const uri = new URL(response.url()); if (['localhost', '127.0.0.1'].includes(uri.hostname) && uri.port === '6300') {
+      report.proverResponses.push({ at: new Date().toISOString(), operationOrdinal: report.operations.length,
+        path: uri.pathname, method: response.request().method(), status: response.status() });
+    } } catch { /* Observer does not change a transaction outcome. */ }
+  });
+  wallet = await context.newPage(); await wallet.goto('chrome-extension://' + extensionId + '/expo/index.html');
+  await wallet.getByTestId('onboarding-start-create-wallet-button').waitFor({ timeout: 60_000 });
+  await setStage('create-fresh-test-wallet');
+  walletPassword = 'Local-' + randomBytes(24).toString('base64url') + '!9a';
+  appPassword = 'App-' + randomBytes(24).toString('base64url') + '!9a';
+  await wallet.getByTestId('onboarding-start-create-wallet-button').click();
+  await wallet.getByTestId('new-password-input-value').fill(walletPassword);
+  await wallet.getByTestId('confirm-password-input-value').fill(walletPassword);
+  await wallet.getByTestId('next-btn').click();
+  await wallet.getByTestId('onboarding-create-wallet-toggle-cardano').click();
+  await delay(250);
+  await wallet.getByTestId('onboarding-create-wallet-toggle-midnight').click();
+  await delay(250);
+  await wallet.getByTestId('onboarding-create-wallet-finish-button').click();
+  await wallet.getByTestId('settings-tab-btn').waitFor({ timeout: 60_000 });
+  report.walletCreated = true; await save();
+  await setStage('select-undeployed-local-prover');
+  await wallet.getByTestId('settings-tab-btn').click(); await wallet.getByTestId('option-list-item-network').click();
+  await wallet.getByTestId('radio-button-testnet').click(); await wallet.getByTestId('radio-button-midnight-undeployed').click();
+  await wallet.getByTestId('network-selection-sheet-confirm-button').click();
+  await wallet.getByTestId('network-selection-sheet').waitFor({ state: 'hidden' });
+  await wallet.getByTestId('option-list-item-midnight').click();
+  await wallet.getByTestId('proof-server-local-host-radio').click(); await wallet.getByTestId('save-configuration-button').click();
+  await wallet.getByText('Confirm and save', { exact: true }).waitFor();
+  await wallet.getByTestId('save-configuration-button').click();
+  await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
+
+  const dist = resolve(root, 'dist');
+  server = createServer(async (request, response) => {
+    try {
+      if (request.method !== 'GET') return response.writeHead(405).end();
+      const uri = new URL(request.url, 'http://127.0.0.1'); if (uri.pathname === '/favicon.ico') return response.writeHead(204).end();
+      const file = resolve(dist, '.' + decodeURIComponent(uri.pathname === '/' ? '/index.html' : uri.pathname));
+      if (!file.startsWith(dist + sep)) return response.writeHead(403).end();
+      const bytes = await readFile(file);
+      const mime = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
+        '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+      response.writeHead(200, { 'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); response.end(bytes);
+    } catch { response.writeHead(404).end(); }
+  });
+  await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
+  origin = 'http://127.0.0.1:' + server.address().port; app = await context.newPage();
+  await setStage('connect-real-application-ui'); await app.goto(origin + '/network.html');
+  await app.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+  await app.locator('#network-id').selectOption('undeployed');
+  await app.locator('#network-indexer').fill('http://localhost:8088/api/v4/graphql');
+  await app.locator('#network-indexer-ws').fill('ws://localhost:8088/api/v4/graphql/ws');
+  await app.locator('#network-password').fill(appPassword);
+  await app.locator('#network-connect-form button[type="submit"]').click();
+  const authorize = await popup('#/midnight-authorize-dapp');
+  assert.equal((await authorize.getByTestId('dapp-info-url').textContent()).trim(), origin);
+  await authorize.getByTestId('dropdown-button').click(); await authorize.getByTestId('dropdown-menu-item-0').click();
+  await authorize.getByTestId('dapp-connector-primary-button').click();
+  await app.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('Connected to undeployed.'));
+  const metadata = await publicApi(); validateLocal(metadata); report.connection = metadata; report.walletConnected = true;
+  await writeFile(join(output, 'local-wallet-public.json'), JSON.stringify({ networkId: 'undeployed',
+    dustAddress: metadata.dustAddress, unshieldedAddress: metadata.unshieldedAddress }, null, 2) + '\n');
+  await setStage('await-explicit-root-test-funding');
+  emit({ stage, publicAddresses: 'artifacts/lace-wallet/' + args[2] + '/local-wallet-public.json' });
+  await poll(async () => {
+    let funding; try { funding = JSON.parse(await readFile(join(output, 'local-funding.json'), 'utf8')); } catch { return false; }
+    if (funding.status === 'running') return false;
+    assert.equal(funding.status, 'passed'); assert.equal(funding.networkId, 'undeployed');
+    assert.equal(funding.recipientDustAddressSha256, hash(metadata.dustAddress));
+    assert.equal(funding.recipientUnshieldedAddressSha256, hash(metadata.unshieldedAddress));
+    const current = await publicApi(); validateLocal(current);
+    assert.equal(current.dustAddress, metadata.dustAddress);
+    if (BigInt(current.dustBalance.balance) <= 0n) return false;
+    report.fundedBalance = current.dustBalance; return true;
+  }, 900_000);
+  await setStage('prepare-real-election-ui');
+  await app.getByText('Create a new test election', { exact: true }).click();
+  await app.locator('#network-title').fill('Local Lace browser acceptance');
+  await app.locator('#network-choices').fill('Option A\nOption B');
+  for (const id of ['network-generate-admin', 'network-generate-dealer', 'network-generate-voter']) await app.locator('#' + id).click();
+  const schedule = await app.evaluate(() => {
+    const opens = Math.ceil(Date.now() / 60000) * 60000 + 180000, closes = opens + 240000;
+    const format = ms => { const d = new Date(ms), p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+    return { opensAt: opens / 1000, closesAt: closes / 1000, opensInput: format(opens), closesInput: format(closes) };
+  });
+  report.schedule = { opensAt: schedule.opensAt, closesAt: schedule.closesAt }; report.candidateCount = 2; report.voterCount = 1;
+  await app.locator('#network-opens').fill(schedule.opensInput); await app.locator('#network-closes').fill(schedule.closesInput);
+  await operation('Deployment', 'network-deploy');
+  await operation('Key configuration', 'network-configure');
+  await operation('Enrollment', 'network-enroll');
+  await waitUntil(schedule.opensAt, 'wait-for-real-opening-deadline');
+  await operation('Voting opened', 'network-open');
+  let choice = randomInt(2); await app.locator('label[for^="network-choice-"]').nth(choice).click(); choice = undefined;
+  await operation('Ballot', 'network-cast');
+  assert.equal(report.publicState.accepted, 1);
+  await setStage('check-public-receipt-and-qr');
+  const code = await app.locator('#network-receipt-code').textContent(); const receipt = decodeNetworkReceipt(code);
+  const qr = await app.locator('#network-receipt-qr').screenshot(); const png = PNG.sync.read(qr);
+  assert.equal(jsQR(new Uint8ClampedArray(png.data), png.width, png.height)?.data, code);
+  await writeFile(join(output, 'public-receipt-qr.png'), qr);
+  await app.locator('#network-receipt-input').fill(code); await app.locator('#network-check-receipt').click();
+  await app.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('Your receipt matches the encrypted ballot'));
+  const savedReceipt = await download('network-save-receipt'); keys(savedReceipt.value, receiptKeys);
+  assert.equal(savedReceipt.value.receipt, receipt.receipt); assert.equal(savedReceipt.value.networkId, 'undeployed');
+  assert.equal(savedReceipt.value.ledgerInclusionIndependentlyVerified, false);
+  await writeFile(join(output, 'public-receipt.json'), savedReceipt.bytes);
+  report.receiptCheckedAgainstIndexer = true; report.renderedQrIndependentlyDecoded = true; await save();
+  await waitUntil(schedule.closesAt, 'wait-for-real-closing-deadline');
+  await operation('Voting closed', 'network-close');
+  for (const trustee of [1, 3]) {
+    await app.locator('label[for="network-trustee-' + trustee + '"]').click();
+    await app.locator('#network-use-share').click();
+    await operation('Trustee contribution', 'network-submit-share', { trusteeIndex: trustee });
+  }
+  await app.locator('label[for="network-pair-13"]').click(); await operation('Tally finalized', 'network-finalize');
+  await setStage('validate-public-final-record');
+  const exported = await download('network-export'); keys(exported.value, recordKeys);
+  assert.equal(exported.value.networkId, 'undeployed'); assert.equal(exported.value.phase, 3); assert.equal(exported.value.accepted, 1);
+  assert.equal(exported.value.candidateCount, 2); assert.equal(exported.value.proofPackageIncluded, false);
+  assert.equal(exported.value.ledgerInclusionIndependentlyVerified, false);
+  assert.deepEqual(exported.value.decryptionShares.map(share => share.index), [1, 3]);
+  for (const ballot of exported.value.ballots) keys(ballot, ['index', 'a', 'b', 'nullifier', 'receipt']);
+  for (const share of exported.value.decryptionShares) keys(share, ['index', 'values']);
+  keys(exported.value.electionManifest, ['schema', 'title', 'choices']);
+  assert.equal(exported.value.finalizedTotals.length, 5); assert.equal(exported.value.finalizedTotals.reduce((a, b) => a + b, 0), 1);
+  assert.ok(exported.value.finalizedTotals.slice(2).every(value => value === 0));
+  assert.equal(exported.value.ballots[0].receipt, savedReceipt.value.receipt);
+  await writeFile(join(output, 'public-indexed-observation.json'), exported.bytes);
+  assert.equal(report.operations.length, 9); assert.ok(report.operations.every(op => op.status === 'indexer-accepted'));
+  assert.equal(new Set(report.operations.map(op => op.txId)).size, 9);
+  report.status = 'passed'; report.completedAt = new Date().toISOString(); report.publicExportPrivacyChecked = true;
+  report.finalizedTotals = exported.value.finalizedTotals; await save(); emit({ stage: 'complete', status: 'passed', acceptedTransactions: 9 });
+  await stop();
+} catch (error) {
+  report.status = 'failed-held-for-review'; report.failedStage = stage;
+  report.failureCategory = error?.name === 'TimeoutError' || error?.message === 'bounded-stage-timeout' ? 'timeout-outcome-may-be-uncertain' : 'operation-failed-details-withheld';
+  await save(); emit({ stage, status: report.status, category: report.failureCategory });
+  if (context) await hold(); else { await stop(); process.exitCode = 1; }
+}

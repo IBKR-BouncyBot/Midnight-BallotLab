@@ -1,0 +1,46 @@
+{
+  "executedAt": "2026-11-03T20:58:39.845Z",
+  "networkId": "undeployed",
+  "scope": "synthetic-isolated-local-devnet",
+  "status": "passed",
+  "acceptedTransactions": [
+    {
+      "operation": "fund-synthetic-sponsor",
+      "txId": "0041d4194b5daf2464c35fa445511ad80a442345e04e32b7219cba878c640f0808",
+      "blockHeight": "263",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "register-sponsor-dust-for-browser",
+      "txId": "003003b214a30a6048eb54d8339fb49a12e56f214927f89d75bad861fe622b5bbd",
+      "blockHeight": "267",
+      "status": "SucceedEntirely"
+    },
+    {
+      "operation": "fund-browser-night",
+      "txId": "009d97ea3badc8c709347a8dd05d0189253aeccbef4426c493f78b0cffd9c7b79f",
+      "blockHeight": "270",
+      "status": "SucceedEntirely"
+    }
+  ],
+  "transactionsFinalized": 3,
+  "browserWalletSecretRead": false,
+  "mainnetOrPublicNetwork": false,
+  "fundingWallet": "node-sdk-synthetic-genesis-and-sponsor",
+  "browserWalletTransaction": false,
+  "recipientNight": "1000",
+  "sponsorNight": "100000",
+  "suppressedLibraryConsoleCalls": 4,
+  "recipientDustAddressSha256": "bb86b359b08242448df1d1c549053de67198cb236667ed55eb5037c521cee980",
+  "recipientUnshieldedAddressSha256": "1b7c5c5771a420952b43daa7b019e58ae279c46d76bb94a4b013197bc77ec7b1",
+  "helperSha256": "a38e82f8dfbdeb48ebdc5e5f0873f78235babca7f27117542ab8bc347bf0fd65",
+  "versions": {
+    "testkit-js": "4.1.1",
+    "wallet-sdk": "1.2.0",
+    "ledger-v8": "8.1.2"
+  },
+  "currentStage": "fund-browser-night",
+  "stageStartedAt": "2026-11-03T20:59:26.197Z",
+  "completedAt": "2026-11-03T20:59:44.818Z",
+  "browserDustBalanceObserved": false
+}

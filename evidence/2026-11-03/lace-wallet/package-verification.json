@@ -1,0 +1,50 @@
+{
+  "acquiredAt": "2026-11-03T20:43:34.798Z",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "storeUrl": "https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk",
+  "transport": {
+    "verifiedTls": true,
+    "sourceOrigins": [
+      "https://clients2.google.com",
+      "https://clients2.googleusercontent.com"
+    ]
+  },
+  "crxVersion": 3,
+  "crxBytes": 58552360,
+  "crxSha256": "5926a485b3712434a32e2a51ca8d210d25d488395689f65120fa683ea1b5d0e4",
+  "archiveBytes": 58551039,
+  "archiveSha256": "5e3e993dc126ea09428abb7411b9571f7e1d3200deea20d50d2f94cb52524383",
+  "developerSignatureVerified": true,
+  "webStorePublisherSignatureVerified": true,
+  "proofs": [
+    {
+      "algorithm": "RSA-PKCS1-SHA256",
+      "publicKeySha256": "b5e4096227b83f82101fc2aa49f2a251accde3d98471464dd17d1819b43786b0",
+      "developerIdMatches": false,
+      "chromiumWebStorePublisherKey": false,
+      "signatureVerified": true
+    },
+    {
+      "algorithm": "RSA-PKCS1-SHA256",
+      "publicKeySha256": "60577a671599a484d37be509eaf05bca221cb9ebc4872d8f77008df0b8b79d86",
+      "developerIdMatches": true,
+      "chromiumWebStorePublisherKey": false,
+      "signatureVerified": true
+    },
+    {
+      "algorithm": "ECDSA-SHA256",
+      "publicKeySha256": "61f7f2a6bfcf74cd0bc1fe2497cc9b04254c658f79f2145392867ea8366367cf",
+      "developerIdMatches": false,
+      "chromiumWebStorePublisherKey": true,
+      "signatureVerified": true
+    }
+  ],
+  "extensionLoaded": false,
+  "walletCreated": false,
+  "walletConnected": false,
+  "transactionSubmitted": false,
+  "verifierSources": [
+    "https://raw.githubusercontent.com/chromium/chromium/main/components/crx_file/crx3.proto",
+    "https://raw.githubusercontent.com/chromium/chromium/main/components/crx_file/crx_verifier.cc"
+  ]
+}

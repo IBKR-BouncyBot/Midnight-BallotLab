@@ -1,0 +1,155 @@
+/** Isolated, synthetic local funding only. Never reads a browser profile or seed.
+ * API sequence reviewed against Midnight's official fund-wallet.ts/local-funding.ts.
+ * Do not run until the root reviewer approves the public destination addresses.
+ */
+import { createRequire } from 'node:module';
+import { createHash, randomBytes } from 'node:crypto';
+import { readFile, writeFile, access } from 'node:fs/promises';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const resolveDependency = createRequire(new URL('../../contracts/devnet/package.json', import.meta.url));
+async function load(name) {
+  if (!name.startsWith('@midnight-ntwrk/')) return import(pathToFileURL(resolveDependency.resolve(name)).href);
+  const parts = name.split('/'), packageName = parts.slice(0, 2).join('/');
+  const subpath = parts.length === 2 ? '.' : `./${parts.slice(2).join('/')}`;
+  const directory = new URL(`../../contracts/devnet/node_modules/${packageName}/`, import.meta.url);
+  const manifest = JSON.parse(await readFile(new URL('package.json', directory), 'utf8'));
+  const entry = manifest.exports?.[subpath]?.import;
+  if (typeof entry !== 'string' || !entry.startsWith('./')) throw new Error('Missing installed ESM entry');
+  return import(new URL(entry, directory).href);
+}
+const inputFile = new URL('./attempt-2/local-wallet-public.json', import.meta.url);
+const evidenceFile = new URL('./attempt-2/local-funding.json', import.meta.url);
+const env = Object.freeze({ networkId: 'undeployed', walletNetworkId: 'undeployed',
+  node: 'http://127.0.0.1:9944', nodeWS: 'ws://127.0.0.1:9944',
+  indexer: 'http://127.0.0.1:8088/api/v4/graphql', indexerWS: 'ws://127.0.0.1:8088/api/v4/graphql/ws',
+  proofServer: 'http://127.0.0.1:6300', faucet: undefined });
+const report = { executedAt: new Date().toISOString(), networkId: 'undeployed',
+  scope: 'synthetic-isolated-local-devnet', status: 'running', acceptedTransactions: [],
+  transactionsFinalized: 0, browserWalletSecretRead: false, mainnetOrPublicNetwork: false,
+  fundingWallet: 'node-sdk-synthetic-genesis-and-sponsor', browserWalletTransaction: false,
+  recipientNight: '1000', sponsorNight: '100000', suppressedLibraryConsoleCalls: 0 };
+const wallets = [];
+let stage = 'prerequisites', canSave = false;
+const output = value => process.stdout.write(JSON.stringify({ at: new Date().toISOString(), ...value }) + '\n');
+const hash = value => createHash('sha256').update(value).digest('hex');
+const delay = ms => new Promise(done => setTimeout(done, ms));
+for (const method of ['log', 'debug', 'info', 'warn', 'error', 'trace', 'dir']) console[method] = () => { report.suppressedLibraryConsoleCalls++; };
+async function save() { if (canSave) await writeFile(evidenceFile, JSON.stringify(report, null, 2) + '\n'); }
+async function bounded(promise, milliseconds = 360_000) {
+  let timer;
+  try { return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), milliseconds); })]); }
+  finally { clearTimeout(timer); }
+}
+async function operation(name, callback) {
+  stage = name; report.currentStage = name; report.stageStartedAt = new Date().toISOString();
+  output({ stage, status: 'started' }); await save();
+  return bounded(callback());
+}
+function category(error) {
+  const message = typeof error?.message === 'string' ? error.message : '';
+  if (/timeout/i.test(message)) return 'timeout-outcome-may-be-uncertain';
+  if (/insufficient|dust|fund|balance/i.test(message)) return 'funding-or-balancing';
+  if (/network|fetch|connect|ECONN|socket/i.test(message)) return 'local-service';
+  if (/proof|prover/i.test(message)) return 'proof-or-verification';
+  return 'operation-failed-details-withheld';
+}
+
+try {
+  if (process.argv.length !== 4 || process.argv[2] !== '--isolated-local-devnet' || process.argv[3] !== '--fund') throw new Error('Explicit execution flags required');
+  if (process.env.MN_TEST_WALLET_SEED || process.env.TEST_WALLET_SEED) throw new Error('External credentials not accepted');
+  let exists = false; try { await access(evidenceFile); exists = true; } catch { /* First run only. */ }
+  if (exists) throw new Error('Existing funding evidence requires manual review; never auto repeat');
+  const publicInput = JSON.parse(await readFile(inputFile, 'utf8'));
+  const keys = Object.keys(publicInput).sort().join(',');
+  if (keys !== 'dustAddress,networkId,unshieldedAddress' || publicInput.networkId !== 'undeployed'
+      || typeof publicInput.dustAddress !== 'string' || !publicInput.dustAddress.startsWith('mn_dust_undeployed1')
+      || typeof publicInput.unshieldedAddress !== 'string' || !publicInput.unshieldedAddress.startsWith('mn_addr_undeployed1')) throw new Error('Expected only public local addresses');
+  const [testkit, { default: pino }, ledger, walletSdk, Rx, { default: WebSocket }, network, { indexerPublicDataProvider }] = await Promise.all([
+    load('@midnight-ntwrk/testkit-js'), load('pino'), load('@midnight-ntwrk/midnight-js-protocol/ledger'),
+    load('@midnight-ntwrk/wallet-sdk'), load('rxjs'), load('ws'), load('@midnight-ntwrk/midnight-js-network-id'),
+    load('@midnight-ntwrk/midnight-js-indexer-public-data-provider'),
+  ]);
+  testkit.logger.level = 'silent'; const silent = pino({ level: 'silent' });
+  globalThis.WebSocket = WebSocket; network.setNetworkId('undeployed');
+  const dustReceiver = walletSdk.MidnightBech32m.parse(publicInput.dustAddress).decode(walletSdk.DustAddress, 'undeployed');
+  const nightRecipient = walletSdk.MidnightBech32m.parse(publicInput.unshieldedAddress).decode(walletSdk.UnshieldedAddress, 'undeployed');
+  report.recipientDustAddressSha256 = hash(publicInput.dustAddress);
+  report.recipientUnshieldedAddressSha256 = hash(publicInput.unshieldedAddress);
+  report.helperSha256 = hash(await readFile(fileURLToPath(import.meta.url)));
+  const lock = JSON.parse(await readFile(new URL('../../contracts/devnet/package-lock.json', import.meta.url), 'utf8'));
+  report.versions = Object.fromEntries(['testkit-js', 'wallet-sdk', 'ledger-v8'].map(name => [name, lock.packages[`node_modules/@midnight-ntwrk/${name}`]?.version]));
+  canSave = true; await save();
+  const publicData = indexerPublicDataProvider(env.indexer, env.indexerWS, WebSocket);
+  const synced = state => state.shielded.state.progress.isStrictlyComplete()
+    && state.unshielded.progress.isStrictlyComplete() && state.dust.state.progress.isStrictlyComplete();
+  async function openWallet(label, seed) {
+    return operation(`sync-${label}`, async () => {
+      const built = await testkit.FluentWalletBuilder.forEnvironment(env).withSeed(seed).buildWithoutStarting();
+      const wallet = { facade: built.wallet, keystore: built.keystore,
+        shieldedSecretKeys: ledger.ZswapSecretKeys.fromSeed(built.seeds.shielded),
+        dustSecretKey: ledger.DustSecretKey.fromSeed(built.seeds.dust) };
+      wallets.push(wallet);
+      await wallet.facade.start(wallet.shieldedSecretKeys, wallet.dustSecretKey);
+      await Rx.firstValueFrom(wallet.facade.state().pipe(Rx.filter(synced), Rx.take(1), Rx.timeout(300_000)));
+      return wallet;
+    });
+  }
+  const fixture = new testkit.LocalTestEnvironment(silent);
+  const genesis = await openWallet('synthetic-genesis', fixture.genesisMintWalletSeed[0]);
+  const sponsor = await openWallet('synthetic-sponsor', randomBytes(32).toString('hex'));
+  await operation('wait-genesis-dust', async () => {
+    const deadline = Date.now() + 300_000;
+    for (;;) {
+      const state = await genesis.facade.waitForSyncedState();
+      if (state.dust.availableCoins.length > 0 && state.dust.balance(new Date()) > 0n) break;
+      if (Date.now() > deadline) throw new Error('dust timeout');
+      await delay(2000);
+    }
+  });
+  async function submitAccepted(wallet, recipe) {
+    const tx = await wallet.facade.finalizeRecipe(recipe);
+    report.transactionsFinalized++; const txId = tx.identifiers().at(-1);
+    if (typeof txId !== 'string' || !/^[0-9a-f]+$/i.test(txId)) throw new Error('Invalid public transaction id');
+    report.pendingSubmission = { operation: stage, txId }; await save();
+    const submitted = await wallet.facade.submitTransaction(tx);
+    if (submitted !== txId) throw new Error('Unexpected transaction id');
+    const confirmation = await bounded(publicData.watchForTxData(txId), 90_000);
+    if (confirmation.status !== 'SucceedEntirely') throw new Error('Submitted transaction rejected');
+    report.acceptedTransactions.push({ operation: stage, txId, blockHeight: String(confirmation.blockHeight), status: confirmation.status });
+    delete report.pendingSubmission; await save();
+    output({ stage, status: 'accepted-by-local-chain', txId, blockHeight: String(confirmation.blockHeight) });
+  }
+  async function transferNight(receiver, amount) {
+    await genesis.facade.waitForSyncedState();
+    const recipe = await genesis.facade.transferTransaction([
+      { type: 'unshielded', outputs: [{ type: ledger.nativeToken().raw, receiverAddress: receiver, amount }] },
+    ], { shieldedSecretKeys: genesis.shieldedSecretKeys, dustSecretKey: genesis.dustSecretKey }, { ttl: new Date(Date.now() + 3_600_000) });
+    const signed = await genesis.facade.signRecipe(recipe, payload => genesis.keystore.signData(payload));
+    await submitAccepted(genesis, signed);
+  }
+  const sponsorAddress = await sponsor.facade.unshielded.getAddress();
+  await operation('fund-synthetic-sponsor', () => transferNight(sponsorAddress, 100_000n * 1_000_000n));
+  const unregistered = state => state.unshielded.availableCoins.filter(coin => coin.utxo.type === ledger.nativeToken().raw && coin.meta.registeredForDustGeneration === false);
+  await operation('wait-sponsor-night', () => Rx.firstValueFrom(sponsor.facade.state().pipe(
+    Rx.filter(state => synced(state) && unregistered(state).length > 0), Rx.take(1), Rx.timeout(180_000))));
+  await operation('register-sponsor-dust-for-browser', async () => {
+    const coins = unregistered(await sponsor.facade.waitForSyncedState());
+    if (!coins.length) throw new Error('No unregistered sponsor coin');
+    const { fee } = await sponsor.facade.estimateRegistration(coins);
+    await sponsor.facade.waitForGeneratedDust(coins, fee, { timeoutMs: 300_000 });
+    const recipe = await sponsor.facade.registerNightUtxosForDustGeneration(coins,
+      sponsor.keystore.getPublicKey(), payload => sponsor.keystore.signData(payload), dustReceiver);
+    await submitAccepted(sponsor, recipe);
+  });
+  await operation('fund-browser-night', () => transferNight(nightRecipient, 1000n * 1_000_000n));
+  report.status = 'passed'; report.completedAt = new Date().toISOString();
+  report.browserDustBalanceObserved = false;
+  await save(); output({ status: 'passed', acceptedTransactions: report.acceptedTransactions.length,
+    browserDustBalanceObserved: false, report: 'local-funding.json' });
+} catch (error) {
+  report.status = 'failed'; report.failedAt = new Date().toISOString(); report.failure = { stage, category: category(error) };
+  await save().catch(() => {}); output({ status: 'failed', stage, category: report.failure.category, detailsWithheld: true }); process.exitCode = 1;
+} finally {
+  for (const wallet of wallets.reverse()) await bounded(wallet.facade.stop(), 20_000).catch(() => {});
+}

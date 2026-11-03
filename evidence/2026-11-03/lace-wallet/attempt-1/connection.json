@@ -1,0 +1,33 @@
+{
+  "startedAt": "2026-11-03T20:46:25.952Z",
+  "extensionVersion": "2.5.0",
+  "execution": "isolated-local-Chromium",
+  "walletCreated": true,
+  "walletConnected": true,
+  "transactionSubmitted": false,
+  "connection": {
+    "walletName": "lace",
+    "rdns": "io.lace.wallet",
+    "apiVersion": "4.0.1",
+    "configuration": {
+      "networkId": "undeployed",
+      "indexerUri": "http://localhost:8088/api/v4/graphql",
+      "indexerWsUri": "ws://localhost:8088/api/v4/graphql/ws",
+      "substrateNodeUri": "http://localhost:9944",
+      "proverServerUri": "http://localhost:6300"
+    },
+    "connection": {
+      "status": "connected",
+      "networkId": "undeployed"
+    },
+    "dustAddress": "mn_dust_undeployed1wdcqrnpgj2uzvhm0p46zjktp7k2up080mhh8vtenjcgvql47hxesj5k3zx8",
+    "unshieldedAddress": "mn_addr_undeployed1m3tz30dre83pf34nq3alhmq287synsrvpe22tqcss2lunpzxd2nsqzdzje",
+    "shieldedAddress": "mn_shield-addr_undeployed14ztwr526xmkyrne7p3cvm032qxpqk2tmqxm9qfrt9d3f7jttngtezvqxmkvx5ce33sdsharkqu3ltt0lxr7sw7vkjnz8l2w6rh46csgua76n6",
+    "shieldedCoinPublicKey": "mn_shield-cpk_undeployed14ztwr526xmkyrne7p3cvm032qxpqk2tmqxm9qfrt9d3f7jttngtsp92kra",
+    "shieldedEncryptionPublicKey": "mn_shield-epk_undeployed1jycqdhvcdf3nrrqmp068vper7kkl7v8aqaued9xy075a580t43qsq9le3u"
+  },
+  "appStatus": "Connected to undeployed. Create or join a test election. No proof or transaction has been completed yet.",
+  "windowsPathWorkaround": "Unmodified verified extension and fresh profile in a short task-owned temporary directory",
+  "publicNetworkDnsBlocked": true,
+  "finishedConnectionAt": "2026-11-03T20:58:08.591Z"
+}

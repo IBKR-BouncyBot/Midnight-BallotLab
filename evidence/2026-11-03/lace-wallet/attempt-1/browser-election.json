@@ -1,0 +1,95 @@
+{
+  "schema": "midnight-ballot-lab/real-lace-local-acceptance/v1",
+  "startedAt": "2026-11-03T21:01:11.304Z",
+  "networkId": "undeployed",
+  "walletVersion": "2.5.0",
+  "apiVersion": "4.0.1",
+  "flow": "real-application-ui-and-extension-approval",
+  "fundedBalance": {
+    "dust": {
+      "balance": "34721399290439656",
+      "cap": "500000000000000000000"
+    },
+    "unshielded": {
+      "0000000000000000000000000000000000000000000000000000000000000000": "1000000000"
+    },
+    "connection": {
+      "status": "connected",
+      "networkId": "undeployed"
+    }
+  },
+  "operations": [
+    {
+      "operation": "Deployment",
+      "startedAt": "2026-11-03T21:01:20.638Z",
+      "contractCallProofRequired": false,
+      "status": "indexer-accepted",
+      "walletApprovalAt": "2026-11-03T21:01:39.893Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:01:54.761Z",
+      "txId": "00629113bf625d9633c0c7c7aaa3441308d03770469f9667bb31270c8d646fc06d",
+      "blockHeight": "295",
+      "independentlyVerified": false,
+      "confirmationRecordedAt": "2026-11-03T21:05:23.065Z"
+    },
+    {
+      "operation": "Key configuration",
+      "startedAt": "2026-11-03T21:02:46.335Z",
+      "contractCallProofRequired": true,
+      "status": "indexer-accepted",
+      "walletApprovalAt": "2026-11-03T21:03:24.311Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:03:24.429Z",
+      "txId": "00e443cf8f3ca04e694f598c4a5da7f350692c305807985730a1a9c8e598f1a708",
+      "blockHeight": "310",
+      "independentlyVerified": false,
+      "confirmationRecordedAt": "2026-11-03T21:05:23.068Z"
+    },
+    {
+      "operation": "Enrollment",
+      "startedAt": "2026-11-03T21:03:44.953Z",
+      "contractCallProofRequired": true,
+      "status": "indexer-accepted",
+      "walletApprovalAt": "2026-11-03T21:04:41.288Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:04:41.405Z",
+      "txId": "00936a8e3acb60963ed89ae581089d549f7a51a5ffc8d6098124940bafee7d0cb3",
+      "blockHeight": "323",
+      "confirmationRecordedAt": "2026-11-03T21:05:23.071Z",
+      "independentlyVerified": false
+    },
+    {
+      "operation": "Voting opened",
+      "startedAt": "2026-11-03T21:06:11.058Z",
+      "contractCallProofRequired": true,
+      "status": "indexer-accepted",
+      "walletApprovalAt": "2026-11-03T21:06:27.617Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:06:27.733Z",
+      "txId": "00fefdacb2f3f9e4479c74ded751a6ff2010bc8e73787ed8f35b7348bda52a46b0",
+      "blockHeight": "341",
+      "confirmationRecordedAt": "2026-11-03T21:06:50.191Z",
+      "independentlyVerified": false
+    },
+    {
+      "operation": "Ballot",
+      "startedAt": "2026-11-03T21:07:07.369Z",
+      "contractCallProofRequired": true,
+      "status": "outcome-not-yet-observed",
+      "walletApprovalAt": "2026-11-03T21:07:26.667Z",
+      "walletPasswordConfirmedAt": "2026-11-03T21:07:26.784Z"
+    }
+  ],
+  "status": "interrupted-awaiting-public-chain-check",
+  "publicNetworkDnsBlocked": true,
+  "schedule": {
+    "opensAt": 1793739900,
+    "closesAt": 1793740140
+  },
+  "candidateCount": 2,
+  "voterCount": 1,
+  "contractAddress": "4a85561659fad70757a1bc2d81c19fbe73b31b510967ee59a9518298594d788e",
+  "harnessInterruption": {
+    "stage": "ballot-after-wallet-approval",
+    "category": "automation-session-timeout",
+    "privateRuntimeDiscarded": true,
+    "retryAttempted": false,
+    "observedAt": "2026-11-03T21:09:04.991004+00:00"
+  }
+}

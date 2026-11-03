@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-11-03T21:11:33.873Z",
+  "status": "public-state-observed",
+  "networkId": "undeployed",
+  "contractAddress": "4a85561659fad70757a1bc2d81c19fbe73b31b510967ee59a9518298594d788e",
+  "source": "configured-local-indexer",
+  "independentConsensusVerification": false,
+  "phase": 1,
+  "acceptedBallots": 1,
+  "receipts": [
+    {
+      "index": 0,
+      "receipt": "2ebaa8a81477685ef2887368e28fa8b5d45a5d8efd6feef3588fd0022a605b38"
+    }
+  ],
+  "latestAction": {
+    "type": "ContractCall",
+    "txId": "0071dae65412559270060c1126e8ec1d8245a1f1e48cd67e1dc4e7aad65301d0e8",
+    "status": "SucceedEntirely",
+    "blockHeight": "350"
+  },
+  "browserPrivateStateRecovered": false,
+  "transactionRetried": false,
+  "transactionSubmitted": false
+}

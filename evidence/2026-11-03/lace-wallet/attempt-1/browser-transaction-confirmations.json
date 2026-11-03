@@ -1,0 +1,34 @@
+[
+  {
+    "operation": "Deployment",
+    "txId": "00629113bf625d9633c0c7c7aaa3441308d03770469f9667bb31270c8d646fc06d",
+    "status": "SucceedEntirely",
+    "blockHeight": "295",
+    "networkId": "undeployed",
+    "source": "separate-node-sdk-query-to-configured-local-indexer"
+  },
+  {
+    "operation": "Key configuration",
+    "txId": "00e443cf8f3ca04e694f598c4a5da7f350692c305807985730a1a9c8e598f1a708",
+    "status": "SucceedEntirely",
+    "blockHeight": "310",
+    "networkId": "undeployed",
+    "source": "separate-node-sdk-query-to-configured-local-indexer"
+  },
+  {
+    "operation": "Enrollment",
+    "txId": "00936a8e3acb60963ed89ae581089d549f7a51a5ffc8d6098124940bafee7d0cb3",
+    "status": "SucceedEntirely",
+    "blockHeight": "323",
+    "networkId": "undeployed",
+    "source": "separate-node-sdk-query-to-configured-local-indexer"
+  },
+  {
+    "operation": "Voting opened",
+    "txId": "00fefdacb2f3f9e4479c74ded751a6ff2010bc8e73787ed8f35b7348bda52a46b0",
+    "status": "SucceedEntirely",
+    "blockHeight": "341",
+    "networkId": "undeployed",
+    "source": "separate-node-sdk-query-to-configured-local-indexer"
+  }
+]
