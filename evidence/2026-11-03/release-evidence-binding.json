@@ -1,0 +1,16 @@
+{
+  "browserBuildBindings": [
+    {
+      "bundle": "dist/native-bundle.mjs",
+      "matchesExecutedBrowserTest": true,
+      "sha256": "eeef7ff3ebe9096fb33a49cbfcd6e9f2b8ccb3b89e95be9185b1e9d9ddd03136"
+    },
+    {
+      "bundle": "dist/network-bundle.mjs",
+      "matchesExecutedBrowserTest": true,
+      "sha256": "6fdfa86378e4dcf7098e39a741c2e294617428004c4f3a88c387160ffcd83d7c"
+    }
+  ],
+  "devnetSourceAndLockBindings": "matched",
+  "packagedSource": "matched current source and docs"
+}
