@@ -1,8 +1,10 @@
 # Native Midnight implementation
 
+Actual Lace 2.5.0 / API 4.0.1 completed nine local `undeployed` application transactions (eight native calls), finalizing `[0,1,0,0,0]`. See [wallet compatibility](../../docs/NATIVE_NETWORK.md#wallet-compatibility) and [retained evidence](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/tree/main/evidence/2026-11-03/lace-wallet). Hosted-origin, Preview and Preprod transactions remain untested; mainnet is blocked. Confirmation relies on the configured local indexer and does not independently verify consensus.
+
 This directory uses the generated bindings for [`../native-election.compact`](../native-election.compact). The contract performs ballot encryption and threshold decryption with Midnight's native Jubjub operations, and derives identities, nullifiers and receipts with Compact's typed hashes. It has 2–5 active choices, five fixed ciphertext lanes, up to 1,024 voters and two-of-three trustees.
 
-Version 0.6.1 includes candidate-count binding and independent public-record verification. It passed Compact 0.31.1 compilation, all 40 native cases (26 generated-contract and 14 public-verifier cases), 26 isolated-runtime cases, eight real standalone proofs, seven native-browser and four network-browser cases. Hosted compatibility, Pages deployment and the separate 17-transaction devnet acceptance also passed, including automatic external closing/tallying to `[2,1,2,0,0]`. Browser, proof and network outcomes must be read against their exact tested revisions in [CONTINUATION_RESULTS.md](../../docs/CONTINUATION_RESULTS.md). Missing native prerequisites fail explicitly. An actual browser-wallet transaction remains untested.
+Version 0.6.1 includes candidate-count binding and independent public-record verification. It passed Compact 0.31.1 compilation, all 40 native cases (26 generated-contract and 14 public-verifier cases), 26 isolated-runtime cases, eight real standalone proofs, seven native-browser and four network-browser cases. Hosted compatibility, Pages deployment and the separate 17-transaction devnet acceptance also passed, including automatic external closing/tallying to `[2,1,2,0,0]`. Browser, proof and network outcomes must be read against their exact tested revisions in [CONTINUATION_RESULTS.md](../../docs/CONTINUATION_RESULTS.md). Missing native prerequisites fail explicitly. The separate local Lace browser-wallet election passed; see the evidence above.
 
 ## Run with the actual toolchain
 
@@ -41,7 +43,7 @@ The root tests cover input checks and public export boundaries separately from n
 
 ## Connect real Midnight providers
 
-`sdk-client.mjs` uses Midnight.js 4.1.1 `CompiledContract`, `deployContract`, `findDeployedContract` and `callTx` APIs. `browser-providers.mjs` assembles actual wallet, transaction, public-data, encrypted private-state, ZK-asset and proving providers after the user explicitly selects a compatible wallet and test network. Importing a module does not connect, transact or create placeholder providers. The network UI is `src/network.html`; four actual SDK/WASM loading and failure-handling Chromium cases passed. The separate Node wallet runner completed 17 indexer-confirmed transactions on the fresh local devnet. An actual browser-wallet transaction remains untested.
+`sdk-client.mjs` uses Midnight.js 4.1.1 `CompiledContract`, `deployContract`, `findDeployedContract` and `callTx` APIs. `browser-providers.mjs` assembles actual wallet, transaction, public-data, encrypted private-state, ZK-asset and proving providers after the user explicitly selects a compatible wallet and test network. Importing a module does not connect, transact or create placeholder providers. The network UI is `src/network.html`; four actual SDK/WASM loading and failure-handling Chromium cases passed. The separate Node wallet runner completed 17 indexer-confirmed transactions on the fresh local devnet. The separate local Lace browser-wallet election passed; see the evidence above.
 
 ```js
 import { createNativeSdkClient } from './native/sdk-client.mjs';
