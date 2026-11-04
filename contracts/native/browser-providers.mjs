@@ -8,8 +8,16 @@ import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-p
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { getNetworkId, setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { CostModel, Transaction } from '@midnight-ntwrk/midnight-js-protocol/ledger';
-import { fromHex, toHex, validatePassword } from '@midnight-ntwrk/midnight-js-utils';
+import { fromHex, toHex, validatePassword, PasswordValidationError } from '@midnight-ntwrk/midnight-js-utils';
 import { resolveNativeBrowserConfig, requireConnectedNetwork, requireLocalWalletProver } from './browser-config.mjs';
+
+export { validatePassword as validateNativeStoragePassword };
+
+export function nativeStoragePasswordMessage(error) {
+  // Use the installed SDK's error type, never its message or private payload.
+  if (!(error instanceof PasswordValidationError)) return null;
+  return 'Choose a stronger password for the keys stored by this app: at least 16 characters using three of uppercase letters, lowercase letters, numbers and symbols. Avoid sequences such as 1234 or abcd, and more than three identical characters in a row. This is separate from your Lace password.';
+}
 
 export async function connectNativeBrowserProviders({
   wallet, configuration, passwordProvider, onStage = () => {},

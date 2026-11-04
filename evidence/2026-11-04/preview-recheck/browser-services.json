@@ -1,0 +1,114 @@
+{
+  "executedAt": "2026-11-04T20:32:09.700Z",
+  "execution": "actual-public-preview-browser-service-check",
+  "walletConnected": false,
+  "localProverChecked": false,
+  "proofGenerated": false,
+  "transactionSubmitted": false,
+  "publicTransactionAccepted": false,
+  "independentChainVerification": false,
+  "hostedOriginVisited": false,
+  "responseMocking": false,
+  "services": {
+    "node": "https://rpc.preview.midnight.network/",
+    "indexer": "https://indexer.preview.midnight.network/api/v4/graphql",
+    "websocket": "wss://indexer.preview.midnight.network/api/v4/graphql/ws"
+  },
+  "screenshots": [
+    "preview-services-1440.png",
+    "preview-services-390.png",
+    "preview-services-320.png"
+  ],
+  "requests": [
+    {
+      "endpoint": "https://rpc.preview.midnight.network/",
+      "method": "POST"
+    },
+    {
+      "endpoint": "https://indexer.preview.midnight.network/api/v4/graphql",
+      "method": "POST"
+    }
+  ],
+  "responses": [
+    {
+      "endpoint": "https://indexer.preview.midnight.network/api/v4/graphql",
+      "status": 200,
+      "operation": "public-block-height-query",
+      "blockHeight": 1600302
+    },
+    {
+      "endpoint": "https://rpc.preview.midnight.network/",
+      "status": 200,
+      "method": "system_chain",
+      "chainName": "Midnight Preview"
+    }
+  ],
+  "cases": [
+    {
+      "case": "no-automatic-service-or-wallet-request",
+      "status": "passed"
+    },
+    {
+      "case": "actual-cross-origin-preview-node-and-http-indexer",
+      "status": "passed",
+      "corsReadSucceeded": true
+    },
+    {
+      "case": "actual-preview-websocket-public-block-subscription",
+      "status": "passed"
+    },
+    {
+      "case": "public-setup-layout-1440",
+      "status": "passed",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "case": "public-setup-layout-390",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "public-setup-layout-320",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    }
+  ],
+  "transportFailures": [],
+  "transportResponses": [
+    {
+      "endpoint": "https://indexer.preview.midnight.network/api/v4/graphql",
+      "status": 200,
+      "accessControlAllowOrigin": "*"
+    },
+    {
+      "endpoint": "https://rpc.preview.midnight.network/",
+      "status": 200,
+      "accessControlAllowOrigin": "*"
+    }
+  ],
+  "consoleCategories": [],
+  "bundleSha256": "91caa3719d6fd79651d1a12f739f9e06c92f02423284f85fc5dc20837d536abe",
+  "sdk": "4.1.1",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "serviceReachable": true,
+  "httpIndexerBlock": 1600302,
+  "chainName": "Midnight Preview",
+  "websocket": {
+    "status": "passed",
+    "blockHeight": 1600302,
+    "connectionAcknowledged": true,
+    "protocol": "graphql-transport-ws"
+  },
+  "browserCounters": {
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "unexpectedRequests": 0
+  },
+  "status": "passed"
+}

@@ -15,6 +15,7 @@ const dist = join(root, 'dist');
 const evidenceDirectory = join(root, 'artifacts/network-browser');
 const requireContracts = createRequire(join(root, 'contracts/package.json'));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const previewNode = 'https://rpc.preview.midnight.network/';
 const previewIndexer = 'https://indexer.preview.midnight.network/api/v4/graphql';
 const previewWebSocket = 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
 const evidence = { executedAt: new Date().toISOString(), node: process.version,
@@ -134,20 +135,27 @@ try {
       assert.equal(await page.locator('#network-check-services').isDisabled(), false);
       assert.match(await page.locator('#network-environment-note').textContent(), /No service API key is needed/);
       assert.match(await page.locator('#network-service-status').textContent(), /Not checked yet.*does not connect a wallet or submit a transaction/);
-      assert.match(await page.locator('.public-network-intro').textContent(), /do not need to run your own node or indexer/);
-      assert.match(await page.locator('.public-network-intro').textContent(), /local prover processes private data/);
+      assert.match(await page.locator('.public-network-intro').first().textContent(), /do not need to run your own node or indexer/);
+      assert.match(await page.locator('.public-network-intro').first().textContent(), /local prover processes private data/);
       for (const href of ['https://midnight-tmnight-preview.nethermind.dev/', 'https://docs.midnight.network/guides/run-proof-server',
-        './network-guide.html#wallet-compatibility', './network-guide.html#external-scheduled-development-operator', './license.html']) {
+        './network-guide.html#select-preview-in-lace', './network-guide.html#wallet-compatibility',
+        './network-guide.html#external-scheduled-development-operator', './license.html']) {
         const link = page.locator(`a[href="${href}"]`);
         assert.equal(await link.count(), 1);
         assert.equal(await link.getAttribute('target'), '_blank');
         assert.match(await link.getAttribute('rel'), /noopener/);
         assert.equal(await link.getAttribute('download'), null);
       }
+      const laceGuide = await page.request.get(`${origin}${prefix}network-guide.html`);
+      assert.equal(laceGuide.status(), 200);
+      assert.match(await laceGuide.text(), /\bid="select-preview-in-lace"/, 'The linked Lace setup section must exist in the built guide');
       stage = `${prefix}:required-password-and-service-fields`;
       assert.equal(await page.locator('#network-password').evaluate(input => input.required && input.validity.valueMissing), true);
       await page.locator('#network-connect').click();
       assert.equal(await page.locator('#network-status').isVisible(), false, 'Required password validation must prevent a connection attempt');
+      assert.match(await page.locator('#network-connection-status').textContent(), /Enter a password of at least 16 characters.*separate from your Lace password/);
+      assert.equal(await page.locator('#network-connection-status').getAttribute('role'), 'status');
+      assert.equal(await page.locator('#network-connection-status').getAttribute('aria-live'), 'polite');
       await page.locator('#network-id').selectOption('undeployed');
       assert.equal(await page.locator('#network-indexer').inputValue(), 'http://127.0.0.1:8088/api/v4/graphql');
       assert.equal(await page.locator('#network-indexer-ws').inputValue(), 'ws://127.0.0.1:8088/api/v4/graphql/ws');
@@ -171,6 +179,7 @@ try {
       await page.locator('#network-indexer').fill('https://indexer.example.invalid/graphql');
       await page.locator('#network-connect').click();
       assert.equal(await page.locator('#network-status').isVisible(), false, 'A missing WebSocket service must prevent submission');
+      assert.match(await page.locator('#network-connection-status').textContent(), /Complete the highlighted connection setting.*No wallet request has been sent/);
       await page.locator('#network-indexer').fill('');
       await page.locator('#network-indexer-ws').fill('wss://indexer.example.invalid/graphql/ws');
       await page.locator('#network-connect').click();
@@ -213,7 +222,14 @@ try {
       // Synthetic storage-password fixture, never a wallet seed or real account.
       await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
       await page.locator('#network-connect').click();
-      await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('could not finish'));
+      await page.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('No compatible wallet is available'));
+      const noWalletMessage = await page.locator('#network-status').textContent();
+      assert.equal(await page.locator('#network-connection-status').textContent(), noWalletMessage);
+      assert.equal(await page.locator('#network-connect-form #network-connection-status').count(), 1,
+        'Connection feedback must remain beside the connection controls');
+      assert.match(noWalletMessage, /browser where Lace is installed.*enable Midnight.*reload and refresh the wallet list/);
+      assert.match(noWalletMessage, /No connection was requested/);
+      assert.doesNotMatch(noWalletMessage, /prover|DUST|password|witness/i, 'Missing-wallet guidance must identify the actual prerequisite');
       await page.locator('#network-password').fill('');
       evidence.lastBrowserCounters = { path: prefix, pageErrors, consoleErrors, consoleCategories: [...consoleCategories],
         remoteRequests: [...requests].filter(url => new URL(url).origin !== origin).length };
@@ -231,9 +247,78 @@ try {
         wasmLoaded: wasmResponses.size, circuitAssetsServed: manifest.circuitAssets.length,
         ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true,
         previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
-        helpLinksChecked: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
+        helpLinksChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
         pageErrors, consoleErrors, remoteRequests: 0 });
     } finally { await context.close(); }
+  }
+
+  for (const failedService of ['node', 'indexer']) {
+    stage = `preview-${failedService}-transport-failure`;
+    const context = await browser.newContext();
+    let releaseSibling;
+    const siblingReleased = new Promise(resolveSibling => { releaseSibling = resolveSibling; });
+    const routeTasks = [];
+    try {
+      const page = await context.newPage(); page.setDefaultTimeout(30_000);
+      let pageErrors = 0, unexpectedConsoleErrors = 0, blockedRequests = 0, targetedRequests = 0, unexpectedRequests = 0;
+      const targetedEndpoint = failedService === 'node' ? previewNode : previewIndexer;
+      page.on('pageerror', () => { pageErrors++; });
+      page.on('console', message => {
+        if (message.type() === 'error' && !/Failed to load resource|net::ERR_FAILED|ERR_ABORTED/i.test(message.text())) unexpectedConsoleErrors++;
+      });
+      // A deliberate transport failure, never a fabricated success response.
+      // Hold the other endpoint until the targeted failure reaches the UI, so
+      // no public request leaves the test browser and either service is tested.
+      await page.route(/^https:\/\//, route => {
+        const task = (async () => {
+          const endpoint = route.request().url();
+          if (![previewNode, previewIndexer].includes(endpoint)) unexpectedRequests++;
+          else {
+            blockedRequests++;
+            if (endpoint === targetedEndpoint) targetedRequests++;
+            assert.equal(route.request().method(), 'POST');
+          }
+          if (endpoint !== targetedEndpoint && [previewNode, previewIndexer].includes(endpoint)) await siblingReleased;
+          await route.abort('failed');
+        })();
+        routeTasks.push(task); return task;
+      });
+      await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+      assert.equal(blockedRequests, 0, 'Public service checks must require an explicit click');
+      await page.locator('#network-check-services').click();
+      await page.waitForFunction(() => !document.getElementById('network-check-services').disabled);
+      const expected = `Your browser could not reach the public Preview ${failedService}. Check your connection and browser or network restrictions; the service may also be temporarily unavailable. This check did not connect a wallet or submit a transaction.`;
+      stage = `preview-${failedService}-transport-failure:service-message`;
+      assert.equal(await page.locator('#network-service-status').textContent(), expected);
+      stage = `preview-${failedService}-transport-failure:global-message`;
+      assert.equal(await page.locator('#network-status').textContent(), expected, 'The global status must preserve the service-specific safe error');
+      assert.doesNotMatch(expected, /prover|DUST|password|witness|seed/i);
+      stage = `preview-${failedService}-transport-failure:restored-controls`;
+      for (const id of ['network-check-services', 'network-connect', 'network-id', 'network-refresh-wallets']) {
+        assert.equal(await page.locator(`#${id}`).isDisabled(), false, 'Connection and retry controls must be restored');
+      }
+      for (const id of ['network-deploy', 'network-join', 'network-cast', 'network-finalize']) {
+        assert.equal(await page.locator(`#${id}`).isDisabled(), true);
+      }
+      assert.equal(await page.locator('#network-password').inputValue(), '');
+      assert.equal(await page.locator('#network-events').textContent(), '');
+      assert.equal(await page.locator('#network-availability').getAttribute('data-state'), 'ready');
+      stage = `preview-${failedService}-transport-failure:request-cleanup`;
+      releaseSibling(); await Promise.all(routeTasks);
+      evidence.lastTransportFailureCounters = { failedService, blockedRequests, targetedRequests, unexpectedRequests, pageErrors, unexpectedConsoleErrors };
+      // The app aborts the sibling on failure; Chromium may cancel it before
+      // its route handler is dispatched. The targeted failure is mandatory.
+      assert.equal(targetedRequests, 1); assert.ok(blockedRequests >= 1 && blockedRequests <= 2);
+      assert.equal(unexpectedRequests, 0);
+      assert.equal(pageErrors, 0); assert.equal(unexpectedConsoleErrors, 0);
+      evidence.cases.push({ case: `preview-${failedService}-transport-failure`, status: 'passed',
+        failureInjection: 'request-abort-only', fabricatedSuccessResponses: 0, externalRequestsAllowed: 0,
+        safeServiceMessage: true, controlsRestored: true, walletConnected: false, pageErrors, unexpectedConsoleErrors });
+    } finally {
+      releaseSibling(); await Promise.allSettled(routeTasks); await context.close();
+    }
   }
 
   for (const failure of ['disabled-manifest', 'missing-wasm']) {

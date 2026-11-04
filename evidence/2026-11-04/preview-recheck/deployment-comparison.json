@@ -1,0 +1,49 @@
+{
+  "schema": "midnight-ballot-lab/deployed-preview-comparison/v1",
+  "checkedOn": "2026-11-04",
+  "status": "passed",
+  "localHead": "5582a97dda61d1dd3e5900cdc8521eacaa0d9c3d",
+  "latestPagesHead": "5582a97dda61d1dd3e5900cdc8521eacaa0d9c3d",
+  "runId": 41901859055,
+  "runConclusion": "success",
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/41901859055",
+  "artifactId": 13358791969,
+  "artifactSha256": "caba053b729f22dc75c11febad11f164fed837e54f29cc725bcbd0df610de90a",
+  "artifactFiles": [
+    {
+      "path": "network-bundle.mjs",
+      "sha256": "32da2efea1ac76e819cf5c746a0cac2deb7d7ec6997c8ac736989514bf7c3549",
+      "matchesLocalBuild": true
+    },
+    {
+      "path": "network-guide.html",
+      "sha256": "c5f5c96391ec60ea6a79a3f9b6c00173b0f09f18740f122d22ca67bf52de6a14",
+      "matchesLocalBuild": true
+    },
+    {
+      "path": "network.html",
+      "sha256": "c6b327441dbf2198e05155cc31b04c0bbb7026af35bed0509693ea33fdd99483",
+      "matchesLocalBuild": true
+    },
+    {
+      "path": "network-build.json",
+      "sha256": "ee74b51a84953fc85b51b7354041ad4f3a7a858b3aa5281cf35b94caf35cc128",
+      "matchesLocalBuild": true
+    }
+  ],
+  "sourceZipFilesMatchingWorkingTreeAtCheck": [
+    "src/network.html",
+    "src/network-app.mjs",
+    "contracts/native/public-testnet.mjs",
+    "contracts/native/browser-config.mjs",
+    "docs/NATIVE_NETWORK.md"
+  ],
+  "comparisonPrecedesTroubleshootingEdits": true,
+  "hostedOriginRequested": false,
+  "userBrowserTested": false,
+  "limitations": [
+    "GitHub API identified the latest successful deployment; its downloaded artifact was inspected locally.",
+    "This does not establish which cached files the user's browser loaded or reproduce the user's button failure.",
+    "The matching file comparison was made before the subsequent troubleshooting documentation and application edits."
+  ]
+}

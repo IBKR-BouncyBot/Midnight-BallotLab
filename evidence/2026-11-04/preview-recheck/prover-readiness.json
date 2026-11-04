@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-11-04T20:28:31.2066184Z",
+  "status": "ready",
+  "container": "midnight-ballot-proof-server",
+  "image": "midnightntwrk/proof-server:8.1.3",
+  "version": "8.1.3",
+  "binding": "127.0.0.1:6300",
+  "containerRunning": true,
+  "containerStartedAt": "2026-11-04T20:26:44.643582111Z",
+  "windowsLocalhostHttpStatus": 200,
+  "wslLoopbackReachable": true,
+  "scopedWaitHelperRunning": true,
+  "temporarySleepStopped": true,
+  "proofRequestsSent": false,
+  "walletAccessed": false,
+  "transactionsSubmitted": false,
+  "stopCommand": "wsl.exe -d Ubuntu-24.04 -- docker stop midnight-ballot-proof-server"
+}

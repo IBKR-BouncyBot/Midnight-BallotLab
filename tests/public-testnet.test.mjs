@@ -2,7 +2,7 @@
 // exercise cryptography, a real service, wallet, proof or accepted transaction.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices } from '../contracts/native/public-testnet.mjs';
+import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices, formatPreviewServiceError } from '../contracts/native/public-testnet.mjs';
 import { resolveNativeBrowserConfig, requireLocalWalletProver, requireConnectedNetwork } from '../contracts/native/browser-config.mjs';
 
 const rpc = { jsonrpc: '2.0', id: 1, result: 'Midnight Preview' };
@@ -55,14 +55,56 @@ test('Preview check rejects malformed indexer responses and GraphQL errors', asy
   }
 });
 
-test('Preview transport and parser errors never expose upstream error data', async () => {
+test('Preview diagnostics identify each failed service without exposing upstream error data', async () => {
   const marker = 'SYNTHETIC-PRIVATE-ERROR-CONTENT';
-  for (const fetchImpl of [async () => { throw new Error(marker); }, async () => ({ ok: false, statusText: marker }),
-    async () => ({ ok: true, json: async () => { throw new Error(marker); } })]) {
-    await assert.rejects(checkPreviewPublicServices({ fetchImpl }), error => {
-      assert.equal(error.code, 'service-unavailable'); assert.equal(error.cause, undefined);
-      assert.ok(!error.message.includes(marker), 'Upstream error data must remain private'); return true;
+  for (const service of ['node', 'indexer']) {
+    const endpoint = service === 'node' ? PREVIEW_PUBLIC_SERVICES.nodeRpc : PREVIEW_PUBLIC_SERVICES.indexerUri;
+    for (const [code, failedFetch] of [
+      ['transport-unavailable', async () => { throw new Error(marker); }],
+      ['http-status', async () => ({ ok: false, status: 503, statusText: marker })],
+      ['invalid-json', async () => ({ ok: true, json: async () => { throw new Error(marker); } })],
+    ]) {
+      await assert.rejects(checkPreviewPublicServices({ fetchImpl: url => url === endpoint ? failedFetch() : transport()(url) }), error => {
+        assert.equal(error.code, code); assert.equal(error.service, service); assert.equal(error.cause, undefined);
+        const message = formatPreviewServiceError(error);
+        assert.ok(typeof message === 'string' && message.includes(`Preview ${service}`), 'A failed service must be identified');
+        assert.ok(!message.includes(marker) && !error.message.includes(marker), 'Upstream error data must remain private');
+        assert.ok(message.includes('did not connect a wallet or submit a transaction'), 'Read-only check scope must remain explicit');
+        return true;
+      });
+    }
+  }
+});
+
+test('Preview HTTP diagnostics accept only numeric HTTP statuses and explain rate limits', async () => {
+  for (const status of [429, 503, 999, 'SYNTHETIC-PRIVATE-STATUS']) {
+    await assert.rejects(checkPreviewPublicServices({ fetchImpl: async url => url === PREVIEW_PUBLIC_SERVICES.nodeRpc
+      ? { ok: false, status } : response(block) }), error => {
+      assert.equal(error.code, 'http-status'); assert.equal(error.service, 'node');
+      const valid = status === 429 || status === 503;
+      assert.equal(error.httpStatus, valid ? status : undefined);
+      const text = formatPreviewServiceError(error);
+      assert.ok(valid ? text.includes(`HTTP ${status}`) : text.includes('unusable HTTP response'), 'HTTP diagnostic must use only validated status');
+      if (status === 429) assert.ok(text.includes('wait before trying again'), 'Rate limit diagnostic should explain retry timing');
+      assert.ok(!text.includes('SYNTHETIC'), 'Untrusted status must remain private');
+      return true;
     });
+  }
+});
+
+test('Preview formatter rejects forged errors and ignores mutation of a genuine error message', async () => {
+  let actual;
+  try { await checkPreviewPublicServices({ fetchImpl: async () => { throw new Error('SYNTHETIC-TRANSPORT'); } }); }
+  catch (error) { actual = error; }
+  const original = formatPreviewServiceError(actual);
+  assert.ok(typeof original === 'string', 'A genuine error must have a safe diagnostic');
+  actual.message = 'SYNTHETIC-PRIVATE-MUTATION';
+  assert.ok(formatPreviewServiceError(actual) === original, 'A mutated error message must not replace its safe diagnostic');
+  const hostile = new Proxy({}, { get() { throw new Error('Arbitrary getters must not be read'); } });
+  for (const error of [undefined, null, 'SYNTHETIC', 1, Symbol('SYNTHETIC'), new Error('SYNTHETIC'),
+    { name: 'PreviewServiceCheckError', code: actual.code, service: 'node', message: original },
+    Object.create(Object.getPrototypeOf(actual)), { ...actual }, hostile]) {
+    assert.ok(formatPreviewServiceError(error) === null, 'Only locally branded errors may supply diagnostics');
   }
 });
 
@@ -72,9 +114,30 @@ test('Preview service check has a real 15-second bound even when a transport ign
   const result = checkPreviewPublicServices({ fetchImpl: (_url, options) => {
     requestSignal = options.signal; return new Promise(() => {});
   } });
-  const rejected = assert.rejects(result, error => error.code === 'timeout');
+  const rejected = assert.rejects(result, error => error.code === 'timeout' && error.service === 'services'
+    && formatPreviewServiceError(error).includes('15 seconds'));
   t.mock.timers.tick(15_000);
   await rejected; assert.equal(requestSignal.aborted, true);
+});
+
+test('Preview timeout identifies the indexer when the node has already passed validation', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const result = checkPreviewPublicServices({ fetchImpl: url => url === PREVIEW_PUBLIC_SERVICES.nodeRpc
+    ? Promise.resolve(response(rpc)) : new Promise(() => {}) });
+  const rejected = assert.rejects(result, error => error.code === 'timeout' && error.service === 'indexer'
+    && formatPreviewServiceError(error).includes('Preview indexer'));
+  await new Promise(resolve => setImmediate(resolve));
+  t.mock.timers.tick(15_000); await rejected;
+});
+
+test('Preview cancellation identifies the node when only its response remains pending', async () => {
+  const controller = new AbortController();
+  const result = checkPreviewPublicServices({ signal: controller.signal, fetchImpl: url => url === PREVIEW_PUBLIC_SERVICES.indexerUri
+    ? Promise.resolve(response(block)) : new Promise(() => {}) });
+  const rejected = assert.rejects(result, error => error.code === 'cancelled' && error.service === 'node'
+    && !formatPreviewServiceError(error).includes('SYNTHETIC'));
+  await new Promise(resolve => setImmediate(resolve));
+  controller.abort(new Error('SYNTHETIC-PRIVATE-REASON')); await rejected;
 });
 
 test('Preview checks accept caller cancellation without exposing the cancellation reason', async () => {
