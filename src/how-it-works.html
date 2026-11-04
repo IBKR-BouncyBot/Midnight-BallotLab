@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080808">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="description" content="Four steps to try encrypted voting: set up an election, cast votes, reveal the totals and check the public record.">
+  <title>How the demo works · Midnight Ballot Lab</title>
+  <link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./overview.css"><link rel="stylesheet" href="./guide.css">
+</head>
+<body class="guide-page">
+  <a class="skip-link" href="#main">Skip to guide</a>
+  {{HEADER}}
+  {{NAVIGATION}}
+  <main id="main" class="guide-main">
+    <header class="guide-hero"><p class="eyebrow">YOUR FIRST ELECTION</p><h1>Four steps.<br>One shared result.</h1><p class="guide-lede">Try encrypted voting in your browser. You play the voters and trustees, so you can follow the whole election from the first choice to the final check.</p><div class="guide-actions"><a class="button primary" href="./">Try the demo ↗</a><a class="button secondary" href="./technical-guide.html">Read the technical guide</a></div></header>
+    <section class="guide-four-steps" aria-label="The four election steps">
+      <article class="guide-step"><span class="guide-step-number" aria-hidden="true">01</span><h2>Set up election</h2><p>Give your election a name, add two to five choices and choose how many demo voters can take part.</p></article>
+      <article class="guide-step"><span class="guide-step-number" aria-hidden="true">02</span><h2>Cast votes</h2><p>Select a demo voter who has not voted yet, choose an option and cast an encrypted ballot. Save that voter’s receipt.</p></article>
+      <article class="guide-step"><span class="guide-step-number" aria-hidden="true">03</span><h2>Reveal results</h2><p>Close voting and combine any two of the three trustee shares to reveal the combined totals.</p></article>
+      <article class="guide-step"><span class="guide-step-number" aria-hidden="true">04</span><h2>Verify election</h2><p>Save the public record, check that it is internally consistent and use a receipt to find its matching encrypted ballot.</p></article>
+    </section>
+    <div class="guide-layout">
+      <aside class="guide-sidebar"><h2>In this guide</h2><nav class="guide-toc" aria-label="On this page"><a href="#setup">Set up your election</a><a href="#vote">Vote and save a receipt</a><a href="#results">Reveal the totals</a><a href="#verify">Check the record</a><a href="#limits">What the demo shows</a><a href="#network">Try a wallet</a></nav></aside>
+      <article class="guide-article">
+        <h2 id="setup">Make the election yours.</h2><p>Start with a title and two to five choices. Choose between one and 1,024 synthetic voters; five is a good starting point. These credentials belong to the demonstration, not an electoral register.</p><p>Choose whether to close voting yourself or set a timer. Timed mode uses the real clock and automatically closes and reveals the results with two demo trustee shares. Keep the tab open: a closed or suspended browser cannot guarantee that a scheduled action runs on time.</p>
+        <h3 id="vote">Cast a vote. Keep its receipt.</h3><p>Pick a demo voter who has not voted yet from the dropdown, choose an option and cast the ballot. Midnight’s native cryptography encrypts the choice, and the contract checks that the voter’s credential is eligible and has not already voted.</p><p>Save the receipt before switching to the next voter. The QR code identifies the election and encrypted ballot without including the choice or encryption randomness. Sharing a receipt can still associate you with that ciphertext.</p>
+        <h3 id="results">Two trustees reveal the total.</h3><p>After voting closes, no new ballots can be added. In manual mode, click any two trustee cards and reveal the results. In timed mode, the demonstration supplies two valid shares automatically after the deadline.</p><p>The tally combines the complete accepted ballot set. It shows how many votes each choice received. All three demo trustee secrets are held in this browser session; this is a way to learn the flow, not independent trustee custody.</p>
+        <h3 id="verify">Check the shared record.</h3><p>Save the public election record and open the verification step. You can import the saved record in a fresh session and optionally add a voter’s receipt. The checks recompute the record’s commitments and aggregates, check the published tally equations and look for that receipt.</p><div class="guide-callout"><p><strong>A consistent record is a useful check, with a specific limit.</strong> This export does not carry authenticated ballot or trustee-share proofs. Someone could construct a different, internally consistent record. Passing these checks does not prove real-world voter eligibility, an honest election or inclusion in a blockchain.</p></div>
+        <h3 id="limits">Real cryptography. A local demonstration.</h3><p>The main demo runs the generated Midnight contract and native WebAssembly on your device. It does not generate a network proof or submit a blockchain transaction. The QR code is a format for the receipt; it is not the encryption itself.</p><p>You control every voter and trustee in one tab. The demonstration’s key dealer knows the complete decryption key, and two colluding trustees could decrypt individual ciphertexts outside this tally interface. It does not provide election certification, coercion resistance or a guarantee that a compromised device recorded your intended choice.</p><p>Refreshing the demo clears its in-memory election. Save public records and receipts you want to keep. Those exports do not include voter secrets, trustee secrets or ballot randomness.</p>
+        <h3 id="network">Ready to connect a wallet?</h3><p>The separate test-network page uses a real wallet, prover, indexer and node. Lace 2.5.0 with DApp Connector API 4.0.1 completed a full election on an isolated local development chain. Transactions from the hosted GitHub Pages origin, Preview and Preprod have not been validated; the application blocks mainnet.</p><p>GitHub Pages serves the application files. It does not deploy the election contract or provide a prover. The <a href="./network-guide.html">wallet and network guide</a> explains the required services, supported wallet interface and exact testing limits.</p><div class="guide-actions"><a class="button primary" href="./">Start an election ↗</a><a class="button secondary" href="./technical-guide.html">Explore the implementation</a></div>
+      </article>
+    </div>
+    {{FOOTER}}
+  </main>
+</body>
+</html>

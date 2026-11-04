@@ -1,0 +1,261 @@
+{
+  "executedAt": "2026-11-04T19:08:28.690Z",
+  "execution": "local-real-Chromium",
+  "networkSubmission": false,
+  "walletConnection": false,
+  "cases": [
+    {
+      "case": "native-source-links",
+      "status": "passed",
+      "links": 2,
+      "externalNavigationPerformed": false
+    },
+    {
+      "case": "actual-native-and-font-load",
+      "status": "passed",
+      "wasmAssets": 1
+    },
+    {
+      "case": "keyboard-stage-navigation-and-draft-retention",
+      "status": "passed",
+      "keyActivation": [
+        "Enter",
+        "Space"
+      ],
+      "focusOutlineVisible": true
+    },
+    {
+      "case": "actual-new-tabs-preserve-draft-and-native-election",
+      "status": "passed",
+      "guidePopup": true,
+      "licencePopup": true
+    },
+    {
+      "case": "native-1440-layout",
+      "status": "passed",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "case": "stage-targets-1440",
+      "status": "passed",
+      "minimumWidth": 308.5,
+      "minimumHeight": 112
+    },
+    {
+      "case": "native-390-layout",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "stage-targets-390",
+      "status": "passed",
+      "minimumWidth": 155,
+      "minimumHeight": 150
+    },
+    {
+      "case": "native-320-layout",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "case": "stage-targets-320",
+      "status": "passed",
+      "minimumWidth": 120,
+      "minimumHeight": 164.59375
+    },
+    {
+      "case": "how-it-works.html-source-links",
+      "status": "passed",
+      "links": 2,
+      "externalNavigationPerformed": false
+    },
+    {
+      "case": "how-it-works.html-1440-layout",
+      "status": "passed",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "case": "how-it-works.html-390-layout",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "how-it-works.html-320-layout",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "case": "how-it-works.html-anchor-navigation",
+      "status": "passed"
+    },
+    {
+      "case": "technical-guide.html-source-links",
+      "status": "passed",
+      "links": 3,
+      "externalNavigationPerformed": false
+    },
+    {
+      "case": "technical-guide.html-1440-layout",
+      "status": "passed",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "case": "technical-guide.html-390-layout",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "technical-guide.html-320-layout",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "case": "technical-guide.html-anchor-navigation",
+      "status": "passed"
+    },
+    {
+      "case": "network-guide.html-source-links",
+      "status": "passed",
+      "links": 3,
+      "externalNavigationPerformed": false
+    },
+    {
+      "case": "network-guide.html-1440-layout",
+      "status": "passed",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "case": "network-guide.html-390-layout",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "network-guide.html-320-layout",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "case": "network-guide.html-anchor-navigation",
+      "status": "passed"
+    },
+    {
+      "case": "license.html-source-links",
+      "status": "passed",
+      "links": 3,
+      "externalNavigationPerformed": false
+    },
+    {
+      "case": "full-licence-rendered-and-raw-download-exact",
+      "status": "passed",
+      "sourceSha256": "c0ea4a896d2c8c394b29f9427589996db826cd501c512279ff0ed3ef48fabbe5"
+    },
+    {
+      "case": "license.html-1440-layout",
+      "status": "passed",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "case": "license.html-390-layout",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "license.html-320-layout",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "case": "license.html-anchor-navigation",
+      "status": "passed"
+    },
+    {
+      "case": "network-390-layout",
+      "status": "passed",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "case": "network-320-layout",
+      "status": "passed",
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "case": "network-guide-and-licence-links",
+      "status": "passed"
+    }
+  ],
+  "screenshots": [
+    "native-desktop-focus-stages.png",
+    "native-stages-1440.png",
+    "native-workspace-1440.png",
+    "native-stages-390.png",
+    "native-workspace-390.png",
+    "native-stages-320.png",
+    "native-workspace-320.png",
+    "how-it-works-1440.png",
+    "how-it-works-390.png",
+    "how-it-works-320.png",
+    "technical-guide-1440.png",
+    "technical-guide-390.png",
+    "technical-guide-320.png",
+    "network-guide-1440.png",
+    "network-guide-390.png",
+    "network-guide-320.png",
+    "license-1440.png",
+    "license-390.png",
+    "license-320.png"
+  ],
+  "errors": {
+    "page": 0,
+    "console": 0,
+    "externalRequests": 0,
+    "failedLocalResponses": 0
+  },
+  "nativeBundleSha256": "0a45a5d6367b06441b3c1b69bd78543aff97195c5ab6837b28169698f09e29b4",
+  "licenseSha256": "c0ea4a896d2c8c394b29f9427589996db826cd501c512279ff0ed3ef48fabbe5",
+  "files": {
+    "index.html": "98a98eafb7446d66b87a99b6dd745637eed6870f62e94dde43b59c640ae37440",
+    "overview.css": "467ec66dbc9899c06aa64a2af725460348c9b7f9589d989739d8b683488980b4",
+    "guide.css": "b3d3079ba6834c25c3fa5ee24fa579c0efe50f5e0ea86e5415ce67b05fbd3526",
+    "how-it-works.html": "ab759fbbc3f92f524a5c902f7bd4ae6db329f2788ecb4bf97290ba79b0854943",
+    "technical-guide.html": "17f75b0654687358fe4ba64d11ff152f16c98f26e345bca095beeff9cc8766b1",
+    "network-guide.html": "31f16d2423a98591bc76d8eb4954f8e651b5911e8ea15e2a993fe6b2585c5ee2",
+    "license.html": "101d902cebfddec090adb17ebf49b3eed03914509738f5d1f13d3ccf13db9399"
+  },
+  "chromium": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "status": "passed",
+  "visualReview": {
+    "status": "passed",
+    "reviewedScreenshots": [
+      "native-desktop-focus-stages.png",
+      "native-stages-320.png",
+      "native-workspace-390.png",
+      "how-it-works-1440.png",
+      "how-it-works-320.png",
+      "technical-guide-1440.png",
+      "technical-guide-320.png",
+      "network-guide-1440.png",
+      "network-guide-320.png",
+      "license-1440.png",
+      "license-320.png"
+    ],
+    "findings": "Readable layout and visible active/focus states; no clipping, overlap or horizontal page overflow observed."
+  }
+}

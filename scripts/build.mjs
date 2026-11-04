@@ -2,6 +2,7 @@ import { readFile, writeFile, readdir, mkdir, cp, rm } from 'node:fs/promises';
 import { dirname, resolve, relative, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectDependencyNotices } from './collect-licenses.mjs';
+import { buildGuides } from './build-guides.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
@@ -26,6 +27,7 @@ for (const name of ['LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md']) {
   await cp(join(root, name), join(dist, name));
 }
 await collectDependencyNotices(root, dist);
+await buildGuides(root, dist);
 // Keep relative links from the published compatibility guide usable.
 await mkdir(join(dist, 'contracts'), { recursive: true });
 for (const name of ['README.md', 'native-election.compact']) {

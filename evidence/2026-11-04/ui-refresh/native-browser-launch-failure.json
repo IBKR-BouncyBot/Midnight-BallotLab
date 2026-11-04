@@ -1,0 +1,26 @@
+{
+  "executedAt": "2026-11-04T19:06:01.352Z",
+  "node": "v24.18.0",
+  "execution": "generated-contract-browser-emulator",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "chainInclusionVerified": false,
+  "cases": [],
+  "generatedContractSha256": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7",
+  "bundleSha256": "0a45a5d6367b06441b3c1b69bd78543aff97195c5ab6837b28169698f09e29b4",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "wasmAssets": [
+    {
+      "asset": "native-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e",
+      "bytes": 1398935
+    }
+  ],
+  "playwright": "1.64.1",
+  "passed": false,
+  "failure": {
+    "stage": "chromium-launch",
+    "kind": "Error"
+  }
+}

@@ -15,7 +15,7 @@
   <a class="skip-link" href="#main">Skip to workspace</a>
   <header class="masthead">
     <a class="brand" href="./" aria-label="Ballot Lab home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>ballot<span class="brand-light">lab</span><small>MIDNIGHT VOTING RESEARCH</small></span></a>
-    <div class="masthead-links"><span class="version">v0.6.1</span><a href="./network.html">Test network <span aria-hidden="true">↗</span></a><a href="./midnight-ballot-lab-source.zip" download>Source <span aria-hidden="true">↓</span></a></div>
+    <div class="masthead-links"><span class="version">v0.6.1</span><a href="./network.html">Test network <span aria-hidden="true">↗</span></a><a href="https://github.com/IBKR-BouncyBot/Midnight-BallotLab" target="_blank" rel="noopener noreferrer">View source <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div>
   </header>
   <div class="mode-strip"><span class="status-dot"></span><strong>Browser demo</strong><span class="strip-divider">/</span><span>Real Midnight encryption · no wallet needed</span></div>
   <main id="main" class="page">
@@ -25,12 +25,13 @@
     </section>
     <section class="native-implementation" aria-labelledby="native-load-heading">
       <div><p class="eyebrow">READY TO TRY IT?</p><h2 id="native-load-heading">An election on your device.</h2><p id="native-availability" role="status" aria-live="polite">Loading Midnight’s encryption tools…</p></div>
-      <div class="native-build-note"><strong>You control the demo</strong><p>You play the voters and all three trustees in this tab. Everything stays on this device; no votes are sent to a blockchain. Refreshing clears the election, so save any receipts and results you want to keep.</p><a class="button secondary" href="./docs/NATIVE_MIDNIGHT.md">How the demo works <span aria-hidden="true">↗</span></a></div>
+      <div class="native-build-note"><strong>You control the demo</strong><p>You play the voters and all three trustees in this tab. Everything stays on this device; no votes are sent to a blockchain. Refreshing clears the election, so save any receipts and results you want to keep.</p><a class="button secondary" href="./how-it-works.html" target="_blank" rel="noopener noreferrer">How the demo works <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div>
     </section>
     <noscript><div class="global-status error">Turn on JavaScript to use the voting demo.</div></noscript>
     <section class="metrics" aria-label="Election status"><div><span class="metric-label">DEMO VOTERS</span><strong id="native-voters">—</strong></div><div><span class="metric-label">VOTES CAST</span><strong id="native-ballots">0</strong></div><div><span class="metric-label">ELECTION STATUS</span><strong id="native-phase" class="metric-word">Not created</strong></div></section>
     <div class="workspace">
-      <nav class="steps" aria-label="Election steps">
+      <nav class="steps" aria-labelledby="election-steps-heading">
+        <div class="steps-heading"><h2 id="election-steps-heading">Your election, step by step.</h2><p>Choose a stage to continue.</p></div>
         <button type="button" class="step active" data-native-nav="setup" data-native-control aria-current="step" disabled><span>01</span><div>Set up election<small>Choose voters and options</small></div></button>
         <button type="button" class="step" data-native-nav="vote" data-native-control disabled><span>02</span><div>Vote<small>Cast a ballot</small></div></button>
         <button type="button" class="step" data-native-nav="tally" data-native-control disabled><span>03</span><div>Reveal results<small>Choose two trustees</small></div></button>
@@ -100,7 +101,7 @@
       </div>
       <figure class="support-qr"><img src="./assets/support-ada-qr.svg" alt="Scan this QR code for the Cardano mainnet support address" width="220" height="220" loading="lazy"><figcaption>NIGHT or ADA on Cardano mainnet</figcaption></figure>
     </section>
-    <footer class="page-footer"><p>Midnight Ballot Lab <span>·</span> Browser demo</p><div><button type="button" id="native-reset" data-native-control disabled>Start over</button><a href="./docs/NATIVE_MIDNIGHT.md">Technical guide ↗</a><a href="./midnight-ballot-lab-source.zip" download>Download source ↗</a><a href="#support">Buy me a coffee</a><a href="./LICENSE">Noncommercial license</a></div><p class="footer-note">For learning and testing, not real elections. All voter and trustee keys are held in this tab; refreshing clears them. Noncommercial use only.</p></footer>
+    <footer class="page-footer"><p>Midnight Ballot Lab <span>·</span> Browser demo</p><div><button type="button" id="native-reset" data-native-control disabled>Start over</button><a href="./technical-guide.html" target="_blank" rel="noopener noreferrer">Technical guide ↗<span class="sr-only"> (opens in a new tab)</span></a><a href="https://github.com/IBKR-BouncyBot/Midnight-BallotLab" target="_blank" rel="noopener noreferrer">View source ↗<span class="sr-only"> (opens in a new tab)</span></a><a href="#support">Buy me a coffee</a><a href="./license.html" target="_blank" rel="noopener noreferrer">Noncommercial licence ↗<span class="sr-only"> (opens in a new tab)</span></a></div><p class="footer-note">For learning and testing, not real elections. All voter and trustee keys are held in this tab; refreshing clears them. Noncommercial use only.</p></footer>
   </main>
   <script type="module" src="./native-loader.mjs"></script>
   <script type="module" src="./support.mjs"></script>
