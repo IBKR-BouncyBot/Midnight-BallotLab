@@ -1,0 +1,135 @@
+{
+  "executedAt": "2026-11-04T21:13:45.777Z",
+  "scope": "local browser layout and support controls; explicitly labelled public-only layout samples",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "cases": [
+    {
+      "width": 1920,
+      "passed": true,
+      "metrics": {
+        "viewport": 1920,
+        "pageWidth": 1920,
+        "panelWidth": 489.046875,
+        "panelPosition": "static",
+        "logHeight": 4253,
+        "logScrollHeight": 4253,
+        "logWidth": 427,
+        "logScrollWidth": 427,
+        "stateWidth": 427,
+        "stateScrollWidth": 427,
+        "eventCount": 30,
+        "overflow": "visible",
+        "logMaxHeight": "none"
+      }
+    },
+    {
+      "width": 1440,
+      "passed": true,
+      "metrics": {
+        "viewport": 1440,
+        "pageWidth": 1440,
+        "panelWidth": 489.046875,
+        "panelPosition": "static",
+        "logHeight": 4253,
+        "logScrollHeight": 4253,
+        "logWidth": 427,
+        "logScrollWidth": 427,
+        "stateWidth": 427,
+        "stateScrollWidth": 427,
+        "eventCount": 30,
+        "overflow": "visible",
+        "logMaxHeight": "none"
+      }
+    },
+    {
+      "width": 1100,
+      "passed": true,
+      "metrics": {
+        "viewport": 1100,
+        "pageWidth": 1100,
+        "panelWidth": 1036,
+        "panelPosition": "static",
+        "logHeight": 2621,
+        "logScrollHeight": 2621,
+        "logWidth": 974,
+        "logScrollWidth": 974,
+        "stateWidth": 974,
+        "stateScrollWidth": 974,
+        "eventCount": 30,
+        "overflow": "visible",
+        "logMaxHeight": "none"
+      }
+    },
+    {
+      "width": 768,
+      "passed": true,
+      "metrics": {
+        "viewport": 768,
+        "pageWidth": 768,
+        "panelWidth": 716,
+        "panelPosition": "static",
+        "logHeight": 3437,
+        "logScrollHeight": 3437,
+        "logWidth": 654,
+        "logScrollWidth": 654,
+        "stateWidth": 654,
+        "stateScrollWidth": 654,
+        "eventCount": 30,
+        "overflow": "visible",
+        "logMaxHeight": "none"
+      }
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "metrics": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "panelWidth": 354,
+        "panelPosition": "static",
+        "logHeight": 5068,
+        "logScrollHeight": 5068,
+        "logWidth": 304,
+        "logScrollWidth": 304,
+        "stateWidth": 304,
+        "stateScrollWidth": 304,
+        "eventCount": 30,
+        "overflow": "visible",
+        "logMaxHeight": "none"
+      }
+    },
+    {
+      "width": 320,
+      "passed": true,
+      "metrics": {
+        "viewport": 320,
+        "pageWidth": 320,
+        "panelWidth": 284,
+        "panelPosition": "static",
+        "logHeight": 5884,
+        "logScrollHeight": 5884,
+        "logWidth": 234,
+        "logScrollWidth": 234,
+        "stateWidth": 234,
+        "stateScrollWidth": 234,
+        "eventCount": 30,
+        "overflow": "visible",
+        "logMaxHeight": "none"
+      }
+    }
+  ],
+  "chromium": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "network.htmlSha256": "ced721944897fe7b3ce7019a29f3ad67b0d62f0ba965db9fdbb03838d85aeee6",
+  "styles.cssSha256": "4e0bc404735ed882d4c3cc9adae79fff09a2547a7b27ee5741e46a0b03bb6f5c",
+  "overview.cssSha256": "ebbe870ac83e3c7978c729b182eff29d78f9bd1690bc8c00c9cc449ade98cd64",
+  "support.mjsSha256": "84cb444aac93f2acf04ffa4bbc46cbc7164ab485a9d4cdab1441d96d0b91c4e8",
+  "supportAddressMatches": true,
+  "supportCopyPassed": true,
+  "supportQrLoaded": true,
+  "browserErrors": 0,
+  "externalRequests": 0,
+  "status": "passed"
+}

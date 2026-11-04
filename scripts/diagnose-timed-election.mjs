@@ -58,7 +58,7 @@ try {
   const cdp = await context.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpuSlowdown });
   stage = 'load-real-native-browser';
-  await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${origin}/native.html`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => ['ready', 'error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
   assert.equal(await page.locator('#native-availability').getAttribute('data-state'), 'ready');
   await page.locator('#native-voter-count').fill(String(voters));

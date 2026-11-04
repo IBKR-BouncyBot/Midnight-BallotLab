@@ -4,13 +4,22 @@
 
 **Cast your vote. Keep a receipt. Check the results.**
 
-Create an election, add your choices and try voting with real Midnight encryption. Keep a receipt for each vote, reveal the totals with two of three trustees, and check the shared election record—even in a new browser session.
+Explore encrypted voting with Midnight. Create an election, add your choices and keep a receipt for each vote. Reveal the totals with two of three trustees, then check the shared election record—even in a new browser session.
 
 ### [Open the app →](https://ibkr-bouncybot.github.io/Midnight-BallotLab/)
 
-Choose **2–5 choices** and **1–1,024 demo voters**. The main app is a local demonstration: all voters and trustees share one browser, and no wallet or funds are needed. It does not send votes to a blockchain.
+The homepage explains the lab and offers two ways to try it:
+
+| Choose a mode | What it does | What you need |
+| --- | --- | --- |
+| [**Browser demo**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/native.html) | Run real Midnight cryptography locally with **2–5 choices** and **1–1,024 demo voters**. All voters and trustees share one browser. No proofs or blockchain transactions are created. | A browser. No wallet or funds. |
+| [**Public testnet**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) | Connect to public Preview and use the wallet, prover and network transaction flow. Public Preview wallet connection has been tested; accepted application transactions on Preview remain unverified. | Midnight-enabled Lace on Preview; test NIGHT, usable tDUST and local proof server **8.1.3** for transactions. |
+
+Anyone with the browser demo's shared election file can check that its record and totals agree. Each voter can also upload their own receipt to check that it appears in that record. These checks do not establish that the record is authentic or that the election was fair.
 
 ## Try an election in a few clicks
+
+Open **Browser demo**, then:
 
 1. **Set up election.** Add a name and your choices, then choose how many demo voters can take part. Pick manual controls or **Timed election**.
 2. **Vote / Cast a ballot.** Choose a voter, click a choice and cast the ballot. Save the receipt as a QR code or file.
@@ -35,7 +44,7 @@ Choose **2–5 choices** and **1–1,024 demo voters**. The main app is a local 
 
 ## From a browser experiment to a test network
 
-The main app executes generated Compact contract code and official Midnight WebAssembly locally. The separate [network client](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) now opens with **public Preview** and its official indexer addresses selected. No API key or local node/indexer is needed. Loading the page makes no public-network request; **Check public Preview services** runs read-only checks when you choose it, and connecting a Preview wallet repeats those checks before wallet access. Connection settings stay locked until you disconnect.
+The [browser demo](https://ibkr-bouncybot.github.io/Midnight-BallotLab/native.html) executes generated Compact contract code and official Midnight WebAssembly locally. The [public testnet client](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) opens with **public Preview** and its official indexer addresses selected. No API key or local node/indexer is needed. Loading the page makes no public-network request; **Check public Preview services** runs read-only checks when you choose it, and connecting a Preview wallet repeats those checks before wallet access. Connection settings stay locked until you disconnect.
 
 To continue, set up Midnight in Lace on Preview, get free test NIGHT from the [Preview faucet](https://midnight-tmnight-preview.nethermind.dev/) and complete its CAPTCHA, select **Generate tDUST** in Lace, then run the [local proof server](https://docs.midnight.network/guides/run-proof-server) **8.1.3** on port 6300. [Real browser checks reached the public services](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/browser-services.json), and [Lace 2.5.0 connected to Preview](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/lace-connection.json) using a fresh, unfunded test wallet and a locally served app. That connection generated no proof and neither signed nor submitted a transaction. Public transaction testing still needs a funded wallet, usable DUST and the local prover; the GitHub Pages origin remains untested for wallet connection. Preprod is an advanced option requiring your own service access. The [network guide](docs/NATIVE_NETWORK.md#public-preview-setup) explains the steps and limits.
 

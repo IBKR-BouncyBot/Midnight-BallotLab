@@ -1,8 +1,8 @@
 # Native browser acceptance gate
 
 `scripts/test-native-browser.mjs` drives a real headless Chromium browser using
-Playwright. It requires the actual generated contract, a successful native
-browser bundle, and the packaged Midnight WASM assets. Missing prerequisites are
+Playwright. It requires the actual generated contract, successful native
+browser and network bundles, and the packaged Midnight WASM assets. Missing prerequisites are
 failures. The script never enables the native build flag, creates generated
 contract code, or supplies replacement cryptography.
 
@@ -15,6 +15,7 @@ npm --prefix contracts run test:native
 npm --prefix contracts run demo:native
 npm run build
 npm --prefix contracts run build:browser:native
+node scripts/build-network-browser.mjs
 python3 scripts/check_pages.py
 node contracts/node_modules/playwright/cli.js install --with-deps chromium
 node scripts/test-native-browser.mjs
@@ -28,8 +29,10 @@ or external QR service is used.
 
 The acceptance cases cover:
 
-- Actual WASM loaded from the page origin at root and a GitHub repository path;
-  the native `index.html` main experience and `native.html` entry both run.
+- The `index.html` introduction at root and a GitHub repository path, with both
+  mode buttons reaching their actual `native.html` and `network.html` destinations.
+  Native and network readiness use the real generated bundles and WASM.
+- Actual native WASM loaded from the page origin in the `native.html` browser demo.
 - Invalid labels/counts rejected before setup; actual key setup with 2, 3 and 5
   active choices and 3, 5 and 7 synthetic credentials across the cases.
 - Private credential dropdown selection in nonsequential order; reused

@@ -188,9 +188,16 @@ try {
   try {
     const page = await nativeContext.newPage(); page.setDefaultTimeout(120_000);
     const observed = observe(page);
-    stage = 'live-native:initialization';
+    stage = 'live-landing:navigation';
     await page.goto(approvedUrl, { waitUntil: 'networkidle' });
     assert.equal(page.url(), approvedUrl);
+    assert.equal(await page.locator('a[data-demo="browser"]').getAttribute('href'), './native.html');
+    assert.equal(await page.locator('a[data-demo="testnet"]').getAttribute('href'), './network.html');
+    assert.equal(observed.wasmLoaded.size, 0, 'Choosing a demo must precede cryptographic runtime loading');
+    assertBrowserClean(observed);
+    await page.locator('a[data-demo="browser"]').click();
+    await page.waitForURL(publicAssetUrl('native.html'));
+    stage = 'live-native:initialization';
     assert.equal(await page.locator('#native-title').count(), 1);
     await page.waitForFunction(() => ['ready', 'error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
     assert.equal(await page.locator('#native-availability').getAttribute('data-state'), 'ready');

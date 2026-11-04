@@ -8,7 +8,7 @@
   <title>Midnight Ballot Lab · Public testnet</title><link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./overview.css">
 </head>
-<body>
+<body class="network-page">
   <a class="skip-link" href="#main">Skip to workspace</a>
   <header class="masthead"><a class="brand" href="./index.html" aria-label="Ballot Lab home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>ballot<span class="brand-light">lab</span><small>MIDNIGHT VOTING RESEARCH</small></span></a><div class="masthead-links"><span class="version">TEST NETWORKS</span><a href="./native.html">Back to browser demo ↗</a></div></header>
   <div class="mode-strip"><span class="status-dot"></span><strong>Public testnet</strong><span class="strip-divider">/</span><span>Shared Preview network · test tokens only</span></div>
@@ -121,8 +121,22 @@
         <label for="network-receipt-input">Paste your receipt or its QR code text</label><textarea id="network-receipt-input" rows="4" maxlength="4096" spellcheck="false" data-network-control disabled></textarea><button class="button secondary" type="button" id="network-check-receipt" data-network-control disabled>Check receipt</button>
         <p class="field-note">The download includes encrypted ballots and public trustee contributions, without private choices or keys. It is a copy of your indexer’s record, not a complete proof of the election. Keep the page open until each transaction finishes, and check an uncertain transaction before retrying.</p>
       </section>
-    </div><aside class="record-panel"><div class="record-title"><span class="status-dot"></span><h2>Election activity</h2></div><p class="record-intro">Public progress and transaction details.</p><pre id="network-public-state" style="white-space:pre-wrap;overflow-wrap:anywhere">Not connected</pre><div id="network-events" class="event-log" aria-live="polite"></div></aside></div>
-    <footer class="page-footer"><p>Midnight Ballot Lab · Public testnet client</p><div><a href="./license.html" target="_blank" rel="noopener noreferrer">Noncommercial licence ↗<span class="sr-only"> (opens in a new tab)</span></a></div><p class="footer-note">For testing, not real elections. Noncommercial use only. GitHub Pages hosts this app. Preview provides shared network services; you provide the wallet, test DUST and local prover.</p></footer>
+    </div><aside class="record-panel" aria-labelledby="network-activity-heading"><div class="record-title"><span class="status-dot"></span><h2 id="network-activity-heading">Election activity</h2></div><p class="record-intro">Public progress and transaction details.</p><pre id="network-public-state">Not connected</pre><div id="network-events" class="event-log" aria-live="polite"></div></aside></div>
+    <section id="support" class="support-panel" aria-labelledby="support-heading">
+      <div class="support-copy">
+        <p class="eyebrow">SUPPORT DEVELOPMENT</p>
+        <h2 id="support-heading">Buy me a coffee.</h2>
+        <p class="support-intro">Enjoying Midnight Ballot Lab? You can support its development with a NIGHT or ADA tip on Cardano. Scan the QR code or copy the address below. Thank you for helping me keep building.</p>
+        <label for="support-address">NIGHT or ADA receiving address · Cardano mainnet</label>
+        <textarea id="support-address" rows="3" readonly spellcheck="false" autocomplete="off">addr1q85w2v474ywzx868s69pghygek3vrhxm69e7c6ysuf28qhv8kmj5wd059grxl82f8h5mtyzl87cvqj8ldv2e0las7tnsdej9ax</textarea>
+        <button type="button" class="button primary" id="support-copy">Copy Cardano address</button>
+        <p id="support-copy-status" class="support-status" role="status" aria-live="polite"></p>
+        <p class="support-note">Tips are optional. The demo is free to use.</p>
+      </div>
+      <figure class="support-qr"><img src="./assets/support-ada-qr.svg" alt="Scan this QR code for the Cardano mainnet support address" width="220" height="220" loading="lazy"><figcaption>NIGHT or ADA on Cardano mainnet</figcaption></figure>
+    </section>
+    <footer class="page-footer"><p>Midnight Ballot Lab · Public testnet client</p><div><a href="#support">Buy me a coffee</a><a href="./license.html" target="_blank" rel="noopener noreferrer">Noncommercial licence ↗<span class="sr-only"> (opens in a new tab)</span></a></div><p class="footer-note">For testing, not real elections. Noncommercial use only. GitHub Pages hosts this app. Preview provides shared network services; you provide the wallet, test DUST and local prover.</p></footer>
   </main><script type="module" src="./network-loader.mjs"></script>
+  <script type="module" src="./support.mjs"></script>
 </body>
 </html>

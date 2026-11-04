@@ -64,7 +64,7 @@ With the real generated circuit/key files and a loopback-bound proof server 8.1.
 
 ### Native cryptography in the browser
 
-`src/index.html`, `src/native.html` and `src/native-app.mjs` provide **Set up election**, **Vote / Cast a ballot**, **Reveal results** and **Verify election**. Configure 2–5 choice labels and 1–1,024 synthetic voters, select unused credentials privately, cast encrypted ballots and save QR receipts. Manual mode permits selecting any trustee pair. Scheduled local preview uses a 15–3,600-second real-clock window and automatically closes and reveals with two synthetic shares. All roles still share the browser session. The QR encoder formats receipt bytes; it supplies no encryption.
+`src/index.html` introduces the application and links to **Browser demo** (`native.html`) and **Public testnet** (`network.html`). `src/native.html` and `src/native-app.mjs` provide **Set up election**, **Vote / Cast a ballot**, **Reveal results** and **Verify election**. Configure 2–5 choice labels and 1–1,024 synthetic voters, select unused credentials privately, cast encrypted ballots and save QR receipts. Manual mode permits selecting any trustee pair. Scheduled local preview uses a 15–3,600-second real-clock window and automatically closes and reveals with two synthetic shares. All roles still share the browser session. The QR encoder formats receipt bytes; it supplies no encryption.
 
 After native compilation and emulator tests pass, run these commands from the repository root:
 
@@ -78,7 +78,7 @@ node scripts/test-native-browser.mjs
 node scripts/test-network-browser.mjs
 ```
 
-Serve `dist/` and open `index.html` or `native.html`. The native bundler includes the actual runtime, generated contract and WebAssembly assets; it never substitutes another curve implementation. Native assets stay on the same origin. WebAssembly compilation requires the native page's `wasm-unsafe-eval` CSP permission; JavaScript `unsafe-eval` is not enabled. The browser acceptance gate exercises all trustee pairs, actual WASM loading, decoded QR receipts, public exports/imports, scheduling, reset, root/subdirectory hosting and missing-prerequisite failure handling. Fresh results are recorded by revision in the execution report. Network-page browser checks are a separate stage in the current report.
+Serve `dist/` and open `index.html` to choose a mode, or open `native.html` directly for the browser demo. The native bundler includes the actual runtime, generated contract and WebAssembly assets; it never substitutes another curve implementation. Native assets stay on the same origin. WebAssembly compilation requires the native page's `wasm-unsafe-eval` CSP permission; JavaScript `unsafe-eval` is not enabled. The browser acceptance gate exercises landing-page navigation, all trustee pairs, actual WASM loading, decoded QR receipts, public exports/imports, scheduling, reset, root/subdirectory hosting and missing-prerequisite failure handling. Fresh results are recorded by revision in the execution report. Network-page browser checks are a separate stage in the current report.
 
 `native-build.json` enables the page only after successful bundling. Without that bundle, or if application initialization fails, the loader leaves the native controls disabled. The ordinary static build resets this manifest to disabled and removes old output. The GitHub Pages workflow requires native compilation, generated-runtime tests, both browser bundles and real browser acceptance. All native build gates are required.
 

@@ -136,6 +136,13 @@ try {
     assert.ok(bytes.subarray(0, 4).equals(Buffer.from([0, 97, 115, 109])), 'WASM asset magic is invalid');
     evidence.wasmAssets.push({ asset, sha256: hash(bytes), bytes: bytes.length });
   }
+  const networkManifest = await readJson(join(dist, 'network-build.json'));
+  assert.equal(networkManifest.enabled, true, 'The testnet landing destination requires a real network build');
+  assert.equal(networkManifest.bundle, 'network-bundle.mjs');
+  assert.equal(networkManifest.wasmAssets.length, 2);
+  evidence.networkBundleSha256 = hash(await readFile(join(dist, networkManifest.bundle)));
+  evidence.landingHtmlSha256 = hash(await readFile(join(dist, 'index.html')));
+  evidence.landingCssSha256 = hash(await readFile(join(dist, 'landing.css')));
 
   stage = 'browser-dependencies';
   const { chromium } = requireContracts('playwright');
@@ -147,6 +154,87 @@ try {
   evidence.chromium = browser.version();
   server = await staticServer();
   const origin = `http://127.0.0.1:${server.address().port}`;
+
+  for (const prefix of ['/', '/arbitrary-repository-name/']) {
+    stage = `landing:${prefix}:navigation`;
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const destinations = [];
+    try {
+      for (const destination of [
+        { demo: 'browser', file: 'native.html', availability: 'native-availability', assets: manifest.assets },
+        { demo: 'testnet', file: 'network.html', availability: 'network-availability', assets: networkManifest.wasmAssets },
+      ]) {
+        const page = await context.newPage(); page.setDefaultTimeout(120_000);
+        const requested = new Set(), loadedWasm = new Set();
+        let pageErrors = 0, consoleErrors = 0, sockets = 0;
+        page.on('pageerror', () => { pageErrors++; });
+        page.on('console', message => { if (message.type() === 'error') consoleErrors++; });
+        page.on('request', request => { requested.add(request.url()); });
+        page.on('websocket', () => { sockets++; });
+        page.on('response', response => {
+          if (response.ok() && new URL(response.url()).pathname.endsWith('.wasm')) loadedWasm.add(new URL(response.url()).pathname);
+        });
+        await page.goto(`${origin}${prefix}index.html`, { waitUntil: 'networkidle' });
+        assert.equal(await page.locator('#landing-title').count(), 1);
+        assert.equal(await page.locator('#demo-options a[data-demo]').count(), 2);
+        for (const [demo, file] of [['browser', 'native.html'], ['testnet', 'network.html']]) {
+          const card = page.locator(`a[data-demo="${demo}"]`);
+          assert.equal(await card.getAttribute('href'), `./${file}`);
+          assert.equal(await card.isVisible(), true);
+          assert.ok([null, '_self'].includes(await card.getAttribute('target')));
+        }
+        assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+        assert.equal(await page.locator('#native-availability, #network-availability').count(), 0);
+        assert.equal(loadedWasm.size, 0); assert.equal(sockets, 0);
+        for (const request of requested) {
+          const url = new URL(request);
+          assert.equal(url.origin, origin, 'Landing must not contact external services');
+          assert.doesNotMatch(url.pathname, /(?:native|network)-(?:bundle|loader|assets|build)|\.wasm$/,
+            'Choosing an experience must precede loading its cryptographic runtime');
+        }
+        const scripts = await page.locator('script[src]').evaluateAll(elements => elements.map(element => element.getAttribute('src')));
+        assert.deepEqual(scripts, ['./support.mjs'], 'Only the existing local support clipboard handler belongs on the landing page');
+        const font = await page.evaluate(async () => { await document.fonts.ready; return {
+          loaded: document.fonts.check('16px Outfit'), family: getComputedStyle(document.body).fontFamily }; });
+        assert.equal(font.loaded, true); assert.match(font.family, /Outfit/);
+        if (prefix === '/' && destination.demo === 'browser') {
+          for (const viewport of [1440, 390, 320]) {
+            await page.setViewportSize({ width: viewport, height: viewport === 1440 ? 1000 : 844 });
+            const layout = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
+              content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) }));
+            assert.equal(layout.viewport, viewport); assert.ok(layout.content <= viewport + 1);
+            await page.screenshot({ path: join(evidenceDir, `landing-empty-${viewport}.png`), fullPage: true, animations: 'disabled' });
+          }
+          await page.setViewportSize({ width: 1440, height: 1000 });
+        }
+        stage = `landing:${prefix}:${destination.demo}:actual-destination`;
+        await Promise.all([
+          page.waitForURL(`${origin}${prefix}${destination.file}`),
+          page.locator(`a[data-demo="${destination.demo}"]`).click(),
+        ]);
+        await page.waitForFunction(id => ['ready', 'error', 'unavailable'].includes(document.getElementById(id)?.dataset.state), destination.availability);
+        assert.equal(await page.locator(`#${destination.availability}`).getAttribute('data-state'), 'ready');
+        for (const asset of destination.assets) assert.ok(loadedWasm.has(`${prefix}${asset}`), 'Selected experience must load its actual same-origin WASM');
+        if (destination.demo === 'browser') {
+          assert.equal(await page.locator('#native-phase').textContent(), 'Not created');
+          assert.equal(await page.locator('#native-create').isDisabled(), false);
+        } else {
+          assert.equal(await page.locator('#network-id').inputValue(), 'preview');
+          assert.equal(await page.locator('#network-deploy').isDisabled(), true);
+          assert.equal(await page.locator('#network-events').textContent(), '');
+        }
+        for (const request of requested) assert.equal(new URL(request).origin, origin, 'Opening either experience must not contact a public service');
+        assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0); assert.equal(sockets, 0);
+        destinations.push({ demo: destination.demo, path: `${prefix}${destination.file}`, actualReady: true,
+          wasmLoaded: loadedWasm.size, walletConnected: false, publicRequests: 0 });
+        await page.close();
+      }
+      evidence.cases.push({ case: 'landing-navigation', prefix, passed: true, destinations,
+        runtimeLoadedBeforeChoice: false, walletConnected: false, publicRequests: 0,
+        ...(prefix === '/' ? { responsiveWidths: [1440, 390, 320], screenshotsWithEmptyStateOnly: true } : {}) });
+      console.log(JSON.stringify({ stage: `landing:${prefix}`, passed: true }));
+    } finally { await context.close(); }
+  }
 
   for (const { pair, prefix, entry, candidateCount, voterCount, selections, voterOrder, totals } of [
     { pair: '1,2', prefix: '/', entry: 'index.html', candidateCount: 3, voterCount: 5,
@@ -171,7 +259,10 @@ try {
         if (url.pathname.endsWith('.wasm') && response.ok()) loadedWasm.add(url.pathname);
       });
       await page.goto(`${origin}${prefix}${entry}`, { waitUntil: 'networkidle' });
-      assert.equal(await page.locator('#native-title').count(), 1, 'The main entry must expose the actual native experience');
+      if (entry === 'index.html') {
+        await Promise.all([page.waitForURL(`${origin}${prefix}native.html`), page.locator('a[data-demo="browser"]').click()]);
+      }
+      assert.equal(await page.locator('#native-title').count(), 1, 'The browser-demo destination must expose the actual native experience');
       await page.waitForFunction(() => ['ready', 'error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
       assert.equal(await page.locator('#native-availability').getAttribute('data-state'), 'ready', 'Native browser initialization must succeed');
       assert.match(await page.locator('#native-availability').textContent(), /no proofs.*no blockchain transactions/i);
@@ -337,7 +428,7 @@ try {
         const verifierPage = await verifierContext.newPage(); verifierPage.setDefaultTimeout(120_000);
         let verifierErrors = 0;
         verifierPage.on('pageerror', () => { verifierErrors++; });
-        await verifierPage.goto(`${origin}${prefix}index.html`, { waitUntil: 'networkidle' });
+        await verifierPage.goto(`${origin}${prefix}native.html`, { waitUntil: 'networkidle' });
         await verifierPage.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
         await verifierPage.locator('[data-native-nav="check"]').click();
         assert.equal(await verifierPage.locator('#native-phase').textContent(), 'Not created');
@@ -432,7 +523,7 @@ try {
     const throttling = await scheduledContext.newCDPSession(page);
     await throttling.send('Emulation.setCPUThrottlingRate', { rate: 12 });
     let pageErrors = 0; page.on('pageerror', () => { pageErrors++; });
-    await page.goto(`${origin}/arbitrary-repository-name/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/arbitrary-repository-name/native.html`, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
     assert.equal(await page.locator('#native-candidate-count').inputValue(), '3');
     assert.equal(await page.locator('#native-voter-count').inputValue(), '5');
@@ -479,7 +570,7 @@ try {
   const resumedContext = await browser.newContext({ acceptDownloads: true });
   try {
     const page = await resumedContext.newPage(); page.setDefaultTimeout(120_000);
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/native.html`, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
     await page.locator('#native-voter-count').fill('1');
     await page.locator('#native-candidate-count').selectOption('2');
@@ -525,7 +616,7 @@ try {
       } else {
         await context.route('**/native-assets/*.wasm', route => route.abort('failed'));
       }
-      await page.goto(`${origin}/arbitrary-repository-name/index.html`, { waitUntil: 'networkidle' });
+      await page.goto(`${origin}/arbitrary-repository-name/native.html`, { waitUntil: 'networkidle' });
       await page.waitForFunction(() => ['error', 'unavailable'].includes(document.getElementById('native-availability').dataset.state));
       assert.equal(await page.locator('#native-availability').getAttribute('data-state'), failure === 'disabled-build' ? 'unavailable' : 'error');
       assert.equal(await page.locator('[data-native-control]:enabled').count(), 0, 'Missing native prerequisites must disable every control');

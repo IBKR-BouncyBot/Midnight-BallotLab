@@ -1,0 +1,86 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { resolve, join, sep, extname } from 'node:path';
+const root = process.cwd(), dist = join(root, 'dist'), output = join(root, 'artifacts/front-page-layout');
+const require = createRequire(join(root, 'contracts/package.json'));
+const { chromium } = require('playwright');
+const hash = value => createHash('sha256').update(value).digest('hex');
+const types = { '.html':'text/html', '.css':'text/css', '.mjs':'text/javascript', '.json':'application/json', '.wasm':'application/wasm', '.svg':'image/svg+xml', '.woff2':'font/woff2' };
+const server = createServer(async (req,res) => {
+  try {
+    const path = new URL(req.url, 'http://localhost').pathname;
+    if (path === '/favicon.ico') return res.writeHead(204).end();
+    const file = resolve(dist, '.' + (path.endsWith('/') ? path + 'index.html' : path));
+    if (!file.startsWith(dist + sep)) return res.writeHead(403).end();
+    res.writeHead(200, {'Content-Type': types[extname(file)] || 'application/octet-stream'}).end(await readFile(file));
+  } catch { res.writeHead(404).end(); }
+});
+let browser;
+const report = { executedAt: new Date().toISOString(), scope:'local browser layout and support controls; explicitly labelled public-only layout samples', walletConnected:false, proofGeneration:false, networkSubmission:false, cases:[] };
+try {
+  await mkdir(output, { recursive: true });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  browser = await chromium.launch({ headless:true });
+  report.chromium = browser.version(); report.playwright = require('playwright/package.json').version;
+  for (const file of ['network.html','styles.css','overview.css','support.mjs']) report[file + 'Sha256'] = hash(await readFile(join(dist,file)));
+  const context = await browser.newContext({ permissions:['clipboard-read','clipboard-write'] });
+  const page = await context.newPage();
+  let errors = 0, external = 0;
+  page.on('pageerror', () => errors++);
+  page.on('console', msg => { if (msg.type() === 'error') errors++; });
+  page.on('request', req => { if (new URL(req.url()).origin !== origin) external++; });
+  await page.goto(origin + '/network.html', {waitUntil:'networkidle'});
+  await page.waitForFunction(() => document.getElementById('network-availability')?.dataset.state === 'ready');
+  const expected = /<textarea id="support-address"[^>]*>([^<]+)<\/textarea>/.exec(await readFile(join(dist,'native.html'),'utf8'))[1];
+  assert.equal(await page.locator('#support-address').inputValue(), expected);
+  assert.equal(await page.locator('#support-address').count(), 1);
+  assert.equal(await page.locator('#support-copy').count(), 1);
+  await page.locator('#support-copy').click();
+  await page.waitForFunction(() => document.getElementById('support-copy-status').textContent.startsWith('Address copied.'));
+  assert.equal(await page.evaluate(() => navigator.clipboard.readText()), expected);
+  assert.equal(await page.locator('#support img').evaluate(el => el.complete && el.naturalWidth > 0), true);
+  for (const width of [1440, 1100, 768, 390, 320]) {
+    await page.setViewportSize({width,height:1000});
+    const support = await page.locator('#support').boundingBox();
+    assert.ok(support.x >= 0 && support.x + support.width <= width + 1);
+    if ([1440,390,320].includes(width)) await page.locator('#support').screenshot({path:join(output,`testnet-support-${width}.png`)});
+  }
+  // This fixture exercises only layout. It does not claim a wallet connection,
+  // change application state, enable controls, or run/substitute cryptography.
+  await page.evaluate(() => {
+    document.getElementById('network-activity-heading').textContent = 'Election activity — layout sample';
+    document.querySelector('.record-intro').textContent = 'Layout sample only. No wallet connected or transaction submitted.';
+    document.getElementById('network-public-state').textContent = JSON.stringify({layoutSample:true, identifier:'a'.repeat(64), configuration:'b'.repeat(64), note:'Long public identifiers and progress messages must remain readable.'}, null, 2);
+    const log = document.getElementById('network-events');
+    for (let i=0; i<30; i++) {
+      const p = document.createElement('p');
+      p.textContent = `Layout sample ${i+1}: a public progress message with an identifier ${'c'.repeat(64)}. No transaction submitted.`;
+      log.append(p);
+    }
+  });
+  for (const width of [1920,1440,1100,768,390,320]) {
+    await page.setViewportSize({width,height:1000});
+    const metrics = await page.evaluate(() => {
+      const aside = document.querySelector('.record-panel'), log=document.getElementById('network-events'), state=document.getElementById('network-public-state');
+      const box = aside.getBoundingClientRect();
+      return { viewport:innerWidth, pageWidth:Math.max(document.body.scrollWidth,document.documentElement.scrollWidth), panelWidth:box.width, panelPosition:getComputedStyle(aside).position, logHeight:log.clientHeight, logScrollHeight:log.scrollHeight, logWidth:log.clientWidth, logScrollWidth:log.scrollWidth, stateWidth:state.clientWidth, stateScrollWidth:state.scrollWidth, eventCount:log.children.length, overflow:getComputedStyle(log).overflow, logMaxHeight:getComputedStyle(log).maxHeight };
+    });
+    assert.ok(metrics.pageWidth <= width+1); assert.equal(metrics.eventCount,30);
+    assert.equal(metrics.logMaxHeight,'none'); assert.equal(metrics.overflow,'visible');
+    assert.ok(metrics.logScrollWidth <= metrics.logWidth+1); assert.ok(metrics.logScrollHeight <= metrics.logHeight+1);
+    assert.ok(metrics.stateScrollWidth <= metrics.stateWidth+1); assert.equal(metrics.panelPosition,'static');
+    if (width===1440) assert.ok(metrics.panelWidth >= 400);
+    if ([1440,390].includes(width)) await page.locator('.record-panel').screenshot({path:join(output,`activity-layout-sample-${width}.png`)});
+    report.cases.push({width,passed:true,metrics});
+  }
+  assert.equal(errors,0); assert.equal(external,0);
+  report.supportAddressMatches=true; report.supportCopyPassed=true; report.supportQrLoaded=true;
+  report.browserErrors=errors; report.externalRequests=external; report.status='passed';
+  await context.close();
+} catch { report.status='failed'; process.exitCode=1; }
+finally { if(browser)await browser.close(); await new Promise(r=>server.close(r)); await writeFile(join(output,'layout.json'),JSON.stringify(report,null,2)+'\n'); }
+console.log(JSON.stringify({status:report.status,cases:report.cases.length,browserErrors:report.browserErrors,externalRequests:report.externalRequests}));
