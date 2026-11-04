@@ -1,5 +1,6 @@
 import { connectNativeBrowserProviders } from '../contracts/native/browser-providers.mjs';
 import { findNativeWallets, nativeNetworkErrorMessage } from '../contracts/native/browser-config.mjs';
+import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices } from '../contracts/native/public-testnet.mjs';
 import { createNativeSdkClient } from '../contracts/native/sdk-client.mjs';
 import { createDemoDealer, randomSecret32, requireBytes32, requireScalar } from '../contracts/native/adapter.mjs';
 import { projectNativePublicLedger } from '../contracts/native/record.mjs';
@@ -84,7 +85,13 @@ export async function initNetworkApplication() {
     $('network-save-receipt').disabled = busy || !latestReceipt;
     $('network-recover-receipt').disabled = busy || !client?.pendingBallotReceipt;
     $('network-disconnect').disabled = busy || !session;
+    $('network-connect').disabled = busy || Boolean(session);
     $('network-password').readOnly = Boolean(session);
+    // A connected client stays bound to one wallet/network. Do not let the
+    // displayed selection change while that session can still transact.
+    for (const id of ['network-id', 'network-wallet', 'network-refresh-wallets']) $(id).disabled = busy || Boolean(session);
+    for (const id of ['network-indexer', 'network-indexer-ws']) $(id).readOnly = Boolean(session) || $('network-id').value === 'preview';
+    $('network-check-services').disabled = busy || $('network-id').value !== 'preview';
   };
   const run = async operation => {
     if (busy) return;
@@ -125,6 +132,45 @@ export async function initNetworkApplication() {
       : duplicates ? 'More than one extension uses this wallet name. Check your installed extensions before choosing.'
         : 'Choose your wallet. This page cannot verify who published a browser extension.';
   };
+  const selectEnvironment = () => {
+    if (session || busy) return;
+    const network = $('network-id').value;
+    if (network === 'preview') {
+      $('network-indexer').value = PREVIEW_PUBLIC_SERVICES.indexerUri;
+      $('network-indexer-ws').value = PREVIEW_PUBLIC_SERVICES.indexerWsUri;
+      $('network-environment-note').textContent = 'Preview’s public indexer is selected automatically. No service API key is needed. Set Lace to Preview as well.';
+    } else if (network === 'undeployed') {
+      $('network-indexer').value = 'http://127.0.0.1:8088/api/v4/graphql';
+      $('network-indexer-ws').value = 'ws://127.0.0.1:8088/api/v4/graphql/ws';
+      $('network-environment-note').textContent = 'Local development needs your own running node, indexer and prover. Set Lace to the same local network.';
+    } else {
+      $('network-indexer').value = '';
+      $('network-indexer-ws').value = '';
+      $('network-environment-note').textContent = 'Preprod needs your own working service access, such as a Midnight Preprod Blockfrost project. Configure matching endpoints here and in Lace. Do not use the retired Midnight-hosted Preprod endpoints.';
+    }
+    $('network-service-settings').open = network !== 'preview';
+    $('network-service-status').textContent = network === 'preview'
+      ? 'Not checked yet. Checking services does not connect a wallet or submit a transaction.'
+      : 'The public-service check is available for the shared Preview setup.';
+    refreshControls();
+  };
+  const verifyPreviewServices = async () => {
+    $('network-service-status').textContent = 'Checking the public Preview node and indexer…';
+    try {
+      const result = await checkPreviewPublicServices();
+      $('network-service-status').textContent = `Preview’s node and HTTP indexer are reachable. Indexer block: ${result.blockHeight}. This checks service access only, not your wallet, prover or a transaction.`;
+      return result;
+    } catch {
+      $('network-service-status').textContent = 'Could not verify the public Preview node and indexer. Check your connection or try again later. No wallet connection or transaction was started by this check.';
+      throw new Error('Public Preview services unavailable');
+    }
+  };
+  $('network-id').addEventListener('change', selectEnvironment);
+  click('network-check-services', async () => {
+    if ($('network-id').value !== 'preview') throw new Error('Select public Preview');
+    await verifyPreviewServices();
+    status('Public Preview services are reachable. Connect a Preview wallet with test DUST and a local prover to continue.');
+  });
   document.querySelectorAll('input[name="network-choice"], input[name="network-pair"]').forEach(input => input.addEventListener('change', refreshControls));
   document.querySelectorAll('input[name="network-trustee"]').forEach(input => input.addEventListener('change', () => {
     $('network-share').value = ''; refreshControls();
@@ -135,17 +181,26 @@ export async function initNetworkApplication() {
     void run(async () => {
       const selected = wallets.find(item => item.id === $('network-wallet').value);
       if (!selected) throw new Error('Select a compatible wallet');
+      const configuration = $('network-id').value === 'preview' ? previewBrowserConfiguration()
+        : { networkId: $('network-id').value, indexerUri: $('network-indexer').value,
+          indexerWsUri: $('network-indexer-ws').value, compiledAssetsUrl: './native-contract' };
+      if (configuration.networkId === 'preview') await verifyPreviewServices();
       session?.close(); session = null; client = null; state = null; latestReceipt = null; manifest = null; dealer = null;
       resetSessionDisplay();
       // The SDK requests this password when it encrypts storage. It stays in a
       // masked input and is never copied into logs, exports, URLs or source.
-      session = await connectNativeBrowserProviders({ wallet: selected.wallet,
-        configuration: { networkId: $('network-id').value, indexerUri: $('network-indexer').value,
-          indexerWsUri: $('network-indexer-ws').value, compiledAssetsUrl: './native-contract' },
+      const connected = await connectNativeBrowserProviders({ wallet: selected.wallet,
+        configuration,
         passwordProvider: () => $('network-password').value,
         onStage: stage => { if (stages[stage]) event(stages[stage]); },
       });
-      client = createNativeSdkClient(session.providers, session);
+      try {
+        const connectedClient = createNativeSdkClient(connected.providers, connected);
+        session = connected; client = connectedClient;
+      } catch (error) {
+        connected.close();
+        throw error;
+      }
       status(`Connected to ${session.networkId}. Create or join a test election. No proof or transaction has been completed yet.`);
     });
   });
@@ -257,5 +312,5 @@ export async function initNetworkApplication() {
     await client.checkReceipt(decodeNetworkReceipt($('network-receipt-input').value.trim()));
     status('Your receipt matches the encrypted ballot and election settings returned by the indexer. Its transaction reference and blockchain inclusion have not been independently verified.');
   });
-  refreshWallets(); refreshControls();
+  selectEnvironment(); refreshWallets(); refreshControls();
 }

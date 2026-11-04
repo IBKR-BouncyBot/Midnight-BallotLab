@@ -1,0 +1,5 @@
+
+> midnight-ballot-lab-contract-source@0.6.1 build:browser:native
+> node ../scripts/build-native-browser.mjs
+
+{"built":"dist\\native-bundle.mjs","bytes":576015,"wasmAssets":1,"nativeBrowserExecution":"not-tested","proofExecution":"not-tested"}

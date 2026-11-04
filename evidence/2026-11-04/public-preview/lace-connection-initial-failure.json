@@ -1,0 +1,32 @@
+{
+  "schema": "midnight-ballot-lab/real-lace-preview-connection/v1",
+  "startedAt": "2026-11-04T19:49:42.954Z",
+  "status": "failed",
+  "networkId": "preview",
+  "origin": "fresh-local-http-test-server",
+  "walletCreated": true,
+  "walletConnected": false,
+  "publicNetwork": true,
+  "publicHostedOriginTested": false,
+  "walletFunded": false,
+  "proofGenerated": false,
+  "transactionSigned": false,
+  "transactionSubmitted": false,
+  "ledgerInclusionIndependentlyVerified": false,
+  "privateDataLogged": false,
+  "walletVersion": "2.5.0",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "5e3e993dc126ea09428abb7411b9571f7e1d3200deea20d50d2f94cb52524383",
+  "harnessSha256": "2a668c0e57833ae7642a59d089ce741e619cb9d50098ee6bf81d971a29d96848",
+  "networkBundleSha256": "32da2efea1ac76e819cf5c746a0cac2deb7d7ec6997c8ac736989514bf7c3549",
+  "playwright": "1.64.1",
+  "stage": "connect-actual-application",
+  "chromium": "156.0.8078.4",
+  "failedStage": "connect-actual-application",
+  "completedAt": "2026-11-04T19:50:06.256Z",
+  "errorCategory": "connection-check-failed",
+  "visibleNetworkControlIds": [
+    "option-list-item-network",
+    "settings-tab-btn"
+  ]
+}

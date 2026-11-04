@@ -15,6 +15,8 @@ const dist = join(root, 'dist');
 const evidenceDirectory = join(root, 'artifacts/network-browser');
 const requireContracts = createRequire(join(root, 'contracts/package.json'));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const previewIndexer = 'https://indexer.preview.midnight.network/api/v4/graphql';
+const previewWebSocket = 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
 const evidence = { executedAt: new Date().toISOString(), node: process.version,
   execution: 'real-sdk-and-wasm-browser-loading', walletConnected: false,
   proofGeneration: false, networkSubmission: false, independentChainVerification: false, cases: [] };
@@ -118,8 +120,69 @@ try {
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined', 'Acceptance profile must have no injected wallet');
       assert.match(await page.locator('#network-wallet-note').textContent(), /No compatible wallet detected/);
       assert.match(await page.locator('#network-availability').textContent(), /No proof or transaction has been created/);
-      assert.equal(await page.locator('#network-id').inputValue(), '', 'No network may be selected by default');
+      stage = `${prefix}:public-preview-default`;
+      assert.equal(await page.locator('#network-id').inputValue(), 'preview', 'The public Preview preset must be selected');
+      assert.deepEqual(await page.locator('#network-id option').evaluateAll(options => options.map(option => option.value)),
+        ['preview', 'undeployed', 'preprod']);
       assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
+      assert.equal(await page.locator('#network-indexer').inputValue(), previewIndexer);
+      assert.equal(await page.locator('#network-indexer-ws').inputValue(), previewWebSocket);
+      for (const id of ['network-indexer', 'network-indexer-ws']) {
+        assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), true, 'Shared Preview endpoints must remain pinned');
+      }
+      assert.equal(await page.locator('#network-service-settings').evaluate(details => details.open), false);
+      assert.equal(await page.locator('#network-check-services').isDisabled(), false);
+      assert.match(await page.locator('#network-environment-note').textContent(), /No service API key is needed/);
+      assert.match(await page.locator('#network-service-status').textContent(), /Not checked yet.*does not connect a wallet or submit a transaction/);
+      assert.match(await page.locator('.public-network-intro').textContent(), /do not need to run your own node or indexer/);
+      assert.match(await page.locator('.public-network-intro').textContent(), /local prover processes private data/);
+      for (const href of ['https://midnight-tmnight-preview.nethermind.dev/', 'https://docs.midnight.network/guides/run-proof-server',
+        './network-guide.html#wallet-compatibility', './network-guide.html#external-scheduled-development-operator', './license.html']) {
+        const link = page.locator(`a[href="${href}"]`);
+        assert.equal(await link.count(), 1);
+        assert.equal(await link.getAttribute('target'), '_blank');
+        assert.match(await link.getAttribute('rel'), /noopener/);
+        assert.equal(await link.getAttribute('download'), null);
+      }
+      stage = `${prefix}:required-password-and-service-fields`;
+      assert.equal(await page.locator('#network-password').evaluate(input => input.required && input.validity.valueMissing), true);
+      await page.locator('#network-connect').click();
+      assert.equal(await page.locator('#network-status').isVisible(), false, 'Required password validation must prevent a connection attempt');
+      await page.locator('#network-id').selectOption('undeployed');
+      assert.equal(await page.locator('#network-indexer').inputValue(), 'http://127.0.0.1:8088/api/v4/graphql');
+      assert.equal(await page.locator('#network-indexer-ws').inputValue(), 'ws://127.0.0.1:8088/api/v4/graphql/ws');
+      assert.equal(await page.locator('#network-service-settings').evaluate(details => details.open), true);
+      assert.equal(await page.locator('#network-check-services').isDisabled(), true);
+      assert.match(await page.locator('#network-environment-note').textContent(), /own running node, indexer and prover/);
+      for (const id of ['network-indexer', 'network-indexer-ws']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), false);
+      await page.locator('#network-indexer').fill('http://localhost:8088/api/v4/graphql');
+      await page.locator('#network-indexer-ws').fill('ws://localhost:8088/api/v4/graphql/ws');
+      assert.equal(await page.locator('#network-indexer').inputValue(), 'http://localhost:8088/api/v4/graphql');
+      await page.locator('#network-id').selectOption('preprod');
+      assert.equal(await page.locator('#network-check-services').isDisabled(), true);
+      assert.match(await page.locator('#network-environment-note').textContent(), /own working service access/);
+      assert.match(await page.locator('#network-environment-note').textContent(), /Do not use the retired/);
+      for (const id of ['network-indexer', 'network-indexer-ws']) {
+        assert.equal(await page.locator(`#${id}`).inputValue(), '', 'Preprod must not inherit another network’s endpoints');
+        assert.equal(await page.locator(`#${id}`).evaluate(input => !input.readOnly && input.required && input.validity.valueMissing), true);
+      }
+      // This is an inert password fixture, never a wallet seed or real credential.
+      await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
+      await page.locator('#network-indexer').fill('https://indexer.example.invalid/graphql');
+      await page.locator('#network-connect').click();
+      assert.equal(await page.locator('#network-status').isVisible(), false, 'A missing WebSocket service must prevent submission');
+      await page.locator('#network-indexer').fill('');
+      await page.locator('#network-indexer-ws').fill('wss://indexer.example.invalid/graphql/ws');
+      await page.locator('#network-connect').click();
+      assert.equal(await page.locator('#network-status').isVisible(), false, 'A missing HTTP service must prevent submission');
+      await page.locator('#network-password').fill('');
+      await page.locator('#network-id').selectOption('preview');
+      assert.equal(await page.locator('#network-indexer').inputValue(), previewIndexer);
+      assert.equal(await page.locator('#network-indexer-ws').inputValue(), previewWebSocket);
+      for (const id of ['network-indexer', 'network-indexer-ws']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), true);
+      assert.equal(await page.locator('#network-service-settings').evaluate(details => details.open), false);
+      assert.equal(await page.locator('#network-events').textContent(), '');
+      assert.ok([...requests].every(url => new URL(url).origin === origin), 'Changing presets must not contact services or wallets');
       for (const [fieldset, name] of [['network-selection', 'network-choice'], ['network-trustee', 'network-trustee'], ['network-pair', 'network-pair']]) {
         assert.equal(await page.locator(`#${fieldset}`).evaluate(element => element.tagName), 'FIELDSET');
         assert.equal(await page.locator(`#${fieldset} label.selection-card`).count(), name === 'network-choice' ? 5 : 3);
@@ -137,19 +200,19 @@ try {
         assert.equal(response.status(), 200); assert.notEqual(response.headers()['content-type'], 'text/html');
       }
       if (prefix === '/') await page.screenshot({ path: join(evidenceDirectory, 'network-ready-no-wallet.png'), fullPage: false });
-      await page.setViewportSize({ width: 390, height: 844 });
-      const width = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
-        content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) }));
-      assert.ok(width.content <= width.viewport + 1, 'Network UI must fit the mobile viewport');
+      for (const viewport of [390, 320]) {
+        await page.setViewportSize({ width: viewport, height: 844 });
+        const width = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
+          content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) }));
+        assert.equal(width.viewport, viewport);
+        assert.ok(width.content <= width.viewport + 1, 'Network UI must fit the mobile viewport');
+      }
       await page.setViewportSize({ width: 1365, height: 1000 });
 
       stage = `${prefix}:no-wallet-failure`;
-      await page.locator('#network-id').selectOption('preview');
-      await page.locator('#network-indexer').fill('https://indexer.example.invalid/graphql');
-      await page.locator('#network-indexer-ws').fill('wss://indexer.example.invalid/graphql/ws');
       // Synthetic storage-password fixture, never a wallet seed or real account.
       await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
-      await page.locator('#network-connect-form button[type="submit"]').click();
+      await page.locator('#network-connect').click();
       await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('could not finish'));
       await page.locator('#network-password').fill('');
       evidence.lastBrowserCounters = { path: prefix, pageErrors, consoleErrors, consoleCategories: [...consoleCategories],
@@ -166,7 +229,10 @@ try {
       assert.equal(consoleErrors, 0, 'Unexpected browser console errors');
       evidence.cases.push({ case: 'actual-sdk-load-and-no-wallet-failure', path: prefix, status: 'passed',
         wasmLoaded: wasmResponses.size, circuitAssetsServed: manifest.circuitAssets.length,
-        ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true, pageErrors, consoleErrors, remoteRequests: 0 });
+        ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true,
+        previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
+        helpLinksChecked: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
+        pageErrors, consoleErrors, remoteRequests: 0 });
     } finally { await context.close(); }
   }
 

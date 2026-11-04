@@ -40,7 +40,7 @@ Use only the public owner alias `IBKR-BouncyBot` in notices, documentation and G
 
 Use a development/test environment for actual proving/network integration until a production deployment is explicitly requested. Do not store wallet seeds or secrets in source, browser bundles, Actions artifacts or documentation. The demo dealer is centralized and all browser demo roles share one process; preserve these disclosures.
 
-Complete unblocked implementation and checks before requesting missing access details. The user selected `https://github.com/IBKR-BouncyBot/Midnight-BallotLab` and a fresh isolated local devnet with test funds. Actual deployment/transaction evidence and any remaining access requirement are recorded in `docs/CONTINUATION_RESULTS.md`. Do not treat a local-devnet address as a public-network deployment.
+Complete unblocked implementation and checks before requesting missing access details. The user selected `https://github.com/IBKR-BouncyBot/Midnight-BallotLab` and requested public Preview as the network page default. Use test funds only. The isolated local devnet remains available for development and CI; its accepted transactions are distinct from public Preview service and wallet-connection checks. Actual deployment/transaction evidence and any remaining access requirement are recorded in `docs/CONTINUATION_RESULTS.md`. Do not treat a local-devnet address as a public-network deployment.
 
 Completion requires real compiler/runtime/browser evidence, a truthful native UI, reviewed CI, and a successful deployment to the selected GitHub Pages target. If real network integration is still blocked, document the exact remaining service/access requirement and do not call the emulator an on-chain election.
 

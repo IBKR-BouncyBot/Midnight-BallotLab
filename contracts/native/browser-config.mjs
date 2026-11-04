@@ -4,6 +4,19 @@
 const DEVELOPMENT_NETWORKS = new Set(['undeployed', 'preview', 'preprod']);
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 
+function requireMatchingKnownNetwork(url, networkId) {
+  // Recognize official and Blockfrost service names without claiming that an
+  // arbitrary custom endpoint has been authenticated. Never include its URL
+  // in errors: a user's query string may contain an access token.
+  const host = url.hostname.toLowerCase().replace(/\.$/, '');
+  const official = host.match(/^(?:indexer|rpc)\.(preview|preprod|mainnet)\.midnight\.network$/);
+  const blockfrost = host.match(/^(?:rpc\.)?midnight-(preview|preprod|mainnet)\.blockfrost\.io$/);
+  const knownNetwork = official?.[1] ?? blockfrost?.[1];
+  if (knownNetwork && knownNetwork !== networkId) {
+    throw new TypeError('A known public service belongs to a different network; choose matching development endpoints');
+  }
+}
+
 export function requireDevelopmentNetwork(networkId) {
   if (!DEVELOPMENT_NETWORKS.has(networkId)) {
     throw new TypeError('Choose an explicit development network: undeployed, preview or preprod');
@@ -39,6 +52,8 @@ export function resolveNativeBrowserConfig({ networkId, indexerUri, indexerWsUri
   const page = serviceUrl(pageUrl, ['http:', 'https:'], 'Page URL');
   const indexer = serviceUrl(indexerUri, ['http:', 'https:'], 'Indexer URL');
   const websocket = serviceUrl(indexerWsUri, ['ws:', 'wss:'], 'Indexer WebSocket URL');
+  requireMatchingKnownNetwork(indexer, networkId);
+  requireMatchingKnownNetwork(websocket, networkId);
   if ((indexer.protocol === 'http:' && indexer.hostname === '[::1]')
     || (websocket.protocol === 'ws:' && websocket.hostname === '[::1]')) {
     throw new TypeError('Use localhost or 127.0.0.1 for insecure loopback indexer endpoints; browser CSP does not accept IPv6 host sources');
@@ -60,6 +75,13 @@ export function requireConnectedNetwork(status, configuration, networkId) {
   requireDevelopmentNetwork(networkId);
   if (status?.status !== 'connected' || status.networkId !== networkId || configuration?.networkId !== networkId) {
     throw new Error('Wallet connection or configuration does not match the selected development network');
+  }
+  for (const field of ['indexerUri', 'indexerWsUri', 'substrateNodeUri']) {
+    if (configuration[field] === undefined) continue;
+    let url;
+    try { url = new URL(configuration[field]); }
+    catch { throw new TypeError('The wallet reported an invalid service URL'); }
+    requireMatchingKnownNetwork(url, networkId);
   }
 }
 

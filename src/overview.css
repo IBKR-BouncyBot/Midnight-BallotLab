@@ -94,6 +94,18 @@ body { background: var(--black); }
 .result-fill { background: var(--blue); border-radius: 0; }
 .verification-result, .success-card { border-radius: 4px; }
 .page-footer { border-color: #333; font-size: 13px; }
+.public-network-intro { margin: 24px 0 28px; padding: 22px 24px; border: 1px solid #41415c; border-left: 3px solid #7777ff; background: #14141c; color: #d0d0d0; line-height: 1.65; }
+.public-network-intro p { margin: 0 0 14px; }
+.public-network-intro p:last-child { margin-bottom: 0; }
+.public-network-intro ol { margin: 0 0 16px; padding-left: 20px; }
+.public-network-intro li { padding-left: 5px; margin-bottom: 12px; }
+.public-network-intro a { color: #c1c1ff; text-decoration: underline; text-underline-offset: 3px; }
+.public-network-intro code { font-size: .85em; overflow-wrap: anywhere; }
+.public-network-check { margin: 20px 0 24px; }
+#network-service-settings { margin: 18px 0; padding: 18px 0; border-block: 1px solid #3a3a3a; }
+#network-service-settings summary { cursor: pointer; color: #d5d5ff; }
+#network-service-settings input { font-size: 13px; }
+#network-service-settings input[readonly] { color: #bdbdbd; }
 .support-panel { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 48px; align-items: center; margin-top: 56px; padding: 40px 0; border-top: 1px solid #333; scroll-margin-top: 24px; }
 .support-panel .eyebrow { margin: 0 0 12px; }
 .support-panel h2 { margin: 0 0 16px; font-size: clamp(30px, 4vw, 42px); font-weight: 400; letter-spacing: -1px; }

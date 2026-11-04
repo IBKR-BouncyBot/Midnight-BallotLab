@@ -1,0 +1,202 @@
+/** Disposable real Lace Preview connection only. No funding or transaction calls. */
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { createHash, randomBytes } from 'node:crypto';
+import { readFile, writeFile, mkdir, mkdtemp, access } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve, sep, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const outputRoot = dirname(fileURLToPath(import.meta.url));
+const args = process.argv.slice(2);
+const attempt = args[1] === '--attempt' && /^[a-z][a-z0-9-]{0,30}$/.test(args[2] || '') ? args[2] : null;
+const output = attempt ? join(outputRoot, attempt) : outputRoot;
+const official = join(root, 'artifacts/lace-wallet');
+const requireContracts = createRequire(join(root, 'contracts/package.json'));
+const { chromium } = requireContracts('playwright');
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const extensionId = 'gafhhkghbfjjkeiendhlofajokpaflmk';
+const report = {
+  schema: 'midnight-ballot-lab/real-lace-preview-connection/v1',
+  startedAt: new Date().toISOString(), status: 'preparing', networkId: 'preview',
+  origin: 'fresh-local-http-test-server', walletCreated: false, walletConnected: false,
+  publicNetwork: true, publicHostedOriginTested: false, walletFunded: false,
+  proofGenerated: false, transactionSigned: false, transactionSubmitted: false,
+  ledgerInclusionIndependentlyVerified: false, privateDataLogged: false,
+};
+let context, server, app, wallet, stage = 'prerequisites', walletPassword, appPassword, canSave = false;
+const delay = ms => new Promise(done => setTimeout(done, ms));
+const save = async () => { if (canSave) await writeFile(join(output, 'connection-report.json'), JSON.stringify(report, null, 2) + '\n'); };
+const setStage = async value => { stage = value; report.stage = value; await save(); process.stdout.write(JSON.stringify({ stage }) + '\n'); };
+async function poll(check, timeout = 90_000) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) { if (await check()) return; await delay(250); }
+  throw new Error('Bounded stage expired');
+}
+function safeUri(value, purpose) {
+  const uri = new URL(value);
+  assert.ok(!uri.username && !uri.password && !uri.search && !uri.hash, 'Expected credential-free service URI');
+  if (purpose === 'prover') {
+    assert.ok(['localhost', '127.0.0.1', '[::1]'].includes(uri.hostname) && uri.port === '6300', 'Expected local prover');
+  } else {
+    assert.ok(['https:', 'wss:'].includes(uri.protocol), 'Expected secure Preview service');
+    assert.ok(['indexer.preview.midnight.network', 'rpc.preview.midnight.network'].includes(uri.hostname)
+      || (uri.hostname === 'blockfrost.lw.iog.io' && uri.pathname.startsWith('/midnight-preview')),
+    'Expected known Preview endpoint');
+  }
+  return uri.href;
+}
+try {
+  assert.ok(args[0] === '--connection-only-preview' && (args.length === 1 || (args.length === 3 && attempt)), 'Explicit connection-only Preview mode required');
+  let exists = false; try { await access(join(output, 'connection-report.json')); exists = true; } catch { /* New evidence only. */ }
+  assert.ok(!exists, 'Existing connection evidence must not be overwritten');
+  await mkdir(output, { recursive: true }); canSave = true; await save();
+  const acquisition = JSON.parse(await readFile(join(official, 'acquisition.json'), 'utf8'));
+  assert.ok(acquisition.developerSignatureVerified === true && acquisition.webStorePublisherSignatureVerified === true, 'Official package verification required');
+  assert.ok(hash(await readFile(join(official, 'lace-official.zip'))) === acquisition.archiveSha256, 'Official archive integrity mismatch');
+  const shortRoot = await mkdtemp(join(tmpdir(), 'mbl-preview-'));
+  const extension = join(shortRoot, 'e');
+  await promisify(execFile)('python', ['-c',
+    'import sys,zipfile,pathlib; z=zipfile.ZipFile(sys.argv[1]); r=pathlib.Path(sys.argv[2]).resolve(); assert all((r/n).resolve().is_relative_to(r) for n in z.namelist()); z.extractall(r)',
+    join(official, 'lace-official.zip'), extension], { windowsHide: true });
+  const manifest = JSON.parse(await readFile(join(extension, 'manifest.json'), 'utf8'));
+  const computedId = createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32)
+    .replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
+  assert.ok(manifest.version === '2.5.0' && computedId === extensionId, 'Verified extension identity mismatch');
+  report.walletVersion = manifest.version; report.extensionId = extensionId;
+  report.extensionArchiveSha256 = acquisition.archiveSha256;
+  report.harnessSha256 = hash(await readFile(fileURLToPath(import.meta.url)));
+  const build = JSON.parse(await readFile(join(root, 'dist/network-build.json'), 'utf8'));
+  assert.ok(build.enabled === true && build.bundle === 'network-bundle.mjs', 'Real browser build required');
+  report.networkBundleSha256 = hash(await readFile(join(root, 'dist', build.bundle)));
+  report.playwright = requireContracts('playwright/package.json').version;
+  await setStage('start-genuine-extension');
+  context = await chromium.launchPersistentContext(join(shortRoot, 'p'), {
+    executablePath: join(root, '.browser-cache/chromium-1248/chrome-win64/chrome.exe'),
+    channel: 'chromium', headless: true, viewport: { width: 1280, height: 960 }, acceptDownloads: false,
+    args: ['--disable-extensions-except=' + extension, '--load-extension=' + extension,
+      '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1, EXCLUDE indexer.preview.midnight.network, EXCLUDE rpc.preview.midnight.network, EXCLUDE blockfrost.lw.iog.io'],
+  });
+  context.setDefaultTimeout(30_000); report.chromium = context.browser().version();
+  wallet = await context.newPage(); await wallet.goto('chrome-extension://' + extensionId + '/expo/index.html');
+  await wallet.getByTestId('onboarding-start-create-wallet-button').waitFor({ timeout: 60_000 });
+  await setStage('create-empty-disposable-wallet');
+  walletPassword = 'Temporary-' + randomBytes(24).toString('base64url') + '!9a';
+  appPassword = 'App-' + randomBytes(24).toString('base64url') + '!9a';
+  await wallet.getByTestId('onboarding-start-create-wallet-button').click();
+  await wallet.getByTestId('new-password-input-value').fill(walletPassword);
+  await wallet.getByTestId('confirm-password-input-value').fill(walletPassword);
+  await wallet.getByTestId('next-btn').click();
+  await wallet.getByTestId('onboarding-create-wallet-toggle-cardano').click(); await delay(250);
+  await wallet.getByTestId('onboarding-create-wallet-toggle-midnight').click(); await delay(250);
+  await wallet.getByTestId('onboarding-create-wallet-finish-button').click();
+  await wallet.getByTestId('settings-tab-btn').waitFor({ timeout: 60_000 });
+  report.walletCreated = true;
+  await setStage('select-preview-and-local-prover');
+  await wallet.getByTestId('settings-tab-btn').click();
+  await wallet.getByTestId('option-list-item-network').click();
+  await wallet.getByTestId('radio-button-testnet').click();
+  await wallet.getByTestId('radio-button-midnight-preview').click();
+  await wallet.getByTestId('network-selection-sheet-confirm-button').click();
+  await wallet.getByTestId('network-selection-sheet').waitFor({ state: 'hidden' });
+  await wallet.getByTestId('option-list-item-midnight').click();
+  await wallet.getByTestId('proof-server-local-host-radio').click();
+  await wallet.getByTestId('save-configuration-button').click();
+  await wallet.getByText('Confirm and save', { exact: true }).waitFor();
+  await wallet.getByTestId('save-configuration-button').click();
+  await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
+  const dist = join(root, 'dist');
+  server = createServer(async (request, response) => {
+    try {
+      if (!['GET', 'HEAD'].includes(request.method)) return response.writeHead(405).end();
+      const uri = new URL(request.url, 'http://127.0.0.1');
+      if (uri.pathname === '/favicon.ico') return response.writeHead(204).end();
+      const target = resolve(dist, '.' + decodeURIComponent(uri.pathname === '/' ? '/index.html' : uri.pathname));
+      if (!target.startsWith(dist + sep)) return response.writeHead(403).end();
+      const data = await readFile(target);
+      const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
+        '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+      response.writeHead(200, { 'Content-Type': types[extname(target)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+      response.end(request.method === 'HEAD' ? undefined : data);
+    } catch { response.writeHead(404).end(); }
+  });
+  await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
+  const origin = 'http://127.0.0.1:' + server.address().port;
+  app = await context.newPage(); await setStage('connect-actual-application');
+  await app.goto(origin + '/network.html');
+  await app.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+  assert.ok(await app.locator('#network-id').inputValue() === 'preview', 'Expected app Preview default');
+  await app.locator('#network-password').fill(appPassword);
+  await app.locator('#network-connect').click();
+  let authorize;
+  await poll(async () => {
+    const candidates = context.pages().filter(page => page.url().includes('#/midnight-authorize-dapp'));
+    assert.ok(candidates.length <= 1, 'Unexpected number of connection popups');
+    if (candidates[0] && await candidates[0].getByTestId('dapp-connector-primary-button').isVisible().catch(() => false)) { authorize = candidates[0]; return true; }
+    const value = await app.locator('#network-status').textContent();
+    if (value.includes('could not finish')) throw new Error('Application connection failed');
+    return false;
+  });
+  assert.ok((await authorize.getByTestId('dapp-info-url').textContent()).trim() === origin, 'Unexpected authorization origin');
+  await authorize.getByTestId('dropdown-button').click();
+  await authorize.getByTestId('dropdown-menu-item-0').click();
+  await authorize.getByTestId('dapp-connector-primary-button').click();
+  await app.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('Connected to preview.'), null, { timeout: 60_000 });
+  const metadata = await app.evaluate(async () => {
+    const wallet = Object.values(window.midnight || {}).find(item => item.rdns === 'io.lace.wallet');
+    if (!wallet) throw new Error('Wallet unavailable');
+    const api = await wallet.connect('preview');
+    const [config, connection] = await Promise.all([api.getConfiguration(), api.getConnectionStatus()]);
+    return { apiVersion: wallet.apiVersion, networkId: connection.networkId, status: connection.status,
+      configuration: { networkId: config.networkId, indexerUri: config.indexerUri, indexerWsUri: config.indexerWsUri,
+        substrateNodeUri: config.substrateNodeUri, proverServerUri: config.proverServerUri } };
+  });
+  assert.ok(metadata.apiVersion === '4.0.1' && metadata.status === 'connected' && metadata.networkId === 'preview'
+    && metadata.configuration.networkId === 'preview', 'Unexpected genuine wallet connection metadata');
+  report.apiVersion = metadata.apiVersion;
+  report.walletServices = Object.fromEntries(Object.entries(metadata.configuration).filter(([key]) => key !== 'networkId')
+    .map(([key, value]) => [key, safeUri(value, key === 'proverServerUri' ? 'prover' : 'network')]));
+  report.walletConnected = true; report.publicPreflightPassed = true;
+  await setStage('verify-session-controls-and-disconnect');
+  const controls = await app.evaluate(() => {
+    const get = id => document.getElementById(id);
+    return { sessionSelectorsLocked: ['network-id', 'network-wallet', 'network-refresh-wallets', 'network-connect'].every(id => get(id).disabled),
+      sessionFieldsLocked: ['network-password', 'network-indexer', 'network-indexer-ws'].every(id => get(id).readOnly),
+      contractActionsEnabled: !get('network-deploy').disabled && !get('network-join').disabled,
+      disconnectedActionEnabled: !get('network-disconnect').disabled,
+      ballotDisabledWithoutContract: get('network-cast').disabled };
+  });
+  assert.ok(Object.values(controls).every(value => value === true), 'Connected control boundaries failed');
+  report.connectedControls = controls;
+  await app.locator('#network-disconnect').click();
+  await app.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('Disconnected and cleared'));
+  const disconnected = await app.evaluate(() => {
+    const get = id => document.getElementById(id);
+    return { selectorsUnlocked: ['network-id', 'network-wallet', 'network-refresh-wallets', 'network-connect'].every(id => !get(id).disabled),
+      passwordCleared: get('network-password').value === '' && !get('network-password').readOnly,
+      contractActionsDisabled: get('network-deploy').disabled && get('network-join').disabled && get('network-cast').disabled,
+      disconnectDisabled: get('network-disconnect').disabled,
+      previewEndpointsRemainLocked: get('network-indexer').readOnly && get('network-indexer-ws').readOnly };
+  });
+  assert.ok(Object.values(disconnected).every(value => value === true), 'Disconnected control boundaries failed');
+  report.disconnectedControls = disconnected; report.localSessionDisconnected = true;
+  report.status = 'passed'; report.completedAt = new Date().toISOString();
+  await save(); process.stdout.write(JSON.stringify({ status: 'passed', networkId: 'preview', walletConnected: true, transactionSubmitted: false }) + '\n');
+} catch (error) {
+  report.status = 'failed'; report.failedStage = stage; report.completedAt = new Date().toISOString();
+  report.errorCategory = error?.name === 'TimeoutError' ? 'ui-timeout' : error?.code === 'EPERM' ? 'sandbox-launch-denied' : 'connection-check-failed';
+  if (wallet && !wallet.isClosed()) {
+    report.visibleNetworkControlIds = await wallet.locator('[data-testid]').evaluateAll(elements => elements
+      .filter(element => element.getClientRects().length > 0).map(element => element.getAttribute('data-testid'))
+      .filter(id => /^(?:radio-button-(?:testnet|midnight-[a-z]+)|network-selection-[a-z-]+|settings-tab-btn|option-list-item-network|midnight-settings-sheet-header)$/.test(id))).catch(() => []);
+  }
+  await save(); process.stdout.write(JSON.stringify({ status: 'failed', stage, category: report.errorCategory }) + '\n'); process.exitCode = 1;
+} finally {
+  walletPassword = undefined; appPassword = undefined;
+  await context?.close().catch(() => {});
+  if (server) await new Promise(done => server.close(done));
+}

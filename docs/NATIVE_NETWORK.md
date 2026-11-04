@@ -1,10 +1,43 @@
 # Native development network client
 
-`network.html` is a separate real Midnight.js client. `native.html` runs generated Compact circuits locally and does not generate proofs or send network transactions. The network page becomes available only when its actual bundle and generated assets are built. Loading the page does not connect a wallet.
+`network.html` is a separate real Midnight.js client, with public Preview selected by default. `native.html` runs generated Compact circuits locally and does not generate proofs or send network transactions. The network page becomes available only when its actual bundle and generated assets are built. Loading it does not connect a wallet or send a request to the public network.
 
 The [GitHub Pages network page](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) has commit-specific SDK/WASM loading evidence. A locally served copy also completed the real Lace browser-wallet election described below. Separately, the 0.6.1 hosted Node wallet acceptance workflow completed 17 confirmed transactions and 16 proof transactions, finalizing `[2,1,2,0,0]` at block 137 on its own fresh local development chain. [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) retains that Node run's precise address, transaction IDs, tested commit `fa94c3a19b4791441208ceae54a121faff2c588b` and run links. Wallet transactions from the hosted Pages origin remain untested.
 
 Version 0.6.1 includes sealed 2–5 candidate-count handling, five fixed ciphertext lanes and an external scheduled local-devnet operator. Its successful network run waited for actual indexed time after the sealed closing deadline, then submitted closing, trustee contributions 1 + 3 and finalization. The preceding 0.6.0 failure at its fifth ballot remains separately retained; it is not relabeled as passing. The local browser's scheduled preview and public JSON verifier are separate features; neither submits a network transaction or authenticates a network record.
+
+## Public Preview setup
+
+Preview uses shared public node and indexer services. You do not need an API key or a local node/indexer. The page fills in the official indexer URLs and keeps them read-only for Preview:
+
+| Service | Address |
+| --- | --- |
+| Node RPC, also used by the service check | `https://rpc.preview.midnight.network` |
+| Indexer HTTP | `https://indexer.preview.midnight.network/api/v4/graphql` |
+| Indexer WebSocket | `wss://indexer.preview.midnight.network/api/v4/graphql/ws` |
+
+These are the current [official Preview endpoints](https://docs.midnight.network/guides/networks-and-environments#environment-reference). The public services do not replace the local prover, which processes private proof inputs.
+
+Before connecting:
+
+1. Install or enable Midnight in Lace and select **Preview**. Use a Midnight DApp Connector API 4 wallet; a Cardano-only connection does not work here.
+2. Copy the Preview unshielded address (`mn_addr_preview…`) into the [Preview faucet](https://midnight-tmnight-preview.nethermind.dev/) and complete its CAPTCHA. The faucet supplies free test NIGHT and is rate limited.
+3. In Lace, select **Generate tDUST**, approve the registration and wait for usable DUST. Receiving test NIGHT alone does not start DUST generation. See the [official funding guide](https://docs.midnight.network/guides/acquire-tokens).
+4. Run **proof-server 8.1.3** locally and configure Lace to use `http://localhost:6300`. Keep it running while proving transactions. Follow the [proof-server guide](https://docs.midnight.network/guides/run-proof-server) and its pinned-version guidance.
+
+**Check public Preview services** sends read-only RPC and HTTP indexer queries after you click it. It checks the node's network name and a public block height; it does not connect a wallet, check DUST or generate a proof. Connecting a selected Preview wallet repeats those service checks before requesting wallet access. Wallet, network and service settings lock while connected so the form continues to describe the active session; disconnect before changing them.
+
+A separate [read-only service probe on 4 November 2026](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/services.json) returned `Midnight Preview`, node version `1.0.400-87c0fbdb`, and indexer block `1599810`. Its WebSocket check received a `graphql-transport-ws` connection acknowledgement without starting a subscription. This establishes service reachability at that time, not wallet synchronization, proof generation, accepted transactions or independent chain verification. The page's service-check button checks RPC/HTTP only.
+
+A later [real-browser service run](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/browser-services.json) passed six checks from a locally served app: no automatic public request on load, actual cross-origin RPC/HTTP queries, an actual public-block WebSocket subscription, and layouts at 1440, 390 and 320 pixels. Both the HTTP query and WebSocket subscription returned block `1599911`. This run did not connect a wallet or request a proof. Its subscription result is separate from the earlier command-line probe's acknowledgement-only result and from the page's RPC/HTTP check button.
+
+An [actual Lace 2.5.0 / DApp Connector API 4.0.1 connection to Preview](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/lace-connection.json) also passed in isolated Chromium 156.0.8078.4, using a fresh, unfunded test wallet and a local application origin. The application completed its public-service preflight, the wallet displayed and accepted its permission request, and all five connected-state checks and five disconnect checks passed. The test verified that selectors and service settings locked while connected, then checked cleanup and disabled contract actions after disconnect. It did not fund the wallet, contact the prover, generate a proof, sign or submit a transaction.
+
+In that connection, Lace reported its own Preview indexer at `https://blockfrost.lw.iog.io/midnight-preview/`, WebSocket at `wss://blockfrost.lw.iog.io/midnight-preview/ws`, node at `https://blockfrost.lw.iog.io/midnight-preview-rpc/`, and local prover configuration at `http://localhost:6300/`. These observed wallet settings differ from the application's official Midnight-domain indexer URLs; both configurations target Preview. A reported prover URL alone does not establish that a prover is running.
+
+Public Preview proving and accepted application transactions remain untested. Continuing requires the user's Lace Preview setup, faucet CAPTCHA, DUST registration and running local proof-server 8.1.3. The disposable connection-test wallet does not establish that the user's wallet is ready. No wallet connection from the hosted GitHub Pages origin has been tested. The completed nine-transaction Lace election below used a separate local development chain.
+
+Local development and Preprod remain advanced options. Local development requires your own node and indexer. Preprod leaves its endpoint fields empty and needs your own matching service access, normally a **Midnight Preprod Blockfrost project token** in the HTTP/WebSocket URLs and matching wallet configuration. It is not preconfigured or verified here. Use the [current Preprod configuration](https://docs.midnight.network/guides/networks-and-environments#environment-reference), not the retired Midnight-hosted endpoints, and keep tokens out of published source and logs. Mainnet remains blocked.
 
 ## Wallet compatibility
 
@@ -28,7 +61,7 @@ The environment used Lace 2.5.0, DApp Connector API 4.0.1, Node 24.18.0, Playwri
 
 ## Dependencies and APIs inspected
 
-The supplied compiler/runtime/SDK pins remain the supported ledger-8 combination in the official [compatibility matrix](https://docs.midnight.network/relnotes/support-matrix), checked on 3 November 2026: Compact 0.31.1, compact-runtime 0.16.0, onchain-runtime-v3 3.0.0 and Midnight.js 4.1.1. Do not substitute the newer ledger-9 compiler/runtime while using this SDK/network combination.
+The supplied compiler/runtime/SDK pins remain the supported ledger-8 combination for Preview and Preprod in the official [compatibility matrix](https://docs.midnight.network/relnotes/support-matrix), checked on 4 November 2026: Compact 0.31.1, compact-runtime 0.16.0, onchain-runtime-v3 3.0.0 and Midnight.js 4.1.1. Do not substitute the newer ledger-9 compiler/runtime while using this SDK/network combination.
 
 `contracts/native/browser-providers.mjs` uses the installed Midnight.js 4.1.1 implementations for wallet-delegated proving, fetched ZK assets, indexer data and encrypted private-state storage. Its wallet bridge uses DApp Connector API 4.0.1 transaction serialization. Export names and signatures were checked against the installed package declarations and the tagged SDK source. The [official browser guide](https://docs.midnight.network/guides/browser-dapp) describes this provider split.
 
@@ -38,9 +71,9 @@ For plain-HTTP/WS local indexers, use `localhost` or `127.0.0.1`. Chromium rejec
 
 ## Run the flow
 
-1. Build the real native contract and network browser bundle. Serve the frontend over HTTPS or loopback. `keys/` and `zkir/` must be available under `native-contract/` alongside `network.html`; the bootstrap preserves GitHub repository subdirectory paths.
-2. Open the page in a browser with a DApp Connector API 4 wallet. Select that wallet, an explicit development network and its matching HTTP/WebSocket indexer endpoints. No network is chosen by default. Mainnet is rejected by the application.
-3. Configure a trusted local prover in the wallet and supply a strong local storage password. The page validates the password before requesting wallet access. Wallet account, network and reported prover configuration are rechecked before proving, balancing and submission.
+1. Use the published network page, or build the real native contract and network browser bundle and serve them over HTTPS or loopback. `keys/` and `zkir/` must be available under `native-contract/` alongside `network.html`; the bootstrap preserves GitHub repository subdirectory paths.
+2. Complete the Preview wallet, faucet, DUST and local-prover setup above. Open the page and select your API-4 wallet. Preview and its public indexer addresses are already selected; other networks require the advanced settings. Mainnet is rejected by the application.
+3. Use **Check public Preview services**, then supply a strong local storage password and connect. The Preview connection path checks public services before requesting wallet access; the provider validates the password before wallet access. Wallet account, network and reported prover configuration are rechecked before proving, balancing and submission. The selected wallet and service settings remain locked until disconnect.
 4. Join using a separately authenticated contract address and expected configuration digest, or deploy a new synthetic test election with a future opening/closing schedule. New elections require a separate, proved `configureKeys` call before enrollment. A deployment transaction does not prove private key setup.
 5. Enroll the synthetic voter credential before opening, open after the real opening time, and cast with that same secret. The contract enforces membership, uniqueness and one-hot ciphertext construction. The client compares the indexed receipt against the ballot it constructed locally from the actual private inputs.
 6. Close after the real deadline, submit two registered trustee contributions and finalize using one supported pair. The contract operates on the full frozen aggregate. The page does not advance the network clock.
@@ -76,7 +109,7 @@ The recorded local network run passed on 3 November 2026, from 17:04:48 to 17:14
 
 A readiness result or a locally generated proof is not an accepted transaction. The runner requires `SucceedEntirely` from the configured indexer for every counted transaction and compares native receipts and final totals. This establishes accepted local development transactions under that confirmation source, without authenticating the indexer or independently verifying canonical chain inclusion. The evidence contains the contract address, configuration digest, public transaction identifiers, source hashes and exact dependency versions.
 
-The separate local Lace run above establishes actual browser-wallet connection and application transactions. The Node runner alone does not establish browser-wallet behavior. Hosted-origin wallet transactions, Preview/Preprod access and public-network transactions remain untested. Preprod service access can require a user-supplied Blockfrost project token; do not invent one or publish a private credential. No wallet seed belongs in this repository, a frontend bundle or CI.
+The separate local Lace election above establishes actual browser-wallet application transactions on that local chain. The Node runner alone does not establish browser-wallet behavior. Public Preview service queries, a public-block subscription and a real Lace connection have now been checked separately from a local application origin. Public Preview proving and accepted application transactions still await the funded-wallet setup described above. Hosted-origin wallet connection/transactions and Preprod service/wallet use remain untested. Public Preprod service access requires a matching Blockfrost project token or your own services; do not invent one or publish a private credential. No wallet seed belongs in this repository, a frontend bundle or CI.
 
 The application deliberately does not offer a public authenticated-proof-verification claim. A future independent verifier must authenticate deployment/initial state, circuit and verifier-key provenance, key configuration, accepted chain state and maintenance policy. The current public export alone cannot establish these facts or certify an election.
 

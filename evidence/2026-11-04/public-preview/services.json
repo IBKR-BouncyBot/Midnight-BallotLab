@@ -1,0 +1,70 @@
+{
+  "schema": "midnight-ballot-lab/public-service-readiness/v1",
+  "startedAt": "2026-11-04T19:42:59.941Z",
+  "completedAt": "2026-11-04T19:43:00.108Z",
+  "node": "v24.18.0",
+  "networkId": "preview",
+  "timeoutMs": 15000,
+  "documentation": "https://docs.midnight.network/guides/networks-and-environments",
+  "endpoints": {
+    "rpc": "https://rpc.preview.midnight.network",
+    "indexer": "https://indexer.preview.midnight.network/api/v4/graphql",
+    "websocket": "wss://indexer.preview.midnight.network/api/v4/graphql/ws"
+  },
+  "rpc": {
+    "system_chain": {
+      "status": "passed",
+      "httpStatus": 200,
+      "result": "Midnight Preview",
+      "elapsedMs": 146
+    },
+    "system_version": {
+      "status": "passed",
+      "httpStatus": 200,
+      "result": "1.0.400-87c0fbdb",
+      "elapsedMs": 132
+    },
+    "system_health": {
+      "status": "passed",
+      "httpStatus": 200,
+      "result": {
+        "isSyncing": false,
+        "shouldHavePeers": true,
+        "peers": 12
+      },
+      "elapsedMs": 130
+    }
+  },
+  "indexer": {
+    "blockQuery": {
+      "status": "passed",
+      "httpStatus": 200,
+      "blockHeight": "1599810",
+      "elapsedMs": 135
+    },
+    "graphqlTransportWsHandshake": {
+      "status": "passed",
+      "connectionAcknowledged": true,
+      "opened": true,
+      "connectionInitSent": true,
+      "negotiatedProtocol": "graphql-transport-ws",
+      "subscriptionStarted": false,
+      "elapsedMs": 151
+    }
+  },
+  "status": "passed",
+  "credentialsUsed": false,
+  "walletConnected": false,
+  "subscriptionStarted": false,
+  "proofGenerated": false,
+  "transactionSubmitted": false,
+  "networkTransactionAccepted": false,
+  "chainInclusionIndependentlyVerified": false,
+  "hostedApplicationOriginRequested": false,
+  "limitations": [
+    "Public RPC/indexer readiness and WebSocket connection acknowledgement only.",
+    "No subscription, wallet sync, proof generation or transaction acceptance was exercised.",
+    "Provider responses are not independent verification of canonical chain state."
+  ],
+  "probeScriptSha256": "781d69d3d13c4a9951ea06ab820924139e2e29f23129b4c4c7f442950d52ba6d"
+}

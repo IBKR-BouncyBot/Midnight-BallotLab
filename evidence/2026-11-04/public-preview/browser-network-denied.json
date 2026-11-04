@@ -1,0 +1,65 @@
+{
+  "executedAt": "2026-11-04T19:51:27.592Z",
+  "execution": "actual-public-preview-browser-service-check",
+  "walletConnected": false,
+  "localProverChecked": false,
+  "proofGenerated": false,
+  "transactionSubmitted": false,
+  "publicTransactionAccepted": false,
+  "independentChainVerification": false,
+  "hostedOriginVisited": false,
+  "responseMocking": false,
+  "services": {
+    "node": "https://rpc.preview.midnight.network/",
+    "indexer": "https://indexer.preview.midnight.network/api/v4/graphql",
+    "websocket": "wss://indexer.preview.midnight.network/api/v4/graphql/ws"
+  },
+  "screenshots": [],
+  "requests": [
+    {
+      "endpoint": "https://rpc.preview.midnight.network/",
+      "method": "POST"
+    },
+    {
+      "endpoint": "https://indexer.preview.midnight.network/api/v4/graphql",
+      "method": "POST"
+    }
+  ],
+  "responses": [],
+  "cases": [
+    {
+      "case": "no-automatic-service-or-wallet-request",
+      "status": "passed"
+    }
+  ],
+  "transportFailures": [
+    {
+      "endpoint": "https://rpc.preview.midnight.network/",
+      "category": "net::ERR_NETWORK_ACCESS_DENIED"
+    },
+    {
+      "endpoint": "https://indexer.preview.midnight.network/api/v4/graphql",
+      "category": "net::ERR_NETWORK_ACCESS_DENIED"
+    }
+  ],
+  "transportResponses": [],
+  "consoleCategories": [
+    "resource-fetch",
+    "resource-fetch"
+  ],
+  "bundleSha256": "32da2efea1ac76e819cf5c746a0cac2deb7d7ec6997c8ac736989514bf7c3549",
+  "sdk": "4.1.1",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "serviceReachable": false,
+  "status": "failed",
+  "failedStage": "actual-preview-service-button",
+  "failureCategory": "AssertionError",
+  "browserCounters": {
+    "pageErrors": 0,
+    "consoleErrors": 2,
+    "unexpectedRequests": 0
+  }
+}
