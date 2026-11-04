@@ -3,3 +3,5 @@
 *.wasm -text
 *.zip -text
 *.woff2 -text
+# Preserve executed test-harness snapshots byte for byte.
+evidence/**/*.mjs.txt -text
