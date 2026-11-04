@@ -137,6 +137,24 @@ try {
       assert.match(await page.locator('#network-service-status').textContent(), /Not checked yet.*does not connect a wallet or submit a transaction/);
       assert.match(await page.locator('.public-network-intro').first().textContent(), /do not need to run your own node or indexer/);
       assert.match(await page.locator('.public-network-intro').first().textContent(), /local prover processes private data/);
+      const laceSetup = page.locator('details.public-network-intro');
+      assert.equal(await laceSetup.locator('summary').textContent(), 'How to set up Lace');
+      await laceSetup.locator('summary').click();
+      const laceSetupText = await laceSetup.textContent();
+      for (const instruction of ['Generate tDUST', 'Review transaction', 'Confirm', 'Receiving test NIGHT alone does not start DUST generation']) {
+        assert.ok(laceSetupText.includes(instruction), 'Lace setup instructions must explain each DUST registration step');
+      }
+      if (prefix === '/') {
+        for (const viewport of [1365, 390, 320]) {
+          await page.setViewportSize({ width: viewport, height: 1000 });
+          const height = await laceSetup.evaluate(element => element.getBoundingClientRect().height);
+          await page.setViewportSize({ width: viewport, height: Math.ceil(height) + 40 });
+          await page.mouse.move(0, 0);
+          await laceSetup.screenshot({ path: join(evidenceDirectory, `lace-setup-guide-${viewport}.png`), animations: 'disabled' });
+        }
+        await page.setViewportSize({ width: 1365, height: 1000 });
+      }
+      await laceSetup.locator('summary').click();
       for (const href of ['https://midnight-tmnight-preview.nethermind.dev/', 'https://docs.midnight.network/guides/run-proof-server',
         './network-guide.html#select-preview-in-lace', './network-guide.html#wallet-compatibility',
         './network-guide.html#external-scheduled-development-operator', './license.html']) {
@@ -247,8 +265,203 @@ try {
         wasmLoaded: wasmResponses.size, circuitAssetsServed: manifest.circuitAssets.length,
         ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true,
         previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
-        helpLinksChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
+        helpLinksChecked: true, laceSetupGuideChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
         pageErrors, consoleErrors, remoteRequests: 0 });
+    } finally { await context.close(); }
+  }
+
+  stage = 'election-setup-chooser';
+  {
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage(); page.setDefaultTimeout(30_000);
+      let pageErrors = 0, consoleErrors = 0, externalRequests = 0;
+      page.on('pageerror', () => { pageErrors++; });
+      page.on('console', message => { if (message.type() === 'error') consoleErrors++; });
+      page.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests++; });
+      await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+      const create = page.locator('#network-mode-create'), joinButton = page.locator('#network-mode-join');
+      assert.equal(await create.getAttribute('aria-pressed'), 'true');
+      assert.equal(await joinButton.getAttribute('aria-pressed'), 'false');
+      assert.equal(await create.getAttribute('aria-controls'), 'network-create-panel');
+      assert.equal(await joinButton.getAttribute('aria-controls'), 'network-join-panel');
+      assert.equal(await page.locator('#network-create-panel').isVisible(), true);
+      assert.equal(await page.locator('#network-join-panel').isVisible(), false);
+      assert.equal(await page.locator('#network-admin').isVisible(), true);
+      for (const id of ['network-address', 'network-digest']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), true);
+      await page.locator('#network-title').fill('Chooser browser check');
+      await page.locator('#network-choices').fill('Test A\nTest B');
+      await joinButton.focus(); await page.keyboard.press('Enter');
+      assert.equal(await create.getAttribute('aria-pressed'), 'false');
+      assert.equal(await joinButton.getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('#network-create-panel').isVisible(), false);
+      assert.equal(await page.locator('#network-join-panel').isVisible(), true);
+      assert.equal(await page.locator('#network-admin').isVisible(), true);
+      for (const id of ['network-address', 'network-digest']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), false);
+      // Public, inert join-field fixtures; no contract operation is requested.
+      await page.locator('#network-address').fill('d'.repeat(64));
+      await page.locator('#network-digest').fill('e'.repeat(64));
+      await create.focus(); await page.keyboard.press('Space');
+      assert.equal(await create.getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('#network-create-panel').isVisible(), true);
+      assert.equal(await page.locator('#network-join-panel').isVisible(), false);
+      assert.equal(await page.locator('#network-title').inputValue(), 'Chooser browser check');
+      assert.equal(await page.locator('#network-choices').inputValue(), 'Test A\nTest B');
+      await joinButton.click();
+      assert.equal(await page.locator('#network-address').inputValue(), 'd'.repeat(64));
+      assert.equal(await page.locator('#network-digest').inputValue(), 'e'.repeat(64));
+      for (const viewport of [390, 320]) {
+        await page.setViewportSize({ width: viewport, height: 844 });
+        assert.equal(await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= document.documentElement.clientWidth + 1), true);
+      }
+      for (const id of ['network-join', 'network-deploy']) assert.equal(await page.locator(`#${id}`).isDisabled(), true);
+      assert.equal(await page.locator('#network-events').textContent(), '');
+      assert.equal(externalRequests, 0); assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0);
+      evidence.cases.push({ case: 'election-setup-chooser', status: 'passed', defaultMode: 'create',
+        keyboardActivation: ['Enter', 'Space'], panelVisibility: true, publicFieldPreservation: true,
+        administratorControlsShared: true, actionsDisabledWithoutWallet: true, mobileWidths: [390, 320],
+        connectedModeLocksTested: false, externalRequests, pageErrors, consoleErrors });
+    } finally { await context.close(); }
+  }
+
+  stage = 'private-key-file-utilities';
+  {
+    // This isolated case uses only newly generated synthetic credentials.
+    // Never screenshot a page containing a key or retain download bodies in evidence.
+    const context = await browser.newContext({ acceptDownloads: true });
+    try {
+      const page = await context.newPage(); page.setDefaultTimeout(30_000);
+      let pageErrors = 0, consoleErrors = 0, externalRequests = 0;
+      page.on('pageerror', () => { pageErrors++; });
+      page.on('console', message => { if (message.type() === 'error') consoleErrors++; });
+      page.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests++; });
+      await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+      const roleChecks = [];
+      for (const role of ['admin', 'voter']) {
+        stage = `private-key-${role}:generate-and-reveal`;
+        const input = page.locator(`#network-${role}`), toggle = page.locator(`#network-show-${role}`);
+        const fileInput = page.locator(`#network-import-${role}`), keyStatus = page.locator(`#network-${role}-key-status`);
+        assert.equal(await input.getAttribute('type'), 'password');
+        await page.locator(`#network-generate-${role}`).click();
+        const key = await input.inputValue();
+        assert.match(key, /^[0-9a-f]{64}$/); assert.notEqual(key, '0'.repeat(64));
+        assert.equal(await input.getAttribute('type'), 'text', 'Newly generated credential should be visible to its user');
+        assert.equal(await toggle.getAttribute('aria-controls'), `network-${role}`);
+        assert.equal(await toggle.getAttribute('aria-pressed'), 'true');
+        await toggle.click(); assert.equal(await input.getAttribute('type'), 'password');
+        assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
+        await toggle.click(); assert.equal(await input.getAttribute('type'), 'text');
+        await toggle.click(); assert.equal(await input.getAttribute('type'), 'password');
+
+        stage = `private-key-${role}:download-round-trip`;
+        const downloaded = page.waitForEvent('download');
+        await page.locator(`#network-download-${role}`).click();
+        const download = await downloaded;
+        assert.equal(download.suggestedFilename(), `midnight-${role === 'admin' ? 'administrator' : 'voter'}-key.private.txt`);
+        let privateText;
+        try {
+          const stream = await download.createReadStream(); assert.ok(stream);
+          const chunks = []; let length = 0;
+          for await (const chunk of stream) {
+            length += chunk.length; assert.ok(length <= 256, 'Private key file must remain bounded'); chunks.push(chunk);
+          }
+          privateText = Buffer.concat(chunks).toString('utf8');
+          assert.equal(privateText, key + '\n', 'Private file contains only the key and one newline');
+        } finally { await download.delete(); }
+        await input.fill('');
+        await fileInput.setInputFiles({ name: 'synthetic-key.txt', mimeType: 'text/plain', buffer: Buffer.from(privateText, 'utf8') });
+        await page.waitForFunction(({ id, expected }) => document.getElementById(id).value === expected,
+          { id: `network-${role}`, expected: key });
+        assert.equal(await input.getAttribute('type'), 'password', 'Restoring a key must mask it');
+        assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
+        privateText = undefined;
+        if (role === 'admin') {
+          await page.locator('#network-mode-join').click();
+          assert.equal(await input.isVisible(), true); assert.equal(await input.inputValue(), key);
+          await page.locator('#network-mode-create').click();
+          assert.equal(await input.isVisible(), true); assert.equal(await input.inputValue(), key);
+          assert.equal(await input.getAttribute('type'), 'password');
+        }
+        for (const viewport of [390, 320]) {
+          await page.setViewportSize({ width: viewport, height: 844 });
+          const fits = await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= document.documentElement.clientWidth + 1);
+          assert.equal(fits, true, 'Private key controls must fit the mobile viewport');
+        }
+        await page.setViewportSize({ width: 1365, height: 1000 });
+
+        stage = `private-key-${role}:invalid-file-preserves-current-key`;
+        const invalidInputs = [
+          ['not-hex', Buffer.from('not-a-private-key')], ['zero-key', Buffer.from('0'.repeat(64))],
+          ['short-key', Buffer.from('a'.repeat(63))], ['long-key', Buffer.from('a'.repeat(65))],
+          ['oversize', Buffer.from('a'.repeat(257))], ['invalid-utf8', Buffer.from([0xff, 0xfe, 0xff])],
+          ['structured-json', Buffer.from(JSON.stringify({ key }))],
+          ['wrong-extension', Buffer.from(key), 'withheld-diagnostic-marker.json'],
+        ];
+        for (const [invalidKind, buffer, filename = 'withheld-diagnostic-marker.txt'] of invalidInputs) {
+          stage = `private-key-${role}:reject-${invalidKind}`;
+          // Clear the native file-input selection between attempts. The key
+          // field remains untouched, so rejection must preserve its real value.
+          await fileInput.setInputFiles([]);
+          await fileInput.setInputFiles({ name: filename, mimeType: 'text/plain', buffer });
+          await page.waitForFunction(id => document.getElementById(id).value === '', `network-import-${role}`);
+          assert.match(await keyStatus.textContent(), /^Could not load this key\./);
+          assert.equal(await input.inputValue(), key);
+          assert.equal(await input.getAttribute('type'), 'password');
+          const message = await keyStatus.textContent();
+          assert.ok(!message.includes(key) && !message.includes('withheld-diagnostic-marker'));
+        }
+
+        stage = `private-key-${role}:public-output-privacy`;
+        assert.equal(await page.locator('#network-events').textContent(), '');
+        assert.ok(!(await page.locator('body').innerText()).includes(key), 'Secret must not appear in public page text');
+        assert.ok(!(await page.locator('#network-public-state').textContent()).includes(key));
+        assert.ok(!(await page.locator('#network-receipt-code').textContent()).includes(key));
+        assert.ok(!page.url().includes(key));
+        await page.locator(`#network-generate-${role}`).click();
+        const replacement = await input.inputValue();
+        assert.match(replacement, /^[0-9a-f]{64}$/); assert.notEqual(replacement, key);
+        await toggle.click(); await input.fill('');
+        await fileInput.setInputFiles([]);
+        roleChecks.push({ role, generated: true, revealAndHide: true, privateDownloadRoundTrip: true,
+          rejectedFiles: invalidInputs.length, invalidImportPreservesKey: true, maskedAfterRestore: true,
+          ...(role === 'admin' ? { setupModePreservesKey: true } : {}) });
+      }
+      assert.equal(externalRequests, 0); assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0);
+      assert.equal(await page.locator('#network-export').isDisabled(), true);
+      assert.equal(await page.locator('#network-save-receipt').isDisabled(), true);
+      // Reload creates a fresh application with no private field values before
+      // producing layout evidence. Every private input is checked empty first.
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) {
+        assert.equal(await page.locator(`#${id}`).inputValue(), '');
+      }
+      for (const viewport of [1365, 390, 320]) {
+        await page.setViewportSize({ width: viewport, height: 1000 });
+        for (const heading of ['contract-heading', 'vote-heading']) {
+          const panel = page.locator(`section[aria-labelledby="${heading}"]`);
+          const height = await panel.evaluate(element => element.getBoundingClientRect().height);
+          await page.setViewportSize({ width: viewport, height: Math.ceil(height) + 40 });
+          await page.mouse.move(0, 0);
+          await panel.screenshot({ path: join(evidenceDirectory, `private-controls-empty-${heading}-${viewport}.png`), animations: 'disabled' });
+          if (heading === 'contract-heading') {
+            await page.locator('#network-mode-join').click();
+            const joinHeight = await panel.evaluate(element => element.getBoundingClientRect().height);
+            await page.setViewportSize({ width: viewport, height: Math.ceil(joinHeight) + 40 });
+            await page.mouse.move(0, 0);
+            await panel.screenshot({ path: join(evidenceDirectory, `private-controls-empty-join-${viewport}.png`), animations: 'disabled' });
+            await page.locator('#network-mode-create').click();
+          }
+        }
+      }
+      evidence.cases.push({ case: 'private-key-file-utilities', status: 'passed', roles: roleChecks,
+        generatedKeysRetained: false, downloadBodiesRetained: false, screenshotsOnlyAfterReloadWithEmptyPrivateInputs: true,
+        mobileWidths: [390, 320],
+        publicExportExecutionTested: false, externalRequests, pageErrors, consoleErrors });
     } finally { await context.close(); }
   }
 

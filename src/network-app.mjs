@@ -7,6 +7,7 @@ import { projectNativePublicLedger } from '../contracts/native/record.mjs';
 import * as Native from '../contracts/managed/native-election/contract/index.js';
 import { encodeNetworkReceipt, decodeNetworkReceipt } from './network-receipt.mjs';
 import { qrSvg } from './qr.mjs';
+import { normalizePrivateKey, privateKeyText, readPrivateKeyFile } from './private-key.mjs';
 
 const hex = bytes => [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 const bytes = value => {
@@ -46,8 +47,19 @@ export async function initNetworkApplication() {
   let wallets = [], session = null, client = null, state = null, busy = false;
   let dealer = null, latestReceipt = null, manifest = null;
   let connectionFeedback = false;
+  let setupMode = 'create';
   const selectedValue = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? '';
   const clearSelection = name => document.querySelectorAll(`input[name="${name}"]`).forEach(input => { input.checked = false; });
+  const keyRoles = ['admin', 'voter'];
+  const keyName = role => role === 'admin' ? 'Administrator' : 'Voter';
+  const setKeyVisibility = (role, visible) => {
+    $(`network-${role}`).type = visible ? 'text' : 'password';
+    $(`network-show-${role}`).textContent = visible ? 'Hide key' : 'Show key';
+    $(`network-show-${role}`).setAttribute('aria-pressed', String(visible));
+  };
+  const hasValidKey = role => {
+    try { normalizePrivateKey($(`network-${role}`).value); return true; } catch { return false; }
+  };
   const resetSessionDisplay = () => {
     ['network-choice', 'network-trustee', 'network-pair'].forEach(clearSelection);
     $('network-share').value = '';
@@ -96,6 +108,30 @@ export async function initNetworkApplication() {
     for (const id of ['network-id', 'network-wallet', 'network-refresh-wallets']) $(id).disabled = busy || Boolean(session);
     for (const id of ['network-indexer', 'network-indexer-ws']) $(id).readOnly = Boolean(session) || $('network-id').value === 'preview';
     $('network-check-services').disabled = busy || $('network-id').value !== 'preview';
+    for (const role of keyRoles) {
+      $(`network-show-${role}`).disabled = busy || !$(`network-${role}`).value;
+      $(`network-download-${role}`).disabled = busy || !hasValidKey(role);
+    }
+    for (const mode of ['create', 'join']) {
+      const button = $(`network-mode-${mode}`);
+      button.disabled = busy || Boolean(client?.contractAddress);
+      button.setAttribute('aria-pressed', String(setupMode === mode));
+      button.classList.toggle('primary', setupMode === mode);
+      button.classList.toggle('secondary', setupMode !== mode);
+    }
+    $('network-create-panel').hidden = setupMode !== 'create';
+    $('network-join-panel').hidden = setupMode !== 'join' && !client?.contractAddress;
+    $('network-join').hidden = setupMode !== 'join';
+    $('network-join').disabled = busy || !client || Boolean(client.contractAddress) || setupMode !== 'join';
+    $('network-deploy').disabled = busy || !client || Boolean(client.contractAddress) || setupMode !== 'create';
+    for (const id of ['network-address', 'network-digest']) $(id).readOnly = setupMode !== 'join' || Boolean(client?.contractAddress);
+    $('network-setup-note').textContent = client?.contractAddress
+      ? 'This session is connected to an election. Disconnect before creating or joining another election.'
+      : setupMode === 'create' ? 'Create a new test election with your own choices and voting schedule.'
+        : 'Join an existing election using its contract address and fingerprint. You do not need to create new election keys.';
+    $('network-identity-note').textContent = client?.contractAddress
+      ? 'Keep this address and fingerprint with your private key backups. The fingerprint appears after trustee keys are registered. These details identify the election; they do not independently verify its history.'
+      : 'Get the contract address and fingerprint from a source you trust. The app checks that the contract’s keys and settings match, but cannot prove that its initial setup or history was honest.';
   };
   const run = async (operation, { connection = false } = {}) => {
     if (busy) return;
@@ -119,7 +155,7 @@ export async function initNetworkApplication() {
     if (!Number.isInteger(candidateCount) || candidateCount < 2 || candidateCount > 5) throw new Error('Unsupported candidate count');
     for (let index = 0; index < 5; index++) $(`network-choice-${index}`).closest('label').hidden = index >= candidateCount;
     $('network-address').value = client.contractAddress;
-    if (client.configurationDigest) $('network-digest').value = hex(client.configurationDigest);
+    $('network-digest').value = client.configurationDigest ? hex(client.configurationDigest) : '';
     $('network-public-state').textContent = JSON.stringify({ network: session.networkId,
       contractAddress: client.contractAddress, keysConfigured: state.keysConfigured,
       configurationDigest: hex(state.configurationDigest), candidateCount, phase: Number(state.phase), accepted: Number(state.accepted),
@@ -182,6 +218,10 @@ export async function initNetworkApplication() {
     $('network-share').value = ''; refreshControls();
   }));
   $('network-refresh-wallets').addEventListener('click', refreshWallets);
+  for (const mode of ['create', 'join']) $(`network-mode-${mode}`).addEventListener('click', () => {
+    if (busy || client?.contractAddress) return;
+    setupMode = mode; refreshControls();
+  });
   $('network-connect-form').addEventListener('invalid', eventObject => {
     $('network-connection-status').textContent = eventObject.target.id === 'network-password'
       ? 'Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.'
@@ -226,6 +266,10 @@ export async function initNetworkApplication() {
   click('network-disconnect', async () => {
     session?.close(); session = null; client = null; state = null; dealer = null; manifest = null; latestReceipt = null;
     for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) $(id).value = '';
+    for (const role of keyRoles) {
+      setKeyVisibility(role, false); $(`network-import-${role}`).value = '';
+      $(`network-${role}-key-status`).textContent = 'Key cleared from this page. Any downloaded copy remains on your device.';
+    }
     resetSessionDisplay();
     $('network-public-state').textContent = 'Local session ended';
     status('Disconnected and cleared the private fields. Saved encrypted keys and wallet permissions remain; remove permissions in your wallet if you want to revoke access.');
@@ -236,8 +280,42 @@ export async function initNetworkApplication() {
     await client.join($('network-address').value.trim().toLowerCase(), bytes($('network-digest').value.trim()));
     await refreshState(); status('The contract keys and settings match your indexer’s record. Its initial setup and blockchain history still need independent checks.');
   });
-  click('network-generate-admin', async () => { $('network-admin').value = hex(randomSecret32()); status('Administrator key created. Keep it somewhere secure before leaving this page.'); });
-  click('network-generate-voter', async () => { $('network-voter').value = hex(randomSecret32()); status('Voter key created. Register this voter before casting a vote.'); });
+  for (const role of keyRoles) {
+    const input = $(`network-${role}`), feedback = $(`network-${role}-key-status`);
+    input.addEventListener('input', () => { feedback.textContent = ''; refreshControls(); });
+    click(`network-generate-${role}`, async () => {
+      input.value = hex(randomSecret32()); setKeyVisibility(role, true);
+      feedback.textContent = `${keyName(role)} key created and shown above. Download the private key file to keep a copy.`;
+      status(`${keyName(role)} key created. Use Download key beside the key field to save it.`);
+    });
+    click(`network-show-${role}`, async () => {
+      const visible = input.type === 'password'; setKeyVisibility(role, visible);
+      feedback.textContent = `${keyName(role)} key ${visible ? 'shown' : 'hidden'}.`;
+      status(`${keyName(role)} key ${visible ? 'shown' : 'hidden'}.`);
+    });
+    click(`network-download-${role}`, async () => {
+      // This is an explicitly requested private download, separate from receipts
+      // and public records. Never put the key in a URL, filename, log or export.
+      const url = URL.createObjectURL(new Blob([privateKeyText(input.value)], { type: 'text/plain;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url; link.download = `midnight-${role === 'admin' ? 'administrator' : 'voter'}-key.private.txt`;
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      feedback.textContent = `${keyName(role)} key download started. This private text file is unencrypted; keep it separate from public receipts.`;
+      status(`${keyName(role)} private key download started.`);
+    });
+    $(`network-import-${role}`).addEventListener('change', () => void run(async () => {
+      try {
+        const key = await readPrivateKeyFile($(`network-import-${role}`).files?.[0]);
+        input.value = key; setKeyVisibility(role, false);
+        feedback.textContent = `${keyName(role)} key loaded and hidden. Use Show key to see it. The election checks whether this is the right key when you use it.`;
+        status(`${keyName(role)} key loaded. No transaction was submitted.`);
+      } catch {
+        feedback.textContent = 'Could not load this key. Choose a .txt file up to 256 bytes containing exactly one nonzero, 64-character hexadecimal key. The existing key has not changed.';
+        status('Key file rejected. The existing key has not changed.');
+      } finally { $(`network-import-${role}`).value = ''; }
+    }));
+  }
   click('network-generate-dealer', async () => {
     dealer = createDemoDealer(); $('network-setup-secret').value = String(dealer.setupSecret); $('network-setup-slope').value = String(dealer.setupSlope);
     status('Created all three trustee key shares in this tab. Use “Register trustee keys” to send the public keys to the network.');

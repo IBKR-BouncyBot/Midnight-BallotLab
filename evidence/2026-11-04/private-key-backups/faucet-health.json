@@ -1,0 +1,74 @@
+{
+  "schema": "midnight-ballot-lab/read-only-faucet-check/v1",
+  "officialFaucetUrl": "https://midnight-tmnight-preview.nethermind.dev/",
+  "checks": [
+    {
+      "checkedAt": "2026-11-04T20:47:40.353Z",
+      "resource": "faucet-page",
+      "method": "GET",
+      "httpStatus": 200
+    },
+    {
+      "checkedAt": "2026-11-04T20:47:59.021Z",
+      "resource": "public-frontend-script",
+      "path": "/assets/index-DGjyCfl6.js",
+      "method": "GET",
+      "httpStatus": 200,
+      "turnstileIntegrationPresent": true
+    },
+    {
+      "checkedAt": "2026-11-04T20:49:13.943Z",
+      "resource": "public-api-health",
+      "path": "/api/health",
+      "method": "GET",
+      "httpStatus": 200,
+      "status": "SERVING",
+      "needsRestart": false,
+      "hasReason": false
+    },
+    {
+      "checkedAt": "2026-11-04T20:49:33.891Z",
+      "resource": "public-turnstile-loader",
+      "url": "https://challenges.cloudflare.com/turnstile/v0/api.js",
+      "method": "GET",
+      "httpStatus": 302,
+      "redirectRemainedOnSameOrigin": true,
+      "versionedScriptHttpStatus": 200,
+      "scriptExecuted": false
+    }
+  ],
+  "reportedMessage": "Captcha verification failed",
+  "reportedBrowserChallengeSuccess": true,
+  "reportedUserFailureReproduced": false,
+  "userScreenshotRetained": false,
+  "walletAddressRetained": false,
+  "credentialsUsed": false,
+  "captchaTokenRead": false,
+  "captchaExecuted": false,
+  "captchaBypassed": false,
+  "formSubmitted": false,
+  "faucetTokensRequested": false,
+  "walletAccessed": false,
+  "transactionsSubmitted": false,
+  "serverSideCaptchaValidationTested": false,
+  "faucetSourceInspection": {
+    "commit": "1f9ebdbeb4f92936a8cd1514851fba2596b0197f",
+    "serverReturnsGenericVerificationError": true,
+    "liveFrontendResetsWidgetAndTokenAfterFailure": true,
+    "previousErrorCanRemainBesideNewChallenge": true,
+    "actualDeployedServerCommitVerified": false,
+    "urls": [
+      "https://github.com/midnightntwrk/midnight-faucet-api/blob/1f9ebdbeb4f92936a8cd1514851fba2596b0197f/apps/server/src/router.ts#L73-L85",
+      "https://github.com/midnightntwrk/midnight-faucet-api/blob/1f9ebdbeb4f92936a8cd1514851fba2596b0197f/apps/ui/src/requestTokensForm.tsx#L43-L48"
+    ]
+  },
+  "officialGuidance": [
+    "https://docs.midnight.network/guides/acquire-tokens",
+    "https://developers.cloudflare.com/turnstile/get-started/server-side-validation/"
+  ],
+  "limitations": [
+    "Successful GET and health responses do not establish successful CAPTCHA verification or funding.",
+    "The generic verification error does not identify expiration, reuse, server configuration, transport failure or another underlying cause.",
+    "No user browser or wallet state was inspected, and no cause was attributed to browser extensions or network filters."
+  ]
+}

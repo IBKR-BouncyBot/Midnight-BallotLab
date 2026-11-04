@@ -1,0 +1,72 @@
+{
+  "schema": "midnight-ballot-lab/real-lace-preview-modes-and-key-clear/v1",
+  "startedAt": "2026-11-04T20:58:43.942Z",
+  "status": "passed",
+  "networkId": "preview",
+  "origin": "fresh-local-http-test-server",
+  "walletCreated": true,
+  "walletConnected": true,
+  "publicNetwork": true,
+  "publicHostedOriginTested": false,
+  "walletFunded": false,
+  "proofGenerated": false,
+  "transactionSigned": false,
+  "transactionSubmitted": false,
+  "ledgerInclusionIndependentlyVerified": false,
+  "privateDataLogged": false,
+  "privateFilesDownloaded": false,
+  "privateScreenshotsTaken": false,
+  "walletVersion": "2.5.0",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "5e3e993dc126ea09428abb7411b9571f7e1d3200deea20d50d2f94cb52524383",
+  "harnessSha256": "7a97e09a59f2b0898fdd8f4ed0edacb414906bdc404c5a847f205d0e6099b9fc",
+  "networkBundleSha256": "7d25abbb77c1d5ea1cc2bf9aad6aee46287188fdcb0ea6096b8d3ffac4add7a6",
+  "playwright": "1.64.1",
+  "stage": "generate-synthetic-keys-before-disconnect",
+  "chromium": "156.0.8078.4",
+  "apiVersion": "4.0.1",
+  "walletServices": {
+    "indexerUri": "https://blockfrost.lw.iog.io/midnight-preview/",
+    "indexerWsUri": "wss://blockfrost.lw.iog.io/midnight-preview/ws",
+    "substrateNodeUri": "https://blockfrost.lw.iog.io/midnight-preview-rpc/",
+    "proverServerUri": "http://localhost:6300/"
+  },
+  "publicPreflightPassed": true,
+  "connectedControls": {
+    "sessionSelectorsLocked": true,
+    "sessionFieldsLocked": true,
+    "createSelected": true,
+    "onlyCreateActionEnabled": true,
+    "createPanelVisible": true,
+    "setupModeControlsEnabled": true,
+    "disconnectedActionEnabled": true,
+    "ballotDisabledWithoutContract": true
+  },
+  "joinMode": {
+    "joinSelected": true,
+    "onlyJoinActionEnabled": true,
+    "onlyJoinPanelVisible": true,
+    "publicIdentityEditable": true
+  },
+  "returnedCreateMode": {
+    "createModeRestored": true,
+    "creationFieldsPreserved": true,
+    "joinFieldsPreserved": true,
+    "noElectionAttached": true
+  },
+  "syntheticKeysGeneratedAndRevealed": true,
+  "disconnectedControls": {
+    "selectorsUnlocked": true,
+    "passwordCleared": true,
+    "contractActionsDisabled": true,
+    "disconnectDisabled": true,
+    "previewEndpointsRemainLocked": true,
+    "keyFieldsClearedAndMasked": true,
+    "keyVisibilityControlsReset": true,
+    "keyDownloadsDisabled": true,
+    "fileInputsCleared": true,
+    "privateFieldsCleared": true
+  },
+  "localSessionDisconnected": true,
+  "completedAt": "2026-11-04T20:59:04.891Z"
+}

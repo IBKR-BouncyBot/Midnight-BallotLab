@@ -102,6 +102,11 @@ body { background: var(--black); }
 .public-network-intro a { color: #c1c1ff; text-decoration: underline; text-underline-offset: 3px; }
 .public-network-intro code { font-size: .85em; overflow-wrap: anywhere; }
 .public-network-check { margin: 20px 0 24px; }
+.private-key-tools { flex-wrap: wrap; margin: 12px 0 18px; }
+.private-key-tools .button { white-space: normal; }
+.election-setup-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 22px 0 16px; }
+.election-setup-options .button { min-height: 64px; white-space: normal; font-size: 16px; }
+#network-import-admin, #network-import-voter { max-width: 100%; font-size: 13px; }
 #network-service-settings { margin: 18px 0; padding: 18px 0; border-block: 1px solid #3a3a3a; }
 #network-service-settings summary { cursor: pointer; color: #d5d5ff; }
 #network-service-settings input { font-size: 13px; }
