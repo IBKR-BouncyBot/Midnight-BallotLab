@@ -78,7 +78,7 @@ try {
     '/@midnight-ntwrk/midnight-js-dapp-connector-proof-provider/']) {
     if (!inputs.some(path => path.includes(required))) throw new Error(`Required real implementation absent: ${required}`);
   }
-  const browserSources = new Set(['src/network-app.mjs', 'src/network-receipt.mjs', 'src/network-timing.mjs', 'src/network-voting.mjs', 'src/private-key.mjs', 'src/election-join.mjs', 'src/trustee-key.mjs', 'src/key-file-json.mjs', 'src/json.mjs', 'src/qr.mjs']);
+  const browserSources = new Set(['src/network-app.mjs', 'src/network-receipt.mjs', 'src/network-timing.mjs', 'src/network-voting.mjs', 'src/voter-file-label.mjs', 'src/private-key.mjs', 'src/election-join.mjs', 'src/trustee-key.mjs', 'src/key-file-json.mjs', 'src/json.mjs', 'src/qr.mjs']);
   if (inputs.some(path => path.startsWith('src/') && !browserSources.has(path))) {
     throw new Error('Network bundle contains an unreviewed browser source');
   }

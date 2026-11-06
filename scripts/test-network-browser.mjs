@@ -67,12 +67,13 @@ async function sanitizedImportDiagnostic(page, url) {
   }, url);
 }
 
-async function downloadPrivateKey(page, role, expectedKey, expectedFilename) {
+async function downloadPrivateKey(page, role, expectedKey, expectedFilename, observeFilename) {
   const pending = page.waitForEvent('download');
   await page.locator(`#network-download-${role}`).click();
   const download = await pending;
   if (expectedFilename instanceof RegExp) assert.match(download.suggestedFilename(), expectedFilename);
   else assert.equal(download.suggestedFilename(), expectedFilename);
+  observeFilename?.(download.suggestedFilename());
   try {
     const stream = await download.createReadStream(); assert.ok(stream);
     const chunks = []; let length = 0;
@@ -475,6 +476,99 @@ try {
     } finally { await context.close(); }
   }
 
+  stage = 'saved-indexed-record:load';
+  {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    try {
+      const page = await context.newPage(); page.setDefaultTimeout(30_000);
+      let pageErrors = 0, consoleErrors = 0, externalRequests = 0;
+      page.on('pageerror', () => { pageErrors++; });
+      page.on('console', message => { if (message.type() === 'error') consoleErrors++; });
+      page.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests++; });
+      await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+      const fixturePath = 'evidence/2026-11-03/lace-wallet/attempt-2/public-indexed-observation.json';
+      const fixtureBytes = await readFile(join(root, fixturePath)), record = JSON.parse(fixtureBytes.toString('utf8'));
+      assert.equal(record.networkId, 'undeployed');
+      const upload = page.locator('#network-import-record'), result = page.locator('#network-imported-record');
+      const summary = page.locator('#network-imported-record-summary'), feedback = page.locator('#network-record-file-status');
+      assert.equal(await upload.isDisabled(), false, 'Saved public record checks must not need a wallet');
+      assert.equal(await result.isVisible(), false);
+      await page.locator('#network-mode-join').click();
+      await page.locator('#network-address').fill('a'.repeat(64));
+      await page.locator('#network-digest').fill('b'.repeat(64));
+      const unchangedSession = async () => {
+        assert.equal(await page.locator('#network-id').inputValue(), 'preview');
+        assert.equal(await page.locator('#network-address').inputValue(), 'a'.repeat(64));
+        assert.equal(await page.locator('#network-digest').inputValue(), 'b'.repeat(64));
+        for (const id of ['network-join','network-deploy','network-open','network-cast','network-finalize','network-read','network-export','network-download-election']) {
+          assert.equal(await page.locator(`#${id}`).isDisabled(), true, 'An imported observation must not create a connected or verified network session');
+        }
+        assert.equal(await page.locator('#network-events').textContent(), '');
+        assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
+      };
+      const importValid = async () => {
+        await upload.setInputFiles({ name: 'saved-election-record.JSON', mimeType: 'application/json', buffer: fixtureBytes });
+        await page.waitForFunction(() => document.getElementById('network-import-record').value === '');
+        assert.match(await feedback.textContent(), /^Saved record checked locally\./);
+        assert.equal(await result.isVisible(), true);
+        assert.match(await result.textContent(), /internally consistent/);
+        assert.match(await result.textContent(), /authentic, complete or current/);
+        assert.match(await result.textContent(), /blockchain acceptance/);
+        const text = await summary.textContent();
+        assert.ok(text.includes(record.contractAddress));
+        assert.ok(text.includes(record.configurationDigest));
+        assert.match(text, /undeployed/);
+        await unchangedSession();
+      };
+      await importValid();
+      const corrupt = change => { const value = structuredClone(record); change(value); return Buffer.from(JSON.stringify(value)); };
+      const canonical = JSON.stringify(record);
+      const rejects = [
+        ['receipt', corrupt(value => { value.ballots[0].receipt = (value.ballots[0].receipt[0] === '0' ? '1' : '0') + value.ballots[0].receipt.slice(1); })],
+        ['off-curve-point', corrupt(value => { value.ballots[0].a[0] = ['0','0']; })],
+        ['aggregate', corrupt(value => { value.aggregateA[0] = [...value.trusteeKeys[0]]; })],
+        ['totals', corrupt(value => { value.finalizedTotals[0] += 1; })],
+        ['private-field', corrupt(value => { value.privateKey = 'WITHHELD-PRIVATE-FIELD-MARKER'; })],
+        ['malformed', Buffer.from('{')],
+        ['duplicate-field', Buffer.from(canonical.replace('"networkId":"undeployed"', '"networkId":"undeployed","networkId":"undeployed"'))],
+        ['invalid-utf8', Buffer.from([0xff,0xfe,0xff])],
+        ['oversize', Buffer.alloc(8 * 1024 * 1024 + 1, 32)],
+        ['wrong-extension', fixtureBytes, 'withheld-file-marker.txt'],
+      ];
+      for (const [kind, buffer, name = 'withheld-file-marker.json'] of rejects) {
+        stage = `saved-indexed-record:reject-${kind}`;
+        await importValid();
+        await upload.setInputFiles({ name, mimeType: 'application/json', buffer });
+        await page.waitForFunction(() => document.getElementById('network-import-record').value === '');
+        assert.match(await feedback.textContent(), /^This file could not be verified\./);
+        assert.doesNotMatch(await feedback.textContent(), /WITHHELD-PRIVATE-FIELD-MARKER|withheld-file-marker/);
+        assert.equal(await result.isVisible(), false, 'A rejected file must remove the previous successful result');
+        assert.equal(await summary.textContent(), '');
+        await unchangedSession();
+      }
+      stage = 'saved-indexed-record:responsive-public-summary';
+      await importValid();
+      for (const width of [1440,390,320]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert.ok(await page.evaluate(() => Math.max(document.documentElement.scrollWidth,document.body.scrollWidth) <= document.documentElement.clientWidth + 1));
+        if (width !== 320) {
+          const card = page.locator('section.saved-record-check');
+          const height = await card.evaluate(el => Math.ceil(el.getBoundingClientRect().height) + 60);
+          await page.setViewportSize({ width, height: Math.max(1000, height) });
+          await card.screenshot({ path: join(evidenceDirectory, `saved-public-record-${width}.png`) });
+        }
+      }
+      assert.equal(pageErrors,0); assert.equal(consoleErrors,0); assert.equal(externalRequests,0);
+      evidence.cases.push({ case: 'saved-indexed-record-import', status:'passed', historicalFixture:fixturePath,
+        historicalFixtureSha256:hash(fixtureBytes), freshOfflineVerification:true, newNetworkTransaction:false,
+        walletRequired:false, unchangedNetworkAndJoinFields:true, noAutomaticConnectionOrEnabledActions:true,
+        invalidFilesRejected:rejects.length, rejectedImportClearsPriorResult:true, publicScopeLimitsVisible:true,
+        mobileWidths:[390,320], pageErrors,consoleErrors,externalRequests });
+    } finally { await context.close(); }
+  }
+
   stage = 'private-key-file-utilities';
   {
     // This isolated case uses only newly generated synthetic credentials.
@@ -497,6 +591,7 @@ try {
         assert.equal(await page.evaluate(() => sessionStorage.length), 0);
       };
       const roleChecks = [];
+      let savedVoterText;
       for (const role of ['admin', 'voter']) {
         stage = `private-key-${role}:generate-and-reveal`;
         const input = page.locator(`#network-${role}`), toggle = page.locator(`#network-show-${role}`);
@@ -530,7 +625,11 @@ try {
         stage = `private-key-${role}:download-round-trip`;
         let privateText = await downloadPrivateKey(page, role, key, role === 'admin'
           ? 'midnight-administrator-key.private.txt' : 'midnight-voter-key-000001.private.txt');
-        if (role === 'voter') await checkCounterOnly(1);
+        if (role === 'voter') {
+          savedVoterText = privateText;
+          await downloadPrivateKey(page, role, key, 'midnight-voter-key-000001.private.txt');
+          await checkCounterOnly(1);
+        }
         await input.fill('');
         await fileInput.setInputFiles({ name: 'synthetic-key.txt', mimeType: 'text/plain', buffer: Buffer.from(privateText, 'utf8') });
         await page.waitForFunction(({ id, expected }) => document.getElementById(id).value === expected,
@@ -538,6 +637,10 @@ try {
         assert.equal(await input.getAttribute('type'), 'password', 'Restoring a key must mask it');
         assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
         privateText = undefined;
+        if (role === 'voter') {
+          await downloadPrivateKey(page, role, key, 'midnight-voter-key-000001.private.txt');
+          await checkCounterOnly(1);
+        }
         if (role === 'admin') {
           await page.locator('#network-mode-join').click();
           assert.equal(await input.isVisible(), true); assert.equal(await input.inputValue(), key);
@@ -598,8 +701,40 @@ try {
         roleChecks.push({ role, generated: true, revealAndHide: true, privateDownloadRoundTrip: true,
           rejectedFiles: invalidInputs.length, invalidImportPreservesKey: true, maskedAfterRestore: true,
           ...(role === 'admin' ? { initiallyEmptyAndReadonly: true, explicitManualUnlock: true,
-            manualAndImportedKeysSurviveModeChanges: true, invalidImportPreservesEditingState: true } : { sequentialPrivateDownloadNames: true }) });
+            manualAndImportedKeysSurviveModeChanges: true, invalidImportPreservesEditingState: true } : {
+              sequentialDistinctKeyLabels: true, repeatedKeyKeepsFilename: true, renamedImportKeepsKnownLabel: true }) });
       }
+
+      stage = 'private-key-voter:original-filename-restored-in-fresh-context';
+      const restoredContext = await browser.newContext({ acceptDownloads: true });
+      try {
+        const restoredPage = await restoredContext.newPage();
+        restoredPage.on('pageerror', () => { pageErrors++; });
+        restoredPage.on('console', message => { if (message.type() === 'error') consoleErrors++; });
+        restoredPage.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests++; });
+        await restoredPage.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
+        await restoredPage.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+        assert.equal(await restoredPage.evaluate(() => localStorage.length + sessionStorage.length), 0);
+        await restoredPage.locator('#network-import-voter').setInputFiles({ name: 'midnight-voter-key-000001.private.txt',
+          mimeType: 'text/plain', buffer: Buffer.from(savedVoterText, 'utf8') });
+        await restoredPage.waitForFunction(() => document.getElementById('network-import-voter').value === '');
+        const restoredKey = savedVoterText.trim();
+        assert.equal(await restoredPage.locator('#network-voter').inputValue(), restoredKey);
+        assert.equal(await restoredPage.locator('#network-voter').getAttribute('type'), 'password');
+        await downloadPrivateKey(restoredPage, 'voter', restoredKey, 'midnight-voter-key-000001.private.txt');
+        await downloadPrivateKey(restoredPage, 'voter', restoredKey, 'midnight-voter-key-000001.private.txt');
+        const restoredStorage = await restoredPage.evaluate(() => Object.fromEntries(Object.entries(localStorage)));
+        assert.deepEqual(restoredStorage, { [counterKey]: '1' }, 'Import reserves only a nonsecret numeric counter floor');
+        await restoredPage.locator('#network-generate-voter').click();
+        const freshKey = await restoredPage.locator('#network-voter').inputValue();
+        assert.notEqual(freshKey, restoredKey);
+        await downloadPrivateKey(restoredPage, 'voter', freshKey, 'midnight-voter-key-000002.private.txt');
+        assert.deepEqual(await restoredPage.evaluate(() => Object.fromEntries(Object.entries(localStorage))), { [counterKey]: '2' });
+        assert.equal(await restoredPage.evaluate(() => sessionStorage.length), 0);
+        assert.equal(await restoredPage.locator('#network-cast').isDisabled(), true);
+        assert.equal(await restoredPage.locator('#network-save-receipt').isDisabled(), true);
+        assert.ok(!(await restoredPage.locator('body').innerText()).includes(restoredKey));
+      } finally { savedVoterText = undefined; await restoredContext.close(); }
 
       stage = 'real-dealer-generation';
       const dealerButton = page.locator('#network-generate-dealer');
@@ -647,7 +782,13 @@ try {
       // Fault only the nonsecret filename counter; keep real key generation,
       // downloads, clock, wallet absence and all contract gates unchanged.
       await page.evaluate(key => localStorage.setItem(key, 'not-a-counter'), counterKey);
-      await downloadPrivateKey(page, 'voter', afterReloadKey, /^midnight-voter-key-\d{13}-000002\.private\.txt$/);
+      await downloadPrivateKey(page, 'voter', afterReloadKey, 'midnight-voter-key-000003.private.txt');
+      await page.locator('#network-generate-voter').click();
+      const invalidCounterKey = await page.locator('#network-voter').inputValue();
+      let fallbackFilename;
+      await downloadPrivateKey(page, 'voter', invalidCounterKey, /^midnight-voter-key-\d{13}-000002\.private\.txt$/,
+        filename => { fallbackFilename = filename; });
+      await downloadPrivateKey(page, 'voter', invalidCounterKey, fallbackFilename);
       assert.equal(await page.evaluate(key => localStorage.getItem(key), counterKey), 'not-a-counter');
       await page.evaluate(key => {
         localStorage.setItem(key, '3');
@@ -658,7 +799,11 @@ try {
         };
       }, counterKey);
       for (const suffix of ['000003', '000004']) {
-        await downloadPrivateKey(page, 'voter', afterReloadKey, new RegExp(`^midnight-voter-key-\\d{13}-${suffix}\\.private\\.txt$`));
+        await page.locator('#network-generate-voter').click();
+        const fallbackKey = await page.locator('#network-voter').inputValue();
+        await downloadPrivateKey(page, 'voter', fallbackKey, new RegExp(`^midnight-voter-key-\\d{13}-${suffix}\\.private\\.txt$`),
+          filename => { fallbackFilename = filename; });
+        await downloadPrivateKey(page, 'voter', fallbackKey, fallbackFilename);
       }
       await checkCounterOnly(3);
       await page.reload({ waitUntil: 'networkidle' });
@@ -690,6 +835,8 @@ try {
         actualDealerGeneration: true, canonicalNonzeroDealerScalars: true, generatedDealerValuesPreservedAcrossModes: true,
         localGenerationDoesNotRegisterKeys: true, numberedVoterDownloads: [1, 2, 3], counterPersistsAcrossReload: true,
         storageContainsOnlyNonsecretCounter: true, autofillFromPersonalPasswordManagerTested: false,
+        originalFilenameRestoresLabelInFreshContext: true, importedCounterFloorAvoidsNewKeyCollision: true, noPersistedKeyLabelMapping: true,
+        fallbackLabelsStableForRepeatedKey: true,
         invalidCounterFallback: true, storageWriteDenialFallback: true, fallbackNamesIncrementWithinSession: true,
         storageFailureInjectionOnly: true,
         mobileWidths: [390, 320],

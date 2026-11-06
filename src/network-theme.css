@@ -110,3 +110,8 @@
 .network-page .voting-readiness h3 { margin: 0 0 12px; font-size: 20px; }
 .network-page .voting-readiness { margin: 0 0 28px; }
 .network-page .voting-readiness p { line-height: 1.6; }
+.network-page .saved-record-check { margin: 28px 0; padding: 20px; border: 1px solid var(--line-light); border-left: 3px solid var(--blue); background: var(--surface); }
+.network-page .saved-record-check h3 { margin: 0 0 12px; font-size: 20px; }
+.network-page .uploaded-record-details { display: grid; gap: 14px; }
+.network-page .uploaded-record-details dt { color: var(--muted); font-size: 13px; }
+.network-page .uploaded-record-details dd { margin: 4px 0 0; overflow-wrap: anywhere; }

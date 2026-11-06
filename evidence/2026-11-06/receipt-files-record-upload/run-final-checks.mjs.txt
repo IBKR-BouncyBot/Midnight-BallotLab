@@ -1,0 +1,68 @@
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+
+const root = process.cwd();
+const output = resolve(root, 'evidence/2026-11-06/receipt-files-record-upload');
+mkdirSync(output, { recursive: true });
+const paths = directory => readdirSync(directory).filter(name => name.endsWith('.test.mjs')).sort().map(name => `${directory}/${name}`);
+const hash = data => createHash('sha256').update(data).digest('hex');
+const sourcePaths = [
+  'src/voter-file-label.mjs', 'tests/voter-file-label.test.mjs',
+  'src/native-app.mjs', 'src/network-app.mjs', 'src/native.html', 'src/network.html',
+  'src/network-theme.css', 'src/private-key.mjs', 'src/json.mjs', 'src/network-receipt.mjs',
+  'contracts/native/verify-public.mjs', 'contracts/native/record.mjs',
+  'contracts/native/test/indexed-observation.test.mjs', 'contracts/native/test/public-verifier.test.mjs',
+  'contracts/native/connection-errors.mjs', 'contracts/native/browser-providers.mjs',
+  'contracts/managed/native-election/contract/index.js', 'contracts/native-election.compact',
+  'contracts/package-lock.json', 'scripts/build-network-browser.mjs', 'scripts/build.mjs',
+  'scripts/test-native-browser.mjs', 'scripts/test-network-browser.mjs',
+  'dist/network-bundle.mjs', 'dist/native-bundle.mjs',
+];
+const report = { node: process.version,
+  scope: 'Actual generated-ledger and offline public-record checks, local boundaries and installed provider APIs; no proofs or network submissions',
+  proofGeneration: false, networkSubmission: false, privateDataRetained: false, groups: [], sourceHashes: {} };
+for (const path of sourcePaths) report.sourceHashes[path] = hash(readFileSync(path));
+const groups = [
+  ['boundary', paths('tests'), 101],
+  ['generated-native', paths('contracts/native/test'), 62],
+  ['installed-provider-api', ['contracts/test/browser-providers-api.test.mjs', 'contracts/test/native-wasm-plugin.test.mjs'], 10],
+];
+const save = () => writeFileSync(resolve(output, 'local-tests.json'), JSON.stringify(report, null, 2) + '\n');
+for (const [name, files, expectedTests] of groups) {
+  const group = { name, startedAt: new Date().toISOString(),
+    command: ['node', '--test', '--test-reporter=tap', ...files].join(' '), expectedTests };
+  try {
+    const tap = execFileSync(process.execPath, ['--test', '--test-reporter=tap', ...files], {
+      encoding: 'utf8', cwd: root, maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
+    for (const key of ['tests', 'pass', 'fail', 'cancelled', 'skipped', 'todo']) {
+      const match = tap.match(new RegExp(`^# ${key} (\\d+)$`, 'm'));
+      if (!match) throw new Error('Missing test count');
+      group[key] = Number(match[1]);
+    }
+    if (group.tests !== expectedTests || group.tests !== group.pass || group.fail || group.cancelled || group.skipped || group.todo) throw new Error('Incomplete test group');
+    group.status = 'passed'; group.completedAt = new Date().toISOString(); group.outputSha256 = hash(tap);
+  } catch {
+    group.status = 'failed'; group.completedAt = new Date().toISOString();
+    // Raw assertion diagnostics can contain private input. Retain only safe counts/stage.
+    report.groups.push(group); save();
+    process.stdout.write(JSON.stringify(group) + '\n'); process.exit(1);
+  }
+  report.groups.push(group);
+  process.stdout.write(JSON.stringify({ name, status: group.status, tests: group.tests }) + '\n');
+}
+const changed = sourcePaths.filter(path => hash(readFileSync(path)) !== report.sourceHashes[path]);
+if (changed.length) {
+  report.status = 'source-changed-during-tests'; report.changedSourceFiles = changed; save();
+  process.stdout.write(JSON.stringify({ status: report.status, files: changed }) + '\n'); process.exit(1);
+}
+report.status = 'passed'; report.sourceUnchangedDuringTests = true;
+report.runtimeBundles = Object.fromEntries(['dist/native-bundle.mjs','dist/network-bundle.mjs']
+  .map(path => [path, { bytes: readFileSync(path).length, sha256: report.sourceHashes[path] }]));
+report.harnessSha256 = hash(readFileSync(new URL(import.meta.url)));
+save();
+writeFileSync(resolve(output, 'run-final-checks.mjs.txt'), readFileSync(new URL(import.meta.url)));
+process.stdout.write(JSON.stringify({ status: 'passed', report: 'evidence/2026-11-06/receipt-files-record-upload/local-tests.json',
+  harnessSha256: report.harnessSha256, runtimeBundles: report.runtimeBundles }) + '\n');
+

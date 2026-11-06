@@ -1,6 +1,8 @@
 # Check an election record independently
 
-Every voter can import a public election JSON file in **Verify election**, including in a fresh browser session with no election or private credentials loaded. A QR or JSON receipt can then be compared with that record. This checks the consistency of the supplied public data. It does not authenticate an election or guarantee fairness.
+Every voter can import a public election JSON file in the browser demo's **Verify election**, including in a fresh browser session with no election or private credentials loaded. A QR or JSON receipt can then be compared with that record. This checks the consistency of the supplied public data. It does not authenticate an election or guarantee fairness.
+
+The testnet page has its own **Upload a saved election record** control for downloaded `native-indexed-observation/v1` files. It uses the same native point, configuration, receipt, aggregate and threshold consistency checks, with a separate exact network schema. No wallet is required. The saved result appears separately from the live indexer record and does not change the connected election or enable voting. Its network and address are supplied labels, not authenticated chain evidence; an optional choice manifest is checked against the committed digest. Network receipt lookups still use the joined election's live indexer record. See [the network upload guide](NATIVE_NETWORK.md#upload-a-downloaded-network-record).
 
 ## For voters
 
@@ -10,6 +12,8 @@ Every voter can import a public election JSON file in **Verify election**, inclu
 4. Paste or import your receipt and compare it. A match means that this record contains the committed ciphertext at the receipt's position. It does not prove that a network accepted it or that a device encrypted your intended choice.
 
 The private credential dropdown is only a way to choose a synthetic role in the current demonstration. Public snapshots contain no credential-to-ballot or credential-to-receipt mapping. Sharing a receipt can still correlate its public ballot with the person who shares it.
+
+Downloaded receipt filenames use the requested local voter number to help keep files together. That label stays out of receipt contents, QR data and public election records; it is not an authenticated voter identity. In the testnet demo it follows the original numbered voter-key filename, and in the browser demo it follows the selected demo voter.
 
 ## Checks performed
 

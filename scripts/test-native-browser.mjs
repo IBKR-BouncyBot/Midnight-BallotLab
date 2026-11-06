@@ -37,11 +37,14 @@ function publicOnly(value) {
   }
 }
 
-async function downloadJson(page, selector) {
+async function downloadJson(page, selector, expectedReceiptFilename) {
   const pending = page.waitForEvent('download');
   await page.locator(selector).click();
   const download = await pending;
-  if (selector === '#native-save-receipt') assert.equal(download.suggestedFilename(), 'midnight-ballot-receipt.json');
+  if (selector === '#native-save-receipt') {
+    assert.equal(typeof expectedReceiptFilename, 'string', 'Receipt filename must be checked against the voter who cast it');
+    assert.equal(download.suggestedFilename(), expectedReceiptFilename);
+  }
   if (selector === '#native-export') assert.equal(download.suggestedFilename(), 'midnight-election-record.json');
   const stream = await download.createReadStream();
   assert.ok(stream, 'Public JSON download stream is missing');
@@ -51,6 +54,9 @@ async function downloadJson(page, selector) {
   assert.ok(bytes.length < 1_000_000, 'Public JSON download is unexpectedly large');
   const value = JSON.parse(bytes.toString('utf8'));
   publicOnly(value);
+  if (selector === '#native-save-receipt') exactKeys(value,
+    ['schema', 'execution', 'network', 'contractAddress', 'electionId', 'configurationDigest',
+      'index', 'receipt', 'proofGenerated', 'ledgerInclusionVerified'], 'Receipt without voter-number metadata');
   return value;
 }
 
@@ -250,7 +256,7 @@ try {
 
   for (const { pair, prefix, entry, candidateCount, voterCount, selections, voterOrder, totals } of [
     { pair: '1,2', prefix: '/', entry: 'index.html', candidateCount: 3, voterCount: 5,
-      selections: [0, 1, 2, 0, 2], voterOrder: [0, 1, 2, 3, 4], totals: [2, 1, 2] },
+      selections: [0, 1, 2, 0, 2], voterOrder: [0, 2, 1, 3, 4], totals: [2, 1, 2] },
     { pair: '1,3', prefix: '/arbitrary-repository-name/', entry: 'index.html', candidateCount: 2, voterCount: 3,
       selections: [1, 0, 1], voterOrder: [2, 0, 1], totals: [1, 2] },
     { pair: '2,3', prefix: '/arbitrary-repository-name/', entry: 'native.html', candidateCount: 5, voterCount: 7,
@@ -324,6 +330,12 @@ try {
       // copied into browser console, screenshots, traces, or result evidence.
       for (const [index, candidate] of selections.entries()) {
         await page.locator('#native-voter').selectOption(String(voterOrder[index]));
+        if (index > 0) {
+          const previousFilename = `midnight-voter-${String(voterOrder[index - 1] + 1).padStart(6, '0')}-receipt.json`;
+          const previousReceipt = await downloadJson(page, '#native-save-receipt', previousFilename);
+          assert.deepEqual(previousReceipt, publicReceipts[index - 1], 'Selecting another voter must not rename or replace the last receipt');
+          assert.equal(await page.locator('input[name="native-choice"]:checked').count(), 0);
+        }
         const choice = page.locator(`input[name="native-choice"][value="${candidate}"]`);
         if (index === 0 && pair === '1,2') { await choice.focus(); await choice.press('Space'); }
         else await page.locator(`#native-choices label:has(input[value="${candidate}"])`).click();
@@ -337,13 +349,15 @@ try {
         assert.equal(await page.locator(`#native-voter option[value="${voterOrder[index]}"]`).isDisabled(), true, 'Used credential must be unavailable');
         assert.equal(await page.locator('#native-next-steps').isVisible(), true);
         assert.match(await page.locator('#native-next-steps-text').textContent(), /organizer to close voting.*any two trustees.*Verify election/);
-        publicReceipts.push(await downloadJson(page, '#native-save-receipt'));
+        publicReceipts.push(await downloadJson(page, '#native-save-receipt',
+          `midnight-voter-${String(voterOrder[index] + 1).padStart(6, '0')}-receipt.json`));
       }
       assert.equal(await page.locator('#native-cast').isDisabled(), true, 'No unused synthetic credential is available');
       assert.equal(await page.locator('#native-ballot-list .ballot-item').count(), voterCount);
 
       stage = `trustees-${pair.replace(',', '-')}:rendered-qr-and-json-receipts`;
-      const receipt = await downloadJson(page, '#native-save-receipt');
+      const receipt = await downloadJson(page, '#native-save-receipt',
+        `midnight-voter-${String(voterOrder.at(-1) + 1).padStart(6, '0')}-receipt.json`);
       exactKeys(receipt, ['schema', 'execution', 'network', 'contractAddress', 'electionId', 'configurationDigest',
         'index', 'receipt', 'proofGenerated', 'ledgerInclusionVerified'], 'Receipt');
       assert.equal(receipt.proofGenerated, false);
@@ -562,6 +576,8 @@ try {
       }
       assert.ok(requested.has(`${origin}${prefix}${manifest.bundle}`), 'Actual generated browser bundle must execute');
       evidence.cases.push({ trustees: pair.split(',').map(Number), prefix, entry, passed: true, accepted: voterCount, candidateCount,
+        receiptFilenameBoundToCastingVoter: true, selectingNextVoterPreservesReceiptAndFilename: true,
+        voterNumberExcludedFromReceiptBodyAndQr: true,
         receiptJsonAndTextUploads: true, invalidOversizedAndPrivateFilesRejected: true, uploadedReceiptContextChecked: true,
         freshTabPublicVerification: true, everyReceiptChecked: true, tamperedSnapshotRejected: true,
         clickableCardsChecked: true, keyboardSelectionChecked: true, exactTwoTrusteesChecked: true,
@@ -602,7 +618,7 @@ try {
     await page.locator('#native-choices label:has(input[value="1"])').click();
     await page.locator('#native-cast').click(); await waitOperation(page);
     assert.match(await page.locator('#native-next-steps-text').textContent(), /Voting closes.*Keep this tab open.*trustees 1 and 3/);
-    const receipt = await downloadJson(page, '#native-save-receipt');
+    const receipt = await downloadJson(page, '#native-save-receipt', 'midnight-voter-000001-receipt.json');
     assert.equal(await page.locator('#native-finalize').isDisabled(), true);
     await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Results ready');
     assert.match(await page.locator('#native-next-steps-text').textContent(), /results are ready/);

@@ -32,6 +32,7 @@ Use only the public owner alias `IBKR-BouncyBot` in notices, documentation and G
 - Require valid registered trustee contributions and bounded totals satisfying the correct pair equations.
 - Public exports must exclude choices, randomness, secrets, private contexts and proofData.
 - Keep the synthetic credential selector and used-credential mapping private to the session; do not export a voter-to-ballot or voter-to-receipt mapping.
+- At the user's request, receipt filenames follow the local voter/key-file number. Keep that convenience label out of receipt contents, QR payloads and public records; it is not a network voter ID. Any key-to-filename association stays in memory only.
 - Validate imported coordinates with actual native WASM and subgroup checks before using generated pure helpers. Public import establishes supplied-record consistency only; missing ballot/share proofs prevent authentication and fairness claims.
 - Keep manual/scheduled browser previews separate from the external local-devnet operator. Real network closing must use actual indexed/wall time, valid registered shares and accepted transactions; a timer cannot bypass contract checks.
 - Authenticate initial state, contract code/verifier keys, key configuration, chain state and maintenance policy in the real integration. An indexer response alone is not independent chain verification.

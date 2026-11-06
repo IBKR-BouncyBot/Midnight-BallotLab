@@ -80,6 +80,8 @@ export async function initNativeDemo() {
     return element;
   };
   let session = null, lastReceipt = null, verifiedImport = null, busy = false, scheduleTimer = null;
+  // Filename-only convenience for this tab; never part of a receipt or public record.
+  let lastReceiptDownloadName = '';
   let receiptIdContext = null, receiptIdRevision = '';
   let activePanel = 'setup';
   const events = [];
@@ -290,8 +292,8 @@ export async function initNativeDemo() {
   $('native-timing-mode').addEventListener('change', render);
   $('native-voter').addEventListener('change', () => {
     document.querySelectorAll('input[name="native-choice"]').forEach(input => { input.checked = false; });
-    lastReceipt = null; $('native-receipt-qr').replaceChildren(); $('native-receipt-hash').textContent = '';
-    status('Choose a ballot option for this demo voter.');
+    status(lastReceipt ? 'Choose a ballot option for this demo voter. The receipt below is still for the last recorded vote.'
+      : 'Choose a ballot option for this demo voter.');
     render();
   });
   $('native-go-vote').addEventListener('click', () => showPanel('vote'));
@@ -399,7 +401,9 @@ export async function initNativeDemo() {
       session.voters[voterIndex] = null; $('native-voter').value = '';
       $('native-vote-form').reset(); emulator.setPrivateState({});
       if (!sameBytes(receipt, expectedReceipt)) throw new Error('Native receipt differs from the locally constructed ballot');
-      lastReceipt = newReceipt(receipt, index); checkReceipt(lastReceipt);
+      const checkedReceipt = newReceipt(receipt, index); checkReceipt(checkedReceipt);
+      lastReceipt = checkedReceipt;
+      lastReceiptDownloadName = `midnight-voter-${String(voterIndex + 1).padStart(6, '0')}-receipt.json`;
       $('native-receipt-hash').textContent = lastReceipt.receipt;
       $('native-receipt-qr').innerHTML = qrSvg(encodeReceipt(lastReceipt));
       log(`Encrypted ballot ${index + 1n} recorded.`);
@@ -465,7 +469,7 @@ export async function initNativeDemo() {
       }
     }, 250);
   }
-  $('native-save-receipt').addEventListener('click', () => { if (lastReceipt) savePublicJson('midnight-ballot-receipt.json', lastReceipt); });
+  $('native-save-receipt').addEventListener('click', () => { if (lastReceipt && lastReceiptDownloadName) savePublicJson(lastReceiptDownloadName, lastReceipt); });
   $('native-copy-receipt').addEventListener('click', () => operate('Copying your receipt…', async () => {
     if (!lastReceipt) throw new Error('No receipt');
     const code = encodeReceipt(lastReceipt);
@@ -645,7 +649,7 @@ export async function initNativeDemo() {
   $('native-reset').addEventListener('click', () => {
     if (busy) return;
     clearInterval(scheduleTimer); scheduleTimer = null;
-    session?.emulator.setPrivateState({}); session = null; lastReceipt = null; events.length = 0;
+    session?.emulator.setPrivateState({}); session = null; lastReceipt = null; lastReceiptDownloadName = ''; events.length = 0;
     invalidateImport(); $('native-import-file').value = ''; $('native-import-text').value = ''; $('native-expected-digest').value = '';
     $('native-event-log').replaceChildren(); $('native-vote-form').reset(); $('native-receipt-input').value = ''; $('native-receipt-file').value = '';
     $('native-receipt-id').value = ''; clearReceiptIdResult();

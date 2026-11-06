@@ -15,11 +15,17 @@ const SNAPSHOT_SCHEMA = 'midnight-ballot-lab/native-emulator-public/v2';
 const MANIFEST_SCHEMA = 'midnight-ballot-lab/native-demo-manifest/v2';
 const RECEIPT_SCHEMA = 'midnight-ballot-lab/native-emulator-receipt/v1';
 const WARNING = 'Public emulator snapshot only. It contains no native ZK proof or authenticated chain state and cannot establish election legitimacy independently.';
+const OBSERVATION_SCHEMA = 'midnight-ballot-lab/native-indexed-observation/v1';
+const OBSERVATION_WARNING = 'An indexer observation is not authenticated chain evidence or a portable native proof package.';
+const OBSERVATION_MANIFEST_SCHEMA = 'midnight-ballot-lab/election-manifest/v1';
 const MANIFEST_FIELDS = ['schema', 'execution', 'electionId', 'title', 'candidates', 'threshold', 'capacity', 'syntheticVoters', 'timingMode', 'durationSeconds', 'opensAt', 'closesAt'];
 const SNAPSHOT_FIELDS = ['schema', 'execution', 'network', 'proofGenerated', 'ledgerInclusionVerified', 'warning',
   'contractAddress', 'electionId', 'manifestDigest', 'configurationDigest', 'keysConfigured',
   'administrator', 'opensAt', 'closesAt', 'candidateCount', 'phase', 'accepted', 'publicKey', 'coefficientKey',
   'trusteeKeys', 'aggregateA', 'aggregateB', 'ballots', 'decryptionShares', 'finalizedTotals', 'manifest'];
+const OBSERVATION_FIELDS = ['schema', 'source', 'networkId', 'proofPackageIncluded', 'ledgerInclusionIndependentlyVerified', 'warning',
+  ...SNAPSHOT_FIELDS.filter(field => !['schema', 'execution', 'network', 'proofGenerated', 'ledgerInclusionVerified', 'warning', 'manifest'].includes(field))];
+const observationErrors = new WeakMap();
 const HEX32 = /^[0-9a-f]{64}$/;
 const DECIMAL = /^(0|[1-9][0-9]{0,77})$/;
 const MAX_FIELD = RT.maxField();
@@ -84,6 +90,18 @@ function canonicalManifest(manifest) {
   return Object.fromEntries(MANIFEST_FIELDS.map(field => [field, manifest[field]]));
 }
 
+function canonicalObservationManifest(manifest) {
+  exactObject(manifest, ['schema', 'title', 'choices']);
+  requireThat(manifest.schema === OBSERVATION_MANIFEST_SCHEMA);
+  publicLabel(manifest.title, 80);
+  requireThat(Array.isArray(manifest.choices));
+  integer(manifest.choices.length, 2, MAX_LANES);
+  vector(manifest.choices, manifest.choices.length).forEach(label => publicLabel(label, 40));
+  requireThat(new Set(manifest.choices).size === manifest.choices.length);
+  // Matches the network app's committed deployment metadata key order.
+  return { schema: manifest.schema, title: manifest.title, choices: manifest.choices };
+}
+
 /** External metadata commitment; Compact binds this digest in configurationDigestFor. */
 export async function nativeManifestDigest(manifest) {
   const canonical = canonicalManifest(manifest);
@@ -113,24 +131,36 @@ export function validateNativePublicPoint(value, { nonIdentity = false } = {}) {
  * A matching receipt anchors its public context, not eligibility or chain state.
  * Throws a fixed stage message only; untrusted input/runtime payloads are withheld.
  */
-export async function verifyNativePublicSnapshot(jsonText, { receipt = null, expectedConfigurationDigest = null } = {}) {
+async function verifyNativeRecord(jsonText, { indexed = false, receipt = null, expectedConfigurationDigest = null } = {}) {
   let stage = 'JSON';
   try {
     requireThat(typeof jsonText === 'string');
     const snapshot = parseStrictJson(jsonText, { maxBytes: 8 * 1024 * 1024, maxDepth: 16 });
     stage = 'schema';
-    exactObject(snapshot, SNAPSHOT_FIELDS);
-    requireThat(snapshot.schema === SNAPSHOT_SCHEMA && snapshot.execution === 'generated-contract-emulator'
-      && snapshot.network === null && snapshot.proofGenerated === false
-      && snapshot.ledgerInclusionVerified === false && snapshot.keysConfigured === true
-      && snapshot.warning === WARNING);
+    if (indexed) {
+      exactObject(snapshot, OBSERVATION_FIELDS, ['electionManifest']);
+      requireThat(snapshot.schema === OBSERVATION_SCHEMA && snapshot.source === 'configured-indexer'
+        && ['preview', 'preprod', 'undeployed'].includes(snapshot.networkId)
+        && snapshot.proofPackageIncluded === false && snapshot.ledgerInclusionIndependentlyVerified === false
+        && snapshot.warning === OBSERVATION_WARNING && typeof snapshot.keysConfigured === 'boolean');
+    } else {
+      exactObject(snapshot, SNAPSHOT_FIELDS);
+      requireThat(snapshot.schema === SNAPSHOT_SCHEMA && snapshot.execution === 'generated-contract-emulator'
+        && snapshot.network === null && snapshot.proofGenerated === false
+        && snapshot.ledgerInclusionVerified === false && snapshot.keysConfigured === true
+        && snapshot.warning === WARNING);
+    }
     for (const field of ['contractAddress', 'electionId', 'manifestDigest', 'configurationDigest', 'administrator']) digest(snapshot[field]);
     for (const field of ['electionId', 'manifestDigest', 'administrator']) requireThat(snapshot[field] !== '00'.repeat(32));
+    if (indexed) {
+      requireThat(snapshot.contractAddress !== '00'.repeat(32));
+      if (!snapshot.keysConfigured) { stage = 'key setup'; requireThat(false); }
+    }
     const candidateCount = integer(snapshot.candidateCount, 2, MAX_LANES);
     const accepted = integer(snapshot.accepted, 0, NATIVE_CAPACITY);
     const phase = integer(snapshot.phase, 0, 3);
-    const opening = decimal(snapshot.opensAt, BigInt(Number.MAX_SAFE_INTEGER));
-    const closing = decimal(snapshot.closesAt, BigInt(Number.MAX_SAFE_INTEGER));
+    const opening = decimal(snapshot.opensAt, indexed ? 2n ** 64n - 1n : BigInt(Number.MAX_SAFE_INTEGER));
+    const closing = decimal(snapshot.closesAt, indexed ? 2n ** 64n - 1n : BigInt(Number.MAX_SAFE_INTEGER));
     requireThat(opening > 0n && closing > opening);
     vector(snapshot.ballots, accepted);
     requireThat(Array.isArray(snapshot.decryptionShares) && snapshot.decryptionShares.length <= 3);
@@ -142,11 +172,22 @@ export async function verifyNativePublicSnapshot(jsonText, { receipt = null, exp
     requireThat(phase !== 3 || snapshot.decryptionShares.length >= 2);
 
     stage = 'manifest';
-    const manifest = canonicalManifest(snapshot.manifest);
-    requireThat(manifest.electionId === snapshot.electionId && manifest.candidates.length === candidateCount
-      && BigInt(manifest.opensAt) === opening && BigInt(manifest.closesAt) === closing
-      && accepted <= manifest.syntheticVoters);
-    requireThat(hex(await nativeManifestDigest(manifest)) === snapshot.manifestDigest);
+    let electionManifest = null;
+    if (indexed) {
+      if (Object.hasOwn(snapshot, 'electionManifest')) {
+        electionManifest = canonicalObservationManifest(snapshot.electionManifest);
+        requireThat(electionManifest.choices.length === candidateCount);
+        const committed = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256',
+          new TextEncoder().encode(JSON.stringify(electionManifest))));
+        requireThat(hex(committed) === snapshot.manifestDigest);
+      }
+    } else {
+      const manifest = canonicalManifest(snapshot.manifest);
+      requireThat(manifest.electionId === snapshot.electionId && manifest.candidates.length === candidateCount
+        && BigInt(manifest.opensAt) === opening && BigInt(manifest.closesAt) === closing
+        && accepted <= manifest.syntheticVoters);
+      requireThat(hex(await nativeManifestDigest(manifest)) === snapshot.manifestDigest);
+    }
 
     stage = 'points';
     const pointCache = new Map();
@@ -253,6 +294,30 @@ export async function verifyNativePublicSnapshot(jsonText, { receipt = null, exp
       receiptMatched = true;
     }
 
+    if (indexed) return Object.freeze({
+      valid: true, scope: 'indexed-observation-consistency', schema: OBSERVATION_SCHEMA,
+      source: 'supplied-indexer-observation', networkId: snapshot.networkId, contractAddress: snapshot.contractAddress,
+      electionId: snapshot.electionId, configurationDigest: snapshot.configurationDigest,
+      phase, finalized: phase === 3, accepted, candidateCount,
+      opensAt: snapshot.opensAt, closesAt: snapshot.closesAt,
+      totals: phase === 3 ? Object.freeze(snapshot.finalizedTotals.slice(0, candidateCount)) : null,
+      checkedPairs: Object.freeze(checkedPairs.map(pair => Object.freeze(pair))),
+      manifestIncluded: electionManifest !== null, title: electionManifest?.title ?? null,
+      candidates: electionManifest ? Object.freeze([...electionManifest.choices]) : null,
+      checks: Object.freeze({ schema: true, nativePoints: true, manifestDigest: electionManifest ? true : null,
+        configurationDigest: true, keyRelations: true, nullifierUniqueness: true, receiptUniqueness: true,
+        receiptDigests: true, aggregate: true, thresholdTally: phase === 3 ? true : null }),
+      proofVerified: false, eligibilityVerified: false, trusteeContributionsAuthenticated: false,
+      chainInclusionVerified: false, electionFairnessEstablished: false,
+      networkAuthenticated: false, contractAddressAuthenticated: false,
+      limitations: Object.freeze([
+        'Checks consistency of the supplied public record, not an authenticated election or live network state.',
+        'No ballot eligibility proof, ciphertext well-formedness proof or trustee share proof is included in this observation.',
+        'The supplied network and contract address are labels; this file does not authenticate them or prove blockchain inclusion.',
+        'An internally consistent replacement record can pass; compare the configuration and your receipt through an independently trusted channel.',
+        'These checks do not establish honest enrollment, omission resistance, cast-as-intended voting or election fairness.',
+      ]),
+    });
     return {
       valid: true, scope: 'public-snapshot-consistency', snapshot, finalized: phase === 3,
       accepted, candidateCount, totals: phase === 3 ? snapshot.finalizedTotals.slice(0, candidateCount) : null,
@@ -270,7 +335,30 @@ export async function verifyNativePublicSnapshot(jsonText, { receipt = null, exp
       ],
     };
   } catch {
-    throw new Error(`Public snapshot validation failed (${stage})`);
+    if (!indexed) throw new Error(`Public snapshot validation failed (${stage})`);
+    const message = stage === 'key setup'
+      ? 'Network record cannot be verified until trustee keys are configured. Register the keys and download a fresh election record.'
+      : `Public network record validation failed (${stage}). Choose an unchanged election record downloaded by this app.`;
+    const error = new Error(message);
+    if (stage === 'key setup') Object.defineProperty(error, 'code', { value: 'KEYS_NOT_CONFIGURED', enumerable: true });
+    observationErrors.set(error, message);
+    throw error;
   }
+}
+
+/** Preserve the emulator-only schema, receipt context and result contract. */
+export async function verifyNativePublicSnapshot(jsonText, { receipt = null, expectedConfigurationDigest = null } = {}) {
+  return verifyNativeRecord(jsonText, { receipt, expectedConfigurationDigest });
+}
+
+/** Strict network-export consistency only. Decode file bytes with fatal UTF-8
+ * (decodeJsonUtf8) first. This never relabels an observation as an emulator. */
+export function verifyNativeIndexedObservation(jsonText) {
+  return verifyNativeRecord(jsonText, { indexed: true });
+}
+
+/** Only errors created by the network verifier provide displayable diagnostics. */
+export function nativeIndexedObservationErrorMessage(error) {
+  return observationErrors.get(error) ?? null;
 }
 

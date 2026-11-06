@@ -12,6 +12,9 @@ import { encodeElectionJoinFile, readElectionJoinFile } from './election-join.mj
 import { encodeTrusteeKeyFile, readTrusteeKeyFile, assertTrusteeKeyMatches } from './trustee-key.mjs';
 import { describeNetworkElectionTiming, formatNetworkTimingDate } from './network-timing.mjs';
 import { describeNetworkVoting } from './network-voting.mjs';
+import { createVoterFileLabels, receiptFilenameForLabel } from './voter-file-label.mjs';
+import { decodeJsonUtf8, BROWSER_JSON_LIMIT } from './json.mjs';
+import { verifyNativeIndexedObservation } from '../contracts/native/verify-public.mjs';
 
 const hex = bytes => [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 const bytes = value => {
@@ -64,6 +67,8 @@ export async function initNetworkApplication() {
   const controls = [...document.querySelectorAll('[data-network-control]')];
   let wallets = [], session = null, client = null, state = null, busy = false;
   let dealer = null, latestReceipt = null, manifest = null;
+  const voterFileLabels = createVoterFileLabels();
+  let latestReceiptLabel = null, pendingReceiptLabel = null;
   let connectionFeedback = false;
   let setupMode = 'create';
   let lastStateReadAt = null;
@@ -104,7 +109,7 @@ export async function initNetworkApplication() {
     $('network-admin').readOnly = true;
     $('network-admin').placeholder = 'Click Generate administrator key';
   };
-  let voterDownloadCount = 0;
+  let voterDownloadCount = 0, voterCounterFloor = 0;
   const voterDownloadCounterKey = 'midnight-ballot-lab/voter-key-download-count';
   const nextVoterFilename = async () => {
     voterDownloadCount++;
@@ -115,7 +120,9 @@ export async function initNetworkApplication() {
         if (previous !== null && !/^(0|[1-9][0-9]{0,15})$/.test(previous)) return fallback();
         const count = previous === null ? 0 : Number(previous);
         if (!Number.isSafeInteger(count) || count < 0 || count >= Number.MAX_SAFE_INTEGER) return fallback();
-        const next = count + 1;
+        const base = Math.max(count, voterCounterFloor);
+        if (base >= Number.MAX_SAFE_INTEGER) return fallback();
+        const next = base + 1; voterCounterFloor = next;
         // Only a download counter is persisted. No key, voter identity or
         // key-to-filename mapping enters storage, logs, or public exports.
         localStorage.setItem(voterDownloadCounterKey, String(next));
@@ -127,6 +134,32 @@ export async function initNetworkApplication() {
       return navigator.locks?.request ? await navigator.locks.request(voterDownloadCounterKey, allocate) : allocate();
     } catch { return fallback(); }
   };
+  const reserveVoterFileCounter = async label => {
+    if (typeof label !== 'string' || !/^[0-9]{6,16}$/.test(label)) return;
+    const number = Number(label);
+    if (!Number.isSafeInteger(number) || number < 1) return;
+    voterCounterFloor = Math.max(voterCounterFloor, number);
+    const reserve = () => {
+      try {
+        const previous = localStorage.getItem(voterDownloadCounterKey);
+        if (previous !== null && !/^(0|[1-9][0-9]{0,15})$/.test(previous)) return;
+        const count = previous === null ? 0 : Number(previous);
+        if (!Number.isSafeInteger(count) || count < 0) return;
+        if (count < number) localStorage.setItem(voterDownloadCounterKey, String(number));
+      } catch { /* The in-memory floor still keeps this session's new labels apart. */ }
+    };
+    try {
+      if (navigator.locks?.request) await navigator.locks.request(voterDownloadCounterKey, reserve);
+      else reserve();
+    } catch { reserve(); }
+  };
+  const ensureVoterFileLabel = async key => {
+    const known = voterFileLabels.lookup(key);
+    if (known !== null) return known;
+    return voterFileLabels.import(key, await nextVoterFilename());
+  };
+  const receiptFilename = () => receiptFilenameForLabel(latestReceiptLabel)
+    ?? `midnight-network-receipt-${latestReceipt.receipt.slice(0, 12)}.json`;
   const hasValidKey = role => {
     try { normalizePrivateKey($(`network-${role}`).value); return true; } catch { return false; }
   };
@@ -135,6 +168,7 @@ export async function initNetworkApplication() {
     $('network-receipt-panel').hidden = true;
     $('network-receipt-code').textContent = '';
     $('network-receipt-id-display').textContent = '';
+    $('network-receipt-filename').textContent = '';
     $('network-receipt-qr').replaceChildren();
     $('network-next-steps-text').textContent = ''; $('network-next-steps').hidden = true;
     clearReceiptIdResult();
@@ -143,6 +177,7 @@ export async function initNetworkApplication() {
     const code = encodeNetworkReceipt(latestReceipt);
     $('network-receipt-code').textContent = code;
     $('network-receipt-id-display').textContent = latestReceipt.receipt;
+    $('network-receipt-filename').textContent = `Download filename: ${receiptFilename()}`;
     $('network-receipt-qr').innerHTML = qrSvg(code);
     $('network-receipt-panel').hidden = false;
     $('network-next-steps-text').textContent = networkReceiptNextSteps(state);
@@ -424,6 +459,7 @@ export async function initNetworkApplication() {
   });
   click('network-disconnect', async () => {
     session?.close(); session = null; client = null; state = null; dealer = null; manifest = null; latestReceipt = null;
+    voterFileLabels.clear(); voterCounterFloor = 0; latestReceiptLabel = null; pendingReceiptLabel = null;
     for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) $(id).value = '';
     lockAdministratorField();
     for (const role of keyRoles) {
@@ -519,7 +555,9 @@ export async function initNetworkApplication() {
       // This is an explicitly requested private download, separate from receipts
       // and public records. Never put the key in a URL, filename, log or export.
       const text = privateKeyText(input.value);
-      const filename = role === 'voter' ? await nextVoterFilename() : 'midnight-administrator-key.private.txt';
+      const filename = role === 'voter'
+        ? `midnight-voter-key-${await ensureVoterFileLabel(input.value)}.private.txt`
+        : 'midnight-administrator-key.private.txt';
       const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
       const link = document.createElement('a');
       link.href = url; link.download = filename;
@@ -530,7 +568,9 @@ export async function initNetworkApplication() {
     });
     $(`network-import-${role}`).addEventListener('change', () => void run(async () => {
       try {
-        const key = await readPrivateKeyFile($(`network-import-${role}`).files?.[0]);
+        const file = $(`network-import-${role}`).files?.[0];
+        const key = await readPrivateKeyFile(file);
+        if (role === 'voter') await reserveVoterFileCounter(voterFileLabels.import(key, file.name));
         input.value = key; setKeyVisibility(role, false);
         if (role === 'admin') lockAdministratorField();
         feedback.textContent = `${keyName(role)} key loaded and hidden. Use Show key to see it. The election checks whether this is the right key when you use it.`;
@@ -548,11 +588,17 @@ export async function initNetworkApplication() {
   });
   click('network-deploy', async () => {
     const choices = $('network-choices').value.split(/\r?\n/).map(value => value.trim());
-    if (choices.length < 2 || choices.length > 5 || new Set(choices).size !== choices.length || choices.some(value => !value || value.length > 40) || !$('network-title').value.trim()) throw new Error('Two to five different named choices required');
+    const title = $('network-title').value.trim();
+    const invalidLabel = (value, limit) => !value || value.length > limit || /[\u0000-\u001f\u007f]/.test(value);
+    if (choices.length < 2 || choices.length > 5 || new Set(choices).size !== choices.length
+      || choices.some(value => invalidLabel(value, 40)) || invalidLabel(title, 80)) {
+      status('Use an election name of up to 80 characters and two to five different choices of up to 40 characters each. Remove tabs or other control characters.');
+      return;
+    }
     const opens = Date.parse($('network-opens').value), closes = Date.parse($('network-closes').value);
     if (!Number.isFinite(opens) || !Number.isFinite(closes) || opens <= Date.now() || closes <= opens) throw new Error('Future network schedule required');
     manifest = null;
-    const deploymentManifest = { schema: 'midnight-ballot-lab/election-manifest/v1', title: $('network-title').value.trim(), choices };
+    const deploymentManifest = { schema: 'midnight-ballot-lab/election-manifest/v1', title, choices };
     const manifestDigest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(deploymentManifest))));
     const result = await client.deploy({ electionId: randomSecret32(), manifestDigest, candidateCount: choices.length,
       administratorIdentity: Native.pureCircuits.administratorIdentity(privateKeyBytes($('network-admin').value)),
@@ -576,14 +622,20 @@ export async function initNetworkApplication() {
   click('network-cast', async () => {
     const selection = selectedValue('network-choice');
     if (!/^[0-4]$/.test(selection) || Number(selection) >= Number(state?.candidateCount)) throw new Error('Choose a configured candidate');
-    latestReceipt = null;
+    const castLabel = await ensureVoterFileLabel($('network-voter').value);
+    latestReceipt = null; latestReceiptLabel = null;
+    pendingReceiptLabel = castLabel;
     clearReceiptDisplay();
     try {
       latestReceipt = await client.castBallot({ voterSecret: privateKeyBytes($('network-voter').value), selection: BigInt(selection) });
+      latestReceiptLabel = castLabel;
       confirmed('Ballot', latestReceipt); showReceipt(); await refreshState();
-    } finally { clearSelection('network-choice'); }
+    } finally {
+      clearSelection('network-choice');
+      if (!client.pendingBallotReceipt) pendingReceiptLabel = null;
+    }
   });
-  click('network-save-receipt', async () => { savePublicJson('midnight-network-receipt.json', latestReceipt); status('Public receipt saved.'); });
+  click('network-save-receipt', async () => { savePublicJson(receiptFilename(), latestReceipt); status('Public receipt saved.'); });
   click('network-copy-receipt-id', async () => {
     if (!latestReceipt) throw new Error('No receipt available');
     try { await navigator.clipboard.writeText(latestReceipt.receipt); status('Receipt ID copied. Save the full receipt too, so you keep its election context.'); }
@@ -591,6 +643,7 @@ export async function initNetworkApplication() {
   });
   click('network-recover-receipt', async () => {
     latestReceipt = await client.recoverPendingReceipt();
+    latestReceiptLabel = pendingReceiptLabel; pendingReceiptLabel = null;
     clearReceiptIdResult(); showReceipt(); await refreshState();
     status('Your pending vote matches the encrypted ballot returned by the indexer. Nothing was submitted again. Its transaction reference and blockchain inclusion have not been independently verified.');
   });
@@ -636,6 +689,46 @@ export async function initNetworkApplication() {
     });
     status('Election record downloaded. It contains what your indexer reported, without independent authentication.');
   });
+  $('network-import-record').addEventListener('change', () => void run(async () => {
+    const input = $('network-import-record'), result = $('network-imported-record');
+    const output = $('network-imported-record-summary'), feedback = $('network-record-file-status');
+    result.hidden = true; output.replaceChildren();
+    feedback.textContent = 'Checking the saved record with Midnight cryptography…';
+    try {
+      const file = input.files?.[0];
+      if (!file || !/\.json$/i.test(file.name) || !Number.isSafeInteger(file.size)
+        || file.size < 1 || file.size > BROWSER_JSON_LIMIT) throw new Error('Invalid public record file');
+      const data = new Uint8Array(await file.arrayBuffer());
+      if (data.byteLength < 1 || data.byteLength > BROWSER_JSON_LIMIT) throw new Error('Invalid public record size');
+      const checked = await verifyNativeIndexedObservation(decodeJsonUtf8(data));
+      const phases = ['Registration', 'Voting open', 'Voting closed; awaiting results', 'Results published'];
+      const rows = [
+        ['Network recorded in file', checked.networkId],
+        ['Election', checked.title ?? 'No choice labels included'],
+        ['Contract address', checked.contractAddress],
+        ['Election fingerprint', checked.configurationDigest],
+        ['Stage recorded in file', phases[checked.phase]],
+        ['Recorded ballots', String(checked.accepted)],
+      ];
+      if (checked.totals !== null) checked.totals.forEach((total, index) => {
+        rows.push([checked.candidates?.[index] ?? `Choice ${index}`, String(total)]);
+      });
+      else rows.push(['Results', 'Not finalized in this saved record']);
+      const list = document.createElement('dl'); list.className = 'uploaded-record-details';
+      for (const [label, value] of rows) {
+        const row = document.createElement('div'), term = document.createElement('dt'), description = document.createElement('dd');
+        term.textContent = label; description.textContent = value; row.append(term, description); list.append(row);
+      }
+      output.replaceChildren(list); result.hidden = false;
+      feedback.textContent = 'Saved record checked locally. This upload did not connect a wallet or contact the network.';
+      status('Saved election record checked. Read the file results and limits in Verify election.');
+    } catch (error) {
+      feedback.textContent = error?.code === 'KEYS_NOT_CONFIGURED'
+        ? 'This record was saved before trustee keys were registered. Download a new election record after key registration to check its cryptographic consistency.'
+        : 'This file could not be verified. Choose an election record downloaded from this testnet page (.json, up to 8 MB). It may be incomplete, altered or in an unsupported format. No election or network settings were changed.';
+      status('Saved record check did not pass. See the message beside the upload control.');
+    } finally { input.value = ''; }
+  }));
   click('network-check-receipt', async () => {
     await client.checkReceipt(decodeNetworkReceipt($('network-receipt-input').value.trim()));
     status('Your receipt matches the encrypted ballot and election settings returned by the indexer. Its transaction reference and blockchain inclusion have not been independently verified.');
