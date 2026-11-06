@@ -73,6 +73,18 @@ async function checkLoadedReceipt(page, accepted) {
   if (accepted) assert.match(await page.locator('#native-receipt-check-output').textContent(), /does not prove voter identity, fairness or blockchain confirmation/);
 }
 
+async function checkReceiptId(page, text, accepted) {
+  const fullReceipt = await page.locator('#native-receipt-input').inputValue();
+  await page.locator('#native-receipt-id').fill(text);
+  assert.equal(await page.locator('#native-receipt-id-result').textContent(), '', 'Editing the ID must clear its earlier result');
+  await page.locator('#native-check-receipt-id').click(); await waitOperation(page);
+  const output = page.locator('#native-receipt-id-result');
+  assert.equal(await output.evaluate(element => element.classList.contains('pass')), accepted);
+  if (accepted) assert.match(await output.textContent(), /does not prove who voted, that the record is genuine or that the election was fair.*not confirmation of a blockchain transaction.*full receipt/);
+  else assert.equal(await output.evaluate(element => element.classList.contains('fail')), true);
+  assert.equal(await page.locator('#native-receipt-input').inputValue(), fullReceipt, 'ID lookup must not replace the full receipt');
+}
+
 async function uploadReceipt(page, text, name = 'saved-receipt.json', valid = true) {
   await page.locator('#native-receipt-file').setInputFiles({ name,
     mimeType: name.endsWith('.json') ? 'application/json' : 'text/plain', buffer: Buffer.from(text) });
@@ -323,6 +335,8 @@ try {
         assert.equal(await page.locator('input[name="native-choice"]:checked').count(), 0, 'Private choice must clear after casting');
         assert.equal(await page.locator('#native-voter').inputValue(), '', 'Voter selection must clear before a public receipt is displayed');
         assert.equal(await page.locator(`#native-voter option[value="${voterOrder[index]}"]`).isDisabled(), true, 'Used credential must be unavailable');
+        assert.equal(await page.locator('#native-next-steps').isVisible(), true);
+        assert.match(await page.locator('#native-next-steps-text').textContent(), /organizer to close voting.*any two trustees.*Verify election/);
         publicReceipts.push(await downloadJson(page, '#native-save-receipt'));
       }
       assert.equal(await page.locator('#native-cast').isDisabled(), true, 'No unused synthetic credential is available');
@@ -342,7 +356,21 @@ try {
       const fields = [receipt.contractAddress, receipt.electionId, receipt.configurationDigest, receipt.receipt];
       const expectedQr = `mbne1:${receipt.index}:${Buffer.concat(fields.map(value => Buffer.from(value, 'hex'))).toString('base64url')}`;
       assert.equal(qr.data, expectedQr, 'Rendered QR does not encode the downloaded public receipt');
-      await page.locator('[data-native-nav="check"]').click();
+      if (pair === '1,2') {
+        await page.locator('#native-receipt-panel').screenshot({ path: join(evidenceDir, 'receipt-next-steps.png') });
+        await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
+        await page.locator('#native-copy-receipt-id').click(); await waitOperation(page);
+        assert.equal(await page.evaluate(() => navigator.clipboard.readText()), receipt.receipt, 'Copy ID must copy exactly the public 64-character ID');
+      }
+      await page.locator('#native-next-steps [data-native-nav="check"]').click();
+      stage = `trustees-${pair.replace(',', '-')}:receipt-id-current-record`;
+      for (const savedReceipt of publicReceipts) await checkReceiptId(page, `  ${savedReceipt.receipt.toUpperCase()}  `, true);
+      for (const invalidId of ['', 'x'.repeat(64), receipt.receipt.slice(1), JSON.stringify(receipt)]) await checkReceiptId(page, invalidId, false);
+      const missingId = Array.from({ length: publicReceipts.length + 1 }, (_, i) => i.toString(16).padStart(64, '0'))
+        .find(id => publicReceipts.every(item => item.receipt !== id));
+      await checkReceiptId(page, missingId, false);
+      await checkReceiptId(page, receipt.receipt, true);
+      if (pair === '1,2') await page.locator('[data-native-panel="check"]').screenshot({ path: join(evidenceDir, 'receipt-id-verification.png') });
       await checkReceipt(page, qr.data, true);
       await checkReceipt(page, JSON.stringify(receipt), true);
       await uploadReceipt(page, JSON.stringify(receipt)); await checkLoadedReceipt(page, true);
@@ -367,6 +395,8 @@ try {
       await page.locator('#native-close').click();
       await waitOperation(page);
       assert.equal(await page.locator('#native-phase').textContent(), 'Voting closed');
+      assert.match(await page.locator('#native-next-steps-text').textContent(), /Voting is closed.*Any two trustees/);
+      assert.equal(await page.locator('#native-receipt-id-result').textContent(), '', 'A changed election phase must clear the preceding lookup result');
       assert.equal(await page.locator('input[name="native-trustee"]:checked').count(), 0);
       assert.equal(await page.locator('#native-finalize').isDisabled(), true, 'Choose exactly two trustees before tallying');
       const selectedPair = pair.split(',');
@@ -394,9 +424,10 @@ try {
       await page.locator('#native-finalize').click();
       await waitOperation(page);
       assert.equal(await page.locator('#native-phase').textContent(), 'Results ready');
+      assert.match(await page.locator('#native-next-steps-text').textContent(), /results are ready.*Verify election.*every voter/);
       assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), totals.map(String));
       assert.equal(await page.locator('#native-finalize').isDisabled(), true);
-      await page.locator('[data-native-nav="check"]').click();
+      await page.locator('.step[data-native-nav="check"]').click();
       await page.locator('#native-check-result').click();
       await waitOperation(page);
       assert.match(await page.locator('#native-check-output').textContent(), new RegExp(`Election checks passed for ${voterCount} ballots`));
@@ -430,7 +461,7 @@ try {
         verifierPage.on('pageerror', () => { verifierErrors++; });
         await verifierPage.goto(`${origin}${prefix}native.html`, { waitUntil: 'networkidle' });
         await verifierPage.waitForFunction(() => document.getElementById('native-availability').dataset.state === 'ready');
-        await verifierPage.locator('[data-native-nav="check"]').click();
+        await verifierPage.locator('.step[data-native-nav="check"]').click();
         assert.equal(await verifierPage.locator('#native-phase').textContent(), 'Not created');
         assert.equal(await verifierPage.locator('#native-verify-import').isDisabled(), false, 'Fresh-tab verification must not require credentials');
         const publicJson = JSON.stringify(snapshot);
@@ -442,6 +473,9 @@ try {
         await verifierPage.locator('#native-verify-import').click(); await waitOperation(verifierPage);
         assert.match(await verifierPage.locator('#native-check-output').textContent(), /Record checks passed/);
         assert.equal(await verifierPage.locator('#native-check-source').inputValue(), 'import');
+        await checkReceiptId(verifierPage, ` ${receipt.receipt.toUpperCase()} `, true);
+        await checkReceiptId(verifierPage, missingId, false);
+        await checkReceiptId(verifierPage, receipt.receipt, true);
         for (const savedReceipt of publicReceipts) await checkReceipt(verifierPage, JSON.stringify(savedReceipt), true);
         await uploadReceipt(verifierPage, JSON.stringify(receipt)); await checkLoadedReceipt(verifierPage, true);
         await checkReceipt(verifierPage, qr.data, true);
@@ -451,6 +485,8 @@ try {
         const alteredSnapshot = structuredClone(snapshot);
         alteredSnapshot.finalizedTotals[0] += 1;
         await verifierPage.locator('#native-import-text').fill(JSON.stringify(alteredSnapshot));
+        assert.equal(await verifierPage.locator('#native-receipt-id-result').textContent(), '');
+        assert.equal(await verifierPage.locator('#native-check-receipt-id').isDisabled(), true, 'Changed imports must invalidate ID lookup context');
         assert.equal(await verifierPage.locator('#native-check-receipt').isDisabled(), true, 'Changing an import must invalidate its verification context');
         await verifierPage.locator('#native-verify-import').click();
         await verifierPage.waitForFunction(() => !document.getElementById('native-status').classList.contains('working'));
@@ -459,12 +495,27 @@ try {
         await verifierPage.locator('#native-import-text').fill(publicJson);
         await verifierPage.locator('#native-verify-import').click(); await waitOperation(verifierPage);
         await checkReceipt(verifierPage, qr.data, true);
+        await checkReceiptId(verifierPage, receipt.receipt, true);
         if (pair === '2,3') await verifierPage.screenshot({ path: join(evidenceDir, 'independent-public-verification.png'), fullPage: true });
+        // A genuinely different local election provides a wrong-record context;
+        // selecting it must clear the earlier imported-record result.
+        await verifierPage.locator('.step[data-native-nav="setup"]').click();
+        await verifierPage.locator('#native-create').click(); await waitOperation(verifierPage);
+        await verifierPage.locator('.step[data-native-nav="check"]').click();
+        await verifierPage.locator('#native-check-source').selectOption('session');
+        assert.equal(await verifierPage.locator('#native-receipt-id-result').textContent(), '');
+        await checkReceiptId(verifierPage, receipt.receipt, false);
+        await verifierPage.locator('#native-check-source').selectOption('import');
+        assert.equal(await verifierPage.locator('#native-receipt-id-result').textContent(), '');
+        await checkReceiptId(verifierPage, receipt.receipt, true);
         await uploadReceipt(verifierPage, JSON.stringify(receipt));
         await verifierPage.locator('#native-reset').click();
         assert.equal(await verifierPage.locator('#native-import-text').inputValue(), '');
         assert.equal(await verifierPage.locator('#native-receipt-file').inputValue(), '');
         assert.equal(await verifierPage.locator('#native-receipt-input').inputValue(), '');
+        assert.equal(await verifierPage.locator('#native-receipt-id').inputValue(), '');
+        assert.equal(await verifierPage.locator('#native-receipt-id-result').textContent(), '');
+        assert.equal(await verifierPage.locator('#native-check-receipt-id').isDisabled(), true);
         assert.equal(await verifierPage.locator('#native-check-receipt').isDisabled(), true);
         assert.equal(await verifierPage.evaluate(() => localStorage.length + sessionStorage.length), 0);
         assert.equal(verifierErrors, 0);
@@ -491,12 +542,15 @@ try {
       assert.equal(await page.locator('#native-phase').textContent(), 'Not created');
       assert.equal(await page.locator('#native-ballots').textContent(), '0');
       assert.equal(await page.locator('#native-receipt-input').inputValue(), '');
+      assert.equal(await page.locator('#native-receipt-id').inputValue(), '');
+      assert.equal(await page.locator('#native-next-steps').isVisible(), false);
       assert.equal(await page.locator('#native-receipt-qr svg').count(), 0);
       assert.equal(await page.locator('input[name="native-trustee"]:checked').count(), 0, 'Reset must clear trustee selection');
       await page.locator('#native-create').click();
       await waitOperation(page);
-      await page.locator('[data-native-nav="check"]').click();
+      await page.locator('.step[data-native-nav="check"]').click();
       await checkReceipt(page, qr.data, false);
+      await checkReceiptId(page, receipt.receipt, false);
       await uploadReceipt(page, JSON.stringify(receipt)); await checkLoadedReceipt(page, false);
       assert.equal(await page.evaluate(() => localStorage.length), 0, 'Demo private state must not persist in localStorage');
       assert.equal(await page.evaluate(() => sessionStorage.length), 0, 'Demo private state must not persist in sessionStorage');
@@ -512,6 +566,9 @@ try {
         freshTabPublicVerification: true, everyReceiptChecked: true, tamperedSnapshotRejected: true,
         clickableCardsChecked: true, keyboardSelectionChecked: true, exactTwoTrusteesChecked: true,
         renderedQrDecoded: true, receiptContextRejections: true, reset: true, wasmLoaded: loadedWasm.size, mobileViewportChecked });
+      evidence.cases.at(-1).receiptIdLookup = { currentRecord: true, verifiedImport: true, caseInsensitiveTrimmed: true,
+        invalidAndMissingRejected: true, wrongElectionRejected: true, changedContextClearsResult: true,
+        fullReceiptValidationPreserved: true, clipboardCopiedExactId: pair === '1,2', postVoteGuidance: true };
       console.log(JSON.stringify({ stage: `trustees-${pair.replace(',', '-')}`, passed: true }));
     } finally { await context.close(); }
   }
@@ -544,14 +601,17 @@ try {
     await page.locator('#native-voter').selectOption('0');
     await page.locator('#native-choices label:has(input[value="1"])').click();
     await page.locator('#native-cast').click(); await waitOperation(page);
+    assert.match(await page.locator('#native-next-steps-text').textContent(), /Voting closes.*Keep this tab open.*trustees 1 and 3/);
     const receipt = await downloadJson(page, '#native-save-receipt');
     assert.equal(await page.locator('#native-finalize').isDisabled(), true);
     await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Results ready');
+    assert.match(await page.locator('#native-next-steps-text').textContent(), /results are ready/);
     assert.ok(Date.now() - startedAt >= 15_000, 'Scheduled test must wait for the actual wall-clock duration');
     assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '1', '0']);
-    await page.locator('[data-native-nav="check"]').click();
+    await page.locator('.step[data-native-nav="check"]').click();
     await page.locator('#native-check-result').click(); await waitOperation(page);
     await checkReceipt(page, JSON.stringify(receipt), true);
+    await checkReceiptId(page, receipt.receipt, true);
     const snapshot = await downloadJson(page, '#native-export'); await waitOperation(page);
     assert.equal(snapshot.manifest.timingMode, 'scheduled'); assert.equal(snapshot.manifest.durationSeconds, 15);
     assert.equal(snapshot.closesAt - snapshot.opensAt, 15);
@@ -578,7 +638,7 @@ try {
     await page.locator('#native-duration').fill('15');
     await page.locator('#native-create').click(); await waitOperation(page);
     assert.equal(await page.locator('#native-phase').textContent(), 'Getting ready');
-    await page.locator('[data-native-nav="check"]').click();
+    await page.locator('.step[data-native-nav="check"]').click();
     const beforeSuspension = await downloadJson(page, '#native-export'); await waitOperation(page);
     // Freeze the real Chromium page lifecycle, without replacing Date, timers,
     // application state or native calls. Wall-clock time continues normally.
@@ -592,7 +652,7 @@ try {
     await page.waitForFunction(() => document.getElementById('native-phase').textContent === 'Results ready');
     await lifecycle.detach();
     assert.deepEqual(await page.locator('#native-result-bars .result-label strong').allTextContents(), ['0', '0']);
-    await page.locator('[data-native-nav="check"]').click();
+    await page.locator('.step[data-native-nav="check"]').click();
     await page.locator('#native-check-result').click(); await waitOperation(page);
     const snapshot = await downloadJson(page, '#native-export'); await waitOperation(page);
     assert.equal(snapshot.accepted, 0); assert.deepEqual(snapshot.finalizedTotals, [0, 0, 0, 0, 0]);

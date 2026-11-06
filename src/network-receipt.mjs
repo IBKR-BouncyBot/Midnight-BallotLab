@@ -35,3 +35,17 @@ export function decodeNetworkReceipt(text) {
   if (encodeNetworkReceipt(receipt) !== text) throw new TypeError('Noncanonical native network QR receipt');
   return receipt;
 }
+
+/** Guidance from the actual selected election record, shown only after the app
+ * has obtained a matching receipt. A deadline never implies automatic tallying.
+ */
+export function networkReceiptNextSteps({ phase, closesAt }) {
+  if (typeof closesAt !== 'bigint' || closesAt < 0n || ![0n, 1n, 2n, 3n].includes(phase)) throw new TypeError('Invalid election timing record');
+  const date = closesAt <= 8_640_000_000_000n ? new Date(Number(closesAt) * 1000) : null;
+  const closing = date && !Number.isNaN(date.getTime()) ? date.toISOString().replace('.000Z', ' UTC').replace('T', ' ') : `Unix time ${closesAt}`;
+  const saved = 'Save your receipt ID and full receipt, and check them below. ';
+  if (phase === 3n) return saved + 'Your indexer reports that the tally is finalized. Use Refresh election record to see the reported totals.';
+  const next = phase === 2n ? 'Voting is closed in your indexer’s record. Two trustees must contribute and a finalization transaction must be accepted; closing alone does not reveal results. '
+    : `Voting is scheduled to close at ${closing}; results do not appear automatically. After that time, someone must submit the close-voting transaction, two trustees must contribute, and a finalization transaction must be accepted. `;
+  return saved + next + 'Use Refresh election record to follow progress and see the recorded totals.';
+}

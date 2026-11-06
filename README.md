@@ -15,16 +15,18 @@ The homepage explains the lab and offers two ways to try it:
 | [**Browser demo**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/native.html) | Run real Midnight cryptography locally with **2–5 choices** and **1–1,024 demo voters**. All voters and trustees share one browser. No proofs or blockchain transactions are created. | A browser. No wallet or funds. |
 | [**Public testnet**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) | Connect to public Preview and use the wallet, prover and network transaction flow. Public Preview wallet connection has been tested; accepted application transactions on Preview remain unverified. | Midnight-enabled Lace on Preview; test NIGHT, usable tDUST and local proof server **8.1.3** for transactions. |
 
-Anyone with the browser demo's shared election file can check that its record and totals agree. Each voter can also upload their own receipt to check that it appears in that record. These checks do not establish that the record is authentic or that the election was fair.
+Anyone with the browser demo's shared election file can check that its record and totals agree. Each voter can paste a receipt ID to look up their encrypted ballot, or check a saved full receipt. An ID lookup does not prove who cast the ballot. These checks do not establish that the record is authentic or that the election was fair.
+
+**Can two trustees read individual votes? Yes.** Any two trustees who cooperate can decrypt individual ballots outside the app, even before results are revealed. The interface shows combined totals, but the key shares do not prevent this. This demo also creates all three trustee shares in one browser; it does not establish independent custody.
 
 ## Try an election in a few clicks
 
 Open **Browser demo**, then:
 
 1. **Set up election.** Add a name and your choices, then choose how many demo voters can take part. Pick manual controls or **Timed election**.
-2. **Vote / Cast a ballot.** Choose a voter, click a choice and cast the ballot. Save the receipt as a QR code or file.
+2. **Vote / Cast a ballot.** Choose a voter, click a choice and cast the ballot. Save the full receipt and copy its ID. **What happens next?** explains when results can be revealed and how to check them.
 3. **Reveal results.** Select any two trustee cards to reveal the totals. A timed election closes and reveals automatically; keep the tab open.
-4. **Verify election.** Upload the shared election file. Under **Check your own receipt**, upload a receipt file (JSON or text), or paste its contents. You can do this in a new session without setting up an election.
+4. **Verify election.** Upload and check the shared election file. Under **Check your own receipt**, paste the 64-character receipt ID, upload a receipt file (JSON or text), or paste the full receipt. You can do this in a new session without setting up an election. An ID lookup uses the selected record; a full receipt also carries the election details to compare.
 
 ![Set up election, cast a ballot, reveal results and check the shared record](docs/assets/how-it-works.svg)
 

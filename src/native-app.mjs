@@ -17,6 +17,12 @@ const bytesFromHex = value => {
 };
 const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
 const setupWindowExpired = () => Object.assign(new Error('Setup opening window elapsed'), { code: 'SETUP_WINDOW_EXPIRED' });
+function normalizeReceiptId(value) {
+  if (typeof value !== 'string' || value.length > 256) throw new Error('Invalid receipt ID');
+  const id = value.trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(id)) throw new Error('Invalid receipt ID');
+  return id;
+}
 
 function encodeReceipt(receipt) {
   const bytes = new Uint8Array(128);
@@ -74,6 +80,7 @@ export async function initNativeDemo() {
     return element;
   };
   let session = null, lastReceipt = null, verifiedImport = null, busy = false, scheduleTimer = null;
+  let receiptIdContext = null, receiptIdRevision = '';
   let activePanel = 'setup';
   const events = [];
 
@@ -124,9 +131,28 @@ export async function initNativeDemo() {
     $('native-voter').value = previous !== '' && session?.voters[Number(previous)] ? previous : '';
   }
   const selectedTrustees = () => [...document.querySelectorAll('input[name="native-trustee"]:checked')].map(input => input.value);
+  function clearReceiptIdResult() {
+    $('native-receipt-id-result').textContent = '';
+    $('native-receipt-id-result').className = 'inline-status';
+  }
   function invalidateImport() {
     verifiedImport = null; $('native-check-source').value = 'session';
     $('native-check-output').hidden = true; $('native-receipt-check-output').textContent = '';
+    clearReceiptIdResult();
+  }
+  function renderNextSteps(state) {
+    $('native-next-steps').hidden = !lastReceipt;
+    if (!lastReceipt || !session) { $('native-next-steps-text').textContent = ''; return; }
+    const later = ' After results are ready, open Verify election, upload and check the public election record, then look up your receipt ID. Save the full JSON or QR receipt too.';
+    $('native-next-steps-text').textContent = state.phase === 3n
+      ? 'The results are ready. Open Verify election to check the totals and your receipt ID. Share the public election record so every voter can upload and check it. Keep the full JSON or QR receipt too.'
+      : session.scheduleFailed
+        ? 'The timed election stopped before finishing. Keep your receipt and check the election status before trying again.' + later
+        : session.manifest.timingMode === 'scheduled'
+          ? `Voting closes ${new Date(session.closesAt * 1000).toLocaleString()}. Keep this tab open: this browser demo will then use trustees 1 and 3 to reveal the results.` + later
+          : state.phase === 2n
+            ? 'Voting is closed. Any two trustees must contribute to reveal the results.' + later
+            : 'Wait for the election organizer to close voting and ask any two trustees to reveal the results.' + later;
   }
   function updateScheduleStatus() {
     const element = $('native-schedule-status');
@@ -157,6 +183,9 @@ export async function initNativeDemo() {
     $('native-voter-label').textContent = !session ? 'Set up an election to start voting.' : phase !== 1n
       ? phase === 0n ? 'Voting has not opened yet.' : 'Voting is closed.' : !canVote ? 'No more demo voters can vote in this election.' : 'Choose a demo voter who has not voted yet. Voter names are not saved with ballots.';
     const receiptContext = $('native-check-source').value === 'import' ? verifiedImport : session;
+    const receiptRevision = receiptContext === session && state ? `${state.phase}:${state.accepted}` : '';
+    if (receiptIdContext !== receiptContext || receiptIdRevision !== receiptRevision) clearReceiptIdResult();
+    receiptIdContext = receiptContext; receiptIdRevision = receiptRevision;
     const enabled = {
       'native-election-title': !session, 'native-voter-count': !session, 'native-candidate-count': !session,
       'native-timing-mode': !session, 'native-duration': !session && $('native-timing-mode').value === 'scheduled',
@@ -166,9 +195,11 @@ export async function initNativeDemo() {
       'native-finalize': !scheduled && phase === 2n && selectedTrustees().length === 2,
       'native-export': !!session, 'native-check-result': phase === 3n,
       'native-receipt-input': !!receiptContext, 'native-receipt-file': !!receiptContext, 'native-check-receipt': !!receiptContext,
+      'native-receipt-id': !!receiptContext, 'native-check-receipt-id': !!receiptContext,
       'native-import-file': true, 'native-import-text': true, 'native-expected-digest': true, 'native-verify-import': true,
       'native-check-source': !!session || !!verifiedImport,
       'native-save-receipt': !!lastReceipt, 'native-copy-receipt': !!lastReceipt, 'native-use-receipt': !!lastReceipt,
+      'native-copy-receipt-id': !!lastReceipt,
       'native-reset': true,
     };
     for (const [id, allowed] of Object.entries(enabled)) $(id).disabled = busy || !allowed;
@@ -192,6 +223,7 @@ export async function initNativeDemo() {
       : `Choose two trustees · ${trusteeCount} of 2 selected`;
     document.querySelectorAll('[data-native-nav]').forEach(button => { button.disabled = busy; });
     $('native-receipt-panel').hidden = !lastReceipt;
+    renderNextSteps(state);
     $('native-results').hidden = phase !== 3n;
     $('native-ballot-list').replaceChildren();
     if (state?.accepted > 0n) {
@@ -440,6 +472,62 @@ export async function initNativeDemo() {
     try { await navigator.clipboard.writeText(code); status('Receipt copied.'); }
     catch { $('native-receipt-input').value = code; $('native-receipt-check-output').textContent = ''; showPanel('check'); status('Clipboard access was unavailable. Copy the receipt from the receipt field instead.'); }
   }));
+  $('native-copy-receipt-id').addEventListener('click', () => operate('Copying your receipt ID…', async () => {
+    if (!lastReceipt) throw new Error('No receipt');
+    const id = normalizeReceiptId(lastReceipt.receipt);
+    try { await navigator.clipboard.writeText(id); status('Receipt ID copied. Keep the full receipt too: it includes the election details.'); }
+    catch {
+      $('native-receipt-id').value = id; clearReceiptIdResult(); showPanel('check');
+      status('Clipboard access was unavailable. Copy the ID from the receipt ID field instead. No lookup has been performed.');
+    }
+  }));
+  $('native-receipt-id').addEventListener('input', clearReceiptIdResult);
+  $('native-check-receipt-id').addEventListener('click', () => operate('Looking up your receipt ID…', async () => {
+    const output = $('native-receipt-id-result'); clearReceiptIdResult();
+    let id;
+    try { id = normalizeReceiptId($('native-receipt-id').value); }
+    catch {
+      output.className = 'inline-status fail'; output.textContent = 'Enter a receipt ID containing exactly 64 hexadecimal characters.';
+      status('The receipt ID has not been checked.'); return;
+    }
+    const source = $('native-check-source').value, context = source === 'import' ? verifiedImport : session;
+    const stillCurrent = () => $('native-check-source').value === source
+      && (source === 'import' ? verifiedImport : session) === context
+      && $('native-receipt-id').value.trim().toLowerCase() === id;
+    try {
+      if (!context) throw new Error('No selected record');
+      let receipt;
+      if (source === 'import') {
+        const snapshot = context.result.snapshot;
+        const matches = snapshot.ballots.filter(ballot => ballot.receipt === id);
+        if (matches.length !== 1) throw new Error('Receipt ID must identify one ballot');
+        receipt = { schema: RECEIPT_SCHEMA, execution: 'generated-contract-emulator', network: null,
+          contractAddress: snapshot.contractAddress, electionId: snapshot.electionId,
+          configurationDigest: snapshot.configurationDigest, index: matches[0].index, receipt: id };
+        const result = await verifyNativePublicSnapshot(context.jsonText, { receipt,
+          expectedConfigurationDigest: context.expectedConfigurationDigest });
+        if (!result.receiptMatched) throw new Error('Receipt ID failed public record checks');
+      } else {
+        const state = context.emulator.readLedger(), matches = [];
+        if (state.accepted < 0n || state.accepted > BigInt(NATIVE_CAPACITY)) throw new Error('Invalid ballot count');
+        for (let index = 0n; index < state.accepted; index++) {
+          if (hex(state.ballotReceipts.lookup(index)) === id) matches.push(index);
+        }
+        if (matches.length !== 1) throw new Error('Receipt ID must identify one ballot');
+        receipt = newReceipt(bytesFromHex(id), matches[0]);
+        checkReceipt(receipt);
+      }
+      if (!stillCurrent()) { clearReceiptIdResult(); status('The record or ID changed. Look up the receipt ID again.'); return; }
+      output.className = 'inline-status pass';
+      output.textContent = 'Receipt ID found in the selected election’s record. A match does not prove who voted, that the record is genuine or that the election was fair. It is not confirmation of a blockchain transaction. Use the full receipt to compare its election details.';
+      status('Receipt ID matches the selected record.');
+    } catch {
+      if (!stillCurrent()) { clearReceiptIdResult(); status('The record or ID changed. Look up the receipt ID again.'); return; }
+      output.className = 'inline-status fail';
+      output.textContent = 'This receipt ID was not found or did not pass its checks in the selected election record. Check the ID and record, or use the full receipt.';
+      status('Receipt ID did not match the selected record.');
+    }
+  }));
   $('native-receipt-input').addEventListener('input', () => { $('native-receipt-file').value = ''; $('native-receipt-check-output').textContent = ''; });
   $('native-receipt-file').addEventListener('change', () => operate('Loading your receipt…', async () => {
     const output = $('native-receipt-check-output');
@@ -458,7 +546,7 @@ export async function initNativeDemo() {
     }
   }));
   $('native-check-source').addEventListener('change', () => {
-    $('native-receipt-check-output').textContent = ''; status('Election record changed. Check your receipt against the selected record.'); render();
+    $('native-receipt-check-output').textContent = ''; clearReceiptIdResult(); status('Election record changed. Check your receipt against the selected record.'); render();
   });
   for (const id of ['native-import-text', 'native-expected-digest']) $(id).addEventListener('input', () => {
     invalidateImport(); status('The record or election code changed. Check the record again before checking receipts.'); render();
@@ -493,7 +581,7 @@ export async function initNativeDemo() {
   }));
   $('native-use-receipt').addEventListener('click', () => {
     if (lastReceipt) { $('native-receipt-input').value = encodeReceipt(lastReceipt); $('native-check-source').value = 'session'; }
-    $('native-receipt-check-output').textContent = '';
+    $('native-receipt-check-output').textContent = ''; clearReceiptIdResult();
     render();
   });
   $('native-check-receipt').addEventListener('click', () => operate('Checking your receipt…', async () => {
@@ -547,7 +635,7 @@ export async function initNativeDemo() {
       output.className = 'verification-result';
       output.textContent = `Election checks passed for ${state.accepted} ballots. Election details, unique ballot receipts, encrypted ballot totals and trustee contributions agree. This checks consistency, not voter identity, fairness or blockchain confirmation.`;
       status('The recorded ballots and results agree.');
-      $('native-check-source').value = 'session';
+      $('native-check-source').value = 'session'; clearReceiptIdResult();
     } catch {
       output.className = 'verification-result failure'; output.textContent = 'The election record did not pass its checks. Do not rely on these results.';
       status('The election checks did not pass.', true);
@@ -560,6 +648,7 @@ export async function initNativeDemo() {
     session?.emulator.setPrivateState({}); session = null; lastReceipt = null; events.length = 0;
     invalidateImport(); $('native-import-file').value = ''; $('native-import-text').value = ''; $('native-expected-digest').value = '';
     $('native-event-log').replaceChildren(); $('native-vote-form').reset(); $('native-receipt-input').value = ''; $('native-receipt-file').value = '';
+    $('native-receipt-id').value = ''; clearReceiptIdResult();
     document.querySelectorAll('input[name="native-trustee"]').forEach(input => { input.checked = false; });
     $('native-receipt-check-output').textContent = ''; $('native-check-output').hidden = true;
     $('native-receipt-qr').replaceChildren(); $('native-receipt-hash').textContent = '';

@@ -5,7 +5,7 @@ import { createNativeSdkClient } from '../contracts/native/sdk-client.mjs';
 import { createDemoDealer, randomSecret32, requireBytes32, requireScalar } from '../contracts/native/adapter.mjs';
 import { projectNativePublicLedger } from '../contracts/native/record.mjs';
 import * as Native from '../contracts/managed/native-election/contract/index.js';
-import { encodeNetworkReceipt, decodeNetworkReceipt } from './network-receipt.mjs';
+import { encodeNetworkReceipt, decodeNetworkReceipt, networkReceiptNextSteps } from './network-receipt.mjs';
 import { qrSvg } from './qr.mjs';
 import { normalizePrivateKey, privateKeyText, readPrivateKeyFile } from './private-key.mjs';
 
@@ -60,6 +60,24 @@ export async function initNetworkApplication() {
   const hasValidKey = role => {
     try { normalizePrivateKey($(`network-${role}`).value); return true; } catch { return false; }
   };
+  const clearReceiptIdResult = () => { $('network-receipt-id-result').textContent = ''; };
+  const clearReceiptDisplay = () => {
+    $('network-receipt-panel').hidden = true;
+    $('network-receipt-code').textContent = '';
+    $('network-receipt-id-display').textContent = '';
+    $('network-receipt-qr').replaceChildren();
+    $('network-next-steps-text').textContent = ''; $('network-next-steps').hidden = true;
+    clearReceiptIdResult();
+  };
+  const showReceipt = () => {
+    const code = encodeNetworkReceipt(latestReceipt);
+    $('network-receipt-code').textContent = code;
+    $('network-receipt-id-display').textContent = latestReceipt.receipt;
+    $('network-receipt-qr').innerHTML = qrSvg(code);
+    $('network-receipt-panel').hidden = false;
+    $('network-next-steps-text').textContent = networkReceiptNextSteps(state);
+    $('network-next-steps').hidden = false;
+  };
   const resetSessionDisplay = () => {
     ['network-choice', 'network-trustee', 'network-pair'].forEach(clearSelection);
     $('network-share').value = '';
@@ -67,10 +85,9 @@ export async function initNetworkApplication() {
       $(`network-choice-label-${index}`).textContent = `Choice ${index}`;
       $(`network-choice-${index}`).closest('label').hidden = index >= 3;
     }
-    $('network-receipt-panel').hidden = true;
-    $('network-receipt-code').textContent = '';
-    $('network-receipt-qr').replaceChildren();
+    clearReceiptDisplay();
     $('network-receipt-input').value = '';
+    $('network-receipt-id').value = '';
     $('network-public-state').textContent = 'No contract connected';
   };
   const event = message => {
@@ -85,7 +102,7 @@ export async function initNetworkApplication() {
     controls.forEach(control => { control.disabled = busy; });
     const requireClient = ['network-join', 'network-deploy'];
     const requireContract = ['network-read', 'network-configure', 'network-export'];
-    const requireConfigured = ['network-enroll', 'network-open', 'network-cast', 'network-close', 'network-submit-share', 'network-finalize', 'network-check-receipt'];
+    const requireConfigured = ['network-enroll', 'network-open', 'network-cast', 'network-close', 'network-submit-share', 'network-finalize', 'network-check-receipt', 'network-check-receipt-id'];
     for (const id of requireClient) $(id).disabled = busy || !client || Boolean(client.contractAddress);
     for (const id of requireContract) $(id).disabled = busy || !client?.contractAddress;
     for (const id of requireConfigured) $(id).disabled = busy || !client?.configurationDigest;
@@ -99,6 +116,7 @@ export async function initNetworkApplication() {
     $('network-configure').disabled = busy || !client?.contractAddress || state?.keysConfigured === true;
     $('network-use-share').disabled = busy || !dealer || !/^[123]$/.test(selectedValue('network-trustee'));
     $('network-save-receipt').disabled = busy || !latestReceipt;
+    $('network-copy-receipt-id').disabled = busy || !latestReceipt;
     $('network-recover-receipt').disabled = busy || !client?.pendingBallotReceipt;
     $('network-disconnect').disabled = busy || !session;
     $('network-connect').disabled = busy || Boolean(session);
@@ -150,7 +168,7 @@ export async function initNetworkApplication() {
     status(`${label}: your indexer reports confirmation. This app has not independently verified the blockchain.`);
   };
   const refreshState = async () => {
-    state = await client.readPublicLedger();
+    state = client.configurationDigest ? await client.refreshConfiguration() : await client.readPublicLedger();
     const candidateCount = Number(state.candidateCount);
     if (!Number.isInteger(candidateCount) || candidateCount < 2 || candidateCount > 5) throw new Error('Unsupported candidate count');
     for (let index = 0; index < 5; index++) $(`network-choice-${index}`).closest('label').hidden = index >= candidateCount;
@@ -161,6 +179,7 @@ export async function initNetworkApplication() {
       configurationDigest: hex(state.configurationDigest), candidateCount, phase: Number(state.phase), accepted: Number(state.accepted),
       opensAt: String(state.opensAt), closesAt: String(state.closesAt), totals: state.finalizedTotals.map(Number),
       source: 'configured-indexer', independentlyVerified: false }, null, 2);
+    if (latestReceipt) showReceipt();
   };
   const refreshWallets = () => {
     wallets = findNativeWallets(); $('network-wallet').replaceChildren();
@@ -175,6 +194,7 @@ export async function initNetworkApplication() {
   };
   const selectEnvironment = () => {
     if (session || busy) return;
+    clearReceiptIdResult();
     const network = $('network-id').value;
     if (network === 'preview') {
       $('network-indexer').value = PREVIEW_PUBLIC_SERVICES.indexerUri;
@@ -208,6 +228,7 @@ export async function initNetworkApplication() {
     }
   };
   $('network-id').addEventListener('change', selectEnvironment);
+  for (const id of ['network-receipt-id', 'network-address', 'network-digest']) $(id).addEventListener('input', clearReceiptIdResult);
   click('network-check-services', async () => {
     if ($('network-id').value !== 'preview') throw new Error('Select public Preview');
     await verifyPreviewServices();
@@ -351,22 +372,21 @@ export async function initNetworkApplication() {
     const selection = selectedValue('network-choice');
     if (!/^[0-4]$/.test(selection) || Number(selection) >= Number(state?.candidateCount)) throw new Error('Choose a configured candidate');
     latestReceipt = null;
-    $('network-receipt-panel').hidden = true;
-    $('network-receipt-code').textContent = '';
-    $('network-receipt-qr').replaceChildren();
+    clearReceiptDisplay();
     try {
       latestReceipt = await client.castBallot({ voterSecret: bytes($('network-voter').value), selection: BigInt(selection) });
-      const code = encodeNetworkReceipt(latestReceipt);
-      $('network-receipt-code').textContent = code; $('network-receipt-qr').innerHTML = qrSvg(code);
-      $('network-receipt-panel').hidden = false; confirmed('Ballot', latestReceipt); await refreshState();
+      confirmed('Ballot', latestReceipt); showReceipt(); await refreshState();
     } finally { clearSelection('network-choice'); }
   });
   click('network-save-receipt', async () => { savePublicJson('midnight-network-receipt.json', latestReceipt); status('Public receipt saved.'); });
+  click('network-copy-receipt-id', async () => {
+    if (!latestReceipt) throw new Error('No receipt available');
+    try { await navigator.clipboard.writeText(latestReceipt.receipt); status('Receipt ID copied. Save the full receipt too, so you keep its election context.'); }
+    catch { status('The browser could not copy the receipt ID. Select the displayed ID and copy it manually.'); }
+  });
   click('network-recover-receipt', async () => {
     latestReceipt = await client.recoverPendingReceipt();
-    const code = encodeNetworkReceipt(latestReceipt);
-    $('network-receipt-code').textContent = code; $('network-receipt-qr').innerHTML = qrSvg(code);
-    $('network-receipt-panel').hidden = false; await refreshState();
+    clearReceiptIdResult(); showReceipt(); await refreshState();
     status('Your pending vote matches the encrypted ballot returned by the indexer. Nothing was submitted again. Its transaction reference and blockchain inclusion have not been independently verified.');
   });
   click('network-close', async () => { confirmed('Voting closed', await client.closeVoting()); await refreshState(); });
@@ -409,6 +429,21 @@ export async function initNetworkApplication() {
   click('network-check-receipt', async () => {
     await client.checkReceipt(decodeNetworkReceipt($('network-receipt-input').value.trim()));
     status('Your receipt matches the encrypted ballot and election settings returned by the indexer. Its transaction reference and blockchain inclusion have not been independently verified.');
+  });
+  click('network-check-receipt-id', async () => {
+    clearReceiptIdResult();
+    const receiptId = $('network-receipt-id').value.trim();
+    if (!/^[0-9a-f]{64}$/i.test(receiptId)) {
+      $('network-receipt-id-result').textContent = 'Paste exactly 64 hexadecimal characters for the receipt ID. For a full receipt or QR text, use the full-receipt check below.';
+    } else {
+      try {
+        await client.checkReceiptId(receiptId);
+        $('network-receipt-id-result').textContent = 'Receipt ID found in this election’s encrypted ballot record. This lookup does not prove who cast it or independently verify the blockchain. Use the full-receipt check to compare its election details.';
+      } catch {
+        $('network-receipt-id-result').textContent = 'The receipt ID could not be verified in this election’s indexed record. Check the selected election and ID, then refresh and try again. This does not establish whether a transaction was accepted; do not submit another vote based on this message.';
+      }
+    }
+    status('Receipt ID check finished. See the result beside the receipt ID input.');
   });
   selectEnvironment(); refreshWallets(); refreshControls();
 }

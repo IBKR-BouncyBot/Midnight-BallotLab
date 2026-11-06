@@ -218,9 +218,23 @@ try {
         for (const input of await page.locator(`input[name="${name}"]`).all()) assert.equal(await input.isDisabled(), true,
           'Ballot and trustee cards must remain disabled without a connected election');
       }
-      for (const selector of ['#network-deploy', '#network-join', '#network-cast', '#network-finalize']) {
+      for (const selector of ['#network-deploy', '#network-join', '#network-cast', '#network-finalize', '#network-check-receipt', '#network-check-receipt-id', '#network-copy-receipt-id']) {
         assert.equal(await page.locator(selector).isDisabled(), true, 'Network actions need an actual connected wallet');
       }
+      stage = `${prefix}:receipt-id-and-privacy-guidance`;
+      assert.equal(await page.locator('#network-receipt-panel').isVisible(), false, 'No receipt or next-step success may be shown before a confirmed or recovered vote');
+      assert.equal(await page.locator('#network-next-steps').isVisible(), false);
+      assert.equal(await page.locator('#network-receipt-id-display').textContent(), '');
+      assert.equal(await page.locator('#network-receipt-id-result').textContent(), '');
+      assert.equal(await page.locator('#network-receipt-id').getAttribute('aria-describedby'), 'network-receipt-id-help');
+      assert.match(await page.locator('#network-receipt-id-help').textContent(), /ID alone does not prove who cast it or independently verify the blockchain/);
+      assert.match(await page.locator('#network-privacy-heading').locator('..').textContent(), /Any two trustees who cooperate can decrypt individual ballots outside this app, even before the totals are revealed/);
+      // An inert public ID can be pasted without granting a client or causing
+      // any lookup. Do not inject a wallet, state, or successful receipt here.
+      await page.locator('#network-receipt-id').fill(`  ${'AB'.repeat(32)}  `);
+      assert.equal(await page.locator('#network-check-receipt-id').isDisabled(), true);
+      assert.equal(await page.locator('#network-receipt-id-result').textContent(), '');
+      await page.locator('#network-receipt-id').fill('');
       for (const asset of manifest.wasmAssets) assert.ok(wasmResponses.has(`${prefix}${asset}`), 'Actual same-origin WASM must load');
       for (const asset of manifest.circuitAssets) {
         const response = await page.request.head(`${origin}${prefix}${asset.path}`);
@@ -266,6 +280,8 @@ try {
         ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true,
         previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
         helpLinksChecked: true, laceSetupGuideChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
+        receiptIdLookupRequiresConfiguredElection: true, receiptSuccessHiddenBeforeVote: true,
+        trusteeCollusionLimitVisible: true, receiptIdNetworkLookupExecuted: false,
         pageErrors, consoleErrors, remoteRequests: 0 });
     } finally { await context.close(); }
   }

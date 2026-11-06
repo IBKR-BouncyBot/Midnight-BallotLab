@@ -129,6 +129,12 @@ The [key-file and setup-control evidence](https://github.com/IBKR-BouncyBot/Midn
 
 If a ballot call has an uncertain result, the pending-ballot check retains only the locally expected public nullifier/receipt and checks the indexer without resubmitting. Further casts are blocked while it exists. This recovery state lasts only for the current client session, and a wallet rejection can also leave a pending record. Absence in an indexer is not evidence of non-submission. Check the transaction status through the wallet or a trusted network service before ending the session or making another attempt. Joining after reload currently requires an already configured election; resuming between deployment and key configuration needs additional deployment-state authentication and is not implemented. Keep the initial setup session open through key configuration.
 
+## After voting and checking a receipt ID
+
+After a ballot is found in the configured indexer's accepted record, the page shows its receipt ID and a **What happens next?** explanation. The sealed closing time is the earliest time voting can close. Results require a closing transaction, valid contributions from two trustees and a finalization transaction. The deadline alone does not publish totals; this page does not run the external operator. Once final totals are available, voters can review the public observation and compare their receipts.
+
+**Paste receipt ID** accepts the 64-character hexadecimal ID from the receipt. It searches only the currently joined, configuration-pinned election, requires a unique accepted match and checks that ballot's native receipt digest, ciphertext and receipt-set membership. This is a lookup in the configured indexer's record. It does not establish ownership, authenticate the indexer, verify a transaction reference or independently prove chain inclusion. Keep the full receipt: unlike a bare ID, it also supplies the network, contract and configuration details to compare. Existing full-receipt validation remains available.
+
 ## Evidence stages and privacy
 
 The UI emits fixed stage labels only. It never logs raw SDK return objects, errors, transactions, private contexts or proof data. Confirmed operation records retain only a transaction ID, block height and explicit `configured-indexer` confirmation source. Receipt exports are an allowlist. Public observations reuse the public-ledger field projection with a distinct `native-indexed-observation/v1` schema and explicitly state that no proof package or independent chain verification is included.

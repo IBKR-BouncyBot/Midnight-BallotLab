@@ -84,6 +84,18 @@ Serve `dist/` and open `index.html` to choose a mode, or open `native.html` dire
 
 The independent public verifier imports strict JSON in a fresh session without private credentials. It validates coordinates through official native WASM and an explicit subgroup check before using generated pure helpers; recomputes manifest/configuration/receipt commitments and aggregates; checks uniqueness and all published trustee-pair equations; and compares a voter's receipt. It establishes supplied-record consistency. The export carries no authenticated ballot or trustee-share proofs, so a self-consistent replacement can pass. It does not establish eligibility, chain inclusion or fairness. See [PUBLIC_VERIFICATION.md](PUBLIC_VERIFICATION.md). No wallet/provider connection is needed for local verification. The local election dealer still knows the complete decryption key.
 
+### After voting and looking up a receipt ID
+
+The receipt panel offers **Save receipt**, **Copy receipt ID** and **What happens next?**. In manual mode, the guidance tells voters to wait for voting to close and for any two trustees to reveal the totals. In a timed browser demo, keep the tab open: it closes voting and uses trustees 1 and 3 after the deadline. When results are ready, download the public election record so other voters can check the same record in a new session. These instructions do not change the contract or trigger a network transaction.
+
+Under **Verify election**, select this tab's election or first upload and check a shared record. **Look up receipt ID** accepts a 64-character hexadecimal receipt digest and searches only that selected record. A unique match is checked against the encrypted ballot. Imported records are reverified using the real native public verifier; changing the selected record or ID clears the earlier result. The lookup does not search a public network or require a voter key.
+
+An ID match does not prove who cast the ballot, reveal the choice, authenticate the record, establish fairness or demonstrate proof generation or blockchain confirmation. Keep the full JSON or QR receipt too: it includes election and configuration details that an ID alone does not carry. An uploaded record must pass its public consistency checks before it can be selected.
+
+Both demo interfaces explicitly warn that **any two cooperating trustees can decrypt individual ballots outside the app, even before the totals are revealed**. Restricting the app's display and contract tally operation to combined totals does not prevent that cooperation. The browser demo creates all three shares in one session; it does not provide independent trustees or unconditional ballot secrecy.
+
+The [6 November voter-guidance evidence](../evidence/2026-11-06/voter-guidance/README.md) records fresh local receipt-ID and guidance checks: 65 unit tests, 44 native-suite tests, nine native/landing browser cases and eight unconnected network browser cases. These results add no proof-generation or accepted-network-transaction claim.
+
 ### Network client source
 
 `contracts/native/sdk-client.mjs` uses actual Midnight.js 4.1.1 contract APIs and the generated bindings. It supplies methods for deploying, configuring, joining, enrolling, opening, casting, closing, publishing trustee shares and finalizing. It accepts real providers; it does not construct mock wallets or silently submit anything on import.

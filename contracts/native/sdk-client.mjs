@@ -25,6 +25,39 @@ const publicTransaction = tx => ({
 const hex = bytes => [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
 const RECEIPT_SCHEMA = 'midnight-ballot-lab/native-receipt/v1';
 
+const acceptedCount = state => {
+  if (typeof state.accepted !== 'bigint' || state.accepted < 0n || state.accepted > BigInt(NATIVE_CAPACITY)) throw new Error('Indexed native ballot count exceeds capacity');
+  return state.accepted;
+};
+
+function checkIndexedReceiptAt(state, index, receiptId) {
+  if (index < 0n || index >= acceptedCount(state)) throw new Error('Native receipt is not in the indexed accepted set');
+  const stored = state.ballotReceipts.lookup(index);
+  const expected = Native.pureCircuits.receiptDigest(state.electionId, state.configurationDigest,
+    state.nullifiers.lookup(index), state.ballotA.lookup(index), state.ballotB.lookup(index));
+  if (!sameBytes(stored, expected) || hex(stored) !== receiptId || !state.receipts.member(stored)) throw new Error('Indexed native receipt does not match');
+}
+
+/** Public-record consistency only. The SDK method additionally pins the current
+ * session/election configuration. This does not authenticate supplied state or
+ * establish that a person owns the receipt. Uses the real generated digest.
+ */
+export function findReceiptIdInIndexedNativeLedger(state, value) {
+  if (typeof value !== 'string') throw new TypeError('Expected a 64-character hexadecimal receipt ID');
+  const receiptId = value.trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(receiptId)) throw new TypeError('Expected a 64-character hexadecimal receipt ID');
+  const count = acceptedCount(state);
+  let found = null;
+  for (let index = 0n; index < count; index++) {
+    if (hex(state.ballotReceipts.lookup(index)) !== receiptId) continue;
+    if (found !== null) throw new Error('Receipt ID is not unique in the indexed accepted set');
+    found = index;
+  }
+  if (found === null) throw new Error('Receipt ID was not found in the indexed accepted set');
+  checkIndexedReceiptAt(state, found, receiptId);
+  return Object.freeze({ index: Number(found), receipt: receiptId });
+}
+
 /** Supply official providers yourself. This adapter never invents mock providers. */
 export function createNativeSdkClient(providers, { compiledAssetsPath, networkId, assertSession = async () => {} }) {
   if (typeof compiledAssetsPath !== 'string' || !compiledAssetsPath) throw new TypeError('compiledAssetsPath is required');
@@ -221,14 +254,20 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
           || typeof receipt.receipt !== 'string' || !/^[0-9a-f]{64}$/.test(receipt.receipt)) throw new TypeError('Receipt does not match this native client context');
         const state = await requireConfiguration();
         if (receipt.configurationDigest !== hex(expectedConfiguration)) throw new Error('Receipt configuration does not match the pinned election');
-        const index = BigInt(receipt.index);
-        if (index >= state.accepted) throw new Error('Native receipt is not in the indexed accepted set');
-        const stored = state.ballotReceipts.lookup(index);
-        const expected = Native.pureCircuits.receiptDigest(state.electionId, state.configurationDigest,
-          state.nullifiers.lookup(index), state.ballotA.lookup(index), state.ballotB.lookup(index));
-        if (!sameBytes(stored, expected) || hex(stored) !== receipt.receipt || !state.receipts.member(stored)) throw new Error('Indexed native receipt does not match');
+        checkIndexedReceiptAt(state, BigInt(receipt.index), receipt.receipt);
         return { receiptMatchesIndexedState: true, ledgerInclusionIndependentlyVerified: false,
           transactionReferenceVerified: false, networkId, contractAddress };
+      });
+    },
+    async checkReceiptId(receiptId) {
+      return exclusive(async () => {
+        const state = await requireConfiguration();
+        const found = findReceiptIdInIndexedNativeLedger(state, receiptId);
+        return { ...found, receiptMatchesIndexedState: true, lookupOnly: true,
+          fullReceiptContextValidated: false, receiptOwnershipVerified: false,
+          ledgerInclusionIndependentlyVerified: false, transactionReferenceVerified: false,
+          networkId, contractAddress, configurationDigest: hex(expectedConfiguration),
+          confirmationSource: 'configured-indexer' };
       });
     },
     async recoverTally(first, second) {

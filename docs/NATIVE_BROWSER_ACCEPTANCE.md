@@ -43,6 +43,14 @@ The acceptance cases cover:
 - Downloaded receipt JSON and independently decoded QR round trips; altered
   address, election, configuration, receipt digest, index, network and malformed
   duplicate-key JSON rejected by the UI.
+- Receipt-ID lookup in the current election and a checked uploaded record,
+  including a fresh browser context. A match must check the encrypted ballot's
+  receipt binding; malformed, absent and ambiguous IDs must not report success.
+  Changing the ID or selected record must clear the previous lookup result.
+- Post-vote guidance for manual, timed and finalized elections, including saving
+  the full receipt, keeping the timed demo open and obtaining the public record
+  for later checking. Both demo pages must state that two cooperating trustees
+  can decrypt individual ballots outside the app, before totals are revealed.
 - Native public consistency checks, metadata commitment, explicit emulator/proof
   limits, and allowlisted public snapshot/ballot/trustee fields.
 - Importing public JSON by upload/paste in a fresh browser context; no private
@@ -73,6 +81,18 @@ acceptance, authenticated chain inclusion, real trustee separation, a camera
 scan, a live GitHub Pages deployment, or election security certification. Do not
 claim a passing run until the script has actually completed successfully; source
 and syntax checks alone are not browser evidence.
+
+Receipt-ID lookup checks only the selected record. It is not a network search,
+proof of ballot ownership or an authentication of the election record. Keep the
+full receipt, which carries the election and configuration context. Public
+consistency and a receipt match do not establish fairness or prevent cooperating
+trustees from decrypting individual ballots. New guidance and lookup behavior
+require a fresh browser run; earlier passing reports do not verify these changes.
+
+The [6 November voter-guidance evidence](../evidence/2026-11-06/voter-guidance/README.md)
+records nine passing native/landing browser cases for the updated behavior,
+alongside separate generated-ledger lookup tests and eight unconnected network
+browser cases. It does not establish a new network receipt lookup or transaction.
 
 API references: [Playwright browser launch](https://playwright.dev/docs/api/class-browsertype),
 [download events](https://playwright.dev/docs/downloads),
