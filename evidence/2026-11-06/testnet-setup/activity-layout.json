@@ -1,0 +1,122 @@
+{
+  "executedAt": "2026-11-06T09:05:44.610Z",
+  "scope": "actual-browser-layout-with-labelled-public-content-fixture",
+  "node": "v24.18.0",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "cases": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "passed": true,
+      "stickyTops": [
+        24,
+        24
+      ],
+      "geometry": {
+        "width": 1440,
+        "contentWidth": 1440,
+        "panelHeight": 952,
+        "scrollHeight": 4566,
+        "clientHeight": 950,
+        "scrollContainers": 1,
+        "logOverflow": "visible",
+        "stateOverflow": "visible"
+      },
+      "fixtureOnly": true,
+      "lastEntryReachable": true,
+      "keyboardScrollTested": true,
+      "walletGatesPreserved": true,
+      "emptyPrivateInputs": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "width": 1440,
+      "height": 500,
+      "passed": true,
+      "stickyTops": [
+        24,
+        24
+      ],
+      "geometry": {
+        "width": 1440,
+        "contentWidth": 1440,
+        "panelHeight": 452,
+        "scrollHeight": 4566,
+        "clientHeight": 450,
+        "scrollContainers": 1,
+        "logOverflow": "visible",
+        "stateOverflow": "visible"
+      },
+      "fixtureOnly": true,
+      "lastEntryReachable": true,
+      "keyboardScrollTested": true,
+      "walletGatesPreserved": true,
+      "emptyPrivateInputs": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "passed": true,
+      "stickyTops": [],
+      "geometry": {
+        "width": 390,
+        "contentWidth": 390,
+        "panelHeight": 5417.453125,
+        "scrollHeight": 5415,
+        "clientHeight": 5415,
+        "scrollContainers": 0,
+        "logOverflow": "visible",
+        "stateOverflow": "visible"
+      },
+      "fixtureOnly": true,
+      "lastEntryReachable": true,
+      "keyboardScrollTested": false,
+      "walletGatesPreserved": true,
+      "emptyPrivateInputs": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "width": 320,
+      "height": 650,
+      "passed": true,
+      "stickyTops": [],
+      "geometry": {
+        "width": 320,
+        "contentWidth": 320,
+        "panelHeight": 7073.890625,
+        "scrollHeight": 7072,
+        "clientHeight": 7072,
+        "scrollContainers": 0,
+        "logOverflow": "visible",
+        "stateOverflow": "visible"
+      },
+      "fixtureOnly": true,
+      "lastEntryReachable": true,
+      "keyboardScrollTested": false,
+      "walletGatesPreserved": true,
+      "emptyPrivateInputs": true,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    }
+  ],
+  "artifacts": {
+    "network.html": "a6fbd7c37deff5f5154e5b80cbc621f5ef0754bd1ffc0bd68a3715689916c0e2",
+    "styles.css": "644b2217aada0394a237f2ab1d1e38f1c08e3f23c5ebf88bbfafed26263db713",
+    "overview.css": "7f28da07006bd919e8a1371582df05ff8721639ae9a9a5d8080da7843e55fcb3",
+    "network-theme.css": "c588481b0864a98fc623d9b1414e761f4b4e64dbac1d0b024f1abcfe5454f8c5",
+    "network-bundle.mjs": "9b45e7a3ab5f7acb016fdfc23ded74cf76c1734784e2d25e468d47edc3ff2ae5"
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}

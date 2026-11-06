@@ -9,6 +9,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireScalar } from '../contracts/native/adapter.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
@@ -64,6 +65,24 @@ async function sanitizedImportDiagnostic(page, url) {
       return { import: 'failed', categories, ...(location ? { line: Number(location[1]), column: Number(location[2]) } : {}) };
     }
   }, url);
+}
+
+async function downloadPrivateKey(page, role, expectedKey, expectedFilename) {
+  const pending = page.waitForEvent('download');
+  await page.locator(`#network-download-${role}`).click();
+  const download = await pending;
+  if (expectedFilename instanceof RegExp) assert.match(download.suggestedFilename(), expectedFilename);
+  else assert.equal(download.suggestedFilename(), expectedFilename);
+  try {
+    const stream = await download.createReadStream(); assert.ok(stream);
+    const chunks = []; let length = 0;
+    for await (const chunk of stream) {
+      length += chunk.length; assert.ok(length <= 256, 'Private key file must remain bounded'); chunks.push(chunk);
+    }
+    const text = Buffer.concat(chunks).toString('utf8');
+    assert.equal(text, expectedKey + '\n', 'Private file contains only the key and one newline');
+    return text;
+  } finally { await download.delete(); }
 }
 
 try {
@@ -280,7 +299,7 @@ try {
         previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
         helpLinksChecked: true, laceSetupGuideChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
         receiptIdLookupRequiresConfiguredElection: true, receiptSuccessHiddenBeforeVote: true,
-        trusteeCollusionLimitVisible: true, receiptIdNetworkLookupExecuted: false,
+        receiptIdNetworkLookupExecuted: false,
         pageErrors, consoleErrors, remoteRequests: 0 });
     } finally { await context.close(); }
   }
@@ -305,6 +324,8 @@ try {
       assert.equal(await page.locator('#network-create-panel').isVisible(), true);
       assert.equal(await page.locator('#network-join-panel').isVisible(), false);
       assert.equal(await page.locator('#network-admin').isVisible(), true);
+      assert.equal(await page.locator('#network-admin').inputValue(), '');
+      assert.equal(await page.locator('#network-admin').evaluate(input => input.readOnly), true);
       for (const id of ['network-address', 'network-digest']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), true);
       await page.locator('#network-title').fill('Chooser browser check');
       await page.locator('#network-choices').fill('Test A\nTest B');
@@ -355,12 +376,21 @@ try {
       await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
       await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+      assert.equal(await page.evaluate(() => localStorage.length), 0);
+      const counterKey = 'midnight-ballot-lab/voter-key-download-count';
+      const checkCounterOnly = async expected => {
+        const stored = await page.evaluate(() => Object.fromEntries(Object.entries(localStorage)));
+        assert.deepEqual(stored, { [counterKey]: String(expected) }, 'Only the nonsecret download counter may be stored');
+        assert.equal(await page.evaluate(() => sessionStorage.length), 0);
+      };
       const roleChecks = [];
       for (const role of ['admin', 'voter']) {
         stage = `private-key-${role}:generate-and-reveal`;
         const input = page.locator(`#network-${role}`), toggle = page.locator(`#network-show-${role}`);
         const fileInput = page.locator(`#network-import-${role}`), keyStatus = page.locator(`#network-${role}-key-status`);
         assert.equal(await input.getAttribute('type'), 'password');
+        assert.equal(await input.inputValue(), '', 'Fresh key fields must start empty');
+        if (role === 'admin') assert.equal(await input.evaluate(element => element.readOnly), true);
         await page.locator(`#network-generate-${role}`).click();
         const key = await input.inputValue();
         assert.match(key, /^[0-9a-f]{64}$/); assert.notEqual(key, '0'.repeat(64));
@@ -371,22 +401,23 @@ try {
         assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
         await toggle.click(); assert.equal(await input.getAttribute('type'), 'text');
         await toggle.click(); assert.equal(await input.getAttribute('type'), 'password');
+        if (role === 'admin') {
+          assert.equal(await input.evaluate(element => element.readOnly), true, 'Generated administrator key stays protected against autofill');
+          await page.locator('#network-use-existing-admin').click();
+          assert.equal(await input.evaluate(element => element.readOnly), false);
+          assert.equal(await input.getAttribute('type'), 'password');
+          await input.fill(key.toUpperCase());
+          await page.locator('#network-mode-join').click();
+          assert.equal(await input.inputValue(), key.toUpperCase());
+          await page.locator('#network-mode-create').click();
+          assert.equal(await input.inputValue(), key.toUpperCase(), 'Explicit manual input must survive mode changes');
+          assert.equal(await input.evaluate(element => element.readOnly), false);
+        }
 
         stage = `private-key-${role}:download-round-trip`;
-        const downloaded = page.waitForEvent('download');
-        await page.locator(`#network-download-${role}`).click();
-        const download = await downloaded;
-        assert.equal(download.suggestedFilename(), `midnight-${role === 'admin' ? 'administrator' : 'voter'}-key.private.txt`);
-        let privateText;
-        try {
-          const stream = await download.createReadStream(); assert.ok(stream);
-          const chunks = []; let length = 0;
-          for await (const chunk of stream) {
-            length += chunk.length; assert.ok(length <= 256, 'Private key file must remain bounded'); chunks.push(chunk);
-          }
-          privateText = Buffer.concat(chunks).toString('utf8');
-          assert.equal(privateText, key + '\n', 'Private file contains only the key and one newline');
-        } finally { await download.delete(); }
+        let privateText = await downloadPrivateKey(page, role, key, role === 'admin'
+          ? 'midnight-administrator-key.private.txt' : 'midnight-voter-key-000001.private.txt');
+        if (role === 'voter') await checkCounterOnly(1);
         await input.fill('');
         await fileInput.setInputFiles({ name: 'synthetic-key.txt', mimeType: 'text/plain', buffer: Buffer.from(privateText, 'utf8') });
         await page.waitForFunction(({ id, expected }) => document.getElementById(id).value === expected,
@@ -400,6 +431,7 @@ try {
           await page.locator('#network-mode-create').click();
           assert.equal(await input.isVisible(), true); assert.equal(await input.inputValue(), key);
           assert.equal(await input.getAttribute('type'), 'password');
+          assert.equal(await input.evaluate(element => element.readOnly), true, 'Restored administrator key must relock');
         }
         for (const viewport of [390, 320]) {
           await page.setViewportSize({ width: viewport, height: 844 });
@@ -416,8 +448,10 @@ try {
           ['structured-json', Buffer.from(JSON.stringify({ key }))],
           ['wrong-extension', Buffer.from(key), 'withheld-diagnostic-marker.json'],
         ];
-        for (const [invalidKind, buffer, filename = 'withheld-diagnostic-marker.txt'] of invalidInputs) {
+        for (const [invalidIndex, [invalidKind, buffer, filename = 'withheld-diagnostic-marker.txt']] of invalidInputs.entries()) {
           stage = `private-key-${role}:reject-${invalidKind}`;
+          if (role === 'admin' && invalidIndex === 1) await page.locator('#network-use-existing-admin').click();
+          const readonlyBefore = await input.evaluate(element => element.readOnly);
           // Clear the native file-input selection between attempts. The key
           // field remains untouched, so rejection must preserve its real value.
           await fileInput.setInputFiles([]);
@@ -426,6 +460,7 @@ try {
           assert.match(await keyStatus.textContent(), /^Could not load this key\./);
           assert.equal(await input.inputValue(), key);
           assert.equal(await input.getAttribute('type'), 'password');
+          assert.equal(await input.evaluate(element => element.readOnly), readonlyBefore, 'Rejected imports must preserve the explicit editing state');
           const message = await keyStatus.textContent();
           assert.ok(!message.includes(key) && !message.includes('withheld-diagnostic-marker'));
         }
@@ -439,12 +474,43 @@ try {
         await page.locator(`#network-generate-${role}`).click();
         const replacement = await input.inputValue();
         assert.match(replacement, /^[0-9a-f]{64}$/); assert.notEqual(replacement, key);
-        await toggle.click(); await input.fill('');
+        if (role === 'voter') {
+          await downloadPrivateKey(page, role, replacement, 'midnight-voter-key-000002.private.txt');
+          await checkCounterOnly(2);
+        }
+        await toggle.click();
+        if (role === 'admin') await page.locator('#network-use-existing-admin').click();
+        await input.fill('');
         await fileInput.setInputFiles([]);
         roleChecks.push({ role, generated: true, revealAndHide: true, privateDownloadRoundTrip: true,
           rejectedFiles: invalidInputs.length, invalidImportPreservesKey: true, maskedAfterRestore: true,
-          ...(role === 'admin' ? { setupModePreservesKey: true } : {}) });
+          ...(role === 'admin' ? { initiallyEmptyAndReadonly: true, explicitManualUnlock: true,
+            manualAndImportedKeysSurviveModeChanges: true, invalidImportPreservesEditingState: true } : { sequentialPrivateDownloadNames: true }) });
       }
+
+      stage = 'real-dealer-generation';
+      const dealerButton = page.locator('#network-generate-dealer');
+      assert.equal(await dealerButton.isVisible(), true); assert.equal(await dealerButton.isDisabled(), false);
+      assert.equal(await dealerButton.evaluate(element => element.classList.contains('primary')), true);
+      for (const id of ['network-setup-secret', 'network-setup-slope']) assert.equal(await page.locator(`#${id}`).inputValue(), '');
+      await dealerButton.click();
+      const setupValues = [];
+      for (const id of ['network-setup-secret', 'network-setup-slope']) {
+        const value = await page.locator(`#${id}`).inputValue();
+        assert.match(value, /^[1-9][0-9]{0,76}$/); requireScalar(BigInt(value)); setupValues.push(value);
+        assert.equal(await page.locator(`#${id}`).getAttribute('type'), 'password');
+      }
+      await page.locator('#network-mode-join').click(); await page.locator('#network-mode-create').click();
+      for (const [index, id] of ['network-setup-secret', 'network-setup-slope'].entries()) {
+        assert.equal(await page.locator(`#${id}`).inputValue(), setupValues[index]);
+        assert.ok(!(await page.locator('body').innerText()).includes(setupValues[index]));
+      }
+      assert.equal(await page.locator('#network-configure').isDisabled(), true, 'Local generation must not register keys or unlock network actions');
+      assert.equal(await page.locator('#network-events').textContent(), '');
+      await dealerButton.click();
+      const nextSetup = [await page.locator('#network-setup-secret').inputValue(), await page.locator('#network-setup-slope').inputValue()];
+      assert.notDeepEqual(nextSetup, setupValues);
+      for (const value of nextSetup) requireScalar(BigInt(value));
       assert.equal(externalRequests, 0); assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0);
       assert.equal(await page.locator('#network-export').isDisabled(), true);
       assert.equal(await page.locator('#network-save-receipt').isDisabled(), true);
@@ -452,9 +518,39 @@ try {
       // producing layout evidence. Every private input is checked empty first.
       await page.reload({ waitUntil: 'networkidle' });
       await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      await checkCounterOnly(2);
       for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) {
         assert.equal(await page.locator(`#${id}`).inputValue(), '');
       }
+      assert.equal(await page.locator('#network-admin').evaluate(input => input.readOnly), true);
+      await page.locator('#network-generate-voter').click();
+      const afterReloadKey = await page.locator('#network-voter').inputValue();
+      await downloadPrivateKey(page, 'voter', afterReloadKey, 'midnight-voter-key-000003.private.txt');
+      await checkCounterOnly(3);
+      stage = 'private-key-voter:counter-failure-fallback';
+      // Fault only the nonsecret filename counter; keep real key generation,
+      // downloads, clock, wallet absence and all contract gates unchanged.
+      await page.evaluate(key => localStorage.setItem(key, 'not-a-counter'), counterKey);
+      await downloadPrivateKey(page, 'voter', afterReloadKey, /^midnight-voter-key-\d{13}-000002\.private\.txt$/);
+      assert.equal(await page.evaluate(key => localStorage.getItem(key), counterKey), 'not-a-counter');
+      await page.evaluate(key => {
+        localStorage.setItem(key, '3');
+        const actualSetItem = Storage.prototype.setItem;
+        Storage.prototype.setItem = function (name, value) {
+          if (this === localStorage && name === key) throw new DOMException('Counter storage test denial', 'QuotaExceededError');
+          return actualSetItem.call(this, name, value);
+        };
+      }, counterKey);
+      for (const suffix of ['000003', '000004']) {
+        await downloadPrivateKey(page, 'voter', afterReloadKey, new RegExp(`^midnight-voter-key-\\d{13}-${suffix}\\.private\\.txt$`));
+      }
+      await checkCounterOnly(3);
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+      for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) {
+        assert.equal(await page.locator(`#${id}`).inputValue(), '');
+      }
+      await checkCounterOnly(3);
       for (const viewport of [1365, 390, 320]) {
         await page.setViewportSize({ width: viewport, height: 1000 });
         for (const heading of ['contract-heading', 'vote-heading']) {
@@ -475,6 +571,11 @@ try {
       }
       evidence.cases.push({ case: 'private-key-file-utilities', status: 'passed', roles: roleChecks,
         generatedKeysRetained: false, downloadBodiesRetained: false, screenshotsOnlyAfterReloadWithEmptyPrivateInputs: true,
+        actualDealerGeneration: true, canonicalNonzeroDealerScalars: true, generatedDealerValuesPreservedAcrossModes: true,
+        localGenerationDoesNotRegisterKeys: true, numberedVoterDownloads: [1, 2, 3], counterPersistsAcrossReload: true,
+        storageContainsOnlyNonsecretCounter: true, autofillFromPersonalPasswordManagerTested: false,
+        invalidCounterFallback: true, storageWriteDenialFallback: true, fallbackNamesIncrementWithinSession: true,
+        storageFailureInjectionOnly: true,
         mobileWidths: [390, 320],
         publicExportExecutionTested: false, externalRequests, pageErrors, consoleErrors });
     } finally { await context.close(); }

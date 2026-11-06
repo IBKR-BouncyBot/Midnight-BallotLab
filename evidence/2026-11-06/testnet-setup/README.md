@@ -1,0 +1,11 @@
+# Testnet setup and action checks
+
+Fresh local Chromium execution on 6 November 2026 passed all eight [network browser cases](network-browser.json). Administrator fields start empty and read-only; explicit generation, manual entry and file restore work, preserve intended input across Create/Join, and reject invalid files without overwriting the key or editing state. This used an isolated browser, not the user's password manager, so it does not establish universal autofill prevention.
+
+Actual trustee generation produced canonical nonzero scalars while registration stayed disabled without a connected contract. Real generated voter keys downloaded as `000001` and `000002`; after reload, another download used `000003`. File bodies contained only the private key plus newline and were deleted after inspection. Only the nonsecret download counter remained in storage. Invalid-counter and storage-write-denial tests used real downloads and verified distinct timestamp/session-counter fallback names; no wallet or cryptography was mocked. No generated keys or private download bodies are retained.
+
+The four [activity layout cases](activity-layout.json) verified desktop sticking at 24 pixels, keyboard access to the final entry through one scroll region, a 1440×500 short viewport, and static page flow at widths 390 and 320. The activity screenshot contains clearly labelled public layout samples, not transactions; the fixture changed only displayed text, with wallet gates intact.
+
+The runtime and activity checks preceded the final action-color edits. The six [final color cases](blue-actions-browser.json) then tested both real runtimes at widths 1440, 390 and 320: workflow buttons, stage/mode navigation and file pickers are blue, including hover; the active stage/mode remains distinct; disabled gates and file-picker fit remain intact. That report binds the final HTML and all relevant CSS hashes. Both runtimes were unchanged: native `9eab45976edf646eaf2d1c360ce238fb7ca487a959d199eb05a4c12752bb105a`, network `9b45e7a3ab5f7acb016fdfc23ded74cf76c1734784e2d25e468d47edc3ff2ae5`.
+
+The two final action screenshots contain empty private fields. Node `24.18.0`, Playwright `1.64.1` and Chromium `156.0.8078.4` were used. These checks do not claim wallet connection, proof generation, network submission, accepted transactions or hosted-origin verification.

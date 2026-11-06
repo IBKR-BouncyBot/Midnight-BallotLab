@@ -57,6 +57,38 @@ export async function initNetworkApplication() {
     $(`network-show-${role}`).textContent = visible ? 'Hide key' : 'Show key';
     $(`network-show-${role}`).setAttribute('aria-pressed', String(visible));
   };
+  // Fresh initialization discards any browser-restored/autofilled value once.
+  // Later mode changes preserve the user's key; manual entry is explicit.
+  $('network-admin').value = '';
+  $('network-admin').readOnly = true;
+  setKeyVisibility('admin', false);
+  const lockAdministratorField = () => {
+    $('network-admin').readOnly = true;
+    $('network-admin').placeholder = 'Click Generate administrator key';
+  };
+  let voterDownloadCount = 0;
+  const voterDownloadCounterKey = 'midnight-ballot-lab/voter-key-download-count';
+  const nextVoterFilename = async () => {
+    voterDownloadCount++;
+    const fallback = () => `midnight-voter-key-${Date.now()}-${String(voterDownloadCount).padStart(6, '0')}.private.txt`;
+    const allocate = () => {
+      try {
+        const previous = localStorage.getItem(voterDownloadCounterKey);
+        if (previous !== null && !/^(0|[1-9][0-9]{0,15})$/.test(previous)) return fallback();
+        const count = previous === null ? 0 : Number(previous);
+        if (!Number.isSafeInteger(count) || count < 0 || count >= Number.MAX_SAFE_INTEGER) return fallback();
+        const next = count + 1;
+        // Only a download counter is persisted. No key, voter identity or
+        // key-to-filename mapping enters storage, logs, or public exports.
+        localStorage.setItem(voterDownloadCounterKey, String(next));
+        if (localStorage.getItem(voterDownloadCounterKey) !== String(next)) return fallback();
+        return `midnight-voter-key-${String(next).padStart(6, '0')}.private.txt`;
+      } catch { return fallback(); }
+    };
+    try {
+      return navigator.locks?.request ? await navigator.locks.request(voterDownloadCounterKey, allocate) : allocate();
+    } catch { return fallback(); }
+  };
   const hasValidKey = role => {
     try { normalizePrivateKey($(`network-${role}`).value); return true; } catch { return false; }
   };
@@ -150,6 +182,11 @@ export async function initNetworkApplication() {
     $('network-identity-note').textContent = client?.contractAddress
       ? 'Keep this address and fingerprint with your private key backups. The fingerprint appears after trustee keys are registered. These details identify the election; they do not independently verify its history.'
       : 'Get the contract address and fingerprint from a source you trust. The app checks that the contract’s keys and settings match, but cannot prove that its initial setup or history was honest.';
+    $('network-admin-help').textContent = client?.contractAddress
+      ? 'Only the election administrator needs this key. Keep the key used to create this election; do not replace it with a newly generated key.'
+      : setupMode === 'create'
+        ? 'For a new election, click Generate administrator key, then download it. To reuse a saved key, choose Use an existing key or load its file.'
+        : 'Joining as a voter does not require an administrator key. The administrator should use the existing key or load its saved file.';
   };
   const run = async (operation, { connection = false } = {}) => {
     if (busy) return;
@@ -287,6 +324,7 @@ export async function initNetworkApplication() {
   click('network-disconnect', async () => {
     session?.close(); session = null; client = null; state = null; dealer = null; manifest = null; latestReceipt = null;
     for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) $(id).value = '';
+    lockAdministratorField();
     for (const role of keyRoles) {
       setKeyVisibility(role, false); $(`network-import-${role}`).value = '';
       $(`network-${role}-key-status`).textContent = 'Key cleared from this page. Any downloaded copy remains on your device.';
@@ -301,11 +339,19 @@ export async function initNetworkApplication() {
     await client.join($('network-address').value.trim().toLowerCase(), bytes($('network-digest').value.trim()));
     await refreshState(); status('The contract keys and settings match your indexer’s record. Its initial setup and blockchain history still need independent checks.');
   });
+  $('network-use-existing-admin').addEventListener('click', () => void run(async () => {
+    $('network-admin').readOnly = false;
+    $('network-admin').placeholder = 'Paste your saved 64-character key';
+    setKeyVisibility('admin', false);
+    $('network-admin-key-status').textContent = 'Administrator key entry unlocked. Paste the key saved for this election, or load its private key file. The current value has not been cleared.';
+    status('You can now enter an existing administrator key. No transaction was submitted.');
+  }).then(() => { if (!busy && !$('network-admin').readOnly) $('network-admin').focus(); }));
   for (const role of keyRoles) {
     const input = $(`network-${role}`), feedback = $(`network-${role}-key-status`);
     input.addEventListener('input', () => { feedback.textContent = ''; refreshControls(); });
     click(`network-generate-${role}`, async () => {
       input.value = hex(randomSecret32()); setKeyVisibility(role, true);
+      if (role === 'admin') lockAdministratorField();
       feedback.textContent = `${keyName(role)} key created and shown above. Download the private key file to keep a copy.`;
       status(`${keyName(role)} key created. Use Download key beside the key field to save it.`);
     });
@@ -317,9 +363,11 @@ export async function initNetworkApplication() {
     click(`network-download-${role}`, async () => {
       // This is an explicitly requested private download, separate from receipts
       // and public records. Never put the key in a URL, filename, log or export.
-      const url = URL.createObjectURL(new Blob([privateKeyText(input.value)], { type: 'text/plain;charset=utf-8' }));
+      const text = privateKeyText(input.value);
+      const filename = role === 'voter' ? await nextVoterFilename() : 'midnight-administrator-key.private.txt';
+      const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
       const link = document.createElement('a');
-      link.href = url; link.download = `midnight-${role === 'admin' ? 'administrator' : 'voter'}-key.private.txt`;
+      link.href = url; link.download = filename;
       document.body.append(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       feedback.textContent = `${keyName(role)} key download started. This private text file is unencrypted; keep it separate from public receipts.`;
@@ -329,6 +377,7 @@ export async function initNetworkApplication() {
       try {
         const key = await readPrivateKeyFile($(`network-import-${role}`).files?.[0]);
         input.value = key; setKeyVisibility(role, false);
+        if (role === 'admin') lockAdministratorField();
         feedback.textContent = `${keyName(role)} key loaded and hidden. Use Show key to see it. The election checks whether this is the right key when you use it.`;
         status(`${keyName(role)} key loaded. No transaction was submitted.`);
       } catch {
