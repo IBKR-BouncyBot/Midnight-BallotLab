@@ -1,0 +1,17 @@
+# Testnet theme browser checks
+
+Fresh local Chromium checks passed on 6 November 2026. [testnet-theme-browser.json](testnet-theme-browser.json) records all six combinations of `/network.html` and `/Midnight-BallotLab/network.html` at widths 1440, 390 and 320 pixels. [network-browser.json](network-browser.json) separately records all eight existing network browser cases passing against the same build.
+
+The theme checks load the actual SDK and both WASM assets. They inspect computed text, background, border and shadow colors across the rendered page, including expanded Lace help, Create/Join modes, hover and focus. Settled colors are neutral or pure blue; semantic green/red remain available for status messages. The page has no horizontal overflow, and the service introduction, trustee privacy notice and support section remain visible. Both mode panels work with empty private fields, while wallet-dependent actions remain disabled. No external services are contacted by this appearance check.
+
+The retained viewport and section screenshots contain public, empty state. The browser reviewer inspected desktop, 320-pixel, Join and privacy captures; the root reviewer inspected desktop, the 390-pixel connection section and privacy notice. The support QR was allowed to load normally before capture. An offscreen fixed skip link can appear in tall element screenshots because Chromium expands the capture viewport; it is not an application status or success indication.
+
+A separate script-free cosmetic document checks selected-card, receipt, next-step, working/error and pass/fail styles. It is explicitly labelled as a style fixture, contains no real election or wallet, and never modifies the running application's controls or state. Its results do not establish a selected vote, received receipt or successful transaction.
+
+The first appearance run sampled a Create/Join color during its existing finite CSS transition and rejected `rgba(15, 15, 153, 0.75)`. That diagnostic and its original harness are retained in [initial-diagnostic](initial-diagnostic/). The final harness waits for finite animations to finish before checking settled colors; no application code was changed to pass the check. The final appearance run began at `2026-11-06T08:24:02.335Z`; the eight-case suite began at `2026-11-06T08:23:20.064Z`.
+
+Node `24.18.0`, Playwright `1.64.1` and Chromium `156.0.8078.4` were used. The report records exact stylesheet, HTML and bundle hashes. The network runtime remains `55939740a81c9f195b52e3036d83ecfea3e21194bcf95944f2e56b9e401cb637`; only the page palette changed.
+
+The exact one-off [check-theme.mjs.txt](check-theme.mjs.txt) snapshot has SHA-256 `d3d323ca2523ddaf4616a9fb58ca47c4117c714c47b004200cd32e61239c64cc`. To reproduce, copy it to `artifacts/testnet-style/check-theme.mjs` and run `node artifacts/testnet-style/check-theme.mjs` from the repository root after building. It uses `.browser-cache` and a loopback server. The separate acceptance command is `node scripts/test-network-browser.mjs` with `PLAYWRIGHT_BROWSERS_PATH` set to the repository's `.browser-cache`.
+
+These results cover local appearance, real SDK/WASM loading and the existing browser boundaries. They do not claim wallet connection, proof generation, blockchain submission, accepted transactions or a hosted-origin check. No personal wallet, private key, choice or witness data is retained here.

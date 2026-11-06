@@ -1,0 +1,84 @@
+/* Testnet page palette. Load after the shared layout styles; no runtime or
+   layout changes. White text stays readable on Midnight blue and dark surfaces. */
+.network-page {
+  --black: #0a0a0a;
+  --white: #fff;
+  --blue: #0000fe;
+  --blue-light: #fff;
+  --surface: #101010;
+  --surface-raised: #181818;
+  --surface-soft: #202020;
+  --line: #303030;
+  --line-light: #666;
+  --muted: #c1c1c1;
+  --subtle: #aaa;
+  background: var(--black);
+  color: var(--white);
+  accent-color: var(--blue);
+}
+.network-page ::selection { background: var(--blue); color: var(--white); }
+.network-page :focus-visible { outline-color: var(--white); }
+.network-page .eyebrow-dot,
+.network-page .status-dot { background: var(--blue); box-shadow: none; }
+.network-page .strip-divider { color: var(--subtle); }
+.network-page .hero h1 em,
+.network-page .text-button,
+.network-page .support-panel .support-status { color: var(--white); }
+
+/* Primary actions keep the exact electric blue, including hover and mode
+   selection; neutral secondary controls remain distinct. */
+.network-page .button.primary,
+.network-page .button.primary:hover:not(:disabled),
+.network-page .masthead-links a:last-child,
+.network-page .masthead-links a:last-child:hover {
+  background: var(--blue); color: var(--white); box-shadow: none;
+}
+.network-page .button.primary:hover:not(:disabled),
+.network-page .masthead-links a:last-child:hover { border-color: var(--white); }
+.network-page .button.secondary { background: transparent; border-color: var(--line-light); color: var(--white); }
+.network-page .button.secondary:hover:not(:disabled) { background: var(--surface-soft); border-color: var(--white); }
+.network-page .panel input,
+.network-page .panel select,
+.network-page .panel textarea { background-color: var(--surface-raised); border-color: var(--line-light); color: var(--white); }
+.network-page .panel input::placeholder,
+.network-page .panel textarea::placeholder { color: #b5b5b5; }
+.network-page .panel select option { background: var(--surface-raised); color: var(--white); }
+.network-page .panel select option:checked { background: var(--blue); color: var(--white); }
+.network-page input::file-selector-button { background: var(--surface-soft); border-color: var(--line-light); color: var(--white); }
+.network-page input::file-selector-button:hover { border-color: var(--white); }
+
+/* The strongest checked/disabled rules override shared card highlights without
+   changing which controls are enabled, selected or visible. */
+.network-page .selection-card { background: var(--surface-raised); border-color: var(--line-light); }
+.network-page .selection-card input { accent-color: var(--blue); }
+.network-page .selection-card:hover:not(:has(input:disabled)) { background: var(--surface-soft); border-color: var(--white); }
+.network-page .selection-card:has(input:checked),
+.network-page .selection-card:has(input:checked):has(input:disabled) {
+  background: var(--surface-soft); border-color: var(--white); box-shadow: inset 3px 0 var(--blue);
+}
+.network-page .selection-card:has(input:checked) .selection-copy strong { color: var(--white); }
+.network-page .selection-card:has(input:focus-visible) { outline-color: var(--white); }
+
+/* Guidance and receipt details use neutral surfaces. Blue is an accent rather
+   than small text on black; success green and failure red remain untouched. */
+.network-page .public-network-intro {
+  background: #141414; border-color: var(--line-light); border-left-color: var(--blue); color: #d0d0d0;
+}
+.network-page .public-network-intro a,
+.network-page #network-service-settings summary,
+.network-page #network-receipt-panel summary { color: var(--white); }
+.network-page .trustee-privacy,
+.network-page .vote-next-steps { background: #151515; border-color: var(--line-light); }
+.network-page .trustee-privacy h3,
+.network-page .vote-next-steps h3,
+.network-page .trustee-privacy strong { color: var(--white); }
+.network-page .trustee-privacy p,
+.network-page .vote-next-steps p { color: #d0d0d0; }
+.network-page .receipt-panel { border-color: var(--line-light); }
+.network-page .receipt-qr { background: var(--white); color: var(--black); border-color: #ddd; }
+.network-page .fingerprint { background: #1a1a1a; border-color: #353535; color: #d0d0d0; }
+.network-page .record-panel { background: var(--black); border-color: var(--line-light); }
+.network-page .record-title .status-dot { box-shadow: none; }
+.network-page .global-status:not(.error) { background: var(--surface-raised); border-color: var(--line-light); color: #ddd; }
+.network-page .global-status.working:not(.error) { border-left-color: var(--blue); }
+.network-page .global-status.working::before { border-color: #666; border-top-color: var(--white); }

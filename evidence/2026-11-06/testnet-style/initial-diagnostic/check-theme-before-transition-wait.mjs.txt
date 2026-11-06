@@ -1,0 +1,176 @@
+// One-off local appearance checks; no wallet, secret inputs, service calls or transactions.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { createServer } from 'node:http';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { dirname, extname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..'), dist = join(root, 'dist');
+const output = join(root, 'evidence/2026-11-06/testnet-style');
+process.env.PLAYWRIGHT_BROWSERS_PATH = join(root, '.browser-cache');
+const requireContracts = createRequire(join(root, 'contracts/package.json'));
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const report = { executedAt: new Date().toISOString(), node: process.version,
+  scope: 'local-testnet-theme-and-real-wasm-initialization', walletConnected: false,
+  proofGeneration: false, networkSubmission: false, cases: [] };
+let stage = 'prerequisites', browser, server;
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json', '.wasm': 'application/wasm', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+function permittedColor(value) {
+  for (const token of value.matchAll(/rgba?\(([^)]+)\)/g)) {
+    const [r, g, b, a = 1] = token[1].split(/[,\s/]+/).map(Number);
+    if (a === 0) continue;
+    const neutral = r === g && g === b, blue = r === 0 && g === 0 && b >= 200;
+    const green = g > r && g > b, red = r > g && r > b;
+    if (!neutral && !blue && !green && !red) return false;
+  }
+  return true;
+}
+async function checkPalette(page) {
+  const entries = await page.evaluate(() => {
+    const entries = [];
+    for (const element of document.querySelectorAll('body, body *')) {
+      const box = element.getBoundingClientRect(), style = getComputedStyle(element);
+      if (!box.width || !box.height || style.visibility === 'hidden') continue;
+      for (const pseudo of [null, '::before', '::after']) {
+        const css = pseudo ? getComputedStyle(element, pseudo) : style;
+        if (pseudo && ['none', 'normal'].includes(css.content)) continue;
+        const properties = ['color', 'backgroundColor', 'backgroundImage', 'boxShadow', 'textShadow'];
+        for (const side of ['Top', 'Right', 'Bottom', 'Left']) if (parseFloat(css[`border${side}Width`]) > 0) properties.push(`border${side}Color`);
+        if (css.outlineStyle !== 'none' && parseFloat(css.outlineWidth) > 0) properties.push('outlineColor');
+        for (const property of properties) entries.push({ element: element.id || `${element.tagName.toLowerCase()}.${String(element.className).replaceAll(' ', '.')}`,
+          pseudo, property, value: css[property] });
+      }
+    }
+    return entries;
+  });
+  const violations = entries.filter(entry => !permittedColor(entry.value));
+  if (violations.length) report.paletteFailure = violations.slice(0, 12);
+  assert.equal(violations.length, 0, 'Unexpected purple/tinted color in rendered theme');
+  return [...new Set(entries.map(entry => entry.value))].sort();
+}
+async function checkNoWalletGates(page) {
+  assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+  for (const id of ['network-deploy', 'network-join', 'network-enroll', 'network-open', 'network-cast',
+    'network-close', 'network-submit-share', 'network-finalize', 'network-export', 'network-check-receipt-id']) {
+    assert.equal(await page.locator(`#${id}`).isDisabled(), true);
+  }
+  assert.equal(await page.locator('#network-receipt-panel').isVisible(), false);
+  assert.equal(await page.locator('#network-events').textContent(), '');
+  for (const id of ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']) {
+    assert.equal(await page.locator(`#${id}`).inputValue(), '');
+  }
+}
+const fixture = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/overview.css"><link rel="stylesheet" href="/network-theme.css"></head>
+<body class="network-page"><main class="page"><h1>Cosmetic fixture only</h1><p>No wallet, election, proof or transaction exists in this isolated style document.</p>
+<label class="candidate-card selection-card"><input type="radio" checked disabled><span class="selection-copy"><strong>Selected style sample</strong><small>Not a ballot selection</small></span></label>
+<section class="receipt-panel"><h2>Receipt appearance sample — no recorded vote</h2><code class="fingerprint">PUBLIC STYLE SAMPLE</code><div class="vote-next-steps"><h3>Guidance style</h3><p>Cosmetic sample only.</p></div></section>
+<p class="inline-status pass">Semantic success color sample only</p><p class="inline-status fail">Semantic failure color sample only</p>
+<div class="global-status working">Working style sample only</div><div class="global-status error">Error style sample only</div>
+<button class="button primary">Primary hover/focus sample</button><button class="button secondary">Secondary hover/focus sample</button>
+</main></body></html>`;
+try {
+  await mkdir(output, { recursive: true }); report.harnessSha256 = hash(await readFile(fileURLToPath(import.meta.url)));
+  const manifest = JSON.parse(await readFile(join(dist, 'network-build.json'), 'utf8'));
+  assert.equal(manifest.enabled, true); assert.equal(manifest.wasmAssets.length, 2);
+  report.artifacts = {};
+  for (const file of ['network.html', 'network-theme.css', 'styles.css', 'overview.css', 'network-bundle.mjs']) {
+    const bytes = await readFile(join(dist, file)); report.artifacts[file] = { sha256: hash(bytes), bytes: bytes.length };
+  }
+  const { chromium } = requireContracts('playwright'); report.playwright = requireContracts('playwright/package.json').version;
+  stage = 'chromium-launch'; browser = await chromium.launch({ headless: true }); report.chromium = browser.version();
+  server = createServer(async (request, response) => {
+    try {
+      if (!['GET', 'HEAD'].includes(request.method)) return response.writeHead(405).end();
+      let path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
+      if (path === '/favicon.ico') return response.writeHead(204).end();
+      if (path === '/__cosmetic-fixture.html') return response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(fixture);
+      if (path.startsWith('/Midnight-BallotLab/')) path = path.slice('/Midnight-BallotLab'.length);
+      const target = resolve(dist, `.${path}`);
+      if (!target.startsWith(`${dist}${sep}`)) return response.writeHead(403).end();
+      const bytes = await readFile(target); response.writeHead(200, { 'Content-Type': types[extname(target)] ?? 'application/octet-stream',
+        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); response.end(request.method === 'HEAD' ? undefined : bytes);
+    } catch { response.writeHead(404).end(); }
+  });
+  await new Promise((yes, no) => { server.once('error', no); server.listen(0, '127.0.0.1', yes); });
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  for (const prefix of ['/', '/Midnight-BallotLab/']) for (const width of [1440, 390, 320]) {
+    const context = await browser.newContext({ viewport: { width, height: width === 1440 ? 1000 : 844 } });
+    try {
+      stage = `${prefix}:${width}:real-sdk-load`;
+      const page = await context.newPage(); page.setDefaultTimeout(60_000);
+      const requests = new Set(), wasm = new Set(); let pageErrors = 0, consoleErrors = 0, sockets = 0;
+      page.on('request', request => requests.add(request.url())); page.on('pageerror', () => pageErrors++);
+      page.on('console', message => { if (message.type() === 'error') consoleErrors++; }); page.on('websocket', () => sockets++);
+      page.on('response', response => { if (response.ok() && new URL(response.url()).pathname.endsWith('.wasm')) wasm.add(new URL(response.url()).pathname); });
+      await page.goto(`${origin}${prefix}network.html`, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => ['ready', 'unavailable'].includes(document.getElementById('network-availability').dataset.state));
+      assert.equal(await page.locator('#network-availability').getAttribute('data-state'), 'ready');
+      for (const asset of manifest.wasmAssets) assert.ok(wasm.has(`${prefix}${asset}`));
+      await checkNoWalletGates(page);
+      const layout = await page.evaluate(async () => { await document.fonts.ready; return {
+        viewport: document.documentElement.clientWidth, content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+        bodyBackground: getComputedStyle(document.body).backgroundColor, outfitLoaded: document.fonts.check('16px Outfit') }; });
+      assert.equal(layout.viewport, width); assert.ok(layout.content <= width + 1); assert.equal(layout.outfitLoaded, true);
+      assert.equal(layout.bodyBackground, 'rgb(10, 10, 10)');
+      assert.equal((await page.locator('meta[name="theme-color"]').getAttribute('content')).toLowerCase(), '#0a0a0a');
+      assert.equal(await page.locator('.public-network-intro').first().isVisible(), true);
+      assert.equal(await page.locator('.trustee-privacy').isVisible(), true);
+      assert.match(await page.locator('.trustee-privacy').textContent(), /two trustees.*decrypt individual ballots/);
+      assert.equal(await page.locator('#support').isVisible(), true);
+      stage = `${prefix}:${width}:create-palette`;
+      const colors = await checkPalette(page);
+      await page.locator('details.public-network-intro summary').click(); await checkPalette(page);
+      assert.equal(await page.locator('#network-mode-create').getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('#network-create-panel').isVisible(), true);
+      await page.locator('.support-qr img').scrollIntoViewIfNeeded();
+      await page.waitForFunction(() => { const img = document.querySelector('.support-qr img'); return img.complete && img.naturalWidth > 0; });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const screenshot = `testnet-${prefix === '/' ? 'root' : 'project'}-${width}.png`;
+      await page.screenshot({ path: join(output, screenshot), animations: 'disabled' });
+      if (prefix === '/' && width === 390) {
+        await page.locator('section[aria-labelledby="connect-heading"]').screenshot({ path: join(output, 'testnet-connect-empty-390.png') });
+        await page.locator('.trustee-privacy').screenshot({ path: join(output, 'testnet-privacy-390.png') });
+      }
+      if (prefix === '/' && width === 320) await page.locator('#support').screenshot({ path: join(output, 'testnet-support-320.png') });
+      stage = `${prefix}:${width}:join-palette-and-focus`;
+      await page.locator('#network-mode-join').hover(); await checkPalette(page);
+      await page.locator('#network-mode-join').focus(); await checkPalette(page);
+      await page.locator('#network-mode-join').press('Enter');
+      assert.equal(await page.locator('#network-mode-join').getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('#network-create-panel').isVisible(), false); assert.equal(await page.locator('#network-join-panel').isVisible(), true);
+      await checkPalette(page); await checkNoWalletGates(page);
+      await page.locator('#network-admin').focus(); await checkPalette(page);
+      if (prefix === '/' && width === 390) await page.locator('section[aria-labelledby="contract-heading"]').screenshot({ path: join(output, 'testnet-join-empty-390.png') });
+      await page.locator('#network-mode-create').click(); await checkPalette(page); await checkNoWalletGates(page);
+      for (const request of requests) assert.equal(new URL(request).origin, origin);
+      assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0); assert.equal(sockets, 0);
+      report.cases.push({ prefix, width, passed: true, layout, palette: colors, screenshot,
+        wasmLoaded: wasm.size, createJoinPanels: true, hoverAndFocus: true, privacyAndServicesVisible: true,
+        emptySecretFields: true, noWalletGatesPreserved: true, externalRequests: 0, pageErrors, consoleErrors });
+      console.log(JSON.stringify({ stage: `${prefix}:${width}`, passed: true }));
+    } finally { await context.close(); }
+  }
+  stage = 'isolated-cosmetic-fixture';
+  const fixtureContext = await browser.newContext();
+  try {
+    const page = await fixtureContext.newPage(); await page.goto(`${origin}/__cosmetic-fixture.html`, { waitUntil: 'networkidle' });
+    const colors = await checkPalette(page);
+    for (const selector of ['.button.primary', '.button.secondary']) {
+      await page.locator(selector).hover(); await checkPalette(page); await page.locator(selector).focus(); await checkPalette(page);
+    }
+    assert.equal(await page.locator('script').count(), 0);
+    report.cosmeticFixture = { passed: true, isolatedDocument: true, scripts: 0, applicationStateModified: false,
+      checks: ['checked-radio-style', 'receipt-style', 'next-step-style', 'working-error-pass-fail-colors', 'button-hover-focus'], palette: colors };
+  } finally { await fixtureContext.close(); }
+  report.passed = true; console.log(JSON.stringify({ testnetTheme: 'passed', cases: report.cases.length, cosmeticFixture: true }));
+} catch (error) {
+  report.passed = false; report.failure = { stage, category: error instanceof assert.AssertionError ? 'assertion' : 'browser-or-resource' };
+  console.log(JSON.stringify(report.failure)); process.exitCode = 1;
+} finally {
+  await browser?.close(); if (server) await new Promise(done => server.close(done));
+  await mkdir(output, { recursive: true }); await writeFile(join(output, 'testnet-theme-browser.json'), JSON.stringify(report, null, 2) + '\n');
+}

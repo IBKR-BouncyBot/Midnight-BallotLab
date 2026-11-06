@@ -1,0 +1,47 @@
+{
+  "executedAt": "2026-11-06T08:23:19.693Z",
+  "node": "v24.18.0",
+  "scope": "local-testnet-theme-and-real-wasm-initialization",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "cases": [],
+  "harnessSha256": "0bf5bb4e8cd27426e29c9806f72d0702acc3da43732624af002d99cfa4d5c815",
+  "artifacts": {
+    "network.html": {
+      "sha256": "bf6c45d8a84f1b4669151ae8af83fbfa7a8ad2d33f013945a063bc8d81996bba",
+      "bytes": 28815
+    },
+    "network-theme.css": {
+      "sha256": "c112549b090ebf52cf0e53dc7f393c09da808221bcf67592847fc15087dc3980",
+      "bytes": 4722
+    },
+    "styles.css": {
+      "sha256": "4e0bc404735ed882d4c3cc9adae79fff09a2547a7b27ee5741e46a0b03bb6f5c",
+      "bytes": 30408
+    },
+    "overview.css": {
+      "sha256": "b7f6b2bc8a6a27e6dd3336fc08817c1ad82c703e6f03b36a6869ff282271ef54",
+      "bytes": 13391
+    },
+    "network-bundle.mjs": {
+      "sha256": "55939740a81c9f195b52e3036d83ecfea3e21194bcf95944f2e56b9e401cb637",
+      "bytes": 2872109
+    }
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "paletteFailure": [
+    {
+      "element": "network-mode-join",
+      "pseudo": null,
+      "property": "backgroundColor",
+      "value": "rgba(15, 15, 153, 0.75)"
+    }
+  ],
+  "passed": false,
+  "failure": {
+    "stage": "/:1440:join-palette-and-focus",
+    "category": "assertion"
+  }
+}
