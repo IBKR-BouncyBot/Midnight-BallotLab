@@ -69,7 +69,7 @@ try {
     plugins: [nativeWasmPlugin(wasmAssets, { projectRoot: root, assetFolder: 'network-assets', browserPackages: {
       // These are actual installed browser implementations, not empty Node stubs.
       events: requireContracts.resolve('events/'), buffer: requireContracts.resolve('buffer/'),
-      assert: requireContracts.resolve('assert/'),
+      assert: requireContracts.resolve('assert/'), 'process/browser.js': requireContracts.resolve('process/browser.js'),
     } })],
     splitting: false, write: false, metafile: true, sourcemap: false,
     minify: false, legalComments: 'inline', logLevel: 'warning',
@@ -79,6 +79,9 @@ try {
     throw new Error('Network browser output contains an unresolved external dependency');
   }
   const inputs = Object.keys(result.metafile.inputs).map(path => path.replaceAll('\\', '/'));
+  if (inputs.filter(path => path.endsWith('node_modules/process/browser.js')).join() !== 'contracts/node_modules/process/browser.js') {
+    throw new Error('The browser process implementation must come from the locked contracts dependencies');
+  }
   for (const required of ['managed/native-election/contract/index.js', '/@midnight-ntwrk/compact-runtime/',
     '/@midnight-ntwrk/onchain-runtime-v3/', '/@midnight-ntwrk/ledger-v8/', '/@midnight-ntwrk/midnight-js-contracts/',
     '/@midnight-ntwrk/midnight-js-types/']) {

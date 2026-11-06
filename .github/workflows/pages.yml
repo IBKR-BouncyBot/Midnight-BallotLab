@@ -14,7 +14,7 @@ jobs:
   build:
     name: Test native election and build static site
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     defaults:
       run:
         shell: bash
@@ -51,6 +51,9 @@ jobs:
       - name: Run generated native election tests
         working-directory: contracts
         run: npm run test:native 2>&1 | tee "$RUNNER_TEMP/native-election-tests.log"
+      - name: Check actual Ledger callback failure diagnostics
+        # Requires the freshly compiled contract and keys; no proof is generated.
+        run: node --test contracts/test/browser-prover-failure.test.mjs 2>&1 | tee "$RUNNER_TEMP/browser-prover-failure-tests.log"
       - name: Run generated native election example
         working-directory: contracts
         run: npm run demo:native 2>&1 | tee "$RUNNER_TEMP/native-election-demo.log"
@@ -70,8 +73,8 @@ jobs:
         run: node scripts/test-native-browser.mjs 2>&1 | tee "$RUNNER_TEMP/native-browser-tests.log"
       - name: Exercise network client initialization and fail-closed controls
         run: node scripts/test-network-browser.mjs 2>&1 | tee "$RUNNER_TEMP/network-browser-tests.log"
-      - name: Prove all native circuits in a real browser worker
-        timeout-minutes: 40
+      - name: Prove native circuits and a bound SDK transaction in a real browser worker
+        timeout-minutes: 55
         # Fresh synthetic witnesses remain in the browser. The test permits
         # only its same-origin public-file GETs; no wallet or HTTP prover.
         run: |
@@ -92,6 +95,7 @@ jobs:
             ${{ runner.temp }}/native-boundary-tests.log
             ${{ runner.temp }}/native-election-compile.log
             ${{ runner.temp }}/native-election-tests.log
+            ${{ runner.temp }}/browser-prover-failure-tests.log
             ${{ runner.temp }}/native-election-demo.log
             ${{ runner.temp }}/static-build.log
             ${{ runner.temp }}/native-browser-build.log

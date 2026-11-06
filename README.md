@@ -52,7 +52,7 @@ Voter keys and receipts use matching file numbers: `midnight-voter-key-000001.pr
 
 The testnet workspace shows one screen at a time: **Connect**, **Set up election**, **Vote**, **Reveal results** and **Verify election**. Use the five blue buttons or **Back / Next** to move between them. Switching screens keeps your form values, keys, receipts and uploaded result in this tab; it does not connect a wallet or submit anything. You can go straight to **Verify election** without a wallet. Navigation waits while an action is running.
 
-**Election activity** remains available alongside the current screen, with the contract’s voting schedule, a countdown and the last recorded phase. Countdowns use your device clock; refresh the election record for the latest network status.
+**Election activity** remains available alongside the current screen, with the contract’s voting schedule, a countdown and the last recorded phase. While an action runs, its current step and elapsed time appear beside the button and in Election activity. Elapsed time is not a completion estimate. Countdowns use your device clock; refresh the election record for the latest network status.
 
 If voting is unavailable, **Ready to vote?** explains why and links to the next step. Register voters before the opening time, then submit **Open voting** during the voting window—the scheduled time alone does not open voting. Load the registered voter key and choose an option. Use **Refresh voting status** if another participant has opened the election or its record has changed. A used key, unresolved vote attempt or elapsed voting window keeps submission locked.
 

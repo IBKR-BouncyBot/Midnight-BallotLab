@@ -1,0 +1,74 @@
+/** TEST ONLY: complete Ledger Transaction.prove, not a network transaction. */
+import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+import { createProofProvider } from '@midnight-ntwrk/midnight-js-types';
+import { CostModel } from '@midnight-ntwrk/ledger-v8';
+import { createNativeWasmProofProvider, nativeWasmProofErrorMessage } from '../../contracts/native/browser-wasm-proof.mjs';
+import { createTransactionFixture } from './fixture.mjs';
+
+const state = document.querySelector('#transaction-proof-state');
+const buttons = ['openVoting', 'configureKeys'].map(circuit => document.querySelector(`#run-${circuit}-transaction-proof`));
+let active;
+const paint = report => { document.querySelector(`#${report.selectedCircuit}-transaction-proof-report`).textContent = JSON.stringify(report, null, 2); };
+async function run(selectedCircuit) {
+  for (const button of buttons) button.disabled = true;
+  const report = { schema: 'midnight-ballot-lab/browser-transaction-proofs/v1', status: 'running',
+    selectedCircuit,
+    startedAt: new Date().toISOString(), execution: 'synthetic-sdk-transaction-fixture-in-browser',
+    witnessSource: 'fresh-synthetic-browser-memory', httpProofProviderConfigured: false,
+    walletExecution: 'not-attempted', networkSubmission: 'not-attempted', networkAcceptance: 'not-tested',
+    independentProofVerification: 'not-tested', fixtureSetup: 'generated-runtime-only-not-proved',
+    versions: { midnightJs: '4.1.1', ledger: '8.1.0', zkir: '2.1.1' }, cases: [] };
+  let stage = 'initialize-worker'; paint(report);
+  try {
+    const base = new URL('./native-contract', location.href).href;
+    const zk = new FetchZkConfigProvider(base, (url, options) => {
+      const target = new URL(url);
+      if (target.origin !== location.origin || !target.pathname.startsWith(new URL(`${base}/`).pathname)) {
+        throw new Error('Unexpected fixture asset');
+      }
+      return fetch(target, { ...options, credentials: 'omit', redirect: 'error' });
+    });
+    active = await createNativeWasmProofProvider({ compiledAssetsUrl: base,
+      onProofProgress: ({ phase, circuit }) => { state.textContent = `${stage}: ${phase}${circuit ? ` (${circuit})` : ''}`; },
+    });
+    for (const circuit of [selectedCircuit]) {
+      stage = `construct-${circuit}`; state.textContent = stage;
+      const transaction = await createTransactionFixture(circuit, zk);
+      const item = { circuit, status: 'running', callbacks: [] }; report.cases.push(item); paint(report);
+      const invoke = async (operation, bytes, key, binding) => {
+        if (key !== circuit) throw new Error('Unexpected circuit callback');
+        const record = { operation, circuit, bindingOverridePresent: typeof binding === 'bigint', status: 'running' };
+        item.callbacks.push(record); paint(report);
+        const start = performance.now();
+        const value = await active.provingProvider[operation](bytes, key, binding);
+        if (operation === 'prove') {
+          if (!(value instanceof Uint8Array) || value.length === 0 || typeof binding !== 'bigint') throw new Error('Missing bound proof');
+          record.proofBytes = value.length;
+        }
+        record.status = 'passed'; record.elapsedMs = Math.round(performance.now() - start); paint(report);
+        return value;
+      };
+      const provider = createProofProvider({ check: (bytes, key) => invoke('check', bytes, key),
+        prove: (bytes, key, binding) => invoke('prove', bytes, key, binding) }, CostModel.initialCostModel());
+      stage = `transaction-prove-${circuit}`;
+      const start = performance.now();
+      await provider.proveTx(transaction);
+      if (item.callbacks.length !== 2 || item.callbacks[0].operation !== 'check'
+          || item.callbacks[1].operation !== 'prove' || item.callbacks.some(job => job.status !== 'passed')) throw new Error('Unexpected callback sequence');
+      item.status = 'passed'; item.elapsedMs = Math.round(performance.now() - start); paint(report);
+    }
+    report.status = 'passed'; state.textContent = `Passed: the ${selectedCircuit} SDK transaction was proved locally. Nothing was submitted.`;
+  } catch (error) {
+    report.status = 'failed'; report.failedStage = stage;
+    report.safeDiagnostic = nativeWasmProofErrorMessage(error) ?? 'The local transaction diagnostic failed; private diagnostics were withheld.';
+    state.textContent = report.safeDiagnostic;
+  } finally {
+    active?.close(); active = undefined; report.finishedAt = new Date().toISOString(); paint(report);
+    for (const button of buttons) button.disabled = false;
+  }
+}
+for (const circuit of ['openVoting', 'configureKeys']) {
+  const button = document.querySelector(`#run-${circuit}-transaction-proof`);
+  button.addEventListener('click', () => { void run(circuit); }); button.disabled = false;
+}
+state.textContent = 'Ready. Run only after other pending proofs have finished.';

@@ -46,12 +46,14 @@ export async function createNativeWasmProofProvider({ compiledAssetsUrl, onStage
   let inFlightBytes = 0;
   let proofTransactionActive = false;
   let completedProofs = 0;
+  let terminalFailureCode;
   const pending = new Set();
   function stop(code = 'CANCELLED') {
     if (closed) return;
     closed = true;
     worker.terminate();
     const error = failure(code);
+    terminalFailureCode = nativeWasmProofErrorCode(error);
     if (initialization) { clearTimeout(initialization.timer); initialization.reject(error); initialization = undefined; }
     if (active) { clearTimeout(active.timer); active.reject(error); active = undefined; }
     for (const item of pending) { item.bytes.fill(0); item.reject(error); }
@@ -152,6 +154,10 @@ export async function createNativeWasmProofProvider({ compiledAssetsUrl, onStage
         progress(completedProofs > before ? 'complete' : 'prepared');
         return result;
       } catch (error) {
+        // Ledger's Rust/wasm boundary wraps callback rejections in a fresh
+        // Error, which cannot retain our WeakMap brand. Preserve the worker's
+        // first finite terminal reason rather than parsing that wrapped error.
+        if (terminalFailureCode) throw failure(terminalFailureCode);
         if (nativeWasmProofErrorMessage(error)) throw error;
         stop('PROOF_FAILED');
         throw failure('PROOF_FAILED');

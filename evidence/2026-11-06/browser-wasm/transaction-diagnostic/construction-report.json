@@ -1,0 +1,18 @@
+{
+  "schema": "midnight-ballot-lab/transaction-fixture-construction/v1",
+  "status": "passed",
+  "execution": "actual-generated-runtime-and-SDK-construction",
+  "proofGeneration": "not-attempted",
+  "walletExecution": "not-attempted",
+  "networkSubmission": "not-attempted",
+  "circuits": [
+    {
+      "circuit": "openVoting",
+      "constructed": true
+    },
+    {
+      "circuit": "configureKeys",
+      "constructed": true
+    }
+  ]
+}

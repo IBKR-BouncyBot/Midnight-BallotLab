@@ -1,0 +1,25 @@
+{
+  "schema": "midnight-ballot-lab/retained-evidence/v1",
+  "files": [
+    {
+      "path": "browser-proof-evidence.json",
+      "bytes": 8011,
+      "sha256": "59fe7970ff39050b9b3025a3d1974e6a877857dfd758755a74e836fb2568ef1b"
+    },
+    {
+      "path": "deployment-artifact-audit.json",
+      "bytes": 4784,
+      "sha256": "4b5eb344b774e3fe2e3f94dc2cd6aa803b356bebc2dccb2aba905f1ec6277a21"
+    },
+    {
+      "path": "provenance.json",
+      "bytes": 1540,
+      "sha256": "7ba5857e60dc3cdce9544d9eda7012e873ef4111ccc9d92383f469bdea050a73"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3079,
+      "sha256": "ed9034f3b6cb6e1649b903fa200fdac20d80c9d0a47ba8b3c11e9b43ffb742fd"
+    }
+  ]
+}

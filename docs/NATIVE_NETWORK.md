@@ -18,7 +18,7 @@ Preview uses shared public node and indexer services. You do not need an API key
 
 These are the current [official Preview endpoints](https://docs.midnight.network/guides/networks-and-environments#environment-reference). The browser-only configuration generates contract proofs in an application Web Worker using official Midnight WASM. Lace separately balances, signs and proves its wallet/DUST work using **Run in this app (WASM)**. Neither step requires Docker, Node.js or an HTTP proof service on the user’s computer. Public node/indexer access and downloads of public proving material are still required; on-device proving does not mean offline use.
 
-**Verification status:** eight actual application-circuit proofs have now completed in a dedicated browser worker; see [the fresh browser proof run](#browser-worker-circuit-proofs). The retained full Preview election below used a Node Wallet SDK and HTTP proof server. The browser-only wallet/DUST and end-to-end Preview path remains unverified. Application-worker success does not establish how Lace proved a transaction or that a network accepted it.
+**Verification status:** eight actual application-circuit proofs have completed in a dedicated browser worker; see [the browser proof run](#browser-worker-circuit-proofs). Two separate synthetic Ledger `Transaction.prove` calls also passed through the real worker callbacks; see [the transaction diagnostics](#ledger-transaction-proof-diagnostics). The retained full Preview election below used a Node Wallet SDK and HTTP proof server. The browser-only wallet/DUST and end-to-end Preview path remains unverified. Application-worker success does not establish how Lace proved a transaction or that a network accepted it.
 
 ### Select Preview in Lace
 
@@ -88,6 +88,14 @@ The [first attempt](../evidence/2026-11-06/browser-wasm/attempt-1/browser-report
 
 The user has reported selecting **Run in this app (WASM)** in Lace. The [signed-package source review](../evidence/2026-11-06/browser-wasm/lace-wasm-source-review.json) establishes that this normal option routes wallet proving through a dedicated worker; it is not a runtime observation of the user’s wallet. Fresh Lace wallet/DUST proofs, browser-wallet Preview transactions and hosted-origin wallet behavior remain pending, subject to the [API-mode limitation](#wallet-mode-limitation).
 
+### Ledger transaction proof diagnostics
+
+On **6 November 2026**, two additional browser runs completed actual Ledger `Transaction.prove` calls with fresh synthetic fixtures and official SDK construction: `openVoting` at **19:00:08 UTC** and `configureKeys` at **19:01:53–19:03:09 UTC**. Each delegated a real constraint check and a bound proof to the same application worker. The transaction-proof calls took **371 ms** and **75,716 ms** respectively. The [reports, screenshot and exact source/build hashes](../evidence/2026-11-06/browser-wasm/transaction-diagnostic/README.md) retain their scope.
+
+These calls used a fresh official proof-provider wrapper around the real worker callbacks. They did not exercise the application's outer transaction error/concurrency wrapper, connect Lace, generate wallet/DUST proofs or submit a transaction. The setup state and timing were synthetic; no independent proof verification is claimed. These timings do not establish that the user's pending key-registration operation was fixed.
+
+A separate failure-only regression checks that the application preserves a safe terminal error code when Ledger wraps a worker callback rejection. That diagnostic fix distinguishes timeout, asset-integrity failure and cancellation without exposing private errors. It does not change proving performance or resolve an unknown stall.
+
 ## Public Preview SDK acceptance
 
 On 6 November 2026, from `2026-11-06T17:20:25.465Z` to `2026-11-06T17:40:07.714Z`, an isolated Node Wallet SDK wallet completed a full election on the shared public **Preview** network. The [acceptance report](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-06/public-preview-sdk/election-acceptance.json) records nine application transactions reported `SucceedEntirely` by the configured public Preview indexer and eight completed contract-proof-provider calls. Deployment is included in the nine transactions; faucet funding and the separate accepted DUST registration are not. These counts are not a count of every prover HTTP request or wallet fee proof.
@@ -155,6 +163,8 @@ For plain-HTTP/WS local development indexers, use `localhost` or `127.0.0.1`. Ch
 ## Run the flow
 
 Use the published network page, or build the real native contract and network browser bundle and serve them over HTTPS or loopback. `keys/` and `zkir/` must be available under `native-contract/` alongside `network.html`; the bootstrap preserves GitHub repository subdirectory paths.
+
+During an action, the current step and elapsed time appear beside its button and in Election activity. Contract proving happens before Lace's transaction approval request. The elapsed timer measures time spent in the whole action, not proof completion or a network deadline. Do not retry a pending action just because its button is disabled; wait for its outcome and check the public record if submission is uncertain.
 
 1. **Connect.** Select Preview in Lace and your API-4 wallet in the app. Use **Check public Preview services**, enter a strong local storage password and connect. Funding is not required for connection. The app validates the password and public services before requesting wallet access; mainnet is rejected. Wallet account, network and reported prover configuration are rechecked before proving, balancing and submission. Connection settings stay locked until disconnect.
 2. **Set up election.** Before a transaction, obtain usable test DUST and confirm Lace is still set to **Run in this app (WASM)**. Join with a trusted contract address and fingerprint, or create a test election with a future opening and closing schedule. Generate and register its trustee keys before enrollment, then save the election details and private trustee files. Registration is a separate proved `configureKeys` call; deployment does not prove private key setup.

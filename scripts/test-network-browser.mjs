@@ -1068,8 +1068,27 @@ try {
       await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
       assert.equal(blockedRequests, 0, 'Public service checks must require an explicit click');
+      const originalActionLabel = await page.locator('#network-check-services').textContent();
       await page.locator('#network-check-services').click();
       assert.equal(await page.locator('#network-check-services').isDisabled(), true);
+      stage = `preview-${failedService}-transport-failure:visible-operation-progress`;
+      assert.equal(await page.locator('#network-operation-feedback').isVisible(), true);
+      assert.equal(await page.locator('#network-operation-feedback').evaluate(element => {
+        const bounds = element.getBoundingClientRect(); return bounds.top >= 0 && bounds.bottom <= innerHeight;
+      }), true, 'The initial operation feedback must be inside the viewport');
+      assert.equal(await page.locator('#network-activity-operation').isVisible(), true);
+      assert.equal(await page.locator('#network-check-services + #network-operation-feedback').count(), 1,
+        'Progress must remain beside the clicked action');
+      assert.equal(await page.locator('#network-operation-phase').textContent(), await page.locator('#network-status').textContent());
+      assert.equal(await page.locator('#network-activity-phase').textContent(), await page.locator('#network-operation-phase').textContent());
+      assert.equal(await page.locator('#network-operation-phase').getAttribute('aria-live'), 'polite');
+      for (const id of ['network-operation-elapsed', 'network-activity-elapsed']) {
+        assert.equal(await page.locator(`#${id}`).getAttribute('aria-live'), 'off');
+      }
+      await page.waitForFunction(() => /^Elapsed: 0:0[1-9]$/.test(document.getElementById('network-operation-elapsed').textContent));
+      assert.equal(await page.locator('#network-operation-elapsed').textContent(), await page.locator('#network-activity-elapsed').textContent());
+      assert.equal(await page.locator('#network-check-services').textContent(), originalActionLabel,
+        'Progress must not replace the original accessible action label');
       for (const navigation of await page.locator('[data-network-nav]').all()) assert.equal(await navigation.isDisabled(), true,
         'Navigation must wait for the current operation instead of hiding its progress');
       releaseTarget();
@@ -1079,6 +1098,14 @@ try {
       assert.equal(await page.locator('#network-service-status').textContent(), expected);
       stage = `preview-${failedService}-transport-failure:global-message`;
       assert.equal(await page.locator('#network-status').textContent(), expected, 'The global status must preserve the service-specific safe error');
+      assert.equal(await page.locator('#network-operation-phase').textContent(), expected);
+      assert.equal(await page.locator('#network-activity-phase').textContent(), expected);
+      assert.equal(await page.locator('#network-activity-operation-heading').textContent(), 'Last action');
+      assert.equal(await page.locator('#network-operation-feedback').evaluate(element => element.classList.contains('is-active')), false);
+      const completedElapsed = await page.locator('#network-operation-elapsed').textContent();
+      await page.waitForTimeout(1100);
+      assert.equal(await page.locator('#network-operation-elapsed').textContent(), completedElapsed, 'Elapsed time must stop when the operation settles');
+      assert.equal(await page.locator('#network-activity-elapsed').textContent(), completedElapsed);
       assert.doesNotMatch(expected, /prover|DUST|password|witness|seed/i);
       stage = `preview-${failedService}-transport-failure:restored-controls`;
       for (const id of ['network-check-services', 'network-connect', 'network-id', 'network-refresh-wallets']) {
@@ -1102,6 +1129,7 @@ try {
       evidence.cases.push({ case: `preview-${failedService}-transport-failure`, status: 'passed',
         failureInjection: 'request-abort-only', fabricatedSuccessResponses: 0, externalRequestsAllowed: 0,
         safeServiceMessage: true, controlsRestored: true, navigationLockedWhileBusyAndRestored: true,
+        adjacentProgressVisible: true, activityProgressMirrored: true, actualElapsedTimerStopped: true,
         walletConnected: false, pageErrors, unexpectedConsoleErrors });
     } finally {
       releaseTarget(); releaseSibling(); await Promise.allSettled(routeTasks); await context.close();

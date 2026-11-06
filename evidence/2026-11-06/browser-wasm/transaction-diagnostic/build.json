@@ -1,0 +1,7 @@
+{
+  "schema": "midnight-ballot-lab/transaction-proof-diagnostic-build/v1",
+  "harnessSha256": "c6a1fe5bf3dd010289f75871ed806d48c283233432b7688baf91cee4f07d9ddf",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "assetManifestSha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9",
+  "proofGeneration": "not-tested-by-build"
+}

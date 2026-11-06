@@ -1,0 +1,42 @@
+/** Ignored diagnostic build; never rewrites production or the active proof site. */
+import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import { createHash } from 'node:crypto';
+import { nativeWasmPlugin } from '../../scripts/native-wasm-plugin.mjs';
+const here = dirname(fileURLToPath(import.meta.url)), root = resolve(here, '../..');
+const output = join(root, 'artifacts/transaction-proof-site');
+const requireContracts = createRequire(join(root, 'contracts/package.json'));
+const esbuild = await import(pathToFileURL(requireContracts.resolve('esbuild')).href);
+const manifest = JSON.parse(await readFile(join(root, 'dist/network-build.json'), 'utf8'));
+if (!manifest.enabled || manifest.browserProver?.version !== '2.1.1') throw new Error('Actual worker build required');
+await mkdir(output, { recursive: true });
+await cp(join(root, 'dist'), output, { recursive: true });
+const assets = new Map();
+const fixtureResolution = { name: 'fixture-uses-tested-contract-dependencies', setup(build) {
+  build.onResolve({ filter: /^@midnight-ntwrk\// }, args => {
+    if (!args.importer.startsWith(here)) return undefined;
+    return build.resolve(args.path, { resolveDir: join(root, 'contracts'), kind: 'import-statement' });
+  });
+} };
+const result = await esbuild.build({ absWorkingDir: root, entryPoints: [join(here, 'entry.mjs')],
+  outfile: join(output, 'transaction-proof-bundle.mjs'), bundle: true, platform: 'browser', format: 'esm', target: 'es2022',
+  nodePaths: [join(root, 'contracts/node_modules')], mainFields: ['browser', 'module', 'main'], conditions: ['browser', 'import'],
+  inject: [join(root, 'scripts/network-browser-globals.mjs')],
+  plugins: [fixtureResolution, nativeWasmPlugin(assets, { projectRoot: root, assetFolder: 'transaction-proof-assets', browserPackages: {
+    buffer: requireContracts.resolve('buffer/'), events: requireContracts.resolve('events/'), assert: requireContracts.resolve('assert/'),
+  } })], write: false, metafile: true, sourcemap: false, legalComments: 'inline', logLevel: 'silent' });
+if (result.warnings.length || result.outputFiles.length !== 1
+    || Object.values(result.metafile.outputs).flatMap(item => item.imports).some(item => item.external)) throw new Error('Incomplete diagnostic bundle');
+await mkdir(join(output, 'transaction-proof-assets'), { recursive: true });
+for (const [path, bytes] of assets) await writeFile(join(output, path), bytes);
+await writeFile(join(output, 'transaction-proof-bundle.mjs'), result.outputFiles[0].contents);
+await writeFile(join(output, 'transaction-proof.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'"><title>Actual transaction proof diagnostic</title><link rel="stylesheet" href="./transaction-proof.css"></head><body><main><h1>Actual SDK transaction proof diagnostic</h1><p>Test only: fresh synthetic inputs, real generated contract, official transaction construction and proof worker. No wallet, proof server or network submission. Wait until any pending user proof has finished.</p><button id="run-openVoting-transaction-proof" disabled>Prove openVoting transaction (small)</button><button id="run-configureKeys-transaction-proof" disabled>Prove configureKeys transaction (large)</button><p id="transaction-proof-state" role="status">Loading…</p><h2>openVoting attempt</h2><pre id="openVoting-transaction-proof-report"></pre><h2>configureKeys attempt</h2><pre id="configureKeys-transaction-proof-report"></pre></main><script type="module" src="./transaction-proof-bundle.mjs"></script></body></html>\n`);
+await writeFile(join(output, 'transaction-proof.css'), 'body{background:#080808;color:#fff;font:18px system-ui;margin:0;padding:32px}main{max-width:1000px;margin:auto}button{background:#0000fe;color:white;padding:14px;border:1px solid white}button:disabled{opacity:.5}pre{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}\n');
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+await writeFile(join(output, 'transaction-proof-build.json'), JSON.stringify({ schema: 'midnight-ballot-lab/transaction-proof-diagnostic-build/v1',
+  harnessSha256: hash(result.outputFiles[0].contents), workerSha256: manifest.browserProver.worker.sha256,
+  assetManifestSha256: manifest.browserProver.manifest.sha256, proofGeneration: 'not-tested-by-build' }, null, 2) + '\n');
+console.log(JSON.stringify({ built: 'artifacts/transaction-proof-site/transaction-proof.html',
+  harnessBytes: result.outputFiles[0].contents.length, workerSha256: manifest.browserProver.worker.sha256, proofGeneration: 'not-tested-by-build' }));

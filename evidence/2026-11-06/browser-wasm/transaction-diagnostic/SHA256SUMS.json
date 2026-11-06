@@ -1,0 +1,80 @@
+{
+  "schema": "midnight-ballot-lab/retained-evidence/v1",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3861,
+      "sha256": "22cecca247799a508bf9242405f778bec756852a259f4669a5ff1ba8c7037cc4"
+    },
+    {
+      "path": "browser-prover-failure.test.mjs.txt",
+      "bytes": 6589,
+      "sha256": "3b57e46c786eaab4f20638e6d91d23042b597be8d914ece314a92e1437a1a764"
+    },
+    {
+      "path": "browser-wasm-proof.mjs.txt",
+      "bytes": 9367,
+      "sha256": "10c120e7b5b2ad94d780063a17a961ce25199e8cac0700e7d83941007d764202"
+    },
+    {
+      "path": "build.json",
+      "bytes": 386,
+      "sha256": "316acbbbd4c5f229341692951939325feeca7d93857a8449d6b5582e565aff5c"
+    },
+    {
+      "path": "build.mjs.txt",
+      "bytes": 4997,
+      "sha256": "b4396dfd7b650647b0b905afd706ab48efb6a17ba0fa85abbcd3ae1020b6de95"
+    },
+    {
+      "path": "check-construction.mjs.txt",
+      "bytes": 2916,
+      "sha256": "22453223f93ac48c099887ce81eaf09d3ea821389fde90dd93570fc9a9a9a82b"
+    },
+    {
+      "path": "configureKeys-report.json",
+      "bytes": 1236,
+      "sha256": "9133c31eb28da6cf066b5acb2671b074d3658184e10578a77ec895a5e291d149"
+    },
+    {
+      "path": "configureKeys.png",
+      "bytes": 193786,
+      "sha256": "00218a2f0860b378547efaaf0395e64f7e872aa990d559d7dfdeb74a7d29e84a"
+    },
+    {
+      "path": "construction-report.json",
+      "bytes": 439,
+      "sha256": "b6587eef835731b43f006f075564ce4a007fe89bdbec7786a91b7b5c2715b7c9"
+    },
+    {
+      "path": "entry.mjs.txt",
+      "bytes": 4914,
+      "sha256": "9e04a61b8511a3ac01d805ef905ab4b3860f1345b3dc67345f6b82876ba569fc"
+    },
+    {
+      "path": "fixture.mjs.txt",
+      "bytes": 4171,
+      "sha256": "07bc150b19798df4b8fe4c41be8ba615e92e4358f9bb8ec687c4b259346a6f08"
+    },
+    {
+      "path": "openVoting-report.json",
+      "bytes": 1219,
+      "sha256": "fb6a86c0980b6bb0581cd9bbd37aed17b9defd57d212382b83e641237678abb7"
+    },
+    {
+      "path": "provenance.json",
+      "bytes": 9384,
+      "sha256": "5a3f4137cdff8c8d93743a9f5e2dad3a7e96f56cbd906791ef68aa890e8f4def"
+    },
+    {
+      "path": "prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    },
+    {
+      "path": "terminal-error-regression.log",
+      "bytes": 312,
+      "sha256": "2bdcf295b5efb86c00d0dd847c0f785ab8302795a87921e3c6f85004b67f11c7"
+    }
+  ]
+}

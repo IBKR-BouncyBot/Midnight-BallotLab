@@ -23,8 +23,18 @@ The final [dependency review](attempt-2/dependency-review.json) adds exact ZKIR 
 
 [Fresh source checks](attempt-2/local-tests.json) passed 111 boundary and 13 installed-provider/worker/packaging tests. The earlier same-session [generated-contract test report](attempt-1/local-tests.json) records 62 passes, separately from the browser proofs. [CI source validation](attempt-2/ci-source-check.json) includes workflow linting; it is not a successful hosted CI run.
 
+## Hosted CI and deployment
+
+The later [CI run 42271382645](github-42271382645/README.md) passed at commit `72b5e0164b5a1427d8d2b1191f04b6d5dffb5e27`: fresh native compilation, runtime/browser checks, eight actual worker proofs across seven circuits and both negative checks. GitHub Pages deployment succeeded. Its proof report and audited deployment artifacts are retained separately from the local attempts above. No wallet, full transaction proving, network acceptance or direct hosted-origin test was added by this CI run.
+
+## Local Ledger transaction proof diagnostics
+
+The later [two-call diagnostic](transaction-diagnostic/README.md) completed actual Ledger `Transaction.prove` calls for synthetic `openVoting` and `configureKeys` transactions through official SDK construction and real worker check/prove callbacks. They completed at **19:00:08 UTC** and **19:03:09 UTC**, taking **371 ms** and **75,716 ms** inside the transaction-proof call. Exact public reports, a screenshot, source snapshots and frozen build hashes are retained separately. No Lace/DUST work, signing, submission or independent proof verification was attempted.
+
+A separate failure-only regression preserves the worker's finite terminal error when Ledger wraps a rejected callback. It improves diagnostics; it neither improves proof performance nor establishes that the user's pending key-registration operation was fixed. The successful diagnostic calls use a fresh official proof-provider wrapper, rather than exercising that application error wrapper.
+
 ## Lace boundary
 
 The [signed-extension source review](lace-wasm-source-review.json) found a normal Lace 2.5.0 **On this device → Run in this app (WASM)** path for both wallet/DUST and DApp proving. The user reported selecting this setting. API 4 cannot attest it: both in-process and delegated TEE modes omit the deprecated prover URI. The application rejects any reported HTTP prover URL, including localhost, but cannot treat URI omission as proof of wallet privacy. No extension was patched, and no wallet secrets were read for this review.
 
-`SHA256SUMS.json` describes the retained files byte-for-byte. The source snapshots contain code only, never serialized private witnesses, seeds, passwords, private keys or unproven transactions.
+`SHA256SUMS.json` describes the original local-attempt files byte-for-byte; the CI and transaction-diagnostic subdirectories carry their own manifests. The source snapshots contain code only, never serialized private witnesses, seeds, passwords, private keys or unproven transactions.

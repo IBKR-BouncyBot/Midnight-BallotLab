@@ -67,11 +67,14 @@ test('production provider waits for the actual WASM worker listener before initi
       stdin: { contents: 'export * from "./native/browser-wasm-proof.mjs"; export { CostModel as StartupCostModel } from "@midnight-ntwrk/ledger-v8";',
         sourcefile: 'worker-startup-test-entry.mjs', resolveDir: join(root, 'contracts') }, outfile: join(folder, 'parent.mjs'),
       define: { 'import.meta.url': JSON.stringify(`${base}/network-bundle.mjs`) },
-      inject: [join(root, 'scripts/network-browser-globals.mjs')],
+      inject: [join(root, 'scripts/network-browser-globals.mjs')], metafile: true,
       plugins: [nativeWasmPlugin(assets, { projectRoot: root, assetFolder: 'parent-assets', browserPackages: {
         buffer: require.resolve('buffer/'), events: require.resolve('events/'), assert: require.resolve('assert/'),
+        'process/browser.js': require.resolve('process/browser.js'),
       } })],
     });
+    assert.deepEqual(Object.keys(parentBuild.metafile.inputs).map(path => path.replaceAll('\\', '/'))
+      .filter(path => path.endsWith('node_modules/process/browser.js')), ['contracts/node_modules/process/browser.js']);
     await writeFile(join(folder, 'parent.mjs'), parentBuild.outputFiles[0].contents);
     await writeFile(join(folder, 'thread.mjs'), `import { parentPort, workerData } from 'node:worker_threads';
 const listeners = new Set();

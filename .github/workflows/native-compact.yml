@@ -11,7 +11,7 @@ jobs:
   compact:
     name: Compile pinned Compact source and run emulator tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     defaults:
       run:
         shell: bash
@@ -50,6 +50,9 @@ jobs:
         working-directory: contracts
         shell: bash
         run: npm run test:native 2>&1 | tee "$RUNNER_TEMP/native-election-tests.log"
+      - name: Check actual Ledger callback failure diagnostics
+        # Requires the freshly compiled contract and keys; no proof is generated.
+        run: node --test contracts/test/browser-prover-failure.test.mjs 2>&1 | tee "$RUNNER_TEMP/browser-prover-failure-tests.log"
       - name: Install isolated devnet wallet dependency graph
         working-directory: contracts/devnet
         run: |
@@ -109,8 +112,8 @@ jobs:
         run: node scripts/test-native-browser.mjs 2>&1 | tee "$RUNNER_TEMP/native-browser-tests.log"
       - name: Exercise network client initialization and fail-closed controls
         run: node scripts/test-network-browser.mjs 2>&1 | tee "$RUNNER_TEMP/network-browser-tests.log"
-      - name: Prove all native circuits in a real browser worker
-        timeout-minutes: 40
+      - name: Prove native circuits and a bound SDK transaction in a real browser worker
+        timeout-minutes: 55
         # The earlier loopback HTTP proof server is already stopped. This
         # independent gate allows only public static files from its test site.
         run: |
@@ -143,6 +146,7 @@ jobs:
             ${{ runner.temp }}/native-boundary-tests.log
             ${{ runner.temp }}/native-election-compile.log
             ${{ runner.temp }}/native-election-tests.log
+            ${{ runner.temp }}/browser-prover-failure-tests.log
             ${{ runner.temp }}/native-election-demo.log
             ${{ runner.temp }}/local-proofs.log
             ${{ runner.temp }}/native-browser-build.log

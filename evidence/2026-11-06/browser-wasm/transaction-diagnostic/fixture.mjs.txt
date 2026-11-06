@@ -1,0 +1,67 @@
+/** TEST ONLY: actual generated runtime + official SDK transaction construction.
+ * All inputs are synthetic and memory-only. No wallet/indexer/submission provider.
+ */
+import * as runtime from '@midnight-ntwrk/compact-runtime';
+import { LedgerParameters, ZswapChainState } from '@midnight-ntwrk/ledger-v8';
+import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
+import { createUnprovenDeployTxFromVerifierKeys, createUnprovenCallTxFromInitialStates } from '@midnight-ntwrk/midnight-js-contracts';
+import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+import { Contract, ledger, pureCircuits } from '../../contracts/managed/native-election/contract/index.js';
+import { createDemoDealer, nativeWitnesses, randomSecret32 } from '../../contracts/native/adapter.mjs';
+
+export async function createTransactionFixture(circuitId, zkConfigProvider) {
+  let stage = 'fixture-inputs';
+  try {
+  if (!['openVoting', 'configureKeys'].includes(circuitId)) throw new Error('Unsupported diagnostic circuit');
+  setNetworkId('undeployed'); // Local transaction fixture, never submitted.
+  const now = Math.floor(Date.now() / 1000);
+  const opensAt = circuitId === 'openVoting' ? now - 60 : now + 86400;
+  const closesAt = now + 172800;
+  const administratorSecret = randomSecret32(), electionId = randomSecret32();
+  const dealer = createDemoDealer(), manifestDigest = randomSecret32();
+  const coinKey = '0'.repeat(64), encryptionKey = '0'.repeat(64);
+  const compiledContract = CompiledContract.make('native-election', Contract).pipe(
+    CompiledContract.withWitnesses(nativeWitnesses), CompiledContract.withCompiledFileAssets('./native-contract'));
+  stage = 'sdk-deploy-construction';
+  const deployment = await createUnprovenDeployTxFromVerifierKeys(zkConfigProvider, coinKey, {
+    compiledContract, initialPrivateState: {}, args: [electionId, manifestDigest,
+      pureCircuits.administratorIdentity(administratorSecret), BigInt(opensAt), BigInt(closesAt), 5n],
+  }, encryptionKey);
+  const { contractAddress, initialContractState } = deployment.public;
+  const setup = { administratorSecret, setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope };
+  if (circuitId === 'openVoting') {
+    // Prepare the local fixture through genuine generated setup/enroll calls.
+    // Their context time is synthetic and explicitly precedes opening. This
+    // does not claim these setup calls were proved or accepted on a network.
+    stage = 'generated-fixture-context';
+    const contract = new Contract(nativeWitnesses);
+    let context = runtime.createCircuitContext(contractAddress, coinKey, initialContractState.data,
+      setup, undefined, undefined, opensAt - 1);
+    stage = 'generated-fixture-configure';
+    context = contract.impureCircuits.configureKeys(context).context;
+    context = { ...context, currentPrivateState: { administratorSecret } };
+    stage = 'generated-fixture-enroll';
+    context = contract.impureCircuits.enroll(context,
+      pureCircuits.memberIdentity(electionId, randomSecret32())).context;
+    stage = 'generated-fixture-state';
+    initialContractState.data = context.currentQueryContext.state;
+  }
+  stage = 'read-initial-ledger';
+  const before = ledger(initialContractState.data);
+  stage = 'sdk-call-construction';
+  const data = await createUnprovenCallTxFromInitialStates(zkConfigProvider, {
+    compiledContract, contractAddress, circuitId, args: [], coinPublicKey: coinKey,
+    initialContractState, initialPrivateState: circuitId === 'configureKeys' ? setup : {},
+    initialZswapChainState: new ZswapChainState(), ledgerParameters: LedgerParameters.initialParameters(),
+  }, encryptionKey);
+  stage = 'read-result-ledger';
+  const after = ledger(data.public.nextContractState);
+  if (before.phase !== 0n || (circuitId === 'openVoting' ? after.phase !== 1n : !after.keysConfigured)) {
+    throw new Error('Unexpected generated fixture transition');
+  }
+  return data.private.unprovenTx; // Never serialize/log this privacy-sensitive value.
+  } catch {
+    const error = new Error('Synthetic transaction fixture construction failed');
+    error.fixtureStage = stage; throw error;
+  }
+}

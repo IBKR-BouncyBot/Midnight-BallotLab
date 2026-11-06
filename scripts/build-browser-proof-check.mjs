@@ -23,10 +23,15 @@ const result = await esbuild.build({
   inject: [join(root, 'scripts/network-browser-globals.mjs')],
   plugins: [nativeWasmPlugin(assets, { projectRoot: root, assetFolder: 'proof-check-assets', browserPackages: {
     buffer: requireContracts.resolve('buffer/'), events: requireContracts.resolve('events/'), assert: requireContracts.resolve('assert/'),
+    'process/browser.js': requireContracts.resolve('process/browser.js'),
   } })], write: false, metafile: true, sourcemap: false, legalComments: 'inline', logLevel: 'warning',
 });
 if (result.warnings.length || result.outputFiles.length !== 1
     || Object.values(result.metafile.outputs).flatMap(item => item.imports).some(item => item.external)) throw new Error('Incomplete proof-check bundle');
+if (Object.keys(result.metafile.inputs).map(path => path.replaceAll('\\', '/'))
+    .filter(path => path.endsWith('node_modules/process/browser.js')).join() !== 'contracts/node_modules/process/browser.js') {
+  throw new Error('The browser process implementation must come from the locked contracts dependencies');
+}
 await mkdir(join(output, 'proof-check-assets'), { recursive: true });
 for (const [path, bytes] of assets) await writeFile(join(output, path), bytes);
 await writeFile(join(output, 'proof-check-bundle.mjs'), result.outputFiles[0].contents);

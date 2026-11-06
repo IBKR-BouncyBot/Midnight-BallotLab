@@ -1,4 +1,4 @@
-/** CI browser gate: real generated-circuit proofs through the actual worker.
+/** CI browser gate: generated-circuit and genuine SDK transaction proofs.
  * No wallet, HTTP prover, trace, request body or private preimage is retained.
  * This script is not a replacement for browser-wallet transaction acceptance.
  */
@@ -21,10 +21,11 @@ const expectedNegatives = [
   { case: 'wrong registered trustee share', outcome: 'rejected by generated circuit', proofRequested: false },
   { case: 'castBallot preimage with enroll key location', outcome: 'rejected by local worker check', proofRequested: false },
 ];
-const allowedStages = new Set(['initialize-worker', ...expectedCircuits, 'reject-wrong-trustee-share', 'reject-mismatched-circuit']);
+const allowedStages = new Set(['initialize-worker', ...expectedCircuits, 'sdk-configureKeys-transaction',
+  'reject-wrong-trustee-share', 'reject-mismatched-circuit']);
 const prefix = '/project-prefix';
-const report = { schema: 'midnight-ballot-lab/browser-wasm-proof-ci/v1', startedAt: new Date().toISOString(),
-  status: 'running', node: process.version, scope: 'real dedicated-worker circuit proofs from synthetic browser-memory inputs',
+const report = { schema: 'midnight-ballot-lab/browser-wasm-proof-ci/v2', startedAt: new Date().toISOString(),
+  status: 'running', node: process.version, scope: 'real dedicated-worker circuit and SDK transaction proofs from synthetic browser-memory inputs',
   walletConnected: false, networkSubmission: false, networkAcceptance: false, independentChainVerification: false };
 const counts = { forbiddenRequests: 0, serverRejectedRequests: 0, pageErrors: 0, consoleErrors: 0, sockets: 0 };
 let browser, server, stage = 'build-validation', approvedPaths;
@@ -43,6 +44,24 @@ function publicProofs(value) {
     assert.match(item.proofSha256, /^[0-9a-f]{64}$/);
     assert.ok(Number.isSafeInteger(item.elapsedMs) && item.elapsedMs >= 0 && item.elapsedMs <= 16 * 60 * 1000);
     return { ...item };
+  });
+}
+function publicTransactionProofs(value) {
+  assert.ok(Array.isArray(value) && value.length <= 1);
+  return value.map(item => {
+    exact(item, ['circuit', 'construction', 'provider', 'callbackOrder', 'bindingOverridePresent',
+      'proofBytes', 'proofSha256', 'checkElapsedMs', 'proveElapsedMs', 'elapsedMs']);
+    assert.equal(item.circuit, 'configureKeys');
+    assert.equal(item.construction, 'official-sdk-from-generated-state');
+    assert.equal(item.provider, 'production-proveTx');
+    assert.deepEqual(item.callbackOrder, ['check', 'prove']);
+    assert.equal(item.bindingOverridePresent, true);
+    assert.ok(Number.isSafeInteger(item.proofBytes) && item.proofBytes > 0 && item.proofBytes <= 16 * 1024 * 1024);
+    assert.match(item.proofSha256, /^[0-9a-f]{64}$/);
+    for (const key of ['checkElapsedMs', 'proveElapsedMs', 'elapsedMs']) {
+      assert.ok(Number.isSafeInteger(item[key]) && item[key] >= 0 && item[key] <= 16 * 60 * 1000);
+    }
+    return { ...item, callbackOrder: [...item.callbackOrder] };
   });
 }
 async function checkRecord(path, record) {
@@ -129,18 +148,21 @@ try {
     walletPresent: typeof globalThis.midnight !== 'undefined' }));
   assert.equal(environment.crossOriginIsolated, false, 'Proofs must work without special hosting isolation headers');
   assert.equal(environment.walletPresent, false); report.browserEnvironment = environment;
-  stage = 'circuit-proofs';
+  stage = 'circuit-and-transaction-proofs';
   await page.locator('#run-browser-proofs').click();
-  const deadline = Date.now() + 35 * 60 * 1000;
-  let raw, lastCount = -1;
+  const deadline = Date.now() + 50 * 60 * 1000;
+  let raw, lastCount = -1, lastTransactionCount = -1;
   for (;;) {
     assert.ok(Date.now() < deadline, 'Browser proof gate timed out');
     const text = await page.locator('#proof-report').textContent();
     raw = parseStrictJson(text, { maxBytes: 128 * 1024, maxDepth: 8 });
     report.completedProofs = publicProofs(raw.proofs);
-    if (report.completedProofs.length !== lastCount) {
+    report.completedTransactionProofs = publicTransactionProofs(raw.transactionProofs);
+    if (report.completedProofs.length !== lastCount || report.completedTransactionProofs.length !== lastTransactionCount) {
       lastCount = report.completedProofs.length;
-      console.log(JSON.stringify({ stage: 'actual-browser-proofs', completedProofs: lastCount, expectedProofs: 8 }));
+      lastTransactionCount = report.completedTransactionProofs.length;
+      console.log(JSON.stringify({ stage: 'actual-browser-proofs', completedProofs: lastCount, expectedProofs: 8,
+        completedTransactionProofs: lastTransactionCount, expectedTransactionProofs: 1 }));
     }
     if (raw.status !== 'running') break;
     if (counts.forbiddenRequests || counts.sockets || counts.pageErrors || counts.consoleErrors) throw new Error('Browser proof gate rejected an unexpected event');
@@ -151,13 +173,13 @@ try {
     report.failedCircuitStage = allowedStages.has(raw.failedStage) ? raw.failedStage : 'unclassified';
     throw new Error('Real browser proof sequence did not pass');
   }
-  exact(raw, ['schema', 'startedAt', 'execution', 'status', 'versions', 'candidateCount', 'proofs', 'negativeChecks',
+  exact(raw, ['schema', 'startedAt', 'execution', 'status', 'versions', 'candidateCount', 'proofs', 'transactionProofs', 'negativeChecks',
     'witnessSource', 'httpProofProviderConfigured', 'workerAssetPolicy', 'mainPageConnectCsp', 'walletExecution',
     'networkSubmission', 'networkAcceptance', 'independentProofVerification', 'distinctCircuitsProved', 'phase',
     'acceptedBallots', 'finishedAt']);
-  assert.equal(raw.schema, 'midnight-ballot-lab/browser-circuit-proofs/v1');
-  assert.deepEqual(raw.versions, { compiler: '0.31.1', runtime: '0.16.0', midnightJs: '4.1.1', zkir: '2.1.1' });
-  assert.equal(raw.execution, 'generated-contract-proofs-in-dedicated-browser-worker');
+  assert.equal(raw.schema, 'midnight-ballot-lab/browser-circuit-proofs/v2');
+  assert.deepEqual(raw.versions, { compiler: '0.31.1', runtime: '0.16.0', midnightJs: '4.1.1', zkir: '2.1.1', ledger: '8.1.0' });
+  assert.equal(raw.execution, 'generated-contract-and-sdk-transaction-proofs-in-dedicated-browser-worker');
   assert.equal(raw.witnessSource, 'fresh-synthetic-browser-memory');
   assert.equal(raw.httpProofProviderConfigured, false);
   assert.equal(raw.workerAssetPolicy, 'same-origin-public-GET-with-size-and-SHA256');
@@ -166,6 +188,7 @@ try {
   assert.equal(raw.networkAcceptance, 'not-tested'); assert.equal(raw.independentProofVerification, 'not-tested');
   assert.equal(raw.candidateCount, 5); assert.equal(raw.phase, 3); assert.equal(raw.acceptedBallots, 1);
   assert.equal(raw.distinctCircuitsProved, 7); assert.equal(raw.proofs.length, 8);
+  assert.equal(raw.transactionProofs.length, 1);
   assert.deepEqual(raw.negativeChecks, expectedNegatives);
   for (const time of [raw.startedAt, raw.finishedAt]) assert.ok(typeof time === 'string' && /^\d{4}-\d{2}-\d{2}T[0-9:.]+Z$/.test(time) && Number.isFinite(Date.parse(time)));
   assert.deepEqual(counts, { forbiddenRequests: 0, serverRejectedRequests: 0, pageErrors: 0, consoleErrors: 0, sockets: 0 });
@@ -182,5 +205,6 @@ try {
   await mkdir(output, { recursive: true });
   await writeFile(join(output, 'evidence.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify({ status: report.status, stage, completedProofs: report.completedProofs?.length ?? 0,
+    completedTransactionProofs: report.completedTransactionProofs?.length ?? 0,
     evidence: 'artifacts/browser-wasm-proofs/evidence.json', walletConnected: false, networkSubmission: false }));
 }

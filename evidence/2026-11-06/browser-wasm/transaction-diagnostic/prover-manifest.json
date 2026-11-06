@@ -1,0 +1,171 @@
+{
+  "schema": "midnight-ballot-lab/browser-prover-assets/v1",
+  "proverVersion": "2.1.1",
+  "circuits": [
+    {
+      "name": "configureKeys",
+      "k": 16,
+      "prover": {
+        "path": "keys/configureKeys.prover",
+        "bytes": 21583889,
+        "sha256": "d4671180b4c9acd6906b3c97486dc97cce6fc1a1ec7cd54e9a060d9d93256b1c"
+      },
+      "verifier": {
+        "path": "keys/configureKeys.verifier",
+        "bytes": 2311,
+        "sha256": "9a8a2b0161333a799f138f9cc9558070307d5673c09fc944d9fcd782166c802a"
+      },
+      "ir": {
+        "path": "zkir/configureKeys.bzkir",
+        "bytes": 5118,
+        "sha256": "37b40bf5f1d671ddb8b2b05a9506832bd802c1012673ad306a9a3ac094acc88a"
+      }
+    },
+    {
+      "name": "enroll",
+      "k": 13,
+      "prover": {
+        "path": "keys/enroll.prover",
+        "bytes": 2824231,
+        "sha256": "bbf0cc28fb04325ef60607268e89ab333d229379bb0464a4ad341017f3f9fb6a"
+      },
+      "verifier": {
+        "path": "keys/enroll.verifier",
+        "bytes": 2119,
+        "sha256": "b470e120b4b2383f0308093a510a31d042536adef44f64e6a57b45a58ffd3903"
+      },
+      "ir": {
+        "path": "zkir/enroll.bzkir",
+        "bytes": 677,
+        "sha256": "57825fff7c84c7ac7bef6e50545cebf6c2b994fb8ae61c7aa4f4ade0045665d1"
+      }
+    },
+    {
+      "name": "openVoting",
+      "k": 7,
+      "prover": {
+        "path": "keys/openVoting.prover",
+        "bytes": 39815,
+        "sha256": "dbdd56ce8ee7660c4b88f5fa4f92049c77d5fcc57d794cfd0e5ae23eec0a45dc"
+      },
+      "verifier": {
+        "path": "keys/openVoting.verifier",
+        "bytes": 1351,
+        "sha256": "8c791aff6f25f7b85e716a2eccf3f709d133e3dce774f500adf1698e06a51fbf"
+      },
+      "ir": {
+        "path": "zkir/openVoting.bzkir",
+        "bytes": 463,
+        "sha256": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb"
+      }
+    },
+    {
+      "name": "castBallot",
+      "k": 17,
+      "prover": {
+        "path": "keys/castBallot.prover",
+        "bytes": 42701779,
+        "sha256": "915506f640bddc7c50ba21c03d2aeb119d7aa04cbc19c24d2362a95121b1f3e7"
+      },
+      "verifier": {
+        "path": "keys/castBallot.verifier",
+        "bytes": 2311,
+        "sha256": "bcc71d275ad591ea9685ea07edea95b8f8103f5ce491e5207f4df94ceec71768"
+      },
+      "ir": {
+        "path": "zkir/castBallot.bzkir",
+        "bytes": 4788,
+        "sha256": "6b3fe9762445e623de3d8a61f3e0c2ec62982ab1a5c0ce82a3d1a2db05def0d4"
+      }
+    },
+    {
+      "name": "closeVoting",
+      "k": 7,
+      "prover": {
+        "path": "keys/closeVoting.prover",
+        "bytes": 39799,
+        "sha256": "5195f6f6d3c1e9859084a64502b569cf90c0751239821fcd35934085bee10be4"
+      },
+      "verifier": {
+        "path": "keys/closeVoting.verifier",
+        "bytes": 1351,
+        "sha256": "b9df6a64bfbc1aedaab445553adae78abfd28270ebdf47000501cbd6e94e2b9d"
+      },
+      "ir": {
+        "path": "zkir/closeVoting.bzkir",
+        "bytes": 367,
+        "sha256": "88966fcf98cfa388d42d87825a09456d6f18066efeec6dae7d686514e90c78b9"
+      }
+    },
+    {
+      "name": "submitDecryption",
+      "k": 13,
+      "prover": {
+        "path": "keys/submitDecryption.prover",
+        "bytes": 2668409,
+        "sha256": "b56283c88cb1f886e095a255901dec970e6b02dc6e4fc409d2999edecbb88435"
+      },
+      "verifier": {
+        "path": "keys/submitDecryption.verifier",
+        "bytes": 1591,
+        "sha256": "b046dae1c5d4b3cf174d1d9c1b6d1a07ec56015a2e8d6a67ae1c5c22c07a80e1"
+      },
+      "ir": {
+        "path": "zkir/submitDecryption.bzkir",
+        "bytes": 1683,
+        "sha256": "708c2562588fa80d35d83b03122c2156f10fd7e9634e4005e1f1fa880df606b3"
+      }
+    },
+    {
+      "name": "finalize",
+      "k": 15,
+      "prover": {
+        "path": "keys/finalize.prover",
+        "bytes": 10597369,
+        "sha256": "27bfc36a2b986da4192450440c38fb51a545763e021bebf8bb86717bbc4efa1f"
+      },
+      "verifier": {
+        "path": "keys/finalize.verifier",
+        "bytes": 1591,
+        "sha256": "120b8072921ca04d74b128621fb6edc81f8363860be306db72bf8fa83ab51b9d"
+      },
+      "ir": {
+        "path": "zkir/finalize.bzkir",
+        "bytes": 3316,
+        "sha256": "eb2ba4cd0917c192c8788866110c32d01fea996219ec0159da3caa62e43f93ac"
+      }
+    }
+  ],
+  "params": [
+    {
+      "k": 7,
+      "path": "params/bls_midnight_2p7",
+      "bytes": 24964,
+      "sha256": "e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d"
+    },
+    {
+      "k": 13,
+      "path": "params/bls_midnight_2p13",
+      "bytes": 1573252,
+      "sha256": "d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803"
+    },
+    {
+      "k": 15,
+      "path": "params/bls_midnight_2p15",
+      "bytes": 6291844,
+      "sha256": "724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de"
+    },
+    {
+      "k": 16,
+      "path": "params/bls_midnight_2p16",
+      "bytes": 12583300,
+      "sha256": "09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6"
+    },
+    {
+      "k": 17,
+      "path": "params/bls_midnight_2p17",
+      "bytes": 25166212,
+      "sha256": "4a9ef6c7c0619aab74eede44b13e753e3ba54508a02dd3b7106a949aabb73b74"
+    }
+  ]
+}

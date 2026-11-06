@@ -1,0 +1,44 @@
+{
+  "schema": "midnight-ballot-lab/browser-transaction-proofs/v1",
+  "status": "passed",
+  "selectedCircuit": "configureKeys",
+  "startedAt": "2026-11-06T19:01:53.513Z",
+  "execution": "synthetic-sdk-transaction-fixture-in-browser",
+  "witnessSource": "fresh-synthetic-browser-memory",
+  "httpProofProviderConfigured": false,
+  "walletExecution": "not-attempted",
+  "networkSubmission": "not-attempted",
+  "networkAcceptance": "not-tested",
+  "independentProofVerification": "not-tested",
+  "fixtureSetup": "generated-runtime-only-not-proved",
+  "versions": {
+    "midnightJs": "4.1.1",
+    "ledger": "8.1.0",
+    "zkir": "2.1.1"
+  },
+  "cases": [
+    {
+      "circuit": "configureKeys",
+      "status": "passed",
+      "callbacks": [
+        {
+          "operation": "check",
+          "circuit": "configureKeys",
+          "bindingOverridePresent": false,
+          "status": "passed",
+          "elapsedMs": 52
+        },
+        {
+          "operation": "prove",
+          "circuit": "configureKeys",
+          "bindingOverridePresent": true,
+          "status": "passed",
+          "proofBytes": 4853,
+          "elapsedMs": 75658
+        }
+      ],
+      "elapsedMs": 75716
+    }
+  ],
+  "finishedAt": "2026-11-06T19:03:09.352Z"
+}

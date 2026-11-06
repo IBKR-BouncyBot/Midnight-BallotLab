@@ -28,6 +28,7 @@
       </nav>
       <div class="work-main">
       <div id="network-status" class="global-status" role="status" aria-live="polite" hidden></div>
+      <div id="network-operation-feedback" class="operation-feedback" hidden><p id="network-operation-phase" role="status" aria-live="polite" aria-atomic="true"></p><p id="network-operation-elapsed" class="operation-elapsed" role="timer" aria-live="off"></p></div>
       <section class="panel" id="network-panel-connect" data-network-panel="connect" aria-labelledby="connect-heading">
         <div class="panel-head"><p class="eyebrow">01 / CONNECT</p><span class="panel-tag">Wallet connection</span></div>
         <h2 id="connect-heading" tabindex="-1">Connect to the public testnet.</h2>
@@ -170,6 +171,7 @@
         <div class="step-actions"><button class="button secondary" type="button" data-network-nav="tally" aria-controls="network-panel-tally" data-network-control disabled>← Back: Reveal results</button><button class="button primary" type="button" data-network-nav="setup" aria-controls="network-panel-setup" data-network-control disabled>Go to Set up election</button></div>
       </section>
     </div><aside class="record-panel" tabindex="0" aria-labelledby="network-activity-heading"><div class="record-title"><span class="status-dot"></span><h2 id="network-activity-heading">Election activity</h2></div><p class="record-intro">Public progress and transaction details.</p>
+      <section id="network-activity-operation" class="operation-feedback" aria-labelledby="network-activity-operation-heading" hidden><h3 id="network-activity-operation-heading">Current action</h3><p id="network-activity-phase" aria-live="off"></p><p id="network-activity-elapsed" class="operation-elapsed" role="timer" aria-live="off"></p></section>
       <section id="network-election-timing" class="election-timing" aria-labelledby="network-election-timing-heading">
         <h3 id="network-election-timing-heading">Election schedule</h3>
         <p id="network-election-phase" class="election-phase" role="status" aria-live="polite">No election connected</p>

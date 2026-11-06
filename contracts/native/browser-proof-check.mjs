@@ -2,9 +2,11 @@
  * Bundled separately into ignored artifacts; never included in the frontend.
  */
 import * as runtime from '@midnight-ntwrk/compact-runtime';
+import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { Contract, ledger, pureCircuits } from '../managed/native-election/contract/index.js';
 import { createDemoDealer, freshBallotRandomness, nativeWitnesses, randomSecret32 } from './adapter.mjs';
 import { createNativeWasmProofProvider, nativeWasmProofErrorMessage, nativeWasmProofErrorCode } from './browser-wasm-proof.mjs';
+import { proveSyntheticConfigureTransaction } from './browser-transaction-proof-check.mjs';
 
 const status = document.getElementById('proof-state');
 const output = document.getElementById('proof-report');
@@ -26,10 +28,10 @@ downloadButton.addEventListener('click', () => {
 async function run() {
   runButton.disabled = true; cancelButton.disabled = false; downloadButton.disabled = true;
   cancelled = false;
-  report = { schema: 'midnight-ballot-lab/browser-circuit-proofs/v1', startedAt: new Date().toISOString(),
-    execution: 'generated-contract-proofs-in-dedicated-browser-worker', status: 'running',
-    versions: { compiler: '0.31.1', runtime: '0.16.0', midnightJs: '4.1.1', zkir: '2.1.1' },
-    candidateCount: 5, proofs: [], negativeChecks: [],
+  report = { schema: 'midnight-ballot-lab/browser-circuit-proofs/v2', startedAt: new Date().toISOString(),
+    execution: 'generated-contract-and-sdk-transaction-proofs-in-dedicated-browser-worker', status: 'running',
+    versions: { compiler: '0.31.1', runtime: '0.16.0', midnightJs: '4.1.1', ledger: '8.1.0', zkir: '2.1.1' },
+    candidateCount: 5, proofs: [], transactionProofs: [], negativeChecks: [],
     witnessSource: 'fresh-synthetic-browser-memory', httpProofProviderConfigured: false,
     workerAssetPolicy: 'same-origin-public-GET-with-size-and-SHA256',
     mainPageConnectCsp: "connect-src 'self'",
@@ -97,6 +99,16 @@ async function run() {
     }
     as({}); await prove('finalize', 1n, 3n, [0n, 0n, 0n, 0n, 1n]);
     if (state().phase !== 3n || state().accepted !== 1n) throw new Error('Unexpected final state');
+    if (cancelled) throw new Error('Cancelled');
+    currentStage = 'sdk-configureKeys-transaction'; report.currentStage = currentStage; paint();
+    const assetsBase = new URL('./native-contract/', location.href);
+    const zkConfig = new FetchZkConfigProvider(assetsBase.href, (url, init) => {
+      const target = new URL(url);
+      if (target.origin !== assetsBase.origin || !target.pathname.startsWith(assetsBase.pathname)
+          || target.search || target.hash || target.username || target.password) throw new Error('Unexpected public fixture asset');
+      return fetch(target, { ...init, credentials: 'omit', redirect: 'error' });
+    });
+    report.transactionProofs.push(await proveSyntheticConfigureTransaction(provider, zkConfig)); paint();
     currentStage = 'reject-mismatched-circuit';
     rejected = false;
     try { await proving.check(castPreimage, 'enroll'); }
@@ -108,7 +120,7 @@ async function run() {
     report.negativeChecks.push({ case: 'castBallot preimage with enroll key location', outcome: 'rejected by local worker check', proofRequested: false });
     report.status = 'passed'; report.distinctCircuitsProved = new Set(report.proofs.map(item => item.circuit)).size;
     report.phase = 3; report.acceptedBallots = 1;
-    status.textContent = 'Passed: eight real browser proofs across all seven native circuits. No wallet or transaction was used.';
+    status.textContent = 'Passed: eight circuit proofs and one complete SDK transaction proof in this browser. No wallet or network submission was used.';
   } catch (error) {
     report.status = cancelled ? 'cancelled' : 'failed'; report.failedStage = currentStage;
     report.safeDiagnostic = nativeWasmProofErrorMessage(error) ?? 'The browser proof check did not complete; private diagnostics were withheld.';
@@ -121,4 +133,4 @@ async function run() {
 }
 runButton.addEventListener('click', () => { void run(); });
 runButton.disabled = false;
-status.textContent = 'Ready. This test creates fresh synthetic inputs in browser memory and proves all seven native circuits.';
+status.textContent = 'Ready. This test proves all seven native circuits and a complete SDK transaction using fresh synthetic inputs in browser memory.';

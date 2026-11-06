@@ -1,0 +1,42 @@
+/** Constructs real synthetic SDK transactions only; does not prove or submit. */
+import { readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+const root = new URL('../../', import.meta.url);
+const requireContracts = createRequire(new URL('contracts/package.json', root));
+const summary = { schema: 'midnight-ballot-lab/transaction-fixture-construction/v1', status: 'running',
+  execution: 'actual-generated-runtime-and-SDK-construction', proofGeneration: 'not-attempted',
+  walletExecution: 'not-attempted', networkSubmission: 'not-attempted', circuits: [] };
+let stage = 'module-load';
+const original = { log: console.log, warn: console.warn, error: console.error, info: console.info, debug: console.debug };
+for (const key of Object.keys(original)) console[key] = () => {};
+try {
+  const sourceUrl = new URL('./fixture.mjs', import.meta.url);
+  const source = (await readFile(sourceUrl, 'utf8')).replace(/from '([^']+)'/g, (_, specifier) => {
+    const resolved = specifier.startsWith('@') ? pathToFileURL(requireContracts.resolve(specifier).replace(/\.cjs$/, '.mjs')).href
+      : new URL(specifier, sourceUrl).href;
+    return `from '${resolved}'`;
+  });
+  const { createTransactionFixture } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+  stage = 'config-provider';
+  const { NodeZkConfigProvider } = await import(pathToFileURL(requireContracts.resolve('@midnight-ntwrk/midnight-js-node-zk-config-provider').replace(/\.cjs$/, '.mjs')));
+  const zk = new NodeZkConfigProvider(fileURLToPath(new URL('contracts/managed/native-election/', root)));
+  for (const circuit of ['openVoting', 'configureKeys']) {
+    stage = `construct-${circuit}`;
+    const transaction = await createTransactionFixture(circuit, zk);
+    if (typeof transaction.prove !== 'function') throw new Error('Missing genuine transaction method');
+    summary.circuits.push({ circuit, constructed: true });
+  }
+  summary.status = 'passed';
+} catch (error) {
+  summary.status = 'failed'; summary.failedStage = stage;
+  if (['fixture-inputs', 'sdk-deploy-construction', 'generated-fixture-context', 'generated-fixture-configure',
+    'generated-fixture-enroll', 'generated-fixture-state', 'read-initial-ledger', 'sdk-call-construction', 'read-result-ledger'].includes(error?.fixtureStage)) summary.fixtureStage = error.fixtureStage;
+  if (stage === 'module-load') summary.moduleFailureCategory = error?.code === 'ERR_MODULE_NOT_FOUND' ? 'module-not-found'
+    : error instanceof SyntaxError ? 'module-syntax-or-exports' : 'module-initialization';
+} finally {
+  Object.assign(console, original);
+  await writeFile(new URL('./construction-report.json', import.meta.url), JSON.stringify(summary, null, 2) + '\n');
+  console.log(JSON.stringify(summary));
+}
+if (summary.status !== 'passed') process.exitCode = 1;

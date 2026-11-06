@@ -6,6 +6,12 @@ Updated 3 November 2026 from installed packages and execution evidence. Version 
 
 The runner now allows eight minutes for voting instead of four, retaining four minutes before opening. The adjusted window passed actual 0.6.1 acceptance. The external operator waited for indexed time two seconds beyond the sealed deadline, then submitted closing, two registered shares and finalization; `onChainSelfExecution` remains false. The browser repair has fresh passing real-clock, slow-device and freeze/resume evidence; browser success does not imply network acceptance. [The retained 0.6.0 failure report](../evidence/2026-11-03/v0.6.0/github/devnet/reports/network-evidence.json) is not overwritten by later attempts.
 
+## Browser-worker proving — 6 November 2026
+
+Commit `72b5e0164b5a1427d8d2b1191f04b6d5dffb5e27` passed fresh Compact **0.31.1** compilation and the [actual CI browser-worker proof gate](../evidence/2026-11-06/browser-wasm/github-42271382645/README.md): eight proofs across seven circuits, plus two negative checks. The frontend uses compact-runtime **0.16.0**, Midnight.js **4.1.1**, ledger-v8 **8.1.0**, onchain-runtime-v3 **3.0.0** and official ZKIR **2.1.1**. The same run passed its runtime/browser checks and Pages deployment. The generated prover, verifier, IR and public parameter files are size/hash-bound to the worker manifest.
+
+This establishes the tested standalone circuit-prover path in a real browser. It does not establish full Ledger transaction proving, Lace wallet/DUST proving, Preview browser-wallet acceptance or a direct hosted-origin test. Historical HTTP-prover and Node Wallet SDK results retain their separate version graphs and execution scopes.
+
 ## Pinned target
 
 The official [support matrix](https://docs.midnight.network/relnotes/support-matrix), updated 2 November 2026, lists devtools 0.5.1, compiler 0.31.1, Compact runtime 0.16.0, on-chain runtime v3 3.0.0 and Midnight.js 4.1.1 for ledger-8 public networks. The compiler implements language 0.23. The reviewed pins are recorded in `contracts/toolchain.json` and `contracts/package.json`.

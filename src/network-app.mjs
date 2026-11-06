@@ -73,6 +73,9 @@ export async function initNetworkApplication() {
     if (!element) throw new Error('Incomplete network markup');
     return element;
   };
+  // A stale HTML shell must fail during loading, before an action can start.
+  for (const id of ['network-operation-feedback', 'network-operation-phase', 'network-operation-elapsed',
+    'network-activity-operation', 'network-activity-operation-heading', 'network-activity-phase', 'network-activity-elapsed']) $(id);
   const controls = [...document.querySelectorAll('[data-network-control]')];
   let wallets = [], session = null, client = null, state = null, busy = false;
   let dealer = null, latestReceipt = null, manifest = null;
@@ -214,8 +217,45 @@ export async function initNetworkApplication() {
     const item = document.createElement('p'); item.textContent = message; $('network-events').prepend(item);
     while ($('network-events').children.length > 30) $('network-events').lastElementChild.remove();
   };
+  const initialOperationMessage = 'Working… Keep this page open until the action finishes.';
+  let operationStartedAt = null, operationTimer = null;
+  const renderOperationElapsed = () => {
+    if (operationStartedAt === null) return;
+    const seconds = Math.max(0, Math.floor((performance.now() - operationStartedAt) / 1000));
+    const text = `Elapsed: ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+    for (const id of ['network-operation-elapsed', 'network-activity-elapsed']) {
+      if ($(id).textContent !== text) $(id).textContent = text;
+    }
+  };
+  const startOperationFeedback = trigger => {
+    const inline = $('network-operation-feedback');
+    // Keep progress beside the action, without changing its label or fields.
+    // Moving this one reusable node also avoids leaving old "working" notices
+    // beside previous actions. No private input is read for this display.
+    if (trigger?.closest('[data-network-panel]')) (trigger.closest('.button-row') ?? trigger).after(inline);
+    else document.querySelector('[data-network-panel]:not([hidden])')?.append(inline);
+    inline.hidden = false; inline.classList.add('is-active');
+    $('network-activity-operation').hidden = false;
+    $('network-activity-operation').classList.add('is-active');
+    $('network-activity-operation-heading').textContent = 'Current action';
+    operationStartedAt = performance.now(); renderOperationElapsed();
+    operationTimer = setInterval(renderOperationElapsed, 1000);
+  };
+  const finishOperationFeedback = () => {
+    clearInterval(operationTimer); operationTimer = null;
+    renderOperationElapsed(); operationStartedAt = null;
+    $('network-operation-feedback').classList.remove('is-active');
+    $('network-activity-operation').classList.remove('is-active');
+    $('network-activity-operation-heading').textContent = 'Last action';
+  };
   const status = message => {
     $('network-status').textContent = message; $('network-status').hidden = false;
+    if (busy && operationStartedAt !== null) {
+      for (const id of ['network-operation-phase', 'network-activity-phase']) {
+        // Announce phase changes only; elapsed time has aria-live="off".
+        if ($(id).textContent !== message) $(id).textContent = message;
+      }
+    }
     if (connectionFeedback) {
       $('network-connection-status').textContent = message;
       $('network-connection-status').scrollIntoView({ block: 'nearest' });
@@ -326,17 +366,21 @@ export async function initNetworkApplication() {
         ? 'For a new election, click Generate administrator key, then download it. To reuse a saved key, choose Use an existing key or load its file.'
         : 'Joining as a voter does not require an administrator key. The administrator should use the existing key or load its saved file.';
   };
-  const run = async (operation, { connection = false } = {}) => {
+  const run = async (operation, { connection = false, trigger = document.activeElement } = {}) => {
     if (busy) return;
     connectionFeedback = connection;
-    busy = true; refreshControls(); status('Working… Keep this page open until the action finishes.');
+    busy = true; startOperationFeedback(trigger); refreshControls(); status(initialOperationMessage);
+    $('network-operation-feedback').scrollIntoView({ block: 'nearest' });
     try { await operation(); }
     catch (error) { status(client?.pendingBallotReceipt
       ? 'A vote attempt has an unresolved outcome. Use “Check pending vote” and check your wallet before trying again or closing this page. This message does not confirm that a transaction was submitted.'
       : formatPreviewServiceError(error) ?? nativeStoragePasswordMessage(error) ?? nativeConnectionErrorMessage(error) ?? nativeWasmProofErrorMessage(error) ?? nativeNetworkErrorMessage(error)); }
-    finally { busy = false; connectionFeedback = false; refreshControls(); }
+    finally {
+      if ($('network-operation-phase').textContent === initialOperationMessage) status('Action finished. Check the result beside its controls.');
+      finishOperationFeedback(); busy = false; connectionFeedback = false; refreshControls();
+    }
   };
-  const click = (id, operation) => $(id).addEventListener('click', () => void run(operation));
+  const click = (id, operation) => $(id).addEventListener('click', eventObject => void run(operation, { trigger: eventObject.currentTarget }));
   const confirmed = (label, result) => {
     if (typeof result?.txId !== 'string') throw new Error('Missing SDK transaction identifier');
     event(`${label}: configured indexer confirmed ${result.txId} at block ${result.blockHeight}.`);
@@ -452,12 +496,11 @@ export async function initNetworkApplication() {
         configuration,
         passwordProvider: () => $('network-password').value,
         onStage: stage => {
-          if (connectionStages[stage]) status(connectionStages[stage]);
-          else if (stages[stage]) event(stages[stage]);
+          if (Object.hasOwn(connectionStages, stage)) status(connectionStages[stage]);
+          else if (Object.hasOwn(stages, stage)) { event(stages[stage]); status(stages[stage]); }
         },
         onProofProgress: progress => {
-          const message = proofProgressMessages[progress?.phase];
-          if (message) status(message);
+          if (Object.hasOwn(proofProgressMessages, progress?.phase)) status(proofProgressMessages[progress.phase]);
         },
       });
       try {
@@ -468,7 +511,7 @@ export async function initNetworkApplication() {
         throw error;
       }
       status(`Connected to ${session.networkId}. Create or join a test election. No proof or transaction has been completed yet.`);
-    }, { connection: true });
+    }, { connection: true, trigger: eventObject.submitter ?? $('network-connect') });
   });
   click('network-disconnect', async () => {
     session?.close(); session = null; client = null; state = null; dealer = null; manifest = null; latestReceipt = null;

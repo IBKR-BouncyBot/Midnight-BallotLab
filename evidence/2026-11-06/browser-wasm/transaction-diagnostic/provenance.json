@@ -1,0 +1,245 @@
+{
+  "schema": "midnight-ballot-lab/transaction-diagnostic-provenance/v1",
+  "browserInteraction": "desktop-in-app-browser-visible-controls",
+  "execution": "two-synthetic-Ledger-Transaction.prove-calls-with-official-worker-callbacks",
+  "browserConsole": {
+    "warnings": 0,
+    "errors": 0,
+    "source": "parent-observed-CUA-console-after-completion"
+  },
+  "sourceSnapshots": [
+    {
+      "source": "artifacts/transaction-proof-diagnostic/fixture.mjs",
+      "snapshot": "fixture.mjs.txt",
+      "path": "artifacts/transaction-proof-diagnostic/fixture.mjs",
+      "bytes": 4171,
+      "sha256": "07bc150b19798df4b8fe4c41be8ba615e92e4358f9bb8ec687c4b259346a6f08"
+    },
+    {
+      "source": "artifacts/transaction-proof-diagnostic/entry.mjs",
+      "snapshot": "entry.mjs.txt",
+      "path": "artifacts/transaction-proof-diagnostic/entry.mjs",
+      "bytes": 4914,
+      "sha256": "9e04a61b8511a3ac01d805ef905ab4b3860f1345b3dc67345f6b82876ba569fc"
+    },
+    {
+      "source": "artifacts/transaction-proof-diagnostic/build.mjs",
+      "snapshot": "build.mjs.txt",
+      "path": "artifacts/transaction-proof-diagnostic/build.mjs",
+      "bytes": 4997,
+      "sha256": "b4396dfd7b650647b0b905afd706ab48efb6a17ba0fa85abbcd3ae1020b6de95"
+    },
+    {
+      "source": "artifacts/transaction-proof-diagnostic/check-construction.mjs",
+      "snapshot": "check-construction.mjs.txt",
+      "path": "artifacts/transaction-proof-diagnostic/check-construction.mjs",
+      "bytes": 2916,
+      "sha256": "22453223f93ac48c099887ce81eaf09d3ea821389fde90dd93570fc9a9a9a82b"
+    },
+    {
+      "source": "contracts/native/browser-wasm-proof.mjs",
+      "snapshot": "browser-wasm-proof.mjs.txt",
+      "path": "contracts/native/browser-wasm-proof.mjs",
+      "bytes": 9367,
+      "sha256": "10c120e7b5b2ad94d780063a17a961ce25199e8cac0700e7d83941007d764202"
+    },
+    {
+      "source": "contracts/test/browser-prover-failure.test.mjs",
+      "snapshot": "browser-prover-failure.test.mjs.txt",
+      "path": "contracts/test/browser-prover-failure.test.mjs",
+      "bytes": 6589,
+      "sha256": "3b57e46c786eaab4f20638e6d91d23042b597be8d914ece314a92e1437a1a764"
+    }
+  ],
+  "frozenSiteFiles": [
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "bytes": 42701779,
+      "sha256": "915506f640bddc7c50ba21c03d2aeb119d7aa04cbc19c24d2362a95121b1f3e7"
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "bytes": 2311,
+      "sha256": "bcc71d275ad591ea9685ea07edea95b8f8103f5ce491e5207f4df94ceec71768"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "bytes": 39799,
+      "sha256": "5195f6f6d3c1e9859084a64502b569cf90c0751239821fcd35934085bee10be4"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "bytes": 1351,
+      "sha256": "b9df6a64bfbc1aedaab445553adae78abfd28270ebdf47000501cbd6e94e2b9d"
+    },
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "bytes": 21583889,
+      "sha256": "d4671180b4c9acd6906b3c97486dc97cce6fc1a1ec7cd54e9a060d9d93256b1c"
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "bytes": 2311,
+      "sha256": "9a8a2b0161333a799f138f9cc9558070307d5673c09fc944d9fcd782166c802a"
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "bytes": 2824231,
+      "sha256": "bbf0cc28fb04325ef60607268e89ab333d229379bb0464a4ad341017f3f9fb6a"
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "bytes": 2119,
+      "sha256": "b470e120b4b2383f0308093a510a31d042536adef44f64e6a57b45a58ffd3903"
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "bytes": 10597369,
+      "sha256": "27bfc36a2b986da4192450440c38fb51a545763e021bebf8bb86717bbc4efa1f"
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "bytes": 1591,
+      "sha256": "120b8072921ca04d74b128621fb6edc81f8363860be306db72bf8fa83ab51b9d"
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "bytes": 39815,
+      "sha256": "dbdd56ce8ee7660c4b88f5fa4f92049c77d5fcc57d794cfd0e5ae23eec0a45dc"
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "bytes": 1351,
+      "sha256": "8c791aff6f25f7b85e716a2eccf3f709d133e3dce774f500adf1698e06a51fbf"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "bytes": 2668409,
+      "sha256": "b56283c88cb1f886e095a255901dec970e6b02dc6e4fc409d2999edecbb88435"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "bytes": 1591,
+      "sha256": "b046dae1c5d4b3cf174d1d9c1b6d1a07ec56015a2e8d6a67ae1c5c22c07a80e1"
+    },
+    {
+      "path": "native-contract/params/bls_midnight_2p13",
+      "bytes": 1573252,
+      "sha256": "d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803"
+    },
+    {
+      "path": "native-contract/params/bls_midnight_2p15",
+      "bytes": 6291844,
+      "sha256": "724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de"
+    },
+    {
+      "path": "native-contract/params/bls_midnight_2p16",
+      "bytes": 12583300,
+      "sha256": "09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6"
+    },
+    {
+      "path": "native-contract/params/bls_midnight_2p17",
+      "bytes": 25166212,
+      "sha256": "4a9ef6c7c0619aab74eede44b13e753e3ba54508a02dd3b7106a949aabb73b74"
+    },
+    {
+      "path": "native-contract/params/bls_midnight_2p7",
+      "bytes": 24964,
+      "sha256": "e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d"
+    },
+    {
+      "path": "native-contract/prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "bytes": 4788,
+      "sha256": "6b3fe9762445e623de3d8a61f3e0c2ec62982ab1a5c0ce82a3d1a2db05def0d4"
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "bytes": 367,
+      "sha256": "88966fcf98cfa388d42d87825a09456d6f18066efeec6dae7d686514e90c78b9"
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "bytes": 5118,
+      "sha256": "37b40bf5f1d671ddb8b2b05a9506832bd802c1012673ad306a9a3ac094acc88a"
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "bytes": 677,
+      "sha256": "57825fff7c84c7ac7bef6e50545cebf6c2b994fb8ae61c7aa4f4ade0045665d1"
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "bytes": 3316,
+      "sha256": "eb2ba4cd0917c192c8788866110c32d01fea996219ec0159da3caa62e43f93ac"
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "bytes": 463,
+      "sha256": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb"
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "bytes": 1683,
+      "sha256": "708c2562588fa80d35d83b03122c2156f10fd7e9634e4005e1f1fa880df606b3"
+    },
+    {
+      "path": "native-prover-worker.mjs",
+      "bytes": 48048,
+      "sha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4"
+    },
+    {
+      "path": "network-assets/midnight_ledger_wasm_bg-88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638.wasm",
+      "bytes": 10143782,
+      "sha256": "88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638"
+    },
+    {
+      "path": "network-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "bytes": 1398935,
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e"
+    },
+    {
+      "path": "network-assets/midnight_zkir_wasm_bg-6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b.wasm",
+      "bytes": 1968826,
+      "sha256": "6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b"
+    },
+    {
+      "path": "transaction-proof-assets/midnight_ledger_wasm_bg-88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638.wasm",
+      "bytes": 10143782,
+      "sha256": "88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638"
+    },
+    {
+      "path": "transaction-proof-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "bytes": 1398935,
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e"
+    },
+    {
+      "path": "transaction-proof-bundle.mjs",
+      "bytes": 1916706,
+      "sha256": "c6a1fe5bf3dd010289f75871ed806d48c283233432b7688baf91cee4f07d9ddf"
+    },
+    {
+      "path": "transaction-proof.css",
+      "bytes": 276,
+      "sha256": "83ac1877ac02fb9f3bf99a8dd7a15475a081b39b1031a49810151c0b45465549"
+    },
+    {
+      "path": "transaction-proof.html",
+      "bytes": 1235,
+      "sha256": "5dfd78e6e0150f4812565e32539317ccd6c643721d82327a36cf4c5fc6906772"
+    }
+  ],
+  "sourceSnapshotMeaning": "Source and build files retained after observed completion; original build hashes independently checked against frozen site bytes.",
+  "privacyReview": "Public reports and screenshot reviewed; snapshots contain source code only, no serialized transaction, witness or wallet data.",
+  "scope": {
+    "walletExecution": "not-attempted",
+    "networkSubmission": "not-attempted",
+    "networkAcceptance": "not-tested",
+    "independentProofVerification": "not-tested",
+    "productionErrorWrapperExercisedByTheseBrowserRuns": false
+  }
+}

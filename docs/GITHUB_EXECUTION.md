@@ -1,6 +1,14 @@
-# GitHub execution — 3 November 2026
+# GitHub execution
 
 Actual Lace 2.5.0 / API 4.0.1 completed nine local `undeployed` application transactions (eight native calls), finalizing `[0,1,0,0,0]`. See [wallet compatibility](NATIVE_NETWORK.md#wallet-compatibility) and [retained evidence](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/tree/main/evidence/2026-11-03/lace-wallet). A separate [Node Wallet SDK run on public Preview](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-06/public-preview-sdk/election-acceptance.json) completed nine accepted application transactions and eight proved contract calls. Browser-wallet transactions on Preview, wallet connection or transactions from the hosted GitHub Pages origin, and Preprod transactions remain untested; mainnet is blocked. Each run relies on its configured indexer and does not independently verify consensus.
+
+## Browser-worker proof gate and Pages deployment — 6 November 2026
+
+[Pages run 42271382645](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42271382645) succeeded at commit `72b5e0164b5a1427d8d2b1191f04b6d5dffb5e27`. Fresh compilation covered all seven native circuits; 111 boundary, 62 native and 13 provider/worker/packaging tests passed, together with nine native-browser and ten network-browser cases. The dedicated-worker gate generated **eight real ZKIR 2.1.1 proofs across all seven circuit types** and passed both negative checks, with zero forbidden requests or browser errors. Its [public report and provenance](../evidence/2026-11-06/browser-wasm/github-42271382645/README.md) retain the exact hashes, timings and versions.
+
+GitHub recorded deployment `7608131671` as successful at **18:47:15 UTC**. The [artifact audit](../evidence/2026-11-06/browser-wasm/github-42271382645/deployment-artifact-audit.json) verified both archive digests, all 754 source files against Git, and the deployed worker/WASM/circuit assets. CI packaging checked 132 local references. The CI-tested network bundle differs from the local build only in two reviewed esbuild process-shim module identifiers; both hashes are retained. No direct hosted-origin request was made.
+
+The runner used Node **24.22.2**, npm **11.19.1**, Python **3.12.16**, Compact **0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1**, Playwright **1.64.1** and Chromium **156.0.8078.4**. These standalone browser circuit proofs do not establish a completed Ledger `Transaction.prove`, Lace wallet/DUST proving, a Preview transaction or independently authenticated chain inclusion. No wallet was connected in this gate. The earlier network acceptance runs below remain separately scoped.
 
 See the [privacy redaction note](PRIVACY_REDACTION.md) for the distinction between original tested commit identifiers and the subsequently cleaned repository history.
 
