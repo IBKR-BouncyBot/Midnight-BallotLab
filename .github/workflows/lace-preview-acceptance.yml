@@ -60,7 +60,7 @@ jobs:
           npm --prefix contracts run compile:native
           npm --prefix contracts run test:native
           node --test contracts/test/browser-prover-failure.test.mjs
-          node --test contracts/test/lace-ci-public-files.test.mjs
+          node --test contracts/test/lace-ci-public-files.test.mjs contracts/test/lace-ci-progress.test.mjs
       - name: Build the actual browser application and proving assets
         run: |
           npm run build

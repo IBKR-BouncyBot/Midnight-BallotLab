@@ -1,0 +1,39 @@
+{
+  "schema": "midnight-ballot-lab/github-evidence-provenance/v1",
+  "headSha": "d2f588937131059873b2575ac9f5a3c65ad70873",
+  "runId": 42285171322,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42285171322",
+  "runAttempt": 1,
+  "runConclusion": "success",
+  "deploymentId": 7609976029,
+  "deploymentConclusion": "success",
+  "deploymentCompletedAt": "2026-11-06T20:21:20Z",
+  "deploymentUrl": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+  "artifactDigests": {
+    "pages-build-evidence": {
+      "id": 13537463795,
+      "name": "pages-build-evidence",
+      "bytes": 4386089,
+      "expired": false,
+      "digest": "sha256:8f8dddb42536c4591c4359a201e2d11908fef2635f46a451b99ede3c0c1f51b7",
+      "headSha": "d2f588937131059873b2575ac9f5a3c65ad70873"
+    },
+    "github-pages": {
+      "id": 13537438947,
+      "name": "github-pages",
+      "bytes": 143472231,
+      "expired": false,
+      "digest": "sha256:7caf5fa17e650c5710c55bfc7ed40dc3d325d0c9a1ccd7da668c6c016b29a7f6",
+      "headSha": "d2f588937131059873b2575ac9f5a3c65ad70873"
+    }
+  },
+  "downloadedArtifacts": [
+    "pages-build-evidence"
+  ],
+  "pagesArchiveDownloadedThisRun": false,
+  "proofReportOriginalArtifactPath": "Midnight-BallotLab/Midnight-BallotLab/artifacts/browser-wasm-proofs/evidence.json",
+  "proofReportBytePreserved": true,
+  "redactionApplied": false,
+  "privacyReview": "Public proof hashes, sizes, timings, callback names, binding presence, build hashes and stage results only. No binding value, witness, preimage, secret, wallet profile or transaction payload retained.",
+  "hostedOriginRequested": false
+}

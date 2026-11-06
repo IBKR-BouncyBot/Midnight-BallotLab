@@ -4,12 +4,13 @@
  * The same browser stays alive while a separately authorized sponsor funds its
  * public address. A failure is evidence of failure, never an acceptance flag.
  */
-import { createHash, randomBytes, randomInt } from 'node:crypto';
+import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, mkdtemp, realpath, rename, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { decodeJsonUtf8, parseStrictJson } from '../src/json.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requireContracts = createRequire(join(root, 'contracts/package.json'));
@@ -22,6 +23,8 @@ const WALLET_PROVER_WASM = 'js/bb7c1f073eb0bc071ea5.module.wasm';
 const WALLET_PROVER_WASM_SHA = 'f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb';
 const WALLET_PROVER_WASM_BYTES = 3_413_037;
 const INDEXER = 'https://indexer.preview.midnight.network/api/v4/graphql';
+const LACE_FLAGS_URL = 'https://e.lw.iog.io/flags/?v=2&config=true';
+const LACE_PUBLIC_CLIENT_TOKEN_SHA = '426d05db61174615365a278ebe9acdfbfcbda9176186f5f2242b87051d0b2908';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
 const extensionOrigin = `chrome-extension://${EXTENSION_ID}`;
@@ -40,11 +43,14 @@ let output, browserContext, app, wallet, server, origin, profileRoot;
 let stage = 'ci-prerequisites', currentOperation, canSave = false, shuttingDown = false;
 let walletPassword, appPassword, publicIdentity;
 const walletWasmObservations = [];
+const walletVendorServiceUrls = new Set(), configurationResponses = [];
+let configurationFailure = false;
 const settingsControlIds = Object.freeze(['settings-tab-btn', 'option-list-item-network', 'radio-button-testnet',
   'radio-button-midnight-preview', 'network-selection-sheet-confirm-button', 'network-selection-sheet',
   'option-list-item-midnight', 'proof-server-in-process-radio', 'save-configuration-button',
   'midnight-settings-sheet-header', 'side-sheet-close-button', 'portfolio-tab-btn']);
 const traffic = { blockedRequests: 0, blockedWebSockets: 0, walletWasmResources: 0, appWasmResources: 0,
+  publicConfigurationRequests: 0, publicConfigurationResponses: 0,
   pageErrors: 0, consoleErrors: 0, consoleWarnings: 0,
   blockedRequestCategories: { unknownHost: 0, unexpectedKnownPathOrMethod: 0, queryOrCredentials: 0, unexpectedPort: 0, invalidUrl: 0 } };
 const allowedPublicPhases = new Map([
@@ -157,6 +163,121 @@ function publicAddress(value, type, codec) {
   requireThat(parsed.asString() === value, 'noncanonical-public-address');
   return value;
 }
+function redactedServiceUrl(value) {
+  const url = new URL(value);
+  return { origin: url.origin, pathname: url.pathname, queryKeys: [...url.searchParams.keys()].sort() };
+}
+function vendorPreviewService(value, kind) {
+  requireThat(typeof value === 'string' && value.length < 1024, 'invalid-public-vendor-service');
+  const url = new URL(value), indexer = kind === 'indexer';
+  requireThat(url.protocol === 'https:' && !url.username && !url.password && !url.hash && !url.port
+    && url.hostname === (indexer ? 'midnight-preview.blockfrost.io' : 'rpc.midnight-preview.blockfrost.io')
+    && url.pathname === (indexer ? '/api/v0' : '/') && [...url.searchParams.keys()].join('|') === 'project_id'
+    && url.searchParams.get('project_id').length >= 1 && url.searchParams.get('project_id').length <= 256,
+  'invalid-public-vendor-service');
+  const websocket = new URL(url);
+  // Signed Lace helper4694 preserves the query and appends /ws to the path.
+  websocket.protocol = 'wss:'; websocket.pathname = websocket.pathname.replace(/\/+$/, '') + '/ws';
+  return [url.href, websocket.href];
+}
+function applyPublicVendorFlags(bytes) {
+  requireThat(bytes.length <= 1024 * 1024, 'oversized-public-configuration');
+  const body = JSON.parse(decodeJsonUtf8(bytes, { maxBytes: 1024 * 1024 }));
+  requireThat(!body.errorsWhileComputingFlags && !(Array.isArray(body.quotaLimited)
+    && body.quotaLimited.includes('feature_flags')), 'incomplete-public-vendor-configuration');
+  const urls = {};
+  for (const [kind, key] of [['indexer', 'BLOCKCHAIN_MIDNIGHT_INDEXER_URLS'], ['node', 'BLOCKCHAIN_MIDNIGHT_NODE_URLS']]) {
+    const flag = body?.flags?.[key];
+    requireThat(flag?.enabled === true, 'public-preview-service-override-unavailable');
+    const payload = typeof flag.metadata?.payload === 'string' ? JSON.parse(flag.metadata.payload) : flag.metadata?.payload;
+    urls[kind] = vendorPreviewService(payload?.preview, kind);
+  }
+  for (const value of Object.values(urls).flat()) walletVendorServiceUrls.add(value);
+  report.vendorServiceConfiguration = { source: 'signed-wallet-normal-public-feature-service',
+    indexer: redactedServiceUrl(urls.indexer[0]), indexerWs: redactedServiceUrl(urls.indexer[1]),
+    node: redactedServiceUrl(urls.node[0]), nodeWs: redactedServiceUrl(urls.node[1]), queryValuesExported: false };
+}
+function validPublicConfigurationRequest(request) {
+  try {
+    if (request.url() !== LACE_FLAGS_URL) return false;
+    if (request.method() === 'OPTIONS') return request.headers()['access-control-request-method'] === 'POST';
+    if (request.method() !== 'POST' || !/^application\/json(?:;|$)/i.test(request.headers()['content-type'] ?? '')) return false;
+    const bytes = request.postDataBuffer();
+    if (!bytes || bytes.length > 8192) return false;
+    const body = parseStrictJson(decodeJsonUtf8(bytes, { maxBytes: 8192 }), { maxBytes: 8192, maxDepth: 4 });
+    exactKeys(body, ['token', 'distinct_id', 'groups', 'person_properties', 'group_properties']);
+    exactKeys(body.groups, []); exactKeys(body.group_properties, []);
+    exactKeys(body.person_properties, ['distinct_id', '$app_version']);
+    return typeof body.token === 'string' && body.token.length === 48 && hash(body.token) === LACE_PUBLIC_CLIENT_TOKEN_SHA
+      && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.distinct_id)
+      && body.person_properties.distinct_id === body.distinct_id && body.person_properties.$app_version === LACE_VERSION;
+  } catch { return false; }
+}
+async function readPublicResponse(response, limit = 1024 * 1024) {
+  requireThat(response.ok && response.body, 'public-service-request-failed');
+  const reader = response.body.getReader(), chunks = []; let total = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      total += value.byteLength; requireThat(total <= limit, 'oversized-public-response'); chunks.push(value);
+    }
+    return Buffer.concat(chunks);
+  } finally { await reader.cancel().catch(() => {}); }
+}
+async function preparePublicVendorPolicy(extension) {
+  const source = await readFile(join(extension, 'js/injected-script.js'), 'utf8');
+  const token = /POSTHOG_API_TOKEN\s*:\s*["']([^"']+)/.exec(source)?.[1];
+  requireThat(typeof token === 'string' && token.length === 48 && hash(token) === LACE_PUBLIC_CLIENT_TOKEN_SHA,
+    'signed-public-configuration-token-mismatch');
+  // This unrelated random UUID is only for a public metadata read. It is never
+  // installed into Lace and has no relation to its wallet or installation ID.
+  const id = randomUUID();
+  const response = await fetch(LACE_FLAGS_URL, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(30_000),
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, distinct_id: id, groups: {},
+      person_properties: { distinct_id: id, $app_version: LACE_VERSION }, group_properties: {} }) });
+  applyPublicVendorFlags(await readPublicResponse(response));
+  report.publicConfigurationPreflight = true; await save();
+}
+async function checkWalletIndexerBeforeFunding(uri, wsUri) {
+  requireThat(walletVendorServiceUrls.has(new URL(uri).href), 'wallet-public-service-override-required');
+  const response = await fetch(uri, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(30_000),
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: 'query CiPublicHead { block { height } }' }) });
+  const body = JSON.parse(decodeJsonUtf8(await readPublicResponse(response), { maxBytes: 1024 * 1024 }));
+  requireThat(!body.errors && Number.isSafeInteger(body?.data?.block?.height) && body.data.block.height >= 0,
+    'wallet-indexer-head-unavailable');
+  report.walletIndexerHealth = { checkedBeforeFunding: true, source: 'configured-wallet-indexer-public-read',
+    status: response.status, blockHeight: body.data.block.height, independentChainVerification: false };
+  requireThat(walletVendorServiceUrls.has(new URL(wsUri).href), 'wallet-public-websocket-override-required');
+  const subscriptionHeight = await new Promise((resolveHeight, reject) => {
+    const socket = new WebSocket(wsUri, 'graphql-transport-ws'); let ended = false;
+    const stop = (height) => {
+      if (ended) return; ended = true; clearTimeout(timer); socket.close();
+      if (height !== undefined) resolveHeight(height);
+      else { const error = new Error('Public subscription unavailable'); safeFailures.set(error, 'wallet-public-block-subscription-unavailable'); reject(error); }
+    };
+    const timer = setTimeout(() => stop(), 45_000);
+    socket.addEventListener('open', () => socket.send(JSON.stringify({ type: 'connection_init' })));
+    socket.addEventListener('message', event => {
+      try {
+        if (typeof event.data !== 'string' || event.data.length > 16_384) return stop();
+        const message = JSON.parse(event.data);
+        if (message.type === 'connection_ack') socket.send(JSON.stringify({ id: 'ci-public-head', type: 'subscribe',
+          payload: { query: 'subscription CiPreviewBlock { blocks { height } }' } }));
+        else if (message.type === 'ping') socket.send(JSON.stringify({ type: 'pong' }));
+        else if (message.type === 'next' && message.id === 'ci-public-head') {
+          const height = message.payload?.data?.blocks?.height;
+          if (message.payload?.errors || !Number.isSafeInteger(height) || height < 0) return stop();
+          stop(height);
+        } else if (message.type === 'error') stop();
+      } catch { stop(); }
+    });
+    socket.addEventListener('error', () => stop()); socket.addEventListener('close', () => stop());
+  });
+  report.walletIndexerHealth.subscriptionBlockHeight = subscriptionHeight;
+  report.walletIndexerHealth.websocketProtocol = 'graphql-transport-ws';
+  report.walletIndexerHealth.walletSyncAttested = false;
+  await save();
+}
 function allowedNetworkUrl(value, method = 'GET') {
   try {
     const url = new URL(value);
@@ -164,7 +285,9 @@ function allowedNetworkUrl(value, method = 'GET') {
     if (url.origin === origin) return ['GET', 'HEAD'].includes(method) && !url.search;
     if (url.protocol === 'chrome-extension:') return url.host === EXTENSION_ID;
     if (url.protocol === 'https:' || url.protocol === 'wss:') {
-      if (url.search || url.port) return false;
+      if (url.port) return false;
+      if (walletVendorServiceUrls.has(url.href)) return url.protocol === 'wss:' ? method === 'GET' : ['GET', 'POST', 'OPTIONS'].includes(method);
+      if (url.search) return false;
       if (url.hostname === 'rpc.preview.midnight.network') return url.pathname === '/' && ['GET', 'POST', 'OPTIONS'].includes(method);
       if (url.hostname === 'indexer.preview.midnight.network') return ['/api/v4/graphql', '/api/v4/graphql/ws'].includes(url.pathname) && ['GET', 'POST', 'OPTIONS'].includes(method);
       if (url.hostname === 'blockfrost.lw.iog.io') return /^\/midnight-preview(?:-rpc)?\/(?:ws)?$/.test(url.pathname) && ['GET', 'POST', 'OPTIONS'].includes(method);
@@ -232,6 +355,7 @@ async function appIdle() {
     null, { timeout: 30_000 });
 }
 async function publicApi(includeBalances = false) {
+  requireThat(!configurationFailure, 'invalid-wallet-public-configuration-response');
   const value = await bounded(app.evaluate(async balances => {
     const entries = Object.values(window.midnight ?? {}).filter(item => item.rdns === 'io.lace.wallet');
     if (entries.length !== 1) throw new Error('One actual Lace API is required');
@@ -407,11 +531,14 @@ try {
   const addressCodec = await import(pathToFileURL(join(addressPackage, 'dist/index.js')).href);
   const { validatePassword } = await import(pathToFileURL(requireContracts.resolve('@midnight-ntwrk/midnight-js-utils').replace(/\.cjs$/, '.mjs')).href);
   report.playwright = requireContracts('playwright/package.json').version;
+  await setStage('read-signed-wallet-public-service-configuration');
+  await preparePublicVendorPolicy(extension);
   profileRoot = await mkdtemp(join(temp, 'lace-preview-wallet-'));
   server = await startServer(); origin = `http://127.0.0.1:${server.address().port}`;
   await setStage('start-genuine-extension');
   const allowedHosts = ['127.0.0.1', 'localhost', 'indexer.preview.midnight.network', 'rpc.preview.midnight.network',
-    'blockfrost.lw.iog.io', ...new Set([...walletPublicAssetPaths].map(path => new URL(path).hostname))];
+    'blockfrost.lw.iog.io', 'e.lw.iog.io', 'midnight-preview.blockfrost.io', 'rpc.midnight-preview.blockfrost.io',
+    ...new Set([...walletPublicAssetPaths].map(path => new URL(path).hostname))];
   browserContext = await chromium.launchPersistentContext(join(profileRoot, 'profile'), {
     channel: 'chromium', headless: false, viewport: { width: 1440, height: 1000 }, acceptDownloads: true,
     args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`,
@@ -420,6 +547,9 @@ try {
   browserContext.setDefaultTimeout(45_000); report.chromium = browserContext.browser().version();
   browserContext.on('page', watchPage); browserContext.pages().forEach(watchPage);
   await browserContext.route(/^https?:\/\//, route => {
+    if (validPublicConfigurationRequest(route.request())) {
+      traffic.publicConfigurationRequests++; return route.continue();
+    }
     if (allowedNetworkUrl(route.request().url(), route.request().method())) return route.continue();
     traffic.blockedRequests++; countBlockedRequest(route.request().url()); return route.abort('blockedbyclient');
   });
@@ -429,6 +559,11 @@ try {
   });
   browserContext.on('response', response => {
     const url = response.url();
+    if (response.ok() && validPublicConfigurationRequest(response.request()) && response.request().method() === 'POST') {
+      configurationResponses.push((async () => {
+        applyPublicVendorFlags(await response.body()); traffic.publicConfigurationResponses++;
+      })().catch(() => { configurationFailure = true; }));
+    }
     if (response.ok() && url === `${extensionOrigin}/${WALLET_PROVER_WASM}`) {
       walletWasmObservations.push((async () => {
         const bytes = await response.body();
@@ -443,6 +578,22 @@ try {
     }
   });
   wallet = await browserContext.newPage(); await wallet.goto(`${extensionOrigin}/expo/index.html`);
+  await setStage('observe-normal-wallet-public-service-configuration');
+  const normalConfigurationReady = () => {
+    requireThat(!configurationFailure, 'invalid-wallet-public-configuration-response');
+    return traffic.publicConfigurationResponses > 0;
+  };
+  try { await poll(normalConfigurationReady, 15_000, 250); }
+  catch (error) {
+    if (safeFailures.get(error) !== 'bounded-stage-timeout') throw error;
+    // A worker can start before Playwright attaches. One ordinary page reload
+    // before creating a wallet lets Lace fetch its own public configuration.
+    // It does not insert flags, modify storage, or retry a wallet operation.
+    report.walletPublicConfigurationReloaded = true;
+    await setStage('reload-wallet-before-creation-for-public-configuration');
+    await wallet.reload({ waitUntil: 'domcontentloaded' });
+    await poll(normalConfigurationReady, 30_000, 250);
+  }
   await setStage('create-fresh-test-wallet');
   const freshPassword = prefix => {
     for (let attempt = 0; attempt < 32; attempt++) {
@@ -533,7 +684,20 @@ try {
   publicIdentity = { unshieldedAddress: publicAddress(metadata.unshieldedAddress, 'addr', addressCodec),
     dustAddress: publicAddress(metadata.dustAddress, 'dust', addressCodec) };
   report.apiVersion = metadata.apiVersion; report.walletConnected = true;
-  report.walletServices = metadata.configuration;
+  report.walletServices = { networkId: metadata.configuration.networkId,
+    indexerUri: redactedServiceUrl(metadata.configuration.indexerUri),
+    indexerWsUri: redactedServiceUrl(metadata.configuration.indexerWsUri),
+    substrateNodeUri: redactedServiceUrl(metadata.configuration.substrateNodeUri),
+    externalProverReported: metadata.configuration.externalProverReported, queryValuesExported: false };
+  await Promise.all(configurationResponses);
+  requireThat(!configurationFailure && traffic.publicConfigurationResponses > 0, 'normal-wallet-public-configuration-required');
+  requireThat(['indexerUri', 'indexerWsUri', 'substrateNodeUri'].every(field =>
+    walletVendorServiceUrls.has(new URL(metadata.configuration[field]).href)), 'wallet-current-vendor-services-required');
+  await setStage('check-wallet-indexer-before-funding');
+  await checkWalletIndexerBeforeFunding(metadata.configuration.indexerUri, metadata.configuration.indexerWsUri);
+  const unfunded = await publicApi(true);
+  requireThat(Object.values(unfunded.balances).every(value => value === '0'), 'fresh-unfunded-wallet-required');
+  report.walletBalanceApiBeforeFunding = { responded: true, balancesZero: true, walletSyncAttested: false };
   await setStage('waiting-for-authorized-test-funding');
   const request = { schema: 'midnight-ballot-lab/lace-preview-funding-request/v1', networkId: 'preview',
     runId: report.runId, headSha: report.headSha, nonce: randomBytes(32).toString('hex'),

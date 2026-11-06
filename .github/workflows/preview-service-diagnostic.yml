@@ -1,0 +1,40 @@
+name: Read-only Preview service diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    name: Compare two public Preview indexer endpoints
+    if: github.repository == 'IBKR-BouncyBot/Midnight-BallotLab' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out trusted source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Request public block metadata once per fixed endpoint
+        timeout-minutes: 1
+        # No dependency installation, wallet, authentication, prover or submission.
+        # An unhealthy response fails this step; the finite report is still kept.
+        run: node scripts/ci-preview-service-diagnostic.mjs
+      - name: Retain only the finite public diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-service-diagnostic-${{ github.run_id }}
+          path: ${{ runner.temp }}/preview-service-diagnostic.json
+          if-no-files-found: error
+          retention-days: 30

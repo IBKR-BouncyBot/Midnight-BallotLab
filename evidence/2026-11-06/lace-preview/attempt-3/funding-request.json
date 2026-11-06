@@ -1,0 +1,11 @@
+{
+  "schema": "midnight-ballot-lab/lace-preview-funding-request/v1",
+  "networkId": "preview",
+  "runId": "42285202601",
+  "headSha": "d2f588937131059873b2575ac9f5a3c65ad70873",
+  "nonce": "b572414f4fc55ef9660ab5c82785eecd1c2414ddabea12f89b2e68f8b164e37f",
+  "unshieldedAddress": "mn_addr_preview1794ntxzwxxwm7rcynz0cj88y9typwh9twc9amm8rdxkw5e732ssszyaury",
+  "laceVersion": "2.5.1",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "maximumFundingAtomic": "5000000000"
+}

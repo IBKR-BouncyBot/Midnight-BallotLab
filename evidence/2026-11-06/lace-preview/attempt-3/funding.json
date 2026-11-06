@@ -1,0 +1,48 @@
+{
+  "schema": "midnight-ballot-lab/lace-ci-funding/v1",
+  "status": "passed",
+  "startedAt": "2026-11-06T20:10:03.575Z",
+  "networkId": "preview",
+  "walletIdentity": "existing-isolated-sdk-test-wallet",
+  "recipient": "mn_addr_preview1794ntxzwxxwm7rcynz0cj88y9typwh9twc9amm8rdxkw5e732ssszyaury",
+  "amountAtomic": "5000000000",
+  "runId": "42285202601",
+  "headSha": "d2f588937131059873b2575ac9f5a3c65ad70873",
+  "requestNonce": "b572414f4fc55ef9660ab5c82785eecd1c2414ddabea12f89b2e68f8b164e37f",
+  "requestSha256": "684ae7c05ef7d510f27056eab812d5425d50cb8db38b4f12efa600ffc2d57756",
+  "purpose": "test-only-funding-for-ephemeral-ci-lace-wallet",
+  "proofTransport": "separate-local-sdk-http-prover-for-funding-only",
+  "browserWalletTested": false,
+  "contractProofGenerated": false,
+  "submissionAttempted": true,
+  "transactionSubmitted": true,
+  "independentChainVerification": false,
+  "confirmationSource": "configured-public-preview-indexer",
+  "dependencyLockSha256": "1d8262cd228ed815ee7111d783a9b45639af99b770595824a1dc7ee0f15b1929",
+  "sourceHashes": {
+    "fund-lace-ci.mjs": "325c887ee447188dc79fbc1040a3565ce02431975fae7101959fd7e23765cf19",
+    "funding-wallet.mjs": "f4a5aa89d7ad74ea7deba37895460b866fb9e5acb496f9001b291f345e300bff",
+    "dependencies.mjs": "48e7ccf9c9d6ae88cc65509a0df9edbb564170c78438dd7cb6424a208fb7aa4b",
+    "private-vault.mjs": "d9169d646f9103fafc141c4c39aaa4a48068cf01ee55d719b7e16c9117ca933d",
+    "preview-services.mjs": "46538dab8e53e70fdfbedf1e35df3dc13bbbdbe5186007bd3e04d3bbb7f8b6e0"
+  },
+  "suppressedLibraryConsoleCalls": 2,
+  "publicServices": {
+    "chain": "Midnight Preview",
+    "blockHeight": "1628857",
+    "timestampSeconds": 1793995788
+  },
+  "fundingProverVersion": "8.1.3",
+  "availableTestNightAtomic": "10000000000",
+  "acceptedTransaction": {
+    "operation": "fund-lace-preview-ci",
+    "runId": "42285202601",
+    "recipient": "mn_addr_preview1794ntxzwxxwm7rcynz0cj88y9typwh9twc9amm8rdxkw5e732ssszyaury",
+    "amountAtomic": "5000000000",
+    "txId": "00ade816ce1f23f5db9d506531c09c84960429c45e14c9636e3dcac706a0b60904",
+    "status": "SucceedEntirely",
+    "blockHeight": "1628861",
+    "confirmedAt": "2026-11-06T20:10:27.082Z"
+  },
+  "completedAt": "2026-11-06T20:10:27.110Z"
+}

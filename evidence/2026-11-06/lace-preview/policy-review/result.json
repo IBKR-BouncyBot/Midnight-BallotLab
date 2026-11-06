@@ -1,0 +1,157 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-request-policy-check/v1",
+  "status": "passed",
+  "scope": "exact-runner-pure-policy-functions-in-Node-VM-no-browser-network-wallet-or-proof-execution",
+  "runnerSha256": "e06709e68bd46a55ec02a2c9a7a3d621a39e1375a5958911c16d7ecb89189175",
+  "extractedFunctionsSha256": "5d6d79a427e6858ea9cf89ccb1a9ffabc63efd815d908afcdfa387089c5c4572",
+  "harnessSha256": "7d00f2b9997087918cce5f9bad0b2b58ff347fc3a3ba023835e8931b60e7c336",
+  "node": "v24.18.0",
+  "passed": 36,
+  "total": 36,
+  "cases": [
+    {
+      "name": "signed-public-client-token-hash",
+      "passed": true
+    },
+    {
+      "name": "exact-normal-public-flags-request",
+      "passed": true
+    },
+    {
+      "name": "reject-altered-client-token",
+      "passed": true
+    },
+    {
+      "name": "reject-private-top-level-field",
+      "passed": true
+    },
+    {
+      "name": "reject-private-person-property",
+      "passed": true
+    },
+    {
+      "name": "reject-nonempty-groups",
+      "passed": true
+    },
+    {
+      "name": "reject-nonempty-group-properties",
+      "passed": true
+    },
+    {
+      "name": "reject-different-nested-id",
+      "passed": true
+    },
+    {
+      "name": "reject-noninstallation-id",
+      "passed": true
+    },
+    {
+      "name": "reject-wrong-app-version",
+      "passed": true
+    },
+    {
+      "name": "reject-duplicate-json-fields",
+      "passed": true
+    },
+    {
+      "name": "reject-oversized-body",
+      "passed": true
+    },
+    {
+      "name": "reject-telemetry-path",
+      "passed": true
+    },
+    {
+      "name": "reject-additional-query",
+      "passed": true
+    },
+    {
+      "name": "reject-wrong-method",
+      "passed": true
+    },
+    {
+      "name": "reject-non-json-content",
+      "passed": true
+    },
+    {
+      "name": "vendor-exact-http-service-allowed",
+      "passed": true
+    },
+    {
+      "name": "vendor-exact-ws-service-allowed",
+      "passed": true
+    },
+    {
+      "name": "reject-unobserved-project-value",
+      "passed": true
+    },
+    {
+      "name": "reject-service-extra-query",
+      "passed": true
+    },
+    {
+      "name": "reject-http-prover",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-http",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-mainnet",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-wrong-host",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-wrong-path",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-port",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-userinfo",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-fragment",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-wrong-query-key",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-duplicated-query",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-empty-query-value",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-oversized-query-value",
+      "passed": true
+    },
+    {
+      "name": "report-redacts-all-query-values",
+      "passed": true
+    },
+    {
+      "name": "reject-disabled-feature-override",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-evaluation-error",
+      "passed": true
+    },
+    {
+      "name": "reject-vendor-feature-quota",
+      "passed": true
+    }
+  ]
+}

@@ -75,10 +75,12 @@ case "$mode" in
     check_task
     deadline=$(( $(cat "$task/started-at") + 20 * 60 ))
     while [[ ! -f "$task/public/funding-request.json" ]]; do
+      node scripts/ci-lace-preview-progress.mjs
       [[ ! -f "$task/exit-code" ]] || fail 'The browser runner stopped before publishing a funding request. Inspect public failure evidence.'
       (( $(date +%s) < deadline )) || fail 'The funding-request startup deadline expired; no automatic restart will occur.'
       sleep 5
     done
+    node scripts/ci-lace-preview-progress.mjs
     node scripts/ci-lace-preview-public-check.mjs funding "$task/public/funding-request.json"
     printf '%s\n' 'A public Preview funding request is ready for the authorized external funding step.'
     ;;
@@ -86,9 +88,11 @@ case "$mode" in
     check_task
     deadline=$(( $(cat "$task/started-at") + 180 * 60 ))
     while [[ ! -f "$task/exit-code" ]]; do
+      node scripts/ci-lace-preview-progress.mjs
       (( $(date +%s) < deadline )) || { stop_owned; fail 'The overall browser-runner deadline expired; no automatic restart will occur.'; }
       sleep 10
     done
+    node scripts/ci-lace-preview-progress.mjs
     [[ "$(cat "$task/exit-code")" == 0 ]] || fail 'The browser runner did not complete successfully. Inspect public failure evidence; do not retry a submitted operation.'
     node scripts/ci-lace-preview-public-check.mjs completed "$task/public/browser-report.json"
     printf '%s\n' 'The runner completed nine configured-indexer-accepted Preview operations.'
