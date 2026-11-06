@@ -1,0 +1,9 @@
+# Five-stage navigation — 2026-11-06
+
+The focused [real-browser checks](navigation-browser.json) passed **3/3 cases** at 1440px, 1100px and 390px. All five stage links worked by keyboard Enter and pointer, moved focus to the correct heading, and preserved the public form input without reloading. Step 04 opens Reveal results; step 05 opens Verify election. Desktop uses five columns; the smaller widths use two columns with the fifth card spanning both.
+
+The actual SDK and both WASM assets loaded. Wallet-dependent controls remained disabled, private inputs remained empty, and unjoined timing stayed unchanged across an actual display-clock tick. Desktop activity remained sticky; smaller layouts used normal page flow. There was no horizontal overflow, page error, console error or external request. No wallet was connected, no ledger or clock was injected, and no proof or transaction was attempted.
+
+Reviewed [desktop](network-stage-navigation-1440.png) and [mobile](network-stage-navigation-390.png) screenshots contain only public interface text. This was a focused HTML/CSS navigation check; the earlier [eight-case runtime suite](../network-stages/network-browser.json) remains separate. The runtime bundle was unchanged: SHA-256 `eb612da75debf7dd27e0b15839fe964ac1e6371e128a9212ae9e1fa33836454c`. The report records current HTML/CSS hashes.
+
+Versions: Node 24.18.0, Playwright 1.64.1, Chromium 156.0.8078.4. The exact [harness snapshot](check-navigation.mjs.txt) has SHA-256 `2f6516b0e1c90b4c6f5b5b76d1a89f14e2b533f0c84f71ea801bbbb9ef6abda4`. To reproduce, copy it to `artifacts/five-stage-navigation/check-navigation.mjs` and run `node artifacts/five-stage-navigation/check-navigation.mjs` from the built repository root with its installed `.browser-cache`. It serves only local `dist`; no hosted origin was requested.

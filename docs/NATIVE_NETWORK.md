@@ -113,11 +113,13 @@ For plain-HTTP/WS local indexers, use `localhost` or `127.0.0.1`. Chromium rejec
 
 In **02 / Set up election**, choose **Create a new election** to enter its name, choices and schedule, or **Join an election** to enter an existing contract address and trusted fingerprint. Choosing a view does not send a transaction. The administrator key tools remain available in either view. Once this session has created or joined a contract, the choice is locked; disconnect before selecting another election.
 
-The blue **Your election, step by step** row takes you to **Connect**, **Set up election**, **Vote** or **Results & checks**. The heading also links directly to the election checks. These shortcuts move around the page without changing your keys, session or election.
+The blue **Your election, step by step** row takes you to **01 Connect**, **02 Set up election**, **03 Vote**, **04 Reveal results** and **05 Verify election**. These shortcuts move around the page without changing your keys, session or election. All five stages fit one row on wider screens; on smaller screens, the verification button spans the final row.
 
 **Election activity** shows opening and closing dates from the last loaded contract record, with a countdown based on your device clock. It distinguishes scheduled voting, an opening transaction still needed, voting in progress, an elapsed voting window awaiting closing, a closed election awaiting the tally and finalized results. The time display does not send transactions or refresh the indexer automatically. Its last-updated time shows when the record was read; use **Refresh election record** to fetch the current phase. Reaching a deadline on your device is not evidence that a transaction has been accepted.
 
 [Navigation and timing evidence](../evidence/2026-11-06/network-stages/README.md) separates actual generated-ledger lifecycle checks from the browser’s navigation and unjoined-state checks.
+
+The [five-stage navigation check](../evidence/2026-11-06/five-stage-navigation/README.md) covers the separate **Verify election** step on desktop, tablet and mobile layouts.
 
 After **Register trustee keys** is confirmed, use **Download election details** to save the network, contract address and fingerprint in a public JSON file. The fingerprint is created during key registration, so this download is unavailable immediately after deployment. It is also available after joining a configured election. The download rechecks the pinned configuration against the configured indexer; it does not independently authenticate blockchain history.
 

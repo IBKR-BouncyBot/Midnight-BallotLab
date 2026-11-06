@@ -1,0 +1,170 @@
+{
+  "executedAt": "2026-11-06T10:07:34.806Z",
+  "scope": "real-five-stage-network-navigation",
+  "node": "v24.18.0",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "cases": [
+    {
+      "width": 1440,
+      "passed": true,
+      "destinations": [
+        {
+          "id": "connect-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "contract-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "vote-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "tally-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "check-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        }
+      ],
+      "gridColumns": 5,
+      "lastCardSpansBothColumns": false,
+      "publicInputPreserved": true,
+      "realWasmAssets": 2,
+      "unjoinedTiming": {
+        "phase": "No election connected",
+        "countdown": "—",
+        "opens": "—",
+        "closes": "—",
+        "updated": "Election record not loaded yet.",
+        "timing-note": "Join or create an election to see its schedule."
+      },
+      "unjoinedTickObservationMs": 1200,
+      "desktopActivitySticky": true,
+      "walletGatesPreserved": true,
+      "documentLoads": 1,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "width": 1100,
+      "passed": true,
+      "destinations": [
+        {
+          "id": "connect-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "contract-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "vote-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "tally-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "check-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        }
+      ],
+      "gridColumns": 2,
+      "lastCardSpansBothColumns": true,
+      "publicInputPreserved": true,
+      "realWasmAssets": 2,
+      "unjoinedTiming": {
+        "phase": "No election connected",
+        "countdown": "—",
+        "opens": "—",
+        "closes": "—",
+        "updated": "Election record not loaded yet.",
+        "timing-note": "Join or create an election to see its schedule."
+      },
+      "unjoinedTickObservationMs": 1200,
+      "desktopActivitySticky": false,
+      "walletGatesPreserved": true,
+      "documentLoads": 1,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "destinations": [
+        {
+          "id": "connect-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "contract-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "vote-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "tally-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        },
+        {
+          "id": "check-heading",
+          "keyboardAndClick": true,
+          "focusMoved": true
+        }
+      ],
+      "gridColumns": 2,
+      "lastCardSpansBothColumns": true,
+      "publicInputPreserved": true,
+      "realWasmAssets": 2,
+      "unjoinedTiming": {
+        "phase": "No election connected",
+        "countdown": "—",
+        "opens": "—",
+        "closes": "—",
+        "updated": "Election record not loaded yet.",
+        "timing-note": "Join or create an election to see its schedule."
+      },
+      "unjoinedTickObservationMs": 1200,
+      "desktopActivitySticky": false,
+      "walletGatesPreserved": true,
+      "documentLoads": 1,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    }
+  ],
+  "artifacts": {
+    "network.html": "6f908905cf3117f46f741e9820a42f0319e1c5b0451e14799e5e606682c99494",
+    "styles.css": "644b2217aada0394a237f2ab1d1e38f1c08e3f23c5ebf88bbfafed26263db713",
+    "overview.css": "61cc83ee93cb2ec17d4170f4a0efc9618ce5383481b16595c13ce9f1625d2410",
+    "network-theme.css": "91b0131770c905f4f5b5ee0d5582dc3c32bf2e59b9c0900bbc5b8034978a59d1",
+    "network-bundle.mjs": "eb612da75debf7dd27e0b15839fe964ac1e6371e128a9212ae9e1fa33836454c"
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}
