@@ -40,8 +40,13 @@ let output, browserContext, app, wallet, server, origin, profileRoot;
 let stage = 'ci-prerequisites', currentOperation, canSave = false, shuttingDown = false;
 let walletPassword, appPassword, publicIdentity;
 const walletWasmObservations = [];
+const settingsControlIds = Object.freeze(['settings-tab-btn', 'option-list-item-network', 'radio-button-testnet',
+  'radio-button-midnight-preview', 'network-selection-sheet-confirm-button', 'network-selection-sheet',
+  'option-list-item-midnight', 'proof-server-in-process-radio', 'save-configuration-button',
+  'midnight-settings-sheet-header', 'side-sheet-close-button', 'portfolio-tab-btn']);
 const traffic = { blockedRequests: 0, blockedWebSockets: 0, walletWasmResources: 0, appWasmResources: 0,
-  pageErrors: 0, consoleErrors: 0, consoleWarnings: 0 };
+  pageErrors: 0, consoleErrors: 0, consoleWarnings: 0,
+  blockedRequestCategories: { unknownHost: 0, unexpectedKnownPathOrMethod: 0, queryOrCredentials: 0, unexpectedPort: 0, invalidUrl: 0 } };
 const allowedPublicPhases = new Map([
   ['Preparing the transaction and any required proofs…', 'preparation-started'],
   ['Transaction preparation finished. The network has not accepted it yet.', 'preparation-completed'],
@@ -75,6 +80,31 @@ function save() {
   return saving;
 }
 async function setStage(next) { stage = next; await save(); process.stdout.write(JSON.stringify({ stage: next }) + '\n'); }
+async function settingsControlSnapshot() {
+  if (!wallet || wallet.isClosed()) return [];
+  const results = [];
+  for (const id of settingsControlIds) {
+    const locator = wallet.getByTestId(id), count = await locator.count().catch(() => 0);
+    const entry = { control: id, count: Math.min(count, 99) };
+    if (count === 1) {
+      entry.visible = await locator.isVisible().catch(() => false);
+      entry.enabled = await locator.isEnabled().catch(() => false);
+      for (const name of ['aria-selected', 'aria-checked']) {
+        const value = await locator.getAttribute(name, { timeout: 1000 }).catch(() => null);
+        entry[name === 'aria-selected' ? 'selected' : 'checked'] = value === 'true' ? true : value === 'false' ? false : null;
+      }
+    }
+    results.push(entry);
+  }
+  return results;
+}
+async function settingsClick(id, name, { visibleOnly = false } = {}) {
+  requireThat(settingsControlIds.includes(id), 'unsupported-settings-diagnostic-control');
+  await setStage(name);
+  report.lastSettingsControl = id; await save();
+  const control = wallet.getByTestId(id);
+  await (visibleOnly ? control.filter({ visible: true }) : control).click();
+}
 async function bounded(work, milliseconds) {
   let timer;
   try {
@@ -112,6 +142,18 @@ function allowedNetworkUrl(value, method = 'GET') {
     }
     return false;
   } catch { return false; }
+}
+function countBlockedRequest(value) {
+  let category = 'invalidUrl';
+  try {
+    const url = new URL(value);
+    if (url.username || url.password || url.search || url.hash) category = 'queryOrCredentials';
+    else if (url.port && url.origin !== origin) category = 'unexpectedPort';
+    else if (['127.0.0.1', 'localhost', 'rpc.preview.midnight.network', 'indexer.preview.midnight.network',
+      'blockfrost.lw.iog.io', 'srs.midnight.network'].includes(url.hostname)) category = 'unexpectedKnownPathOrMethod';
+    else category = 'unknownHost';
+  } catch { /* Count only the fixed category; never retain a URL or payload. */ }
+  traffic.blockedRequestCategories[category]++;
 }
 const walletPublicAssetPaths = new Set([
   ...['spend', 'output', 'sign'].flatMap(circuit => ['prover', 'verifier', 'bzkir']
@@ -347,7 +389,7 @@ try {
   browserContext.on('page', watchPage); browserContext.pages().forEach(watchPage);
   await browserContext.route(/^https?:\/\//, route => {
     if (allowedNetworkUrl(route.request().url(), route.request().method())) return route.continue();
-    traffic.blockedRequests++; return route.abort('blockedbyclient');
+    traffic.blockedRequests++; countBlockedRequest(route.request().url()); return route.abort('blockedbyclient');
   });
   await browserContext.routeWebSocket(/.*/, socket => {
     if (allowedNetworkUrl(socket.url(), 'GET') && new URL(socket.url()).protocol === 'wss:') socket.connectToServer();
@@ -389,23 +431,26 @@ try {
   await wallet.getByTestId('onboarding-create-wallet-finish-button').click();
   await wallet.getByTestId('settings-tab-btn').waitFor({ timeout: 120_000 });
   report.freshWalletCreated = true;
-  await setStage('select-preview-and-on-device-wasm');
-  await wallet.getByTestId('settings-tab-btn').click();
-  await wallet.getByTestId('option-list-item-network').click();
-  await wallet.getByTestId('radio-button-testnet').click();
-  await wallet.getByTestId('radio-button-midnight-preview').click();
-  await wallet.getByTestId('network-selection-sheet-confirm-button').click();
+  await settingsClick('settings-tab-btn', 'open-wallet-settings');
+  await settingsClick('option-list-item-network', 'open-wallet-network-settings');
+  await settingsClick('radio-button-testnet', 'select-wallet-testnet');
+  await settingsClick('radio-button-midnight-preview', 'select-wallet-midnight-preview');
+  await settingsClick('network-selection-sheet-confirm-button', 'save-wallet-preview-network');
+  await setStage('wait-wallet-network-sheet-close');
   await wallet.getByTestId('network-selection-sheet').waitFor({ state: 'hidden' });
-  await wallet.getByTestId('option-list-item-midnight').click();
+  await settingsClick('option-list-item-midnight', 'open-wallet-proving-settings');
   // Exact current selectors are verified from the signed Lace source before CI.
-  await wallet.getByTestId('proof-server-in-process-radio').click();
-  await wallet.getByTestId('save-configuration-button').click();
+  await settingsClick('proof-server-in-process-radio', 'select-wallet-on-device-wasm');
+  await settingsClick('save-configuration-button', 'save-wallet-on-device-wasm');
+  await setStage('wait-wallet-proving-settings-close');
   await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
-  await wallet.getByTestId('option-list-item-midnight').click();
+  await settingsClick('option-list-item-midnight', 'reopen-wallet-proving-settings');
+  await setStage('verify-persisted-wallet-on-device-selection');
   await poll(async () => await wallet.getByTestId('proof-server-in-process-radio').getAttribute('aria-selected') === 'true', 30_000);
-  await wallet.getByTestId('side-sheet-close-button').filter({ visible: true }).click();
+  await settingsClick('side-sheet-close-button', 'close-reviewed-wallet-proving-settings', { visibleOnly: true });
+  await setStage('wait-reviewed-wallet-proving-settings-close');
   await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
-  await wallet.getByTestId('portfolio-tab-btn').click();
+  await settingsClick('portfolio-tab-btn', 'return-wallet-portfolio');
   report.walletOnDeviceWasmSelectedThroughUi = true;
   await setStage('connect-genuine-application');
   app = await browserContext.newPage(); await app.goto(origin + '/network.html');
@@ -537,6 +582,7 @@ try {
     ?? (error?.name === 'TimeoutError' ? 'ui-stage-timeout' : 'sanitized-boundary-or-runtime-failure');
   if (currentOperation?.status === 'requested') currentOperation.status = 'uncertain';
   if (['approval-requested', 'awaiting-wallet-sync'].includes(report.dustRegistration?.status)) report.dustRegistration.status = 'uncertain';
+  report.settingsControls = await bounded(settingsControlSnapshot(), 15_000).catch(() => []);
   report.finishedAt = new Date().toISOString();
   await save().catch(() => {}); process.exitCode = 1;
 } finally {

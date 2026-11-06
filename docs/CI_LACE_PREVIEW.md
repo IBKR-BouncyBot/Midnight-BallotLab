@@ -23,3 +23,7 @@ The final artifact, `lace-preview-evidence-RUN_ID`, explicitly allows only the a
 Success requires process exit zero, a matching run/commit report with `status: passed`, and exactly nine operations marked `indexer-accepted`. This is configured-indexer confirmation, not independently authenticated consensus. The report must continue to distinguish browser proofs from funding, preserve zero retries, and leave hosted-origin testing and independent chain verification false. The app is served locally on the CI runner; the GitHub Pages origin is not requested.
 
 Cleanup signals only the verified task-owned process group. The runner closes its browser and removes its private profile; the ephemeral CI environment supplies the final isolation boundary. A failed run retains any available public partial report without converting it into success.
+
+## Executed attempts
+
+The [first isolated run](../evidence/2026-11-06/lace-preview/attempt-1/README.md) created a genuine Lace 2.5.1 wallet, then timed out while selecting network/prover settings. It produced no funding request and executed no application transaction. The retained report is failure evidence, not a completed browser-wallet election.
