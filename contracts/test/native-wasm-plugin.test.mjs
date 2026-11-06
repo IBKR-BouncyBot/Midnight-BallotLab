@@ -2,10 +2,12 @@
 // This does not execute an election, generate proofs or confirm transactions.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
+import { createHash } from 'node:crypto';
 import * as esbuild from 'esbuild';
 import { nativeWasmPlugin } from '../../scripts/native-wasm-plugin.mjs';
 
@@ -15,7 +17,7 @@ const wasmFile = join(dirname(require.resolve('@midnight-ntwrk/onchain-runtime-v
 const options = {
   absWorkingDir: root,
   stdin: { contents: 'export * from "@midnight-ntwrk/onchain-runtime-v3";',
-    sourcefile: 'native-wasm-packaging-test.mjs', resolveDir: root },
+    sourcefile: 'native-wasm-packaging-test.mjs', resolveDir: join(root, 'contracts') },
   bundle: true, platform: 'browser', format: 'esm', target: 'es2022',
   nodePaths: [join(root, 'contracts/node_modules')], mainFields: ['browser', 'module', 'main'],
   conditions: ['browser', 'import'], write: false, metafile: true, logLevel: 'silent',
@@ -42,4 +44,77 @@ test('WASM outside the declared project root fails closed', async () => {
   await assert.rejects(esbuild.build({ ...options,
     plugins: [nativeWasmPlugin(new Map(), { projectRoot: join(root, 'src') })],
   }), /Native WASM module must be inside the project root/);
+});
+
+test('actual official ZKIR worker bundles separately with unchanged non-shared WASM and no external dependencies', async () => {
+  const assets = new Map();
+  const result = await esbuild.build({ ...options, stdin: undefined,
+    entryPoints: [join(root, 'contracts/native/wasm-prover-worker.mjs')],
+    outfile: join(root, 'dist/native-prover-worker.mjs'),
+    define: { __NATIVE_PROVER_MANIFEST_SHA256__: JSON.stringify('0'.repeat(64)) },
+    plugins: [nativeWasmPlugin(assets, { projectRoot: root, assetFolder: 'network-assets', verifyIntegrity: true })],
+  });
+  assert.equal(result.warnings.length, 0);
+  assert.equal(result.outputFiles.length, 1);
+  assert.equal(assets.size, 1);
+  const officialFile = join(root, 'contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.wasm');
+  const official = await readFile(officialFile);
+  assert.ok(Buffer.from([...assets.values()][0]).equals(official));
+  assert.equal(createHash('sha256').update(official).digest('hex'), '6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b');
+  assert.ok(Object.keys(result.metafile.inputs).some(id => id.startsWith('native-wasm:contracts/node_modules/@midnight-ntwrk/zkir-v2/')));
+  assert.equal(Object.values(result.metafile.outputs).flatMap(output => output.imports).some(item => item.external), false);
+  const output = result.outputFiles[0].text;
+  assert.ok(output.includes('Native WASM asset integrity check failed'));
+  assert.ok(output.includes('6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b'));
+  for (const prefix of [root, root.replaceAll('\\', '/'), root.replaceAll('\\', '\\\\')]) assert.equal(output.includes(prefix), false);
+  assert.equal(/SharedArrayBuffer|initThreadPool|Atomics\./.test(output), false);
+  // Inspect the actual pinned binary's memory declarations; this is a package
+  // property test, not a claim that a proof was produced.
+  let offset = 8; const flags = [];
+  const uint = () => {
+    let value = 0, shift = 0, byte;
+    do { byte = official[offset++]; value += (byte & 127) * 2 ** shift; shift += 7; assert.ok(shift <= 35); } while (byte & 128);
+    return value;
+  };
+  while (offset < official.length) {
+    const section = official[offset++], size = uint(), end = offset + size;
+    if (section === 5) {
+      const count = uint();
+      for (let i = 0; i < count; i++) { const flag = uint(); flags.push(flag); uint(); if (flag & 1) uint(); }
+    }
+    offset = end;
+  }
+  assert.deepEqual(flags, [0]);
+  assert.deepEqual(WebAssembly.Module.imports(await WebAssembly.compile(official)).filter(item => item.kind === 'memory'), []);
+});
+
+test('strict loader instantiates real ZKIR and rejects changed or truncated decoded bytes even with compressed delivery headers', async () => {
+  const folder = await mkdtemp(join(tmpdir(), 'ballot-wasm-loader-'));
+  const originalFetch = globalThis.fetch;
+  try {
+    const official = await readFile(join(root, 'contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.wasm'));
+    const built = await esbuild.build({ ...options,
+      stdin: { contents: 'export * from "@midnight-ntwrk/zkir-v2";', sourcefile: 'zkir-loader-test.mjs', resolveDir: join(root, 'contracts') },
+      outfile: join(folder, 'loader.mjs'),
+      plugins: [nativeWasmPlugin(new Map(), { projectRoot: root, assetFolder: 'network-assets', verifyIntegrity: true })],
+    });
+    await writeFile(join(folder, 'loader.mjs'), built.outputFiles[0].contents);
+    let payload = official, calls = 0;
+    globalThis.fetch = async (url, options) => {
+      calls++; assert.ok(new URL(url).pathname.endsWith('/network-assets/midnight_zkir_wasm_bg-6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b.wasm'));
+      assert.equal(options.redirect, 'error'); assert.equal(options.credentials, 'omit');
+      assert.equal(options.body, undefined);
+      // Fetch exposes decoded bytes, while this header can describe a smaller
+      // compressed wire representation. No network request is made by this test.
+      return new Response(payload, { headers: { 'content-length': '1024', 'content-encoding': 'gzip' } });
+    };
+    const url = pathToFileURL(join(folder, 'loader.mjs')).href;
+    const actual = await import(`${url}?valid`);
+    assert.equal(typeof actual.prove, 'function'); assert.equal(typeof actual.Zkir.deserialize, 'function');
+    payload = Buffer.from(official); payload[payload.length - 1] ^= 1;
+    await assert.rejects(import(`${url}?changed`), /Native WASM asset integrity check failed/);
+    payload = official.subarray(0, official.length - 1);
+    await assert.rejects(import(`${url}?short`), /Native WASM asset integrity check failed/);
+    assert.equal(calls, 3);
+  } finally { globalThis.fetch = originalFetch; await rm(folder, { recursive: true, force: true }); }
 });

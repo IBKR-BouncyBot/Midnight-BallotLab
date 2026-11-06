@@ -1,0 +1,100 @@
+{
+  "schema": "midnight-ballot-lab/retained-evidence/v1",
+  "files": [
+    {
+      "path": "attempt-1/browser-report.json",
+      "bytes": 883,
+      "sha256": "9873aa5127022f8ea163723a2baef9e0985bff9e70dad4716ccc5c90737e246f"
+    },
+    {
+      "path": "attempt-1/startup-failure.png",
+      "bytes": 98656,
+      "sha256": "36e5e6f69f869fcb36656935c7b04ee165e28b0e0d6ea68846c9e74900a8ece3"
+    },
+    {
+      "path": "attempt-1/ERRATUM.md",
+      "bytes": 852,
+      "sha256": "7b0889336d1be563c9c352f9919a434112b88d1301e364ba07af0c707dc75280"
+    },
+    {
+      "path": "attempt-1/local-tests.json",
+      "bytes": 3171,
+      "sha256": "dfcdc9af05d545a2a336a30d427dc830b4f03e7fcf011cf4a155914492411b3e"
+    },
+    {
+      "path": "attempt-2/browser-report.json",
+      "bytes": 2927,
+      "sha256": "297e7e828d649be886b9f5a89dd5f57b0f177f4ed26324a83fcb2bc1b033e0bc"
+    },
+    {
+      "path": "attempt-2/browser-proof-success.png",
+      "bytes": 211173,
+      "sha256": "193845d3158d8855582fe86bc54291abc76033979bc7a6975827c1be6ca81d30"
+    },
+    {
+      "path": "attempt-2/build.json",
+      "bytes": 1188,
+      "sha256": "a6a35160d848d2f2347c26ac12e121cfbd7a3eb2ad811cfd2411525b3cf9e10d"
+    },
+    {
+      "path": "attempt-2/local-tests.json",
+      "bytes": 2861,
+      "sha256": "27589ed25c7be8b0ceeac19a971645d67ab2f2a9ac3c37f1a8f2b6ba7e375efb"
+    },
+    {
+      "path": "attempt-2/dependency-review.json",
+      "bytes": 1516,
+      "sha256": "d8cf2db5d84535af284f34a13b6b9808f201c130ad3c68527cc99ba7a830d51c"
+    },
+    {
+      "path": "attempt-2/ci-source-check.json",
+      "bytes": 651,
+      "sha256": "6cc2362969e45436a3c56b3653d6ae8cfe749a3fb6cb846ba3d7c6cf61fbcc95"
+    },
+    {
+      "path": "lace-wasm-source-review.json",
+      "bytes": 4079,
+      "sha256": "4c0923c17bf755fa7acaf0b391fecb14bce1d04aceb749beb5365be565fe96c9"
+    },
+    {
+      "path": "attempt-2/proof-check-build.json",
+      "bytes": 377,
+      "sha256": "3acb475d340f1fe32ad1c6dcf59d19c7b2fd231bdf804b49ca3730bdff807796"
+    },
+    {
+      "path": "attempt-2/proof-check-bundle.mjs.txt",
+      "bytes": 919895,
+      "sha256": "b3e1300a8021d7ec822adbcb40cdedb0b74e9da40e1b5405903d76cc9e0e6ee8"
+    },
+    {
+      "path": "attempt-2/native-prover-worker.mjs.txt",
+      "bytes": 48048,
+      "sha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4"
+    },
+    {
+      "path": "attempt-2/prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    },
+    {
+      "path": "attempt-2/browser-proof-check.mjs.txt",
+      "bytes": 8142,
+      "sha256": "434b388e3b7400730f0b5fb98e9aec23c597a664ef6d275f67f13ecbb49182d0"
+    },
+    {
+      "path": "attempt-2/browser-wasm-proof.mjs.txt",
+      "bytes": 8977,
+      "sha256": "6573247afa32b056bd25680d32097291cdee8e5ed7b283c7ecba910a859fee2a"
+    },
+    {
+      "path": "attempt-2/wasm-prover-worker.mjs.txt",
+      "bytes": 3687,
+      "sha256": "5e891a61edcdb6b8310aa90f9e1f3b8814b201c85ab498152ccc9c20e79a7be6"
+    },
+    {
+      "path": "attempt-2/wasm-prover-assets.mjs.txt",
+      "bytes": 7328,
+      "sha256": "3ebab5cfd91e4e9d65cc2f6b8401c568e7b9698109b30342e064bc81a7684746"
+    }
+  ]
+}

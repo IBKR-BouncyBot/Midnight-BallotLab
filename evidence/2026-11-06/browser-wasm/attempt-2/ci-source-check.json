@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-11-06T18:25:19.957Z",
+  "actionlint": "1.7.12",
+  "actionlintExitCode": 0,
+  "nodeSyntaxExitCode": 0,
+  "browserGateExecution": "not-run-locally",
+  "files": [
+    {
+      "path": ".github/workflows/pages.yml",
+      "sha256": "1ed02cf21f480f1ba979e9afded6b4bc189a852a4fefd8c168310a233389739b"
+    },
+    {
+      "path": ".github/workflows/native-compact.yml",
+      "sha256": "5427276938afc8f34952b52345e6e9f61bf0ee4acf8793deb9dc86e5f1f6f46a"
+    },
+    {
+      "path": "scripts/test-browser-wasm-proofs.mjs",
+      "sha256": "181afa43bcacaaa13e9395feab0106f7e7ca12f75f42fd216b1dd5d0262fd245"
+    }
+  ]
+}

@@ -13,7 +13,7 @@ The homepage explains the lab and offers two ways to try it:
 | Choose a mode | What it does | What you need |
 | --- | --- | --- |
 | [**Browser demo**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/native.html) | Run real Midnight cryptography locally with **2–5 choices** and **1–1,024 demo voters**. All voters and trustees share one browser. No proofs or blockchain transactions are created. | A browser. No wallet or funds. |
-| [**Public testnet**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) | Connect to public Preview and use the wallet, prover and network transaction flow. Public Preview wallet connection and a separate Node Wallet SDK election have been tested; browser-wallet transactions on Preview remain unverified. | Midnight-enabled Lace on Preview; test NIGHT, usable tDUST and local proof server **8.1.3** for transactions. |
+| [**Public testnet**](https://ibkr-bouncybot.github.io/Midnight-BallotLab/network.html) | Connect to public Preview and use the wallet, prover and network transaction flow. Public Preview wallet connection and a separate Node Wallet SDK election have been tested; browser-wallet transactions on Preview remain unverified. | Midnight-enabled Lace on Preview with **Run in this app (WASM)** selected, test NIGHT and usable tDUST; a browser/device with enough memory for proving. |
 
 Anyone with the browser demo's shared election file can check that its record and totals agree. Each voter can paste a receipt ID to look up their encrypted ballot, or check a saved full receipt. An ID lookup does not prove who cast the ballot. These checks do not establish that the record is authentic or that the election was fair.
 
@@ -58,7 +58,7 @@ If voting is unavailable, **Ready to vote?** explains why and links to the next 
 
 Under **Verify election**, choose **Upload a saved election record** to check a previously downloaded testnet record without connecting a wallet. Midnight's native cryptography checks the public keys, ballot receipts, combined ciphertext and any finalized totals. The page displays the saved results separately from the live network record. This checks consistency; it does not establish that the file is authentic, current or complete.
 
-To continue, set up Midnight in Lace on Preview, get free test NIGHT from the [Preview faucet](https://midnight-tmnight-preview.nethermind.dev/) and complete its CAPTCHA, select **Generate tDUST** in Lace, then run the [local proof server](https://docs.midnight.network/guides/run-proof-server) **8.1.3** on port 6300. [Real browser checks reached the public services](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/browser-services.json), and [Lace 2.5.0 connected to Preview](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/lace-connection.json) using a fresh, unfunded test wallet and a locally served app. That connection generated no proof and neither signed nor submitted a transaction. Browser-wallet transaction testing on Preview still needs a funded wallet, usable DUST and the local prover; the separate SDK run below does not validate that browser flow. The GitHub Pages origin remains untested for wallet connection. Preprod is an advanced option requiring your own service access. The [network guide](docs/NATIVE_NETWORK.md#public-preview-setup) explains the steps and limits.
+To continue, set up Midnight in Lace on Preview, get free test NIGHT from the [Preview faucet](https://midnight-tmnight-preview.nethermind.dev/) and complete its CAPTCHA, select **Generate tDUST** in Lace, then select **Settings → Midnight → On this device → Run in this app (WASM)** in Lace and save the configuration. Ballot Lab proves contract calls in a dedicated browser worker; Lace handles wallet/DUST proofs in its own on-device prover. [Real browser checks reached the public services](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/browser-services.json), and [Lace 2.5.0 connected to Preview](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-04/public-preview/lace-connection.json) using a fresh, unfunded test wallet and a locally served app. That connection generated no proof and neither signed nor submitted a transaction. Fresh browser-only proving and Preview transaction acceptance are tracked separately in the network guide; the earlier SDK run below does not validate this new browser path. The GitHub Pages origin remains untested for wallet connection. Preprod is an advanced option requiring your own service access. The [network guide](docs/NATIVE_NETWORK.md#public-preview-setup) explains the steps and limits.
 
 **A separate Node Wallet SDK election also completed on public Preview.** The [6 November public report](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-06/public-preview-sdk/election-acceptance.json) records nine application transactions accepted by the configured public indexer, eight proved contract calls, and one test ballot finalized as `[0,1,0,0,0]` across five lanes. Faucet funding and DUST registration are separate from that count. This used an isolated SDK wallet and the application's byte-identical native client/contract sources; it did not exercise Lace, the browser frontend or the GitHub Pages origin, and it does not independently verify chain inclusion.
 
@@ -68,7 +68,9 @@ These are separate milestones: **running cryptography**, **generating a proof**,
 
 The test-network run also demonstrated automatic results: an external operator waited for the real deadline, closed voting and submitted the two trustee contributions and final totals. It needs two test trustee secrets and running wallet, prover and network services. GitHub Pages does not run that operator.
 
-GitHub Pages hosts the frontend. It does not supply a prover, run a Midnight node or deploy the contract. Hosting is independent of ChatGPT Sites.
+GitHub Pages hosts the frontend and public proving assets. Proof generation runs on the device; Pages does not process private proof inputs, run a Midnight node or deploy the contract. Hosting is independent of ChatGPT Sites.
+
+Choose **Run in this app (WASM)** in Lace before connecting. The connector API does not distinguish that mode from delegated TEE proving when no server address is reported, so the app cannot independently attest your wallet setting. Reported external prover URLs are rejected, and the contract worker has no remote fallback. The first proof needs a substantial public-file download; voting proofs can take minutes and may exceed a device’s memory. Private state and recovery remain encrypted in this browser.
 
 ## A hands-on research prototype
 
@@ -78,7 +80,7 @@ A successful check means **the supplied record agrees with its receipts and tota
 
 ## Build, test and explore the source
 
-The application uses Compact compiler **0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1** and proof-server **8.1.3**. Exact dependency graphs are pinned in npm-generated lockfiles. Follow the [native setup guide](docs/NATIVE_MIDNIGHT.md), [Windows instructions](docs/WINDOWS_NATIVE.md), [network guide](docs/NATIVE_NETWORK.md) or [GitHub Pages guide](docs/GITHUB_PAGES.md).
+The application uses Compact compiler **0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1** and the official **zkir-v2 2.1.1** browser prover. A [fresh browser run generated eight real proofs across all seven election circuits](evidence/2026-11-06/browser-wasm/README.md), with no HTTP prover. The full run took about 5 minutes 24 seconds on the tested device; the ballot proof took about 2 minutes 50 seconds. Lace wallet/DUST proving and accepted Preview transactions for this new path still need their separate end-to-end check. The retained server-based test reports used proof-server **8.1.3**. Exact dependency graphs are pinned in npm-generated lockfiles. Follow the [native setup guide](docs/NATIVE_MIDNIGHT.md), [Windows instructions](docs/WINDOWS_NATIVE.md), [network guide](docs/NATIVE_NETWORK.md) or [GitHub Pages guide](docs/GITHUB_PAGES.md).
 
 With the pinned Compact toolchain, Node 24 and Python installed:
 
@@ -94,6 +96,8 @@ node scripts/build-network-browser.mjs
 node contracts/node_modules/playwright/cli.js install chromium
 node scripts/test-native-browser.mjs
 node scripts/test-network-browser.mjs
+node scripts/build-browser-proof-check.mjs
+node scripts/test-browser-wasm-proofs.mjs
 python3 scripts/check_pages.py
 python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
 ```

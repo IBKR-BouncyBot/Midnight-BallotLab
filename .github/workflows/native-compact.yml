@@ -39,7 +39,7 @@ jobs:
           npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/dependency-install.log"
           npm ls --all --json > "$RUNNER_TEMP/dependency-tree.json"
       - name: Check installed wallet and provider APIs
-        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
+        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs contracts/test/browser-prover-startup.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
       - name: Test native adapters, receipts and input boundaries
         run: npm test 2>&1 | tee "$RUNNER_TEMP/native-boundary-tests.log"
       - name: Compile the native encrypted election
@@ -109,6 +109,13 @@ jobs:
         run: node scripts/test-native-browser.mjs 2>&1 | tee "$RUNNER_TEMP/native-browser-tests.log"
       - name: Exercise network client initialization and fail-closed controls
         run: node scripts/test-network-browser.mjs 2>&1 | tee "$RUNNER_TEMP/network-browser-tests.log"
+      - name: Prove all native circuits in a real browser worker
+        timeout-minutes: 40
+        # The earlier loopback HTTP proof server is already stopped. This
+        # independent gate allows only public static files from its test site.
+        run: |
+          node scripts/build-browser-proof-check.mjs 2>&1 | tee "$RUNNER_TEMP/browser-proof-build.log"
+          node scripts/test-browser-wasm-proofs.mjs 2>&1 | tee "$RUNNER_TEMP/browser-proof-tests.log"
       - name: Preserve native browser site
         uses: actions/upload-artifact@v4
         with:
@@ -142,12 +149,15 @@ jobs:
             ${{ runner.temp }}/network-browser-build.log
             ${{ runner.temp }}/native-browser-tests.log
             ${{ runner.temp }}/network-browser-tests.log
+            ${{ runner.temp }}/browser-proof-build.log
+            ${{ runner.temp }}/browser-proof-tests.log
             ${{ runner.temp }}/static-build.log
             ${{ runner.temp }}/pages-packaging.log
             artifacts/native-emulator-public.json
             artifacts/native-proof-evidence.json
             artifacts/native-browser/
             artifacts/network-browser/
+            artifacts/browser-wasm-proofs/
             dist/native-build.json
             dist/network-build.json
           if-no-files-found: error

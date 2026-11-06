@@ -4,7 +4,7 @@ import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path
 import { builtinModules } from 'node:module';
 import { createHash } from 'node:crypto';
 
-export function nativeWasmPlugin(assets, { projectRoot, assetFolder = 'native-assets', browserPackages = {} } = {}) {
+export function nativeWasmPlugin(assets, { projectRoot, assetFolder = 'native-assets', browserPackages = {}, verifyIntegrity = false } = {}) {
 const builtins = new Set(builtinModules.flatMap(name => [name, name.replace(/^node:/, '')]));
 
 async function nativeAsset(path) {
@@ -16,7 +16,7 @@ async function nativeAsset(path) {
   const name = `${basename(path, '.wasm').replace(/[^a-zA-Z0-9_-]/g, '_')}-${hash}.wasm`;
   const location = `${assetFolder}/${name}`;
   assets.set(location, bytes);
-  return { module, location };
+  return { module, location, hash, size: bytes.length };
 }
 
   return {
@@ -49,7 +49,7 @@ async function nativeAsset(path) {
       build.onLoad({ filter: /.*/, namespace: 'native-wasm' }, async args => {
         const wasmFile = args.pluginData?.wasmFile;
         if (typeof wasmFile !== 'string' || !isAbsolute(wasmFile)) throw new Error('Native WASM filesystem resolution is missing');
-        const { module, location } = await nativeAsset(wasmFile);
+        const { module, location, hash, size } = await nativeAsset(wasmFile);
         const modules = [...new Set(WebAssembly.Module.imports(module).map(item => item.module))];
         const exports = WebAssembly.Module.exports(module);
         // Preserve the real binary's imports and exports. Missing JS glue fails
@@ -58,12 +58,28 @@ async function nativeAsset(path) {
         const importObject = modules.map((name, i) => `[${JSON.stringify(name)}]: nativeImport${i}`).join(', ');
         const bindings = exports.map(({ name }, i) =>
           `const nativeExport${i} = nativeInstance.exports[${JSON.stringify(name)}];\nexport { nativeExport${i} as ${JSON.stringify(name)} };`).join('\n');
+        const download = verifyIntegrity ? `const nativeResponse = await fetch(new URL(${JSON.stringify(`./${location}`)}, import.meta.url), { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(180000) });
+if (!nativeResponse.ok || !nativeResponse.body) throw new Error('Native WASM asset could not be loaded');
+const nativeLength = nativeResponse.headers.get('content-length');
+if (nativeLength !== null && (!/^[0-9]+$/.test(nativeLength) || Number(nativeLength) > 134217728)) throw new Error('Native WASM asset integrity check failed');
+const nativeBytes = new Uint8Array(${size});
+const nativeReader = nativeResponse.body.getReader(); let nativeOffset = 0;
+try {
+  for (;;) { const chunk = await nativeReader.read(); if (chunk.done) break;
+    if (nativeOffset + chunk.value.byteLength > nativeBytes.length) { await nativeReader.cancel(); throw new Error('Native WASM asset integrity check failed'); }
+    nativeBytes.set(chunk.value, nativeOffset); nativeOffset += chunk.value.byteLength;
+  }
+} finally { nativeReader.releaseLock(); }
+if (nativeOffset !== nativeBytes.length) throw new Error('Native WASM asset integrity check failed');
+const nativeDigest = new Uint8Array(await crypto.subtle.digest('SHA-256', nativeBytes));
+if (Array.from(nativeDigest, value => value.toString(16).padStart(2, '0')).join('') !== ${JSON.stringify(hash)}) throw new Error('Native WASM asset integrity check failed');
+const { instance: nativeInstance } = await WebAssembly.instantiate(nativeBytes, { ${importObject} });`
+          : `const nativeResponse = await fetch(new URL(${JSON.stringify(`./${location}`)}, import.meta.url));
+if (!nativeResponse.ok) throw new Error('Native WASM asset could not be loaded');
+const { instance: nativeInstance } = await WebAssembly.instantiate(await nativeResponse.arrayBuffer(), { ${importObject} });`;
         return {
           loader: 'js', resolveDir: dirname(wasmFile), watchFiles: [wasmFile],
-          contents: `${imports}\nconst nativeResponse = await fetch(new URL(${JSON.stringify(`./${location}`)}, import.meta.url));
-if (!nativeResponse.ok) throw new Error('Native WASM asset could not be loaded');
-const { instance: nativeInstance } = await WebAssembly.instantiate(await nativeResponse.arrayBuffer(), { ${importObject} });
-${bindings}\n`,
+          contents: `${imports}\n${download}\n${bindings}\n`,
         };
       });
       // wasm-bindgen's web target may fetch a literal URL instead of importing
@@ -73,6 +89,7 @@ ${bindings}\n`,
         const pattern = /new URL\(\s*(['"])([^'"\r\n]+\.wasm)\1\s*,\s*import\.meta\.url\s*\)/g;
         const matches = [...input.matchAll(pattern)];
         if (!matches.length) return;
+        if (verifyIntegrity) throw new Error('Integrity-checked WASM requires the reviewed ESM binary loader');
         let output = input;
         for (const match of matches.reverse()) {
           if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(match[2]) || /^[\\/]/.test(match[2])) {

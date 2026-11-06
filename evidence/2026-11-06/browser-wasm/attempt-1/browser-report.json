@@ -1,0 +1,24 @@
+{
+  "schema": "midnight-ballot-lab/browser-circuit-proofs/v1",
+  "startedAt": "2026-11-06T18:08:28.269Z",
+  "execution": "generated-contract-proofs-in-dedicated-browser-worker",
+  "status": "failed",
+  "versions": {
+    "compiler": "0.31.1",
+    "runtime": "0.16.0",
+    "midnightJs": "4.1.1",
+    "zkir": "2.1.1"
+  },
+  "candidateCount": 5,
+  "proofs": [],
+  "negativeChecks": [],
+  "witnessSource": "fresh-synthetic-browser-memory",
+  "proofServerRequests": "prohibited-by-page-csp",
+  "walletExecution": "not-attempted",
+  "networkSubmission": "not-attempted",
+  "networkAcceptance": "not-tested",
+  "independentProofVerification": "not-tested",
+  "failedStage": "initialize-worker",
+  "safeDiagnostic": "The public proving files could not be downloaded. Check your connection, then reconnect the wallet to restart the local prover.",
+  "finishedAt": "2026-11-06T18:11:38.279Z"
+}

@@ -1,4 +1,4 @@
-import { connectNativeBrowserProviders, nativeConnectionErrorMessage, nativeStoragePasswordMessage, validateNativeStoragePassword } from '../contracts/native/browser-providers.mjs';
+import { connectNativeBrowserProviders, nativeConnectionErrorMessage, nativeStoragePasswordMessage, validateNativeStoragePassword, nativeWasmProofErrorMessage } from '../contracts/native/browser-providers.mjs';
 import { findNativeWallets, nativeNetworkErrorMessage } from '../contracts/native/browser-config.mjs';
 import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices, formatPreviewServiceError } from '../contracts/native/public-testnet.mjs';
 import { createNativeSdkClient } from '../contracts/native/sdk-client.mjs';
@@ -40,10 +40,18 @@ const connectionStages = Object.freeze({
   'connection-permission': 'Waiting for Lace permission. Open Lace and approve this site’s connection request.',
   'connection-account': 'Reading the Midnight account selected in Lace…',
   'connection-network': 'Checking that Lace and this app use the same test network…',
-  'connection-local-prover': 'Checking the local proof-server setting reported by Lace…',
-  'connection-proving-provider': 'Asking Lace to initialize its proving connection…',
+  'connection-wallet-proving-mode': 'Checking that Lace has not reported an external proof server…',
+  'connection-proving-provider': 'Preparing this browser’s contract prover…',
+  'browser-prover-ready': 'Browser contract prover ready. No transaction has been submitted.',
   'connection-storage': 'Preparing encrypted storage for this app…',
   'connection-providers': 'Preparing the network tools for this connection…',
+});
+const proofProgressMessages = Object.freeze({
+  prepared: 'Transaction prepared. No contract-call proof was needed for this step.',
+  loading: 'Loading and checking public proving files. The first proof needs a larger download; keep this tab open.',
+  checking: 'Checking the contract inputs on this device…',
+  proving: 'Creating the contract proof in this browser. This can take a few minutes; keep this tab open.',
+  complete: 'Contract proof created in this browser. Wallet approval and network confirmation are still separate steps.',
 });
 
 function saveJsonText(filename, text) {
@@ -325,7 +333,7 @@ export async function initNetworkApplication() {
     try { await operation(); }
     catch (error) { status(client?.pendingBallotReceipt
       ? 'A vote attempt has an unresolved outcome. Use “Check pending vote” and check your wallet before trying again or closing this page. This message does not confirm that a transaction was submitted.'
-      : formatPreviewServiceError(error) ?? nativeStoragePasswordMessage(error) ?? nativeConnectionErrorMessage(error) ?? nativeNetworkErrorMessage(error)); }
+      : formatPreviewServiceError(error) ?? nativeStoragePasswordMessage(error) ?? nativeConnectionErrorMessage(error) ?? nativeWasmProofErrorMessage(error) ?? nativeNetworkErrorMessage(error)); }
     finally { busy = false; connectionFeedback = false; refreshControls(); }
   };
   const click = (id, operation) => $(id).addEventListener('click', () => void run(operation));
@@ -372,7 +380,7 @@ export async function initNetworkApplication() {
     } else if (network === 'undeployed') {
       $('network-indexer').value = 'http://127.0.0.1:8088/api/v4/graphql';
       $('network-indexer-ws').value = 'ws://127.0.0.1:8088/api/v4/graphql/ws';
-      $('network-environment-note').textContent = 'Local development needs your own running node, indexer and prover. Set Lace to the same local network.';
+      $('network-environment-note').textContent = 'Local development needs its own node and indexer. Set Lace to that network and use its on-device WASM proving mode.';
     } else {
       $('network-indexer').value = '';
       $('network-indexer-ws').value = '';
@@ -392,7 +400,7 @@ export async function initNetworkApplication() {
       return result;
     } catch (error) {
       $('network-service-status').textContent = formatPreviewServiceError(error)
-        ?? 'The public Preview service check could not finish. Try again. This check does not use your wallet or local prover.';
+        ?? 'The public Preview service check could not finish. Try again. This check does not use your wallet or generate a proof.';
       throw error;
     }
   };
@@ -401,7 +409,7 @@ export async function initNetworkApplication() {
   click('network-check-services', async () => {
     if ($('network-id').value !== 'preview') throw new Error('Select public Preview');
     await verifyPreviewServices();
-    status('Public Preview services are reachable. You can now connect Lace on Preview. Test DUST and a running local prover are needed when you submit transactions.');
+    status('Public Preview services are reachable. Connect Lace on Preview with “Run in this app (WASM)” selected. Transactions need usable test DUST.');
   });
   document.querySelectorAll('input[name="network-choice"], input[name="network-pair"]').forEach(input => input.addEventListener('change', refreshControls));
   document.querySelectorAll('input[name="network-trustee"]').forEach(input => input.addEventListener('change', () => {
@@ -446,6 +454,10 @@ export async function initNetworkApplication() {
         onStage: stage => {
           if (connectionStages[stage]) status(connectionStages[stage]);
           else if (stages[stage]) event(stages[stage]);
+        },
+        onProofProgress: progress => {
+          const message = proofProgressMessages[progress?.phase];
+          if (message) status(message);
         },
       });
       try {

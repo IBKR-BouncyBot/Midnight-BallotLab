@@ -2,18 +2,19 @@
  * Importing does not connect a wallet or send a transaction. The caller selects
  * a wallet and explicit test network, then calls connectNativeBrowserProviders.
  */
-import { dappConnectorProofProvider } from '@midnight-ntwrk/midnight-js-dapp-connector-proof-provider';
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { getNetworkId, setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
-import { CostModel, Transaction } from '@midnight-ntwrk/midnight-js-protocol/ledger';
+import { Transaction } from '@midnight-ntwrk/midnight-js-protocol/ledger';
 import { fromHex, toHex, validatePassword, PasswordValidationError } from '@midnight-ntwrk/midnight-js-utils';
-import { resolveNativeBrowserConfig, requireConnectedNetwork, requireLocalWalletProver } from './browser-config.mjs';
+import { resolveNativeBrowserConfig, requireConnectedNetwork, requireNoReportedExternalProver } from './browser-config.mjs';
 import { nativeConnectionFailure } from './connection-errors.mjs';
+import { createNativeWasmProofProvider } from './browser-wasm-proof.mjs';
 
 export { validatePassword as validateNativeStoragePassword };
 export { nativeConnectionErrorMessage } from './connection-errors.mjs';
+export { nativeWasmProofErrorMessage } from './browser-wasm-proof.mjs';
 
 export function nativeStoragePasswordMessage(error) {
   // Use the installed SDK's error type, never its message or private payload.
@@ -22,10 +23,10 @@ export function nativeStoragePasswordMessage(error) {
 }
 
 export async function connectNativeBrowserProviders({
-  wallet, configuration, passwordProvider, onStage = () => {},
+  wallet, configuration, passwordProvider, onStage = () => {}, onProofProgress = () => {},
   pageUrl = globalThis.location?.href,
 }) {
-  if (typeof passwordProvider !== 'function' || typeof onStage !== 'function') throw new TypeError('Password and stage providers must be functions');
+  if (typeof passwordProvider !== 'function' || typeof onStage !== 'function' || typeof onProofProgress !== 'function') throw new TypeError('Password and stage providers must be functions');
   const stage = value => {
     // Only finite stage names leave this module; never configurations, public
     // account identifiers, private data, transactions or error payloads.
@@ -56,13 +57,7 @@ export async function connectNativeBrowserProviders({
     return values;
   });
   await connectionStep('connection-network', () => requireConnectedNetwork(status, services, config.networkId));
-  stage('connection-local-prover');
-  let proverUri;
-  try { proverUri = requireLocalWalletProver(services); }
-  catch (error) {
-    const unreported = services?.proverServerUri === undefined || services?.proverServerUri === null || services?.proverServerUri === '';
-    throw nativeConnectionFailure(unreported ? 'connection-local-prover-unreported' : 'connection-local-prover', error);
-  }
+  await connectionStep('connection-wallet-proving-mode', () => requireNoReportedExternalProver(services));
   const accountId = unshielded.unshieldedAddress;
   const coinKey = shielded.shieldedCoinPublicKey;
   const encryptionKey = shielded.shieldedEncryptionPublicKey;
@@ -75,7 +70,7 @@ export async function connectNativeBrowserProviders({
       api.getConnectionStatus(), api.getConfiguration(), api.getShieldedAddresses(), api.getUnshieldedAddress(),
     ]);
     requireConnectedNetwork(connection, currentServices, config.networkId);
-    if (requireLocalWalletProver(currentServices) !== proverUri) throw new Error('Wallet prover changed; reconnect');
+    requireNoReportedExternalProver(currentServices);
     if (currentUnshielded?.unshieldedAddress !== accountId || currentShielded?.shieldedCoinPublicKey !== coinKey
       || currentShielded?.shieldedEncryptionPublicKey !== encryptionKey) throw new Error('Wallet account changed; reconnect');
   };
@@ -91,7 +86,8 @@ export async function connectNativeBrowserProviders({
   };
   const zkConfigProvider = await connectionStep('connection-providers', () => new FetchZkConfigProvider(config.compiledAssetsUrl, artifactFetch));
   const underlyingProof = await connectionStep('connection-proving-provider',
-    () => dappConnectorProofProvider(api, zkConfigProvider, CostModel.initialCostModel()));
+    () => createNativeWasmProofProvider({ compiledAssetsUrl: config.compiledAssetsUrl, onStage: stage, onProofProgress }));
+  try {
   const walletProvider = {
     getCoinPublicKey: () => coinKey,
     getEncryptionPublicKey: () => encryptionKey,
@@ -144,6 +140,12 @@ export async function connectNativeBrowserProviders({
     assertSession,
     // This invalidates application use. It does not revoke wallet permissions,
     // erase IndexedDB or claim that in-flight submission can be cancelled.
-    close() { closed = true; },
+    walletProvingMode: 'not-attestable-through-api4',
+    close() { closed = true; underlyingProof.close(); },
   });
+  } catch (error) {
+    closed = true;
+    underlyingProof.close();
+    throw error;
+  }
 }

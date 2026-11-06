@@ -44,7 +44,7 @@ jobs:
           npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/dependency-install.log"
           npm ls --all --json > "$RUNNER_TEMP/dependency-tree.json"
       - name: Check installed wallet and provider APIs
-        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
+        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs contracts/test/browser-prover-startup.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
       - name: Compile the actual native election and generate its keys
         working-directory: contracts
         run: npm run compile:native 2>&1 | tee "$RUNNER_TEMP/native-election-compile.log"
@@ -70,6 +70,13 @@ jobs:
         run: node scripts/test-native-browser.mjs 2>&1 | tee "$RUNNER_TEMP/native-browser-tests.log"
       - name: Exercise network client initialization and fail-closed controls
         run: node scripts/test-network-browser.mjs 2>&1 | tee "$RUNNER_TEMP/network-browser-tests.log"
+      - name: Prove all native circuits in a real browser worker
+        timeout-minutes: 40
+        # Fresh synthetic witnesses remain in the browser. The test permits
+        # only its same-origin public-file GETs; no wallet or HTTP prover.
+        run: |
+          node scripts/build-browser-proof-check.mjs 2>&1 | tee "$RUNNER_TEMP/browser-proof-build.log"
+          node scripts/test-browser-wasm-proofs.mjs 2>&1 | tee "$RUNNER_TEMP/browser-proof-tests.log"
       - name: Preserve build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,10 +98,13 @@ jobs:
             ${{ runner.temp }}/network-browser-build.log
             ${{ runner.temp }}/native-browser-tests.log
             ${{ runner.temp }}/network-browser-tests.log
+            ${{ runner.temp }}/browser-proof-build.log
+            ${{ runner.temp }}/browser-proof-tests.log
             ${{ runner.temp }}/pages-packaging.log
             artifacts/native-emulator-public.json
             artifacts/native-browser/
             artifacts/network-browser/
+            artifacts/browser-wasm-proofs/
             dist/native-build.json
             dist/network-build.json
           if-no-files-found: error

@@ -1,0 +1,95 @@
+{
+  "schema": "midnight-ballot-lab/browser-circuit-proofs/v1",
+  "startedAt": "2026-11-06T18:19:23.735Z",
+  "execution": "generated-contract-proofs-in-dedicated-browser-worker",
+  "status": "passed",
+  "versions": {
+    "compiler": "0.31.1",
+    "runtime": "0.16.0",
+    "midnightJs": "4.1.1",
+    "zkir": "2.1.1"
+  },
+  "candidateCount": 5,
+  "proofs": [
+    {
+      "circuit": "configureKeys",
+      "constraintCheck": "passed",
+      "proofBytes": 4853,
+      "proofSha256": "6233a2ae44e479c068cd0c3a0ccb859625478638528e3629bd5a0e0433a634b6",
+      "elapsedMs": 83698
+    },
+    {
+      "circuit": "enroll",
+      "constraintCheck": "passed",
+      "proofBytes": 4501,
+      "proofSha256": "cc41a9370d73d72599f3416b62759b44a8e89df7eea42640004fef88c9efadaf",
+      "elapsedMs": 12362
+    },
+    {
+      "circuit": "openVoting",
+      "constraintCheck": "passed",
+      "proofBytes": 2933,
+      "proofSha256": "0a89c83bbdb5c5d956237a3d7f1f1203608b6607f494b0fc3556b0c8b20d8fa6",
+      "elapsedMs": 315
+    },
+    {
+      "circuit": "castBallot",
+      "constraintCheck": "passed",
+      "proofBytes": 4853,
+      "proofSha256": "c4b03bca8fc81695654eeabbf9e37c95103c39ba73d9099871486915ed193bd5",
+      "elapsedMs": 170150
+    },
+    {
+      "circuit": "closeVoting",
+      "constraintCheck": "passed",
+      "proofBytes": 2933,
+      "proofSha256": "bce1b7ddb832f5669b5d5141125960fdd25914b8899d29200328ea5242bebf5c",
+      "elapsedMs": 279
+    },
+    {
+      "circuit": "submitDecryption",
+      "constraintCheck": "passed",
+      "proofBytes": 3317,
+      "proofSha256": "2d56469a41c621e40c4e512b7d2c0b230e1603a524e70b297ef56415cd0ead43",
+      "elapsedMs": 10125
+    },
+    {
+      "circuit": "submitDecryption",
+      "constraintCheck": "passed",
+      "proofBytes": 3317,
+      "proofSha256": "44cd86af60d8683c4891a2b872b21c865a5067fa949c0a9fc2f644c08594f853",
+      "elapsedMs": 9049
+    },
+    {
+      "circuit": "finalize",
+      "constraintCheck": "passed",
+      "proofBytes": 3317,
+      "proofSha256": "358254e23738b58bf040540e2951610428ec4f2afd4cb86ac4e71fcac1d0c6cc",
+      "elapsedMs": 37723
+    }
+  ],
+  "negativeChecks": [
+    {
+      "case": "wrong registered trustee share",
+      "outcome": "rejected by generated circuit",
+      "proofRequested": false
+    },
+    {
+      "case": "castBallot preimage with enroll key location",
+      "outcome": "rejected by local worker check",
+      "proofRequested": false
+    }
+  ],
+  "witnessSource": "fresh-synthetic-browser-memory",
+  "httpProofProviderConfigured": false,
+  "workerAssetPolicy": "same-origin-public-GET-with-size-and-SHA256",
+  "mainPageConnectCsp": "connect-src 'self'",
+  "walletExecution": "not-attempted",
+  "networkSubmission": "not-attempted",
+  "networkAcceptance": "not-tested",
+  "independentProofVerification": "not-tested",
+  "distinctCircuitsProved": 7,
+  "phase": 3,
+  "acceptedBallots": 1,
+  "finishedAt": "2026-11-06T18:24:47.551Z"
+}

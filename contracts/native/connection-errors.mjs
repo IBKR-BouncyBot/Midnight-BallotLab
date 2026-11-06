@@ -4,9 +4,8 @@ const messages = Object.freeze({
   'connection-permission': 'Wallet access could not be obtained. Unlock Lace, enable Midnight and check its connection request, then try connecting again.',
   'connection-account': 'Lace did not return the required Midnight account information. Open and unlock its Midnight account, select the same test network as this page, then reconnect.',
   'connection-network': 'Lace and this page do not report matching test-network settings. In Lace, select the matching network under Settings → Network → Testnet → Midnight, confirm the change, then reconnect.',
-  'connection-local-prover': 'Lace did not report a supported local prover address. In Settings → Midnight → Custom proof server, use http://localhost:6300, then choose Save configuration → Confirm and save. Reconnect afterward.',
-  'connection-local-prover-unreported': 'Lace did not report its prover address through the wallet API, even if a custom prover is visible in its settings. Save and confirm that configuration, then reconnect. If this continues, this wallet version cannot satisfy the app’s local-prover check.',
-  'connection-proving-provider': 'Lace could not initialize its proving provider. Check its custom local proof-server setting and that the local prover is running, then reconnect.',
+  'connection-wallet-proving-mode': 'Lace reports an HTTP proof-server address. In Lace Settings → Midnight, select Run in this app (WASM), save the configuration and reconnect. The wallet API cannot independently attest the selected mode.',
+  'connection-proving-provider': 'The browser could not initialize its local Midnight prover. Check this site’s worker and public proving-file access, then reconnect.',
   'connection-storage': 'This browser could not initialize the app’s encrypted storage. Allow site storage for this page, close duplicate app tabs and try connecting again.',
   'connection-providers': 'The network providers could not initialize. Check the selected service addresses and that your browser supports WebSockets, then reconnect.',
 });

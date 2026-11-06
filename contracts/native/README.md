@@ -34,8 +34,11 @@ The public snapshot is explicitly marked `native-emulator-public/v2`, with `proo
 | `record.mjs` | Dependency-free public-field projection; no proof or chain verification. |
 | `demo.mjs` | Complete synthetic local election after native compilation. |
 | `sdk-client.mjs` | Provider-injected Midnight.js client source for deployment and circuit calls. |
-| `browser-config.mjs` | Explicit test-network, endpoint, wallet and local-prover configuration checks. |
-| `browser-providers.mjs` | Actual Midnight.js private-state/indexer/ZK/wallet/proving/submission provider assembly. |
+| `browser-config.mjs` | Explicit test-network, endpoint and wallet checks; rejects reported proof-server URIs without treating an omitted URI as mode attestation. |
+| `browser-providers.mjs` | Actual Midnight.js private-state/indexer/ZK/wallet/browser-proof/submission provider assembly. |
+| `browser-wasm-proof.mjs` | Bounded dedicated-worker contract proof jobs, safe progress/errors and termination. |
+| `wasm-prover-worker.mjs` | Official ZKIR WASM checks and proofs; witnesses stay in worker memory. |
+| `wasm-prover-assets.mjs` | Build-pinned manifest and public key/IR/SRS integrity checks; fixed same-origin GETs only. |
 | `prove-local.mjs` | Real standalone circuit proving against loopback proof-server 8.1.3; saves public proof digests/counts/timings only. |
 | `verify-public.mjs` | Fresh-session public JSON import; native point/subgroup checks, manifest/configuration/receipt commitments, aggregates and threshold equations. Reports consistency, not authentication or fairness. |
 
@@ -54,7 +57,7 @@ const client = createNativeSdkClient(providers, {
 });
 ```
 
-All providers must target the same intended network. Browser assembly verifies wallet-reported network/account/prover consistency before sensitive operations and requires local proving. `networkId` binds receipt context; it does not independently authenticate endpoints or chain state. The build packages actual generated keys/circuits under the selected frontend asset origin. A GitHub Pages site alone supplies none of the wallet, indexer, prover or node services. See [NATIVE_NETWORK.md](../../docs/NATIVE_NETWORK.md) for configuration and remaining acceptance checks.
+All providers must target the same intended network. Browser assembly rechecks wallet network/account configuration before sensitive operations. Contract proofs use official ZKIR WASM in the application’s dedicated worker; select Lace’s **Run in this app (WASM)** mode for wallet/DUST proofs. No Docker, Node.js or HTTP proof service is required for this browser flow. The app rejects reported proof-server URIs, but API 4 omits the URI for both on-device and delegated TEE modes, so absence is not attestation. `networkId` binds receipt context; it does not independently authenticate endpoints or chain state. The build packages generated keys/circuits, the worker, actual WASM and pinned public parameters under the frontend origin. Pages supplies static files, not a wallet, node, indexer or proving service. See [NATIVE_NETWORK.md](../../docs/NATIVE_NETWORK.md) for setup and limits. The [fresh browser-worker test](../../docs/NATIVE_NETWORK.md#browser-worker-circuit-proofs) generated eight actual application-circuit proofs. Lace wallet/DUST proving and browser-wallet Preview acceptance remain separate, unverified stages; the dated server-based runs above do not validate them.
 
 The network UI has five separate screens with Back/Next and direct stage navigation. Screen changes retain the existing form elements and private session; they do not call the SDK. Verification can be opened without connecting a wallet. `verifyNativeIndexedObservation` validates the distinct network-export schema using the shared native point, commitment, aggregate and threshold checks, and returns an allowlisted consistency summary rather than authenticated chain evidence. Its optional choice manifest must match the committed digest; absent labels remain unknown.
 
@@ -70,7 +73,7 @@ An indexer error after a confirmed transaction can prevent receipt retrieval eve
 
 `createDemoDealer()` is a centralized demonstration key dealer. It knows the master decryption secret and every trustee share; it defeats the organizational privacy benefit of independent trustees if retained or misused. Production key setup requires a reviewed distributed key-generation ceremony, independent custody and secure delivery of shares. The single-process demo intentionally contains every synthetic role and must never handle real ballots.
 
-The SDK adapter scopes witness inputs to one operation and does not place vote choices, randomness or trustee secrets in the SDK's stored private state. It returns public transaction information only. The actual proving provider still receives private witnesses: use a trusted local prover and secure the client. JavaScript cannot promise secure memory erasure. Never log or publish private contexts, SDK private transaction data or emulator `proofData`.
+The SDK adapter scopes witness inputs to one operation and does not place vote choices, randomness or trustee secrets in the SDK's stored private state. It returns public transaction information only. The browser worker receives application witnesses; its proof path has no HTTP fallback. Lace separately holds wallet witnesses, and its selected proving mode cannot be attested through API 4. Secure the device and use the on-device setting. JavaScript cannot promise secure memory erasure. Never log or publish private contexts, SDK private transaction data or emulator `proofData`. The standalone CLI/devnet proof-server utilities remain separate developer tools.
 
 Native primitives and constrained circuits are only part of election security. Eligibility administration, distributed key setup, trustworthy voting devices, coercion resistance, ballot secrecy against colluding trustees, availability, authenticated public records and independent audits remain outside this prototype's guarantees. A national election needs those additional designs and review.
 

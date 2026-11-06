@@ -1,0 +1,101 @@
+{
+  "schema": "midnight-ballot-lab/lace-wasm-source-review/v1",
+  "reviewedAt": "2026-11-06T17:59:31.467702+00:00",
+  "scope": "Static review of the previously signature-verified official extension archive and public API/release source; no wallet execution or private data access.",
+  "extension": {
+    "id": "gafhhkghbfjjkeiendhlofajokpaflmk",
+    "version": "2.5.0",
+    "archiveSha256": "5e3e993dc126ea09428abb7411b9571f7e1d3200deea20d50d2f94cb52524383"
+  },
+  "files": {
+    "manifest.json": {
+      "bytes": 3718,
+      "sha256": "7d39f7b4dda96c00b508421981bc4a7d56a3c819afbd56a20c7f5d54e9963516"
+    },
+    "offscreen.html": {
+      "bytes": 186,
+      "sha256": "84dac4e81f64b8065d7c9132d9bf2f5eb3138a2db151adaf83300a9533d74a9e"
+    },
+    "js/offscreen.js": {
+      "bytes": 35676,
+      "sha256": "31d70466fa9d33c75445dc79ed831cbe3b2d0482a52157c9c389b48dc0f8124f"
+    },
+    "js/4352.js": {
+      "bytes": 10969,
+      "sha256": "79b4aac8fa95a29a841f9d05ef59de5bc8b140ed32cbe881b2ea964b75c5bd4a"
+    },
+    "js/6895.js": {
+      "bytes": 4009,
+      "sha256": "c62336fd343bdef67207433fd43e50927ab42bae57ca8c8d707d90a1798073c9"
+    },
+    "js/8642.js": {
+      "bytes": 765850,
+      "sha256": "a92025ba814c98da6c9cf6650b32ca3df1e154457b6d0459fa95d934472e854e"
+    },
+    "js/15b85cb1ddd2b17e9e4b.module.wasm": {
+      "bytes": 2115016,
+      "sha256": "5e7f60cc8be6c10a9d3a003f9109157bfd02419ec9c2188d4974ed9ae6bb7a1d"
+    },
+    "js/sw/119.js": {
+      "bytes": 60410,
+      "sha256": "0f5b3cc7f11968b551d97ce4632e7eeb4ef0281833e4d10c3ea69a767e27d193"
+    },
+    "js/sw/2947.js": {
+      "bytes": 112302,
+      "sha256": "af35e7b751b9502c824834ac9b9190ed8f02ac5fb444bb9399afd939bff9df09"
+    },
+    "js/sw/3006.js": {
+      "bytes": 52141,
+      "sha256": "20c61741bbfd4aea12c6c858ba1324f03155c4b430408e6848c8011c5206bf3c"
+    },
+    "js/sw/5372.js": {
+      "bytes": 1615022,
+      "sha256": "62388e4beba208fc5b8c5287aad6109702dd2223c4ec14145d540a9315e9c283"
+    },
+    "js/sw/sw-script.js": {
+      "bytes": 1557582,
+      "sha256": "87abd38983c236ad589a3b90471955199a6eb5c141e3d30fb42a6a30ee7cd1c5"
+    }
+  },
+  "findings": {
+    "normalSetting": {
+      "group": "On this device",
+      "label": "Run in this app (WASM)",
+      "mode": "in-process",
+      "radioTestId": "proof-server-in-process-radio",
+      "saveTestId": "save-configuration-button"
+    },
+    "workerRoute": [
+      "js/sw/sw-script.js configureWasmProver",
+      "offscreen.html",
+      "js/offscreen.js",
+      "js/4352.js dedicated Worker",
+      "js/6895.js createWasmCircuitProvider",
+      "js/8642.js provingProvider",
+      "js/15b85cb1ddd2b17e9e4b.module.wasm"
+    ],
+    "walletAndContractProviderUseConfiguredMode": true,
+    "getConfigurationProverUriOmittedFor": [
+      "in-process",
+      "tee-delegated"
+    ],
+    "apiExposesModeAttestation": false,
+    "apiExposesWalletWitnessesOrCustomWalletProverCallback": false,
+    "builtinMaterialGeneration": 9,
+    "generationIsNotLedgerMajor": true,
+    "ledger812MaterialGeneration": 9,
+    "ledger812DustProverSha256": "996602da7ca386284e656c78ea03e55bffdba29475e6a67965c50de05e13efc2",
+    "staticCompatibilityFailureDemonstrated": false,
+    "walletProofExecutedInThisReview": false,
+    "contractProofExecutedInThisReview": false,
+    "transactionSubmittedInThisReview": false,
+    "fullBrowserOnlyPreviewAcceptanceDemonstratedInThisReview": false
+  },
+  "primaryReferences": [
+    "https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk",
+    "https://github.com/midnightntwrk/midnight-dapp-connector-api/blob/main/docs/api/_media/SPECIFICATION.md",
+    "https://raw.githubusercontent.com/midnightntwrk/midnight-ledger/ledger-8.1.2/static/version",
+    "https://raw.githubusercontent.com/midnightntwrk/midnight-ledger/ledger-8.1.2/ledger/static/dust/spend.prover.sha256",
+    "https://raw.githubusercontent.com/midnightntwrk/midnight-wallet/main/packages/prover-client/src/effect/KeyMaterial.ts"
+  ]
+}

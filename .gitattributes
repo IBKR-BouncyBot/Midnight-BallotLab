@@ -6,3 +6,4 @@
 # Preserve executed test-harness snapshots byte for byte.
 evidence/**/*.mjs.txt -text
 evidence/2026-11-06/network-stages/native-tests.log -text
+evidence/2026-11-06/browser-wasm/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

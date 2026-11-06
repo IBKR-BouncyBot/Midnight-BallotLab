@@ -5,7 +5,7 @@ import { nativeConnectionFailure, nativeConnectionErrorMessage } from '../contra
 
 const marker = 'SYNTHETIC-PRIVATE-ERROR-PAYLOAD';
 const stages = ['connection-settings', 'connection-permission', 'connection-account', 'connection-network',
-  'connection-local-prover', 'connection-local-prover-unreported', 'connection-proving-provider',
+  'connection-wallet-proving-mode', 'connection-proving-provider',
   'connection-storage', 'connection-providers'];
 
 test('only locally branded connection errors yield safe stage-specific diagnostics', () => {
@@ -47,11 +47,11 @@ test('documented API-4 rejection and disconnection codes use fixed text without 
   }
 });
 
-test('omitted deprecated prover field is distinguished from an unsupported reported destination', () => {
-  const missing = nativeConnectionErrorMessage(nativeConnectionFailure('connection-local-prover-unreported'));
-  const unsupported = nativeConnectionErrorMessage(nativeConnectionFailure('connection-local-prover'));
-  assert.ok(missing.includes('did not report its prover address through the wallet API'));
-  assert.ok(missing.includes('even if a custom prover is visible'));
-  assert.ok(unsupported.includes('http://localhost:6300'));
-  assert.notEqual(missing, unsupported);
+test('wallet proving selection and local worker initialization have separate safe diagnostics', () => {
+  const setting = nativeConnectionErrorMessage(nativeConnectionFailure('connection-wallet-proving-mode'));
+  const worker = nativeConnectionErrorMessage(nativeConnectionFailure('connection-proving-provider'));
+  assert.ok(setting.includes('Run in this app (WASM)'));
+  assert.ok(setting.includes('cannot independently attest'));
+  assert.ok(worker.includes('browser could not initialize'));
+  assert.notEqual(setting, worker);
 });

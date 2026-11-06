@@ -85,14 +85,15 @@ export function requireConnectedNetwork(status, configuration, networkId) {
   }
 }
 
-export function requireLocalWalletProver(configuration) {
-  // API 4.0.1 still exposes this optional, deprecated field. Without it we
-  // cannot inspect the destination used by this prototype's wallet prover.
-  const prover = serviceUrl(configuration?.proverServerUri, ['http:', 'https:'], 'Wallet prover URL');
-  if (!LOOPBACK.has(prover.hostname) || prover.search) {
-    throw new Error('This prototype requires the wallet to report a local loopback prover');
+export function requireNoReportedExternalProver(configuration) {
+  // API 4 does not expose an attestable proving-mode flag. In-process Lace
+  // omits this deprecated URI, but delegated modes can omit it as well. This
+  // check rejects an explicit HTTP destination; it does not certify WASM use.
+  const uri = configuration?.proverServerUri;
+  if (uri !== undefined && uri !== null && uri !== '') {
+    throw new Error('Select in-process proving in the wallet before connecting');
   }
-  return prover.href;
+  return 'not-reported';
 }
 
 export function nativeNetworkErrorMessage(error) {
@@ -101,5 +102,5 @@ export function nativeNetworkErrorMessage(error) {
   if (error?.type === 'DAppConnectorAPIError' && error?.code === 'Rejected') {
     return 'The wallet request was rejected. No automatic retry was made.';
   }
-  return 'This action could not finish. Check your wallet, test network and local proving service. If a transaction was sent, check its status before trying again.';
+  return 'This action could not finish. Check your wallet, test network and browser proving status. If a transaction was sent, check its status before trying again.';
 }

@@ -1,0 +1,1241 @@
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// native-wasm:contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.wasm
+var midnight_zkir_wasm_bg_exports2 = {};
+__export(midnight_zkir_wasm_bg_exports2, {
+  __externref_drop_slice: () => nativeExport33,
+  __externref_table_alloc: () => nativeExport27,
+  __externref_table_dealloc: () => nativeExport35,
+  __wbg_intounderlyingbytesource_free: () => nativeExport14,
+  __wbg_intounderlyingsink_free: () => nativeExport15,
+  __wbg_intounderlyingsource_free: () => nativeExport16,
+  __wbg_wrappedprovingprovider_free: () => nativeExport1,
+  __wbg_zkir_free: () => nativeExport2,
+  __wbindgen_exn_store: () => nativeExport29,
+  __wbindgen_export_1: () => nativeExport28,
+  __wbindgen_export_5: () => nativeExport32,
+  __wbindgen_free: () => nativeExport34,
+  __wbindgen_malloc: () => nativeExport30,
+  __wbindgen_realloc: () => nativeExport31,
+  __wbindgen_start: () => nativeExport38,
+  check: () => nativeExport3,
+  closure1109_externref_shim: () => nativeExport36,
+  closure1166_externref_shim: () => nativeExport37,
+  intounderlyingbytesource_autoAllocateChunkSize: () => nativeExport17,
+  intounderlyingbytesource_cancel: () => nativeExport18,
+  intounderlyingbytesource_pull: () => nativeExport19,
+  intounderlyingbytesource_start: () => nativeExport20,
+  intounderlyingbytesource_type: () => nativeExport21,
+  intounderlyingsink_abort: () => nativeExport22,
+  intounderlyingsink_close: () => nativeExport23,
+  intounderlyingsink_write: () => nativeExport24,
+  intounderlyingsource_cancel: () => nativeExport25,
+  intounderlyingsource_pull: () => nativeExport26,
+  jsonIrToBinary: () => nativeExport4,
+  memory: () => nativeExport0,
+  prove: () => nativeExport5,
+  provingProvider: () => nativeExport6,
+  wrappedprovingprovider_check: () => nativeExport7,
+  wrappedprovingprovider_prove: () => nativeExport8,
+  zkir_deserialize: () => nativeExport9,
+  zkir_fromJson: () => nativeExport10,
+  zkir_getK: () => nativeExport11,
+  zkir_new: () => nativeExport12,
+  zkir_serialize: () => nativeExport13
+});
+
+// contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.js
+var midnight_zkir_wasm_bg_exports = {};
+__export(midnight_zkir_wasm_bg_exports, {
+  IntoUnderlyingByteSource: () => IntoUnderlyingByteSource,
+  IntoUnderlyingSink: () => IntoUnderlyingSink,
+  IntoUnderlyingSource: () => IntoUnderlyingSource,
+  WrappedProvingProvider: () => WrappedProvingProvider,
+  Zkir: () => Zkir,
+  __wbg_BigInt_6adbfd8eb0f7ec07: () => __wbg_BigInt_6adbfd8eb0f7ec07,
+  __wbg_Error_e17e777aac105295: () => __wbg_Error_e17e777aac105295,
+  __wbg_buffer_8d40b1d762fb3c66: () => __wbg_buffer_8d40b1d762fb3c66,
+  __wbg_byobRequest_2c036bceca1e6037: () => __wbg_byobRequest_2c036bceca1e6037,
+  __wbg_byteLength_331a6b5545834024: () => __wbg_byteLength_331a6b5545834024,
+  __wbg_byteOffset_49a5b5608000358b: () => __wbg_byteOffset_49a5b5608000358b,
+  __wbg_call_13410aac570ffff7: () => __wbg_call_13410aac570ffff7,
+  __wbg_call_a5400b25a865cfd8: () => __wbg_call_a5400b25a865cfd8,
+  __wbg_close_cccada6053ee3a65: () => __wbg_close_cccada6053ee3a65,
+  __wbg_close_d71a78219dc23e91: () => __wbg_close_d71a78219dc23e91,
+  __wbg_crypto_86f2631e91b51511: () => __wbg_crypto_86f2631e91b51511,
+  __wbg_enqueue_452bc2343d1c2ff9: () => __wbg_enqueue_452bc2343d1c2ff9,
+  __wbg_getRandomValues_b3f15fcbfabb0f8b: () => __wbg_getRandomValues_b3f15fcbfabb0f8b,
+  __wbg_get_458e874b43b18b25: () => __wbg_get_458e874b43b18b25,
+  __wbg_instanceof_Promise_3ec9e849bf41bdb6: () => __wbg_instanceof_Promise_3ec9e849bf41bdb6,
+  __wbg_instanceof_Uint8Array_9a8378d955933db7: () => __wbg_instanceof_Uint8Array_9a8378d955933db7,
+  __wbg_length_6bb7e81f9d7713e4: () => __wbg_length_6bb7e81f9d7713e4,
+  __wbg_msCrypto_d562bbe83e0d4b91: () => __wbg_msCrypto_d562bbe83e0d4b91,
+  __wbg_new_2e3c58a15f39f5f9: () => __wbg_new_2e3c58a15f39f5f9,
+  __wbg_new_da9dc54c5db29dfa: () => __wbg_new_da9dc54c5db29dfa,
+  __wbg_newfromslice_074c56947bd43469: () => __wbg_newfromslice_074c56947bd43469,
+  __wbg_newnoargs_254190557c45b4ec: () => __wbg_newnoargs_254190557c45b4ec,
+  __wbg_newwithbyteoffsetandlength_e8f53910b4d42b45: () => __wbg_newwithbyteoffsetandlength_e8f53910b4d42b45,
+  __wbg_newwithlength_a167dcc7aaa3ba77: () => __wbg_newwithlength_a167dcc7aaa3ba77,
+  __wbg_node_e1f24f89a7336c2e: () => __wbg_node_e1f24f89a7336c2e,
+  __wbg_process_3975fd6c72f520aa: () => __wbg_process_3975fd6c72f520aa,
+  __wbg_prototypesetcall_3d4a26c1ed734349: () => __wbg_prototypesetcall_3d4a26c1ed734349,
+  __wbg_queueMicrotask_25d0739ac89e8c88: () => __wbg_queueMicrotask_25d0739ac89e8c88,
+  __wbg_queueMicrotask_4488407636f5bf24: () => __wbg_queueMicrotask_4488407636f5bf24,
+  __wbg_randomFillSync_f8c153b79f285817: () => __wbg_randomFillSync_f8c153b79f285817,
+  __wbg_require_b74f47fc2d022fd6: () => __wbg_require_b74f47fc2d022fd6,
+  __wbg_resolve_4055c623acdd6a1b: () => __wbg_resolve_4055c623acdd6a1b,
+  __wbg_respond_6c2c4e20ef85138e: () => __wbg_respond_6c2c4e20ef85138e,
+  __wbg_set_1353b2a5e96bc48c: () => __wbg_set_1353b2a5e96bc48c,
+  __wbg_set_wasm: () => __wbg_set_wasm,
+  __wbg_static_accessor_GLOBAL_8921f820c2ce3f12: () => __wbg_static_accessor_GLOBAL_8921f820c2ce3f12,
+  __wbg_static_accessor_GLOBAL_THIS_f0a4409105898184: () => __wbg_static_accessor_GLOBAL_THIS_f0a4409105898184,
+  __wbg_static_accessor_SELF_995b214ae681ff99: () => __wbg_static_accessor_SELF_995b214ae681ff99,
+  __wbg_static_accessor_WINDOW_cde3890479c675ea: () => __wbg_static_accessor_WINDOW_cde3890479c675ea,
+  __wbg_subarray_70fd07feefe14294: () => __wbg_subarray_70fd07feefe14294,
+  __wbg_then_b33a773d723afa3e: () => __wbg_then_b33a773d723afa3e,
+  __wbg_then_e22500defe16819f: () => __wbg_then_e22500defe16819f,
+  __wbg_toString_7268338f40012a03: () => __wbg_toString_7268338f40012a03,
+  __wbg_toString_d8f537919ef401d6: () => __wbg_toString_d8f537919ef401d6,
+  __wbg_versions_4e31226f5e8dc909: () => __wbg_versions_4e31226f5e8dc909,
+  __wbg_view_91cc97d57ab30530: () => __wbg_view_91cc97d57ab30530,
+  __wbg_wbindgencbdrop_eb10308566512b88: () => __wbg_wbindgencbdrop_eb10308566512b88,
+  __wbg_wbindgenisfunction_8cee7dce3725ae74: () => __wbg_wbindgenisfunction_8cee7dce3725ae74,
+  __wbg_wbindgenisnull_f3037694abe4d97a: () => __wbg_wbindgenisnull_f3037694abe4d97a,
+  __wbg_wbindgenisobject_307a53c6bd97fbf8: () => __wbg_wbindgenisobject_307a53c6bd97fbf8,
+  __wbg_wbindgenisstring_d4fa939789f003b0: () => __wbg_wbindgenisstring_d4fa939789f003b0,
+  __wbg_wbindgenisundefined_c4b71d073b92f3c5: () => __wbg_wbindgenisundefined_c4b71d073b92f3c5,
+  __wbg_wbindgenstringget_0f16a6ddddef376f: () => __wbg_wbindgenstringget_0f16a6ddddef376f,
+  __wbg_wbindgenthrow_451ec1a8469d7eb6: () => __wbg_wbindgenthrow_451ec1a8469d7eb6,
+  __wbindgen_cast_2241b6af4c4b2941: () => __wbindgen_cast_2241b6af4c4b2941,
+  __wbindgen_cast_cb9088102bce6b30: () => __wbindgen_cast_cb9088102bce6b30,
+  __wbindgen_cast_d6cd19b81560fd6e: () => __wbindgen_cast_d6cd19b81560fd6e,
+  __wbindgen_cast_dc06f0f5bcf049d6: () => __wbindgen_cast_dc06f0f5bcf049d6,
+  __wbindgen_cast_e481686c74984159: () => __wbindgen_cast_e481686c74984159,
+  __wbindgen_init_externref_table: () => __wbindgen_init_externref_table,
+  check: () => check,
+  jsonIrToBinary: () => jsonIrToBinary,
+  prove: () => prove,
+  provingProvider: () => provingProvider
+});
+var wasm;
+function __wbg_set_wasm(val) {
+  wasm = val;
+}
+var cachedUint8ArrayMemory0 = null;
+function getUint8ArrayMemory0() {
+  if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
+    cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
+  }
+  return cachedUint8ArrayMemory0;
+}
+var cachedTextDecoder = new TextDecoder("utf-8", { ignoreBOM: true, fatal: true });
+cachedTextDecoder.decode();
+var MAX_SAFARI_DECODE_BYTES = 2146435072;
+var numBytesDecoded = 0;
+function decodeText(ptr, len) {
+  numBytesDecoded += len;
+  if (numBytesDecoded >= MAX_SAFARI_DECODE_BYTES) {
+    cachedTextDecoder = new TextDecoder("utf-8", { ignoreBOM: true, fatal: true });
+    cachedTextDecoder.decode();
+    numBytesDecoded = len;
+  }
+  return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
+}
+function getStringFromWasm0(ptr, len) {
+  ptr = ptr >>> 0;
+  return decodeText(ptr, len);
+}
+function isLikeNone(x) {
+  return x === void 0 || x === null;
+}
+function addToExternrefTable0(obj) {
+  const idx = wasm.__externref_table_alloc();
+  wasm.__wbindgen_export_1.set(idx, obj);
+  return idx;
+}
+function handleError(f, args) {
+  try {
+    return f.apply(this, args);
+  } catch (e) {
+    const idx = addToExternrefTable0(e);
+    wasm.__wbindgen_exn_store(idx);
+  }
+}
+function getArrayU8FromWasm0(ptr, len) {
+  ptr = ptr >>> 0;
+  return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+var WASM_VECTOR_LEN = 0;
+var cachedTextEncoder = new TextEncoder();
+if (!("encodeInto" in cachedTextEncoder)) {
+  cachedTextEncoder.encodeInto = function(arg, view) {
+    const buf = cachedTextEncoder.encode(arg);
+    view.set(buf);
+    return {
+      read: arg.length,
+      written: buf.length
+    };
+  };
+}
+function passStringToWasm0(arg, malloc, realloc) {
+  if (realloc === void 0) {
+    const buf = cachedTextEncoder.encode(arg);
+    const ptr2 = malloc(buf.length, 1) >>> 0;
+    getUint8ArrayMemory0().subarray(ptr2, ptr2 + buf.length).set(buf);
+    WASM_VECTOR_LEN = buf.length;
+    return ptr2;
+  }
+  let len = arg.length;
+  let ptr = malloc(len, 1) >>> 0;
+  const mem = getUint8ArrayMemory0();
+  let offset = 0;
+  for (; offset < len; offset++) {
+    const code = arg.charCodeAt(offset);
+    if (code > 127) break;
+    mem[ptr + offset] = code;
+  }
+  if (offset !== len) {
+    if (offset !== 0) {
+      arg = arg.slice(offset);
+    }
+    ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+    const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
+    const ret = cachedTextEncoder.encodeInto(arg, view);
+    offset += ret.written;
+    ptr = realloc(ptr, len, offset, 1) >>> 0;
+  }
+  WASM_VECTOR_LEN = offset;
+  return ptr;
+}
+var cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+  if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || cachedDataViewMemory0.buffer.detached === void 0 && cachedDataViewMemory0.buffer !== wasm.memory.buffer) {
+    cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+  }
+  return cachedDataViewMemory0;
+}
+var CLOSURE_DTORS = typeof FinalizationRegistry === "undefined" ? { register: () => {
+}, unregister: () => {
+} } : new FinalizationRegistry(
+  (state) => {
+    wasm.__wbindgen_export_5.get(state.dtor)(state.a, state.b);
+  }
+);
+function makeMutClosure(arg0, arg1, dtor, f) {
+  const state = { a: arg0, b: arg1, cnt: 1, dtor };
+  const real = (...args) => {
+    state.cnt++;
+    const a = state.a;
+    state.a = 0;
+    try {
+      return f(a, state.b, ...args);
+    } finally {
+      if (--state.cnt === 0) {
+        wasm.__wbindgen_export_5.get(state.dtor)(a, state.b);
+        CLOSURE_DTORS.unregister(state);
+      } else {
+        state.a = a;
+      }
+    }
+  };
+  real.original = state;
+  CLOSURE_DTORS.register(real, state, state);
+  return real;
+}
+function getArrayJsValueFromWasm0(ptr, len) {
+  ptr = ptr >>> 0;
+  const mem = getDataViewMemory0();
+  const result = [];
+  for (let i = ptr; i < ptr + 4 * len; i += 4) {
+    result.push(wasm.__wbindgen_export_1.get(mem.getUint32(i, true)));
+  }
+  wasm.__externref_drop_slice(ptr, len);
+  return result;
+}
+function check(ser_preimage, provider) {
+  const ret = wasm.check(ser_preimage, provider);
+  return ret;
+}
+function takeFromExternrefTable0(idx) {
+  const value = wasm.__wbindgen_export_1.get(idx);
+  wasm.__externref_table_dealloc(idx);
+  return value;
+}
+function jsonIrToBinary(json) {
+  const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+  const len0 = WASM_VECTOR_LEN;
+  const ret = wasm.jsonIrToBinary(ptr0, len0);
+  if (ret[2]) {
+    throw takeFromExternrefTable0(ret[1]);
+  }
+  return takeFromExternrefTable0(ret[0]);
+}
+function provingProvider(km_provider) {
+  const ret = wasm.provingProvider(km_provider);
+  return WrappedProvingProvider.__wrap(ret);
+}
+function prove(ser_preimage, provider, overwrite_binding_input) {
+  const ret = wasm.prove(ser_preimage, provider, isLikeNone(overwrite_binding_input) ? 0 : addToExternrefTable0(overwrite_binding_input));
+  return ret;
+}
+function __wbg_adapter_12(arg0, arg1, arg2) {
+  wasm.closure1109_externref_shim(arg0, arg1, arg2);
+}
+function __wbg_adapter_104(arg0, arg1, arg2, arg3) {
+  wasm.closure1166_externref_shim(arg0, arg1, arg2, arg3);
+}
+var __wbindgen_enum_ReadableStreamType = ["bytes"];
+var IntoUnderlyingByteSourceFinalization = typeof FinalizationRegistry === "undefined" ? { register: () => {
+}, unregister: () => {
+} } : new FinalizationRegistry((ptr) => wasm.__wbg_intounderlyingbytesource_free(ptr >>> 0, 1));
+var IntoUnderlyingByteSource = class {
+  __destroy_into_raw() {
+    const ptr = this.__wbg_ptr;
+    this.__wbg_ptr = 0;
+    IntoUnderlyingByteSourceFinalization.unregister(this);
+    return ptr;
+  }
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_intounderlyingbytesource_free(ptr, 0);
+  }
+  /**
+   * @returns {number}
+   */
+  get autoAllocateChunkSize() {
+    const ret = wasm.intounderlyingbytesource_autoAllocateChunkSize(this.__wbg_ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @param {ReadableByteStreamController} controller
+   * @returns {Promise<any>}
+   */
+  pull(controller) {
+    const ret = wasm.intounderlyingbytesource_pull(this.__wbg_ptr, controller);
+    return ret;
+  }
+  /**
+   * @param {ReadableByteStreamController} controller
+   */
+  start(controller) {
+    wasm.intounderlyingbytesource_start(this.__wbg_ptr, controller);
+  }
+  /**
+   * @returns {ReadableStreamType}
+   */
+  get type() {
+    const ret = wasm.intounderlyingbytesource_type(this.__wbg_ptr);
+    return __wbindgen_enum_ReadableStreamType[ret];
+  }
+  cancel() {
+    const ptr = this.__destroy_into_raw();
+    wasm.intounderlyingbytesource_cancel(ptr);
+  }
+};
+if (Symbol.dispose) IntoUnderlyingByteSource.prototype[Symbol.dispose] = IntoUnderlyingByteSource.prototype.free;
+var IntoUnderlyingSinkFinalization = typeof FinalizationRegistry === "undefined" ? { register: () => {
+}, unregister: () => {
+} } : new FinalizationRegistry((ptr) => wasm.__wbg_intounderlyingsink_free(ptr >>> 0, 1));
+var IntoUnderlyingSink = class {
+  __destroy_into_raw() {
+    const ptr = this.__wbg_ptr;
+    this.__wbg_ptr = 0;
+    IntoUnderlyingSinkFinalization.unregister(this);
+    return ptr;
+  }
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_intounderlyingsink_free(ptr, 0);
+  }
+  /**
+   * @param {any} reason
+   * @returns {Promise<any>}
+   */
+  abort(reason) {
+    const ptr = this.__destroy_into_raw();
+    const ret = wasm.intounderlyingsink_abort(ptr, reason);
+    return ret;
+  }
+  /**
+   * @returns {Promise<any>}
+   */
+  close() {
+    const ptr = this.__destroy_into_raw();
+    const ret = wasm.intounderlyingsink_close(ptr);
+    return ret;
+  }
+  /**
+   * @param {any} chunk
+   * @returns {Promise<any>}
+   */
+  write(chunk) {
+    const ret = wasm.intounderlyingsink_write(this.__wbg_ptr, chunk);
+    return ret;
+  }
+};
+if (Symbol.dispose) IntoUnderlyingSink.prototype[Symbol.dispose] = IntoUnderlyingSink.prototype.free;
+var IntoUnderlyingSourceFinalization = typeof FinalizationRegistry === "undefined" ? { register: () => {
+}, unregister: () => {
+} } : new FinalizationRegistry((ptr) => wasm.__wbg_intounderlyingsource_free(ptr >>> 0, 1));
+var IntoUnderlyingSource = class {
+  __destroy_into_raw() {
+    const ptr = this.__wbg_ptr;
+    this.__wbg_ptr = 0;
+    IntoUnderlyingSourceFinalization.unregister(this);
+    return ptr;
+  }
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_intounderlyingsource_free(ptr, 0);
+  }
+  /**
+   * @param {ReadableStreamDefaultController} controller
+   * @returns {Promise<any>}
+   */
+  pull(controller) {
+    const ret = wasm.intounderlyingsource_pull(this.__wbg_ptr, controller);
+    return ret;
+  }
+  cancel() {
+    const ptr = this.__destroy_into_raw();
+    wasm.intounderlyingsource_cancel(ptr);
+  }
+};
+if (Symbol.dispose) IntoUnderlyingSource.prototype[Symbol.dispose] = IntoUnderlyingSource.prototype.free;
+var WrappedProvingProviderFinalization = typeof FinalizationRegistry === "undefined" ? { register: () => {
+}, unregister: () => {
+} } : new FinalizationRegistry((ptr) => wasm.__wbg_wrappedprovingprovider_free(ptr >>> 0, 1));
+var WrappedProvingProvider = class _WrappedProvingProvider {
+  static __wrap(ptr) {
+    ptr = ptr >>> 0;
+    const obj = Object.create(_WrappedProvingProvider.prototype);
+    obj.__wbg_ptr = ptr;
+    WrappedProvingProviderFinalization.register(obj, obj.__wbg_ptr, obj);
+    return obj;
+  }
+  __destroy_into_raw() {
+    const ptr = this.__wbg_ptr;
+    this.__wbg_ptr = 0;
+    WrappedProvingProviderFinalization.unregister(this);
+    return ptr;
+  }
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_wrappedprovingprovider_free(ptr, 0);
+  }
+  /**
+   * @param {Uint8Array} ser_preimage
+   * @param {string} _key_location
+   * @returns {Promise<any[]>}
+   */
+  check(ser_preimage, _key_location) {
+    const ptr0 = passStringToWasm0(_key_location, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.wrappedprovingprovider_check(this.__wbg_ptr, ser_preimage, ptr0, len0);
+    return ret;
+  }
+  /**
+   * @param {Uint8Array} ser_preimage
+   * @param {string} _key_location
+   * @param {bigint | null} [overwrite_binding_input]
+   * @returns {Promise<Uint8Array>}
+   */
+  prove(ser_preimage, _key_location, overwrite_binding_input) {
+    const ptr0 = passStringToWasm0(_key_location, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.wrappedprovingprovider_prove(this.__wbg_ptr, ser_preimage, ptr0, len0, isLikeNone(overwrite_binding_input) ? 0 : addToExternrefTable0(overwrite_binding_input));
+    return ret;
+  }
+};
+if (Symbol.dispose) WrappedProvingProvider.prototype[Symbol.dispose] = WrappedProvingProvider.prototype.free;
+var ZkirFinalization = typeof FinalizationRegistry === "undefined" ? { register: () => {
+}, unregister: () => {
+} } : new FinalizationRegistry((ptr) => wasm.__wbg_zkir_free(ptr >>> 0, 1));
+var Zkir = class _Zkir {
+  static __wrap(ptr) {
+    ptr = ptr >>> 0;
+    const obj = Object.create(_Zkir.prototype);
+    obj.__wbg_ptr = ptr;
+    ZkirFinalization.register(obj, obj.__wbg_ptr, obj);
+    return obj;
+  }
+  __destroy_into_raw() {
+    const ptr = this.__wbg_ptr;
+    this.__wbg_ptr = 0;
+    ZkirFinalization.unregister(this);
+    return ptr;
+  }
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_zkir_free(ptr, 0);
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {Zkir}
+   */
+  static deserialize(bytes) {
+    const ret = wasm.zkir_deserialize(bytes);
+    if (ret[2]) {
+      throw takeFromExternrefTable0(ret[1]);
+    }
+    return _Zkir.__wrap(ret[0]);
+  }
+  constructor() {
+    const ret = wasm.zkir_new();
+    if (ret[2]) {
+      throw takeFromExternrefTable0(ret[1]);
+    }
+    this.__wbg_ptr = ret[0] >>> 0;
+    ZkirFinalization.register(this, this.__wbg_ptr, this);
+    return this;
+  }
+  /**
+   * @returns {number}
+   */
+  getK() {
+    const ret = wasm.zkir_getK(this.__wbg_ptr);
+    return ret;
+  }
+  /**
+   * @param {string} json
+   * @returns {Zkir}
+   */
+  static fromJson(json) {
+    const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.zkir_fromJson(ptr0, len0);
+    if (ret[2]) {
+      throw takeFromExternrefTable0(ret[1]);
+    }
+    return _Zkir.__wrap(ret[0]);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  serialize() {
+    const ret = wasm.zkir_serialize(this.__wbg_ptr);
+    if (ret[2]) {
+      throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+  }
+};
+if (Symbol.dispose) Zkir.prototype[Symbol.dispose] = Zkir.prototype.free;
+function __wbg_BigInt_6adbfd8eb0f7ec07(arg0) {
+  const ret = BigInt(arg0);
+  return ret;
+}
+function __wbg_Error_e17e777aac105295(arg0, arg1) {
+  const ret = Error(getStringFromWasm0(arg0, arg1));
+  return ret;
+}
+function __wbg_buffer_8d40b1d762fb3c66(arg0) {
+  const ret = arg0.buffer;
+  return ret;
+}
+function __wbg_byobRequest_2c036bceca1e6037(arg0) {
+  const ret = arg0.byobRequest;
+  return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+}
+function __wbg_byteLength_331a6b5545834024(arg0) {
+  const ret = arg0.byteLength;
+  return ret;
+}
+function __wbg_byteOffset_49a5b5608000358b(arg0) {
+  const ret = arg0.byteOffset;
+  return ret;
+}
+function __wbg_call_13410aac570ffff7() {
+  return handleError(function(arg0, arg1) {
+    const ret = arg0.call(arg1);
+    return ret;
+  }, arguments);
+}
+function __wbg_call_a5400b25a865cfd8() {
+  return handleError(function(arg0, arg1, arg2) {
+    const ret = arg0.call(arg1, arg2);
+    return ret;
+  }, arguments);
+}
+function __wbg_close_cccada6053ee3a65() {
+  return handleError(function(arg0) {
+    arg0.close();
+  }, arguments);
+}
+function __wbg_close_d71a78219dc23e91() {
+  return handleError(function(arg0) {
+    arg0.close();
+  }, arguments);
+}
+function __wbg_crypto_86f2631e91b51511(arg0) {
+  const ret = arg0.crypto;
+  return ret;
+}
+function __wbg_enqueue_452bc2343d1c2ff9() {
+  return handleError(function(arg0, arg1) {
+    arg0.enqueue(arg1);
+  }, arguments);
+}
+function __wbg_getRandomValues_b3f15fcbfabb0f8b() {
+  return handleError(function(arg0, arg1) {
+    arg0.getRandomValues(arg1);
+  }, arguments);
+}
+function __wbg_get_458e874b43b18b25() {
+  return handleError(function(arg0, arg1) {
+    const ret = Reflect.get(arg0, arg1);
+    return ret;
+  }, arguments);
+}
+function __wbg_instanceof_Promise_3ec9e849bf41bdb6(arg0) {
+  let result;
+  try {
+    result = arg0 instanceof Promise;
+  } catch (_) {
+    result = false;
+  }
+  const ret = result;
+  return ret;
+}
+function __wbg_instanceof_Uint8Array_9a8378d955933db7(arg0) {
+  let result;
+  try {
+    result = arg0 instanceof Uint8Array;
+  } catch (_) {
+    result = false;
+  }
+  const ret = result;
+  return ret;
+}
+function __wbg_length_6bb7e81f9d7713e4(arg0) {
+  const ret = arg0.length;
+  return ret;
+}
+function __wbg_msCrypto_d562bbe83e0d4b91(arg0) {
+  const ret = arg0.msCrypto;
+  return ret;
+}
+function __wbg_new_2e3c58a15f39f5f9(arg0, arg1) {
+  try {
+    var state0 = { a: arg0, b: arg1 };
+    var cb0 = (arg02, arg12) => {
+      const a = state0.a;
+      state0.a = 0;
+      try {
+        return __wbg_adapter_104(a, state0.b, arg02, arg12);
+      } finally {
+        state0.a = a;
+      }
+    };
+    const ret = new Promise(cb0);
+    return ret;
+  } finally {
+    state0.a = state0.b = 0;
+  }
+}
+function __wbg_new_da9dc54c5db29dfa(arg0, arg1) {
+  const ret = new Error(getStringFromWasm0(arg0, arg1));
+  return ret;
+}
+function __wbg_newfromslice_074c56947bd43469(arg0, arg1) {
+  const ret = new Uint8Array(getArrayU8FromWasm0(arg0, arg1));
+  return ret;
+}
+function __wbg_newnoargs_254190557c45b4ec(arg0, arg1) {
+  const ret = new Function(getStringFromWasm0(arg0, arg1));
+  return ret;
+}
+function __wbg_newwithbyteoffsetandlength_e8f53910b4d42b45(arg0, arg1, arg2) {
+  const ret = new Uint8Array(arg0, arg1 >>> 0, arg2 >>> 0);
+  return ret;
+}
+function __wbg_newwithlength_a167dcc7aaa3ba77(arg0) {
+  const ret = new Uint8Array(arg0 >>> 0);
+  return ret;
+}
+function __wbg_node_e1f24f89a7336c2e(arg0) {
+  const ret = arg0.node;
+  return ret;
+}
+function __wbg_process_3975fd6c72f520aa(arg0) {
+  const ret = arg0.process;
+  return ret;
+}
+function __wbg_prototypesetcall_3d4a26c1ed734349(arg0, arg1, arg2) {
+  Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
+}
+function __wbg_queueMicrotask_25d0739ac89e8c88(arg0) {
+  queueMicrotask(arg0);
+}
+function __wbg_queueMicrotask_4488407636f5bf24(arg0) {
+  const ret = arg0.queueMicrotask;
+  return ret;
+}
+function __wbg_randomFillSync_f8c153b79f285817() {
+  return handleError(function(arg0, arg1) {
+    arg0.randomFillSync(arg1);
+  }, arguments);
+}
+function __wbg_require_b74f47fc2d022fd6() {
+  return handleError(function() {
+    const ret = module.require;
+    return ret;
+  }, arguments);
+}
+function __wbg_resolve_4055c623acdd6a1b(arg0) {
+  const ret = Promise.resolve(arg0);
+  return ret;
+}
+function __wbg_respond_6c2c4e20ef85138e() {
+  return handleError(function(arg0, arg1) {
+    arg0.respond(arg1 >>> 0);
+  }, arguments);
+}
+function __wbg_set_1353b2a5e96bc48c(arg0, arg1, arg2) {
+  arg0.set(getArrayU8FromWasm0(arg1, arg2));
+}
+function __wbg_static_accessor_GLOBAL_8921f820c2ce3f12() {
+  const ret = typeof global === "undefined" ? null : global;
+  return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+}
+function __wbg_static_accessor_GLOBAL_THIS_f0a4409105898184() {
+  const ret = typeof globalThis === "undefined" ? null : globalThis;
+  return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+}
+function __wbg_static_accessor_SELF_995b214ae681ff99() {
+  const ret = typeof self === "undefined" ? null : self;
+  return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+}
+function __wbg_static_accessor_WINDOW_cde3890479c675ea() {
+  const ret = typeof window === "undefined" ? null : window;
+  return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+}
+function __wbg_subarray_70fd07feefe14294(arg0, arg1, arg2) {
+  const ret = arg0.subarray(arg1 >>> 0, arg2 >>> 0);
+  return ret;
+}
+function __wbg_then_b33a773d723afa3e(arg0, arg1, arg2) {
+  const ret = arg0.then(arg1, arg2);
+  return ret;
+}
+function __wbg_then_e22500defe16819f(arg0, arg1) {
+  const ret = arg0.then(arg1);
+  return ret;
+}
+function __wbg_toString_7268338f40012a03() {
+  return handleError(function(arg0, arg1) {
+    const ret = arg0.toString(arg1);
+    return ret;
+  }, arguments);
+}
+function __wbg_toString_d8f537919ef401d6(arg0) {
+  const ret = arg0.toString();
+  return ret;
+}
+function __wbg_versions_4e31226f5e8dc909(arg0) {
+  const ret = arg0.versions;
+  return ret;
+}
+function __wbg_view_91cc97d57ab30530(arg0) {
+  const ret = arg0.view;
+  return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+}
+function __wbg_wbindgencbdrop_eb10308566512b88(arg0) {
+  const obj = arg0.original;
+  if (obj.cnt-- == 1) {
+    obj.a = 0;
+    return true;
+  }
+  const ret = false;
+  return ret;
+}
+function __wbg_wbindgenisfunction_8cee7dce3725ae74(arg0) {
+  const ret = typeof arg0 === "function";
+  return ret;
+}
+function __wbg_wbindgenisnull_f3037694abe4d97a(arg0) {
+  const ret = arg0 === null;
+  return ret;
+}
+function __wbg_wbindgenisobject_307a53c6bd97fbf8(arg0) {
+  const val = arg0;
+  const ret = typeof val === "object" && val !== null;
+  return ret;
+}
+function __wbg_wbindgenisstring_d4fa939789f003b0(arg0) {
+  const ret = typeof arg0 === "string";
+  return ret;
+}
+function __wbg_wbindgenisundefined_c4b71d073b92f3c5(arg0) {
+  const ret = arg0 === void 0;
+  return ret;
+}
+function __wbg_wbindgenstringget_0f16a6ddddef376f(arg0, arg1) {
+  const obj = arg1;
+  const ret = typeof obj === "string" ? obj : void 0;
+  var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+  var len1 = WASM_VECTOR_LEN;
+  getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+  getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+}
+function __wbg_wbindgenthrow_451ec1a8469d7eb6(arg0, arg1) {
+  throw new Error(getStringFromWasm0(arg0, arg1));
+}
+function __wbindgen_cast_2241b6af4c4b2941(arg0, arg1) {
+  const ret = getStringFromWasm0(arg0, arg1);
+  return ret;
+}
+function __wbindgen_cast_cb9088102bce6b30(arg0, arg1) {
+  const ret = getArrayU8FromWasm0(arg0, arg1);
+  return ret;
+}
+function __wbindgen_cast_d6cd19b81560fd6e(arg0) {
+  const ret = arg0;
+  return ret;
+}
+function __wbindgen_cast_dc06f0f5bcf049d6(arg0, arg1) {
+  const ret = makeMutClosure(arg0, arg1, 1108, __wbg_adapter_12);
+  return ret;
+}
+function __wbindgen_cast_e481686c74984159(arg0, arg1) {
+  var v0 = getArrayJsValueFromWasm0(arg0, arg1).slice();
+  wasm.__wbindgen_free(arg0, arg1 * 4, 4);
+  const ret = v0;
+  return ret;
+}
+function __wbindgen_init_externref_table() {
+  const table = wasm.__wbindgen_export_1;
+  const offset = table.grow(4);
+  table.set(0, void 0);
+  table.set(offset + 0, void 0);
+  table.set(offset + 1, null);
+  table.set(offset + 2, true);
+  table.set(offset + 3, false);
+  ;
+}
+
+// native-wasm:contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.wasm
+var nativeResponse = await fetch(new URL("./network-assets/midnight_zkir_wasm_bg-6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b.wasm", import.meta.url), { credentials: "omit", redirect: "error", signal: AbortSignal.timeout(18e4) });
+if (!nativeResponse.ok || !nativeResponse.body) throw new Error("Native WASM asset could not be loaded");
+var nativeLength = nativeResponse.headers.get("content-length");
+if (nativeLength !== null && (!/^[0-9]+$/.test(nativeLength) || Number(nativeLength) > 134217728)) throw new Error("Native WASM asset integrity check failed");
+var nativeBytes = new Uint8Array(1968826);
+var nativeReader = nativeResponse.body.getReader();
+var nativeOffset = 0;
+try {
+  for (; ; ) {
+    const chunk = await nativeReader.read();
+    if (chunk.done) break;
+    if (nativeOffset + chunk.value.byteLength > nativeBytes.length) {
+      await nativeReader.cancel();
+      throw new Error("Native WASM asset integrity check failed");
+    }
+    nativeBytes.set(chunk.value, nativeOffset);
+    nativeOffset += chunk.value.byteLength;
+  }
+} finally {
+  nativeReader.releaseLock();
+}
+if (nativeOffset !== nativeBytes.length) throw new Error("Native WASM asset integrity check failed");
+var nativeDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", nativeBytes));
+if (Array.from(nativeDigest, (value) => value.toString(16).padStart(2, "0")).join("") !== "6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b") throw new Error("Native WASM asset integrity check failed");
+var { instance: nativeInstance } = await WebAssembly.instantiate(nativeBytes, { ["./midnight_zkir_wasm_bg.js"]: midnight_zkir_wasm_bg_exports });
+var nativeExport0 = nativeInstance.exports["memory"];
+var nativeExport1 = nativeInstance.exports["__wbg_wrappedprovingprovider_free"];
+var nativeExport2 = nativeInstance.exports["__wbg_zkir_free"];
+var nativeExport3 = nativeInstance.exports["check"];
+var nativeExport4 = nativeInstance.exports["jsonIrToBinary"];
+var nativeExport5 = nativeInstance.exports["prove"];
+var nativeExport6 = nativeInstance.exports["provingProvider"];
+var nativeExport7 = nativeInstance.exports["wrappedprovingprovider_check"];
+var nativeExport8 = nativeInstance.exports["wrappedprovingprovider_prove"];
+var nativeExport9 = nativeInstance.exports["zkir_deserialize"];
+var nativeExport10 = nativeInstance.exports["zkir_fromJson"];
+var nativeExport11 = nativeInstance.exports["zkir_getK"];
+var nativeExport12 = nativeInstance.exports["zkir_new"];
+var nativeExport13 = nativeInstance.exports["zkir_serialize"];
+var nativeExport14 = nativeInstance.exports["__wbg_intounderlyingbytesource_free"];
+var nativeExport15 = nativeInstance.exports["__wbg_intounderlyingsink_free"];
+var nativeExport16 = nativeInstance.exports["__wbg_intounderlyingsource_free"];
+var nativeExport17 = nativeInstance.exports["intounderlyingbytesource_autoAllocateChunkSize"];
+var nativeExport18 = nativeInstance.exports["intounderlyingbytesource_cancel"];
+var nativeExport19 = nativeInstance.exports["intounderlyingbytesource_pull"];
+var nativeExport20 = nativeInstance.exports["intounderlyingbytesource_start"];
+var nativeExport21 = nativeInstance.exports["intounderlyingbytesource_type"];
+var nativeExport22 = nativeInstance.exports["intounderlyingsink_abort"];
+var nativeExport23 = nativeInstance.exports["intounderlyingsink_close"];
+var nativeExport24 = nativeInstance.exports["intounderlyingsink_write"];
+var nativeExport25 = nativeInstance.exports["intounderlyingsource_cancel"];
+var nativeExport26 = nativeInstance.exports["intounderlyingsource_pull"];
+var nativeExport27 = nativeInstance.exports["__externref_table_alloc"];
+var nativeExport28 = nativeInstance.exports["__wbindgen_export_1"];
+var nativeExport29 = nativeInstance.exports["__wbindgen_exn_store"];
+var nativeExport30 = nativeInstance.exports["__wbindgen_malloc"];
+var nativeExport31 = nativeInstance.exports["__wbindgen_realloc"];
+var nativeExport32 = nativeInstance.exports["__wbindgen_export_5"];
+var nativeExport33 = nativeInstance.exports["__externref_drop_slice"];
+var nativeExport34 = nativeInstance.exports["__wbindgen_free"];
+var nativeExport35 = nativeInstance.exports["__externref_table_dealloc"];
+var nativeExport36 = nativeInstance.exports["closure1109_externref_shim"];
+var nativeExport37 = nativeInstance.exports["closure1166_externref_shim"];
+var nativeExport38 = nativeInstance.exports["__wbindgen_start"];
+
+// contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm.js
+__wbg_set_wasm(midnight_zkir_wasm_bg_exports2);
+nativeExport38();
+
+// src/json.mjs
+var BROWSER_JSON_LIMIT = 8 * 1024 * 1024;
+var DEFAULT_MAX_DEPTH = 64;
+function checkLimit(maxBytes) {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new RangeError("Invalid JSON byte limit");
+}
+function decodeJsonUtf8(bytes, { maxBytes = BROWSER_JSON_LIMIT } = {}) {
+  checkLimit(maxBytes);
+  if (!(bytes instanceof Uint8Array)) throw new TypeError("JSON input must be UTF-8 bytes");
+  if (bytes.byteLength > maxBytes) throw new RangeError("JSON input exceeds the byte limit");
+  try {
+    return new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
+  } catch {
+    throw new SyntaxError("JSON input is not valid UTF-8");
+  }
+}
+function parseStrictJson(source, { maxBytes = BROWSER_JSON_LIMIT, maxDepth = DEFAULT_MAX_DEPTH } = {}) {
+  checkLimit(maxBytes);
+  if (typeof source !== "string") throw new TypeError("JSON input must be text");
+  if (!Number.isInteger(maxDepth) || maxDepth < 1 || maxDepth > 256) throw new RangeError("Invalid JSON nesting limit");
+  if (source.length > maxBytes) throw new RangeError("JSON input exceeds the byte limit");
+  let bytes = 0;
+  for (let offset = 0; offset < source.length; offset++) {
+    const code = source.charCodeAt(offset);
+    if (code < 128) bytes++;
+    else if (code < 2048) bytes += 2;
+    else if (code >= 55296 && code <= 56319 && source.charCodeAt(offset + 1) >= 56320 && source.charCodeAt(offset + 1) <= 57343) {
+      bytes += 4;
+      offset++;
+    } else bytes += 3;
+    if (bytes > maxBytes) throw new RangeError("JSON input exceeds the byte limit");
+  }
+  let position = 0;
+  const fail2 = (message) => {
+    throw new SyntaxError(`${message} at position ${position}`);
+  };
+  const digit = (char) => char >= "0" && char <= "9";
+  const whitespace = () => {
+    while (position < source.length && " 	\r\n".includes(source[position])) position++;
+  };
+  function string(decode = false) {
+    const start = position++;
+    while (position < source.length) {
+      const char = source[position++];
+      if (char === '"') return decode ? JSON.parse(source.slice(start, position)) : void 0;
+      if (char.charCodeAt(0) < 32) fail2("Control character in JSON string");
+      if (char === "\\") {
+        const escape = source[position++];
+        if (escape === "u") {
+          if (!/^[0-9a-fA-F]{4}$/.test(source.slice(position, position + 4))) fail2("Invalid JSON Unicode escape");
+          position += 4;
+        } else if (!['"', "\\", "/", "b", "f", "n", "r", "t"].includes(escape)) {
+          fail2("Invalid JSON string escape");
+        }
+      }
+    }
+    fail2("Unterminated JSON string");
+  }
+  function number() {
+    const start = position;
+    if (source[position] === "-") position++;
+    if (!digit(source[position])) fail2("Invalid JSON number");
+    if (source[position] === "0") position++;
+    else while (digit(source[position])) position++;
+    if ([".", "e", "E"].includes(source[position])) fail2("Fractional or exponent-form JSON numbers are not accepted");
+    const token = source.slice(start, position);
+    if (token === "-0") fail2("Negative zero is not canonical");
+    if (token.length - (token[0] === "-" ? 1 : 0) > 16 || !Number.isSafeInteger(Number(token))) fail2("Unsafe JSON integer");
+  }
+  function value(depth) {
+    whitespace();
+    const char = source[position];
+    if (char === '"') {
+      string();
+      return;
+    }
+    if (char === "-" || digit(char)) {
+      number();
+      return;
+    }
+    for (const literal of ["true", "false", "null"]) {
+      if (source.startsWith(literal, position)) {
+        position += literal.length;
+        return;
+      }
+    }
+    if (char !== "{" && char !== "[") fail2("Expected JSON value");
+    if (depth >= maxDepth) fail2("JSON nesting limit exceeded");
+    const object = char === "{";
+    const end = object ? "}" : "]";
+    const keys = object ? /* @__PURE__ */ new Set() : null;
+    position++;
+    whitespace();
+    if (source[position] === end) {
+      position++;
+      return;
+    }
+    for (; ; ) {
+      if (object) {
+        if (source[position] !== '"') fail2("Expected JSON object field");
+        const key = string(true);
+        if (keys.has(key)) fail2("Duplicate JSON object field");
+        keys.add(key);
+        whitespace();
+        if (source[position++] !== ":") fail2("Expected colon after JSON object field");
+      }
+      value(depth + 1);
+      whitespace();
+      if (source[position] === end) {
+        position++;
+        return;
+      }
+      if (source[position++] !== ",") fail2("Expected comma or end of JSON container");
+      whitespace();
+    }
+  }
+  value(0);
+  whitespace();
+  if (position !== source.length) fail2("Unexpected content after JSON value");
+  return JSON.parse(source);
+}
+
+// contracts/native/wasm-prover-assets.mjs
+var NATIVE_PROVER_CIRCUITS = Object.freeze({
+  configureKeys: 16,
+  enroll: 13,
+  openVoting: 7,
+  castBallot: 17,
+  closeVoting: 7,
+  submitDecryption: 13,
+  finalize: 15
+});
+var NATIVE_PROVER_PARAMETERS = Object.freeze({
+  7: "e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d",
+  13: "d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803",
+  15: "724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de",
+  16: "09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6",
+  17: "4a9ef6c7c0619aab74eede44b13e753e3ba54508a02dd3b7106a949aabb73b74"
+});
+var NATIVE_PROVER_PARAMETER_BYTES = Object.freeze({
+  7: 24964,
+  13: 1573252,
+  15: 6291844,
+  16: 12583300,
+  17: 25166212
+});
+var NATIVE_PROVER_ASSET_SCHEMA = "midnight-ballot-lab/browser-prover-assets/v1";
+var MAX_ASSET_BYTES = 128 * 1024 * 1024;
+var MAX_MANIFEST_BYTES = 64 * 1024;
+var failures = /* @__PURE__ */ new WeakMap();
+function fail(code) {
+  const error = new Error("Browser proving assets are unavailable or invalid");
+  failures.set(error, code);
+  throw error;
+}
+function proverAssetFailureCode(error) {
+  return failures.get(error) ?? null;
+}
+function exact(value, fields) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).length !== fields.length || fields.some((key) => !Object.hasOwn(value, key))) fail("ASSET_INTEGRITY");
+}
+function record(value, path) {
+  exact(value, ["path", "bytes", "sha256"]);
+  if (value.path !== path || !Number.isSafeInteger(value.bytes) || value.bytes < 1 || value.bytes > MAX_ASSET_BYTES || typeof value.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(value.sha256)) fail("ASSET_INTEGRITY");
+  return Object.freeze({ path, bytes: value.bytes, sha256: value.sha256 });
+}
+function validateNativeProverManifest(value) {
+  exact(value, ["schema", "proverVersion", "circuits", "params"]);
+  if (value.schema !== NATIVE_PROVER_ASSET_SCHEMA || value.proverVersion !== "2.1.1" || !Array.isArray(value.circuits) || value.circuits.length !== Object.keys(NATIVE_PROVER_CIRCUITS).length || !Array.isArray(value.params) || value.params.length !== Object.keys(NATIVE_PROVER_PARAMETERS).length) fail("ASSET_INTEGRITY");
+  const circuits = /* @__PURE__ */ new Map();
+  for (const item of value.circuits) {
+    exact(item, ["name", "k", "prover", "verifier", "ir"]);
+    if (!Object.hasOwn(NATIVE_PROVER_CIRCUITS, item.name) || circuits.has(item.name) || item.k !== NATIVE_PROVER_CIRCUITS[item.name]) fail("ASSET_INTEGRITY");
+    circuits.set(item.name, Object.freeze({
+      name: item.name,
+      k: item.k,
+      prover: record(item.prover, `keys/${item.name}.prover`),
+      verifier: record(item.verifier, `keys/${item.name}.verifier`),
+      ir: record(item.ir, `zkir/${item.name}.bzkir`)
+    }));
+  }
+  const params = /* @__PURE__ */ new Map();
+  for (const item of value.params) {
+    exact(item, ["k", "path", "bytes", "sha256"]);
+    if (!Number.isInteger(item.k) || !Object.hasOwn(NATIVE_PROVER_PARAMETERS, item.k) || params.has(item.k) || item.sha256 !== NATIVE_PROVER_PARAMETERS[item.k] || item.bytes !== NATIVE_PROVER_PARAMETER_BYTES[item.k]) fail("ASSET_INTEGRITY");
+    params.set(item.k, record({ path: item.path, bytes: item.bytes, sha256: item.sha256 }, `params/bls_midnight_2p${item.k}`));
+  }
+  return { circuits, params };
+}
+function nativeProverAssetBase(value, workerUrl) {
+  let base, worker;
+  try {
+    base = new URL(value);
+    worker = new URL(workerUrl);
+  } catch {
+    fail("ASSET_INTEGRITY");
+  }
+  if (!["http:", "https:"].includes(base.protocol) || base.origin !== worker.origin || base.username || base.password || base.search || base.hash || base.pathname.endsWith("/")) fail("ASSET_INTEGRITY");
+  return base;
+}
+async function fetchBytes(url, maxBytes, exactBytes) {
+  let response;
+  try {
+    response = await fetch(url, { credentials: "omit", redirect: "error", signal: AbortSignal.timeout(18e4) });
+  } catch {
+    fail("ASSET_UNAVAILABLE");
+  }
+  if (!response.ok || !response.body) fail("ASSET_UNAVAILABLE");
+  const length = response.headers.get("content-length");
+  if (length !== null && (!/^\d+$/.test(length) || Number(length) > maxBytes)) fail("ASSET_INTEGRITY");
+  const chunks = [];
+  let total = 0;
+  const reader = response.body.getReader();
+  try {
+    for (; ; ) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        fail("ASSET_INTEGRITY");
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    if (proverAssetFailureCode(error)) throw error;
+    fail("ASSET_UNAVAILABLE");
+  } finally {
+    reader.releaseLock();
+  }
+  if (total < 1 || exactBytes !== void 0 && total !== exactBytes) fail("ASSET_INTEGRITY");
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return bytes;
+}
+async function loadNativeProvingAssets(compiledAssetsUrl, workerUrl, expectedManifestSha256, onAsset = () => {
+}) {
+  const base = nativeProverAssetBase(compiledAssetsUrl, workerUrl);
+  if (typeof expectedManifestSha256 !== "string" || !/^[0-9a-f]{64}$/.test(expectedManifestSha256)) fail("ASSET_INTEGRITY");
+  let manifest;
+  try {
+    const bytes = await fetchBytes(`${base.href}/prover-manifest.json`, MAX_MANIFEST_BYTES);
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    const hex = Array.from(digest, (value) => value.toString(16).padStart(2, "0")).join("");
+    if (hex !== expectedManifestSha256) fail("ASSET_INTEGRITY");
+    manifest = validateNativeProverManifest(parseStrictJson(decodeJsonUtf8(bytes), { maxBytes: MAX_MANIFEST_BYTES, maxDepth: 8 }));
+  } catch (error) {
+    if (proverAssetFailureCode(error)) throw error;
+    fail("ASSET_INTEGRITY");
+  }
+  const cache = /* @__PURE__ */ new Map();
+  async function asset(description) {
+    if (!cache.has(description.path)) {
+      const pending = (async () => {
+        onAsset();
+        const bytes = await fetchBytes(`${base.href}/${description.path}`, description.bytes, description.bytes);
+        const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+        const hex = Array.from(digest, (value) => value.toString(16).padStart(2, "0")).join("");
+        if (hex !== description.sha256) fail("ASSET_INTEGRITY");
+        return bytes;
+      })();
+      cache.set(description.path, pending);
+      pending.catch(() => cache.delete(description.path));
+    }
+    return cache.get(description.path);
+  }
+  return Object.freeze({
+    async lookupKey(keyLocation) {
+      const circuit = manifest.circuits.get(keyLocation);
+      if (!circuit) fail("INVALID_REQUEST");
+      const [proverKey, verifierKey, ir] = await Promise.all([asset(circuit.prover), asset(circuit.verifier), asset(circuit.ir)]);
+      return { proverKey, verifierKey, ir };
+    },
+    async getParams(k) {
+      const parameter = manifest.params.get(k);
+      if (!parameter) fail("INVALID_REQUEST");
+      return asset(parameter);
+    }
+  });
+}
+
+// contracts/native/wasm-prover-worker.mjs
+var assets;
+var initializing = false;
+var running = false;
+var MAX_PREIMAGE_BYTES = 64 * 1024 * 1024;
+var post = (value) => globalThis.postMessage(value);
+var safeFailure = (id, code) => post({ type: "failure", id, code });
+function exact2(value, fields) {
+  return value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === fields.length && fields.every((field) => Object.hasOwn(value, field));
+}
+globalThis.addEventListener("message", async ({ data }) => {
+  if (data?.type === "initialize") {
+    if (assets || initializing || !exact2(data, ["type", "assetsUrl"])) {
+      safeFailure(0, "INVALID_REQUEST");
+      return;
+    }
+    initializing = true;
+    try {
+      assets = await loadNativeProvingAssets(
+        data.assetsUrl,
+        globalThis.location.href,
+        true ? "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9" : "",
+        () => post({ type: "progress", stage: "browser-prover-assets-loading" })
+      );
+      post({ type: "ready" });
+    } catch (error) {
+      safeFailure(0, proverAssetFailureCode(error) ?? "ASSET_INTEGRITY");
+    } finally {
+      initializing = false;
+    }
+    return;
+  }
+  const valid = exact2(data, ["type", "id", "operation", "keyLocation", "preimage", "bindingInput"]) && data.type === "execute" && Number.isSafeInteger(data.id) && data.id > 0 && ["check", "prove"].includes(data.operation) && Object.hasOwn(NATIVE_PROVER_CIRCUITS, data.keyLocation) && data.preimage instanceof Uint8Array && data.preimage.length > 0 && data.preimage.length <= MAX_PREIMAGE_BYTES && (data.bindingInput === void 0 || typeof data.bindingInput === "bigint");
+  if (!valid || !assets || running) {
+    safeFailure(Number.isSafeInteger(data?.id) ? data.id : 0, "INVALID_REQUEST");
+    return;
+  }
+  running = true;
+  try {
+    post({ type: "progress", stage: data.operation === "check" ? "browser-prover-checking" : "browser-prover-proving" });
+    const provingStage = data.operation === "check" ? "browser-prover-checking" : "browser-prover-proving";
+    const scopedAssets = {
+      lookupKey: async (keyLocation) => {
+        if (keyLocation !== data.keyLocation) throw new Error("Unexpected native circuit");
+        const result = await assets.lookupKey(keyLocation);
+        post({ type: "progress", stage: provingStage });
+        return result;
+      },
+      getParams: async (k) => {
+        if (k !== NATIVE_PROVER_CIRCUITS[data.keyLocation]) throw new Error("Unexpected native parameters");
+        const result = await assets.getParams(k);
+        post({ type: "progress", stage: provingStage });
+        return result;
+      }
+    };
+    const value = data.operation === "check" ? await check(data.preimage, scopedAssets) : await prove(data.preimage, scopedAssets, data.bindingInput);
+    if (value instanceof Uint8Array) globalThis.postMessage({ type: "result", id: data.id, value }, [value.buffer]);
+    else post({ type: "result", id: data.id, value });
+  } catch (error) {
+    safeFailure(data.id, proverAssetFailureCode(error) ?? "PROOF_FAILED");
+  } finally {
+    data.preimage.fill(0);
+    running = false;
+  }
+});
+post({ type: "booted" });

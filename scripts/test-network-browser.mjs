@@ -115,7 +115,20 @@ try {
   assert.equal(manifest.bundle, 'network-bundle.mjs');
   assert.equal(manifest.mode, 'development-network-client');
   assert.equal(manifest.circuitAssets.length, 21);
-  assert.equal(manifest.wasmAssets.length, 2);
+  assert.equal(manifest.wasmAssets.length, 3);
+  const proverWasm = manifest.wasmAssets.filter(path => /midnight_zkir_wasm_bg-/.test(path));
+  const initialWasm = manifest.wasmAssets.filter(path => !proverWasm.includes(path));
+  assert.equal(proverWasm.length, 1); assert.equal(initialWasm.length, 2);
+  assert.equal(manifest.browserProver.version, '2.1.1');
+  assert.equal(manifest.browserProver.execution, 'dedicated-worker');
+  assert.equal(manifest.browserProver.parameters.length, 5);
+  for (const asset of [manifest.browserProver.worker, manifest.browserProver.manifest, ...manifest.browserProver.parameters]) {
+    const bytes = await readFile(join(dist, asset.path));
+    assert.equal(bytes.length, asset.bytes); assert.equal(hash(bytes), asset.sha256);
+  }
+  evidence.browserProverPackaging = { version: '2.1.1', execution: 'dedicated-worker',
+    worker: manifest.browserProver.worker, parameters: manifest.browserProver.parameters,
+    proofGeneration: false, initializedWithoutWallet: false };
   evidence.bundleSha256 = hash(await readFile(join(dist, manifest.bundle)));
   evidence.compiler = manifest.compiler; evidence.runtime = manifest.runtime; evidence.sdk = manifest.sdk;
   evidence.circuitAssets = [];
@@ -312,12 +325,13 @@ try {
       assert.match(await page.locator('#network-environment-note').textContent(), /No service API key is needed/);
       assert.match(await page.locator('#network-service-status').textContent(), /Not checked yet.*does not connect a wallet or submit a transaction/);
       assert.match(await page.locator('.public-network-intro').first().textContent(), /do not need to run your own node or indexer/);
-      assert.match(await page.locator('.public-network-intro').first().textContent(), /local prover processes private data/);
+      assert.match(await page.locator('.public-network-intro').first().textContent(), /No Docker or local proof server is needed/);
+      assert.match(await page.locator('#network-proving-privacy').textContent(), /absent server address is not proof of on-device processing/);
       const laceSetup = page.locator('details.public-network-intro');
       assert.equal(await laceSetup.locator('summary').textContent(), 'How to set up Lace');
       await laceSetup.locator('summary').click();
       const laceSetupText = await laceSetup.textContent();
-      for (const instruction of ['Generate tDUST', 'Review transaction', 'Confirm', 'Receiving test NIGHT alone does not start DUST generation']) {
+      for (const instruction of ['Generate tDUST', 'Review transaction', 'Confirm', 'Receiving test NIGHT alone does not start DUST generation', 'Run in this app (WASM)']) {
         assert.ok(laceSetupText.includes(instruction), 'Lace setup instructions must explain each DUST registration step');
       }
       if (prefix === '/') {
@@ -331,7 +345,7 @@ try {
         await page.setViewportSize({ width: 1365, height: 1000 });
       }
       await laceSetup.locator('summary').click();
-      for (const href of ['https://midnight-tmnight-preview.nethermind.dev/', 'https://docs.midnight.network/guides/run-proof-server',
+      for (const href of ['https://midnight-tmnight-preview.nethermind.dev/',
         './network-guide.html#select-preview-in-lace', './network-guide.html#wallet-compatibility',
         './network-guide.html#external-scheduled-development-operator', './license.html']) {
         const link = page.locator(`a[href="${href}"]`);
@@ -355,7 +369,7 @@ try {
       assert.equal(await page.locator('#network-indexer-ws').inputValue(), 'ws://127.0.0.1:8088/api/v4/graphql/ws');
       assert.equal(await page.locator('#network-service-settings').evaluate(details => details.open), true);
       assert.equal(await page.locator('#network-check-services').isDisabled(), true);
-      assert.match(await page.locator('#network-environment-note').textContent(), /own running node, indexer and prover/);
+      assert.match(await page.locator('#network-environment-note').textContent(), /own node and indexer/);
       for (const id of ['network-indexer', 'network-indexer-ws']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), false);
       await page.locator('#network-indexer').fill('http://localhost:8088/api/v4/graphql');
       await page.locator('#network-indexer-ws').fill('ws://localhost:8088/api/v4/graphql/ws');
@@ -429,8 +443,16 @@ try {
       assert.equal(await page.locator('#network-check-receipt-id').isDisabled(), true);
       assert.equal(await page.locator('#network-receipt-id-result').textContent(), '');
       await page.locator('#network-receipt-id').fill('');
-      for (const asset of manifest.wasmAssets) assert.ok(wasmResponses.has(`${prefix}${asset}`), 'Actual same-origin WASM must load');
+      for (const asset of initialWasm) assert.ok(wasmResponses.has(`${prefix}${asset}`), 'Actual same-origin runtime WASM must load');
+      assert.equal(wasmResponses.size, 2, 'The proof worker must not start before connecting a wallet');
+      assert.ok([...requests].every(url => !url.endsWith('/native-prover-worker.mjs') && !url.includes('/native-contract/params/')),
+        'Opening the page without a wallet must not initialize proving or fetch public SRS');
       for (const asset of manifest.circuitAssets) {
+        const response = await page.request.head(`${origin}${prefix}${asset.path}`);
+        assert.equal(response.status(), 200); assert.notEqual(response.headers()['content-type'], 'text/html');
+      }
+      for (const asset of [manifest.browserProver.worker, manifest.browserProver.manifest, ...manifest.browserProver.parameters,
+        ...proverWasm.map(path => ({ path }))]) {
         const response = await page.request.head(`${origin}${prefix}${asset.path}`);
         assert.equal(response.status(), 200); assert.notEqual(response.headers()['content-type'], 'text/html');
       }
@@ -478,6 +500,7 @@ try {
       assert.equal(consoleErrors, 0, 'Unexpected browser console errors');
       evidence.cases.push({ case: 'actual-sdk-load-and-no-wallet-failure', path: prefix, status: 'passed',
         wasmLoaded: wasmResponses.size, circuitAssetsServed: manifest.circuitAssets.length,
+        browserProverAssetsServed: true, browserProverInitialized: false, walletProvingModeAttested: false,
         ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true,
         previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
         helpLinksChecked: true, laceSetupGuideChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,

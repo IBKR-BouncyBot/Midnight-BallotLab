@@ -1,0 +1,7 @@
+{
+  "schema": "midnight-ballot-lab/browser-proof-check-build/v1",
+  "harnessSha256": "b3e1300a8021d7ec822adbcb40cdedb0b74e9da40e1b5405903d76cc9e0e6ee8",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "assetManifestSha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9",
+  "proofGeneration": "not-tested-by-build"
+}

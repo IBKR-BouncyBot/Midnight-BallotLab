@@ -1,0 +1,91 @@
+{
+  "schema": "midnight-ballot-lab/browser-prover-build-checks/v1",
+  "startedAt": "2026-11-06T18:25:34.473Z",
+  "node": "v24.18.0",
+  "scope": "Node tests and actual official WASM loading only; no browser automation, proof generation or transaction submission",
+  "tests": [
+    {
+      "name": "root-boundaries",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 111,
+      "pass": 111,
+      "fail": 0,
+      "skipped": 0,
+      "milliseconds": 294,
+      "outputSha256": "2bee13c803299768ff53f2a0d296b7d2f66597eb68c3ec6ef86c7f956cbf3a83",
+      "stderrBytes": 0
+    },
+    {
+      "name": "installed-provider-and-wasm-packaging",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "skipped": 0,
+      "milliseconds": 1076,
+      "outputSha256": "f14bb242469649cf6ac8a0f07c18e45de0b019e3b890c2363e90100931860422",
+      "stderrBytes": 0
+    }
+  ],
+  "files": [
+    {
+      "path": "contracts/package.json",
+      "bytes": 1786,
+      "sha256": "5dfe0256facd003e442640c322a09bd9b499d2e5c832836ce0d7cc9eb514e76b"
+    },
+    {
+      "path": "contracts/package-lock.json",
+      "bytes": 79480,
+      "sha256": "5f357027213aa5aa320ceb7dae3a3e026887958bcb8f3a62056daff471f87458"
+    },
+    {
+      "path": "scripts/native-wasm-plugin.mjs",
+      "bytes": 7105,
+      "sha256": "a45c6cb71c2f291daad3591a4dc1cd0e829f5319eeff27fc8cc1d2ee33e5704b"
+    },
+    {
+      "path": "scripts/build-network-browser.mjs",
+      "bytes": 11736,
+      "sha256": "40158c78cb8ff5d01e04b94b1ec8a422f3407020f8f42f9eb051bc2716f86923"
+    },
+    {
+      "path": "scripts/prepare-browser-prover-parameters.mjs",
+      "bytes": 3859,
+      "sha256": "23684803db09736417e941c2fb55da39da9a771ea07d2dbba839d126fc73e3cb"
+    },
+    {
+      "path": "contracts/native/browser-wasm-proof.mjs",
+      "bytes": 8977,
+      "sha256": "6573247afa32b056bd25680d32097291cdee8e5ed7b283c7ecba910a859fee2a"
+    },
+    {
+      "path": "contracts/native/wasm-prover-worker.mjs",
+      "bytes": 3687,
+      "sha256": "5e891a61edcdb6b8310aa90f9e1f3b8814b201c85ab498152ccc9c20e79a7be6"
+    },
+    {
+      "path": "contracts/native/wasm-prover-assets.mjs",
+      "bytes": 7328,
+      "sha256": "3ebab5cfd91e4e9d65cc2f6b8401c568e7b9698109b30342e064bc81a7684746"
+    },
+    {
+      "path": "dist/network-bundle.mjs",
+      "bytes": 2952082,
+      "sha256": "0809cb3cd8195680359b1daecf5ebbc54c071d73d79fca4c2ea614a47739f0bf"
+    },
+    {
+      "path": "dist/native-prover-worker.mjs",
+      "bytes": 48048,
+      "sha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4"
+    },
+    {
+      "path": "dist/native-contract/prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    }
+  ],
+  "finishedAt": "2026-11-06T18:25:35.850Z",
+  "status": "passed"
+}

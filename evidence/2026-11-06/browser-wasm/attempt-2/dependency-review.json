@@ -1,0 +1,39 @@
+{
+  "schema": "midnight-ballot-lab/browser-prover-lock-review/v1",
+  "checkedAt": "2026-11-06T18:24:09.822Z",
+  "lockSha256": "5f357027213aa5aa320ceb7dae3a3e026887958bcb8f3a62056daff471f87458",
+  "lockedPackageEntries": 162,
+  "changes": [
+    {
+      "package": "node_modules/@midnight-ntwrk/midnight-js-dapp-connector-proof-provider",
+      "before": "4.1.1",
+      "after": null
+    },
+    {
+      "package": "node_modules/@midnight-ntwrk/zkir-v2",
+      "before": null,
+      "after": "2.1.1"
+    }
+  ],
+  "directPins": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "4.0.1",
+    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "4.1.1",
+    "@midnight-ntwrk/zkir-v2": "2.1.1",
+    "assert": "2.1.0",
+    "buffer": "6.0.3",
+    "events": "3.3.0",
+    "process": "0.11.10"
+  },
+  "scope": "Actual npm-generated lockfile comparison; not a browser proof or network test"
+}

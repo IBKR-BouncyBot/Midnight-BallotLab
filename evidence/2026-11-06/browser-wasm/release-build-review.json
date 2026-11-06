@@ -1,0 +1,43 @@
+{
+  "schema": "midnight-ballot-lab/browser-prover-final-release/v1",
+  "checkedAt": "2026-11-06T18:29:45.477155+00:00",
+  "status": "passed",
+  "sourceFiles": 753,
+  "runtimeAndFrozenSiteComparisons": [
+    {
+      "path": "dist/native-bundle.mjs",
+      "bytes": 588128,
+      "sha256": "dde3b295e04a4058113bfa55d3b7c49b0104e122c775568f37622dda4f3ca5a9"
+    },
+    {
+      "path": "dist/network-bundle.mjs",
+      "bytes": 2952082,
+      "sha256": "0809cb3cd8195680359b1daecf5ebbc54c071d73d79fca4c2ea614a47739f0bf"
+    },
+    {
+      "path": "dist/native-prover-worker.mjs",
+      "bytes": 48048,
+      "sha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4"
+    },
+    {
+      "path": "dist/native-contract/prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    },
+    {
+      "path": "artifacts/browser-proof-check/proof-check-bundle.mjs",
+      "bytes": 919895,
+      "sha256": "b3e1300a8021d7ec822adbcb40cdedb0b74e9da40e1b5405903d76cc9e0e6ee8"
+    },
+    {
+      "path": "artifacts/browser-proof-check/proof-check.html",
+      "bytes": 1027,
+      "sha256": "470dd582fe97cd1112b7284d9ec22b6668d173b268564188a43e1c0883461f4c"
+    }
+  ],
+  "textFilesInspected": 833,
+  "sanitizedHistoricalPathMatches": 0,
+  "knownGitHubRunnerPaths": 34,
+  "findings": [],
+  "scope": "Built asset/source archive review; no browser, hosted-origin or transaction execution"
+}

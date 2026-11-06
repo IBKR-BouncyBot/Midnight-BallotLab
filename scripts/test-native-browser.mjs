@@ -157,7 +157,9 @@ try {
   const networkManifest = await readJson(join(dist, 'network-build.json'));
   assert.equal(networkManifest.enabled, true, 'The testnet landing destination requires a real network build');
   assert.equal(networkManifest.bundle, 'network-bundle.mjs');
-  assert.equal(networkManifest.wasmAssets.length, 2);
+  assert.equal(networkManifest.wasmAssets.length, 3);
+  const initialNetworkWasm = networkManifest.wasmAssets.filter(path => !/midnight_zkir_wasm_bg-/.test(path));
+  assert.equal(initialNetworkWasm.length, 2, 'Proof WASM is packaged separately and is lazy until wallet connection');
   evidence.networkBundleSha256 = hash(await readFile(join(dist, networkManifest.bundle)));
   evidence.landingHtmlSha256 = hash(await readFile(join(dist, 'index.html')));
   evidence.landingCssSha256 = hash(await readFile(join(dist, 'landing.css')));
@@ -180,7 +182,7 @@ try {
     try {
       for (const destination of [
         { demo: 'browser', file: 'native.html', availability: 'native-availability', assets: manifest.assets },
-        { demo: 'testnet', file: 'network.html', availability: 'network-availability', assets: networkManifest.wasmAssets },
+        { demo: 'testnet', file: 'network.html', availability: 'network-availability', assets: initialNetworkWasm },
       ]) {
         const page = await context.newPage(); page.setDefaultTimeout(120_000);
         const requested = new Set(), loadedWasm = new Set();
@@ -240,6 +242,9 @@ try {
           assert.equal(await page.locator('#network-id').inputValue(), 'preview');
           assert.equal(await page.locator('#network-deploy').isDisabled(), true);
           assert.equal(await page.locator('#network-events').textContent(), '');
+          assert.equal(loadedWasm.size, 2, 'An unconnected landing visit must not load the proof worker WASM');
+          assert.ok([...requested].every(url => !url.endsWith('/native-prover-worker.mjs') && !url.includes('/native-contract/params/')),
+            'Choosing testnet does not start proof computation or download proving parameters');
         }
         for (const request of requested) assert.equal(new URL(request).origin, origin, 'Opening either experience must not contact a public service');
         assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0); assert.equal(sockets, 0);

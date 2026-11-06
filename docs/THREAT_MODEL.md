@@ -9,7 +9,7 @@ Midnight Ballot Lab encrypts ballots with 2–5 active choices using native Jubj
 - Devices and their cryptographically secure random-number generators must remain trustworthy. Scalar bounds and distinctness checks cannot prove that randomness is unpredictable.
 - Voter credentials must be issued to the intended electorate. Membership proves possession of an enrolled secret; it does not establish that credentials correspond to unique eligible humans.
 - The application, generated contract, verifier keys and expected configuration digest must be authentic.
-- The configured prover receives private witnesses and must be trusted. Keep proving local unless the privacy properties of another service have been explicitly addressed.
+- The browser contract prover receives private witnesses in its dedicated worker and has no HTTP fallback. Lace holds separate wallet/DUST witnesses; select **Run in this app (WASM)**. API 4 cannot attest that mode because on-device and delegated TEE modes both omit the prover URI. Rejecting reported server URIs does not prove all wallet processing stayed on-device. Developer CLI/devnet tools that use an HTTP prover remain a separate trust boundary.
 - Trustees must protect their shares. Two colluding trustees can decrypt individual ciphertexts outside the contract's aggregate-only interface.
 
 The demonstration uses a central dealer that knows the complete decryption key. All synthetic roles share one browser tab. Separate trustee custody and independently reviewed distributed key generation are required for meaningful organizational separation.

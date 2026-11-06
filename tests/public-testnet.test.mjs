@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices, formatPreviewServiceError } from '../contracts/native/public-testnet.mjs';
-import { resolveNativeBrowserConfig, requireLocalWalletProver, requireConnectedNetwork } from '../contracts/native/browser-config.mjs';
+import { resolveNativeBrowserConfig, requireNoReportedExternalProver, requireConnectedNetwork } from '../contracts/native/browser-config.mjs';
 
 const rpc = { jsonrpc: '2.0', id: 1, result: 'Midnight Preview' };
 const block = { data: { block: { height: 1234 } } };
@@ -169,7 +169,7 @@ test('custom secure indexers and same-network query auth remain possible without
   assert.equal(result.compiledAssetsUrl, 'https://example.test/project/native-contract');
   assert.doesNotThrow(() => resolveNativeBrowserConfig({ ...previewBrowserConfiguration(), indexerUri: 'https://custom.example.test/graphql',
     indexerWsUri: 'wss://custom.example.test/ws' }, 'https://example.test/'));
-  assert.throws(() => requireLocalWalletProver({ proverServerUri: 'https://remote.example.test' }));
+  assert.throws(() => requireNoReportedExternalProver({ proverServerUri: 'https://remote.example.test' }));
   assert.throws(() => resolveNativeBrowserConfig(previewBrowserConfiguration({ compiledAssetsUrl: 'https://remote.example.test/keys' }), 'https://example.test/'));
 });
 

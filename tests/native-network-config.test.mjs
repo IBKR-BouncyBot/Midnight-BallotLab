@@ -2,7 +2,7 @@
 // generate a proof, connect a real wallet, or submit a transaction.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { findNativeWallets, requireDevelopmentNetwork, requireConnectedNetwork, requireLocalWalletProver, nativeNetworkErrorMessage,
+import { findNativeWallets, requireDevelopmentNetwork, requireConnectedNetwork, requireNoReportedExternalProver, nativeNetworkErrorMessage,
   resolveNativeBrowserConfig } from '../contracts/native/browser-config.mjs';
 
 const config = {
@@ -59,20 +59,20 @@ test('both wallet connection and wallet service configuration must match', () =>
   assert.throws(() => requireConnectedNetwork(connected, { networkId: 'preprod' }, 'preview'));
 });
 
-test('browser CSP limits insecure IPv6 indexers without restricting the wallet prover', () => {
+test('browser CSP limits insecure IPv6 indexers and browser proving rejects HTTP prover destinations', () => {
   for (const overrides of [{ indexerUri: 'http://[::1]:8088/graphql' }, { indexerWsUri: 'ws://[::1]:8088/graphql/ws' }]) {
     assert.throws(() => resolveNativeBrowserConfig({ ...config, ...overrides }, 'http://[::1]:4173/network.html'), /localhost or 127/);
   }
-  assert.equal(requireLocalWalletProver({ proverServerUri: 'http://[::1]:6300' }), 'http://[::1]:6300/');
+  assert.throws(() => requireNoReportedExternalProver({ proverServerUri: 'http://[::1]:6300' }));
   const allowed = resolveNativeBrowserConfig({ ...config, indexerUri: 'http://localhost:8088/graphql',
     indexerWsUri: 'ws://127.0.0.1:8088/graphql/ws' }, 'http://[::1]:4173/network.html');
   assert.equal(allowed.compiledAssetsUrl, 'http://[::1]:4173/native-contract');
 });
 
-test('private witnesses are restricted to a wallet reporting a loopback prover', () => {
-  assert.equal(requireLocalWalletProver({ proverServerUri: 'http://localhost:6300' }), 'http://localhost:6300/');
-  for (const proverServerUri of [undefined, 'https://prover.example', 'http://localhost.evil.example', 'http://localhost:6300?secret=1']) {
-    assert.throws(() => requireLocalWalletProver({ proverServerUri }));
+test('browser-only proving refuses an explicit server destination without treating URI omission as proof', () => {
+  assert.equal(requireNoReportedExternalProver({}), 'not-reported');
+  for (const proverServerUri of ['http://localhost:6300', 'https://prover.example', 'http://localhost.evil.example', 'http://localhost:6300?secret=1']) {
+    assert.throws(() => requireNoReportedExternalProver({ proverServerUri }));
   }
 });
 

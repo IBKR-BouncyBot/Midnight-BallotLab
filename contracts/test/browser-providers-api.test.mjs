@@ -59,7 +59,7 @@ const syntheticPassword = 'Synthetic-Q7#pL9!vR6';
 const syntheticMarker = 'SYNTHETIC-PRIVATE-CONNECTOR-PAYLOAD';
 const incompleteApi = overrides => ({
   getConnectionStatus: async () => ({ status: 'connected', networkId: 'preview' }),
-  getConfiguration: async () => ({ networkId: 'preview', proverServerUri: 'http://localhost:6300' }),
+  getConfiguration: async () => ({ networkId: 'preview' }),
   getShieldedAddresses: async () => ({ shieldedCoinPublicKey: 'synthetic-public-coin', shieldedEncryptionPublicKey: 'synthetic-public-encryption' }),
   getUnshieldedAddress: async () => ({ unshieldedAddress: 'synthetic-public-address' }),
   getProvingProvider: async () => { throw new Error(syntheticMarker); },
@@ -102,12 +102,12 @@ test('failed or incomplete account reads never proceed to network/prover initial
   }
 });
 
-test('network and local-prover guards fail closed with distinct safe connection diagnostics', async () => {
+test('network and external-prover guards fail closed with distinct safe connection diagnostics', async () => {
   const cases = [
     [{ networkId: 'preprod', proverServerUri: 'http://localhost:6300' }, 'connection-network', 'matching test-network settings'],
-    [{ networkId: 'preview' }, 'connection-local-prover-unreported', 'through the wallet API'],
-    [{ networkId: 'preview', proverServerUri: 'https://remote.example.test/' }, 'connection-local-prover', 'supported local prover address'],
-    [{ networkId: 'preview', proverServerUri: 'http://localhost:6300?token=SYNTHETIC' }, 'connection-local-prover', 'supported local prover address'],
+    [{ networkId: 'preview', proverServerUri: 'https://remote.example.test/' }, 'connection-wallet-proving-mode', 'Run in this app (WASM)'],
+    [{ networkId: 'preview', proverServerUri: 'http://localhost:6300' }, 'connection-wallet-proving-mode', 'Run in this app (WASM)'],
+    [{ networkId: 'preview', proverServerUri: 'http://localhost:6300?token=SYNTHETIC' }, 'connection-wallet-proving-mode', 'Run in this app (WASM)'],
   ];
   for (const [configuration, stage, text] of cases) {
     let provingCalls = 0;
@@ -118,10 +118,13 @@ test('network and local-prover guards fail closed with distinct safe connection 
   }
 });
 
-test('installed proof-provider initialization failures are identified before any session exists', async () => {
+test('missing browser worker environment fails before a session exists without invoking wallet proving', async () => {
   const observed = [];
-  await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => incompleteApi() },
-    'connection-proving-provider', 'could not initialize its proving provider', stage => { observed.push(stage); });
+  let walletProvingCalls = 0;
+  await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => incompleteApi({
+    getProvingProvider: async () => { walletProvingCalls++; throw new Error(syntheticMarker); },
+  }) }, 'connection-proving-provider', 'browser could not initialize its local Midnight prover', stage => { observed.push(stage); });
+  assert.equal(walletProvingCalls, 0);
   assert.deepEqual(observed, ['connection-settings', 'connection-permission', 'connection-account', 'connection-network',
-    'connection-local-prover', 'connection-providers', 'connection-proving-provider']);
+    'connection-wallet-proving-mode', 'connection-providers', 'connection-proving-provider']);
 });
