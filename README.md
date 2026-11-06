@@ -4,7 +4,11 @@
 
 **Cast your vote. Keep a receipt. Check the results.**
 
-Explore encrypted voting with Midnight. Create an election, add your choices and keep a receipt for each vote. Reveal the totals with two of three trustees, then check the shared election record—even in a new browser session.
+## About this project
+
+Midnight Ballot Lab makes encrypted voting easier to explore. Create an election, cast a private ballot and keep a receipt. Two of three trustees help reveal the combined totals, and every voter can check the shared results and look up their own encrypted ballot.
+
+Built with real Midnight smart contracts and native cryptography, the lab offers a browser demo and a public Preview testnet experience. It is a hands-on research prototype: its checks help you examine an election record, but do not certify that an election was fair. [See what the checks can—and cannot—establish](docs/PUBLIC_VERIFICATION.md).
 
 ### [Open the app →](https://ibkr-bouncybot.github.io/Midnight-BallotLab/)
 
