@@ -32,6 +32,8 @@ The synthetic voter dropdown and its used-credential state remain private to the
 
 Private choices, ballot randomness, voter credential secrets, trustee secrets, private contexts, proof preimages and witness data must never appear in public exports, receipts, logs or source bundles. JavaScript cannot promise secure memory erasure. Refreshing the local browser session discards its in-memory state; export public records before ending a demonstration.
 
+Changing the testnet screen only changes which existing panel is visible. It preserves private fields and pending-operation state in the same tab; it is not a reset, disconnect or secure erase. Visiting **Vote**, **Reveal results** or **Verify election** does not grant authority, advance a contract phase or establish that an earlier operation succeeded. The action-specific checks remain mandatory.
+
 Scheduled browser mode is a local preview: it uses real clock time and then closes and finalizes with two synthetic shares held in that same session. Tabs can be suspended or closed; this is not an availability guarantee. The isolated development-network operator requires running services and two externally supplied synthetic shares. Automation does not create independent trustee custody.
 
 ## Unsupported claims

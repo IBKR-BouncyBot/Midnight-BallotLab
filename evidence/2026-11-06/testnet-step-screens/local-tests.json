@@ -1,0 +1,95 @@
+{
+  "node": "v24.18.0",
+  "scope": "Actual generated-ledger and offline public-record checks, local boundaries and installed provider APIs; no proofs or network submissions",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "privateDataRetained": false,
+  "groups": [
+    {
+      "name": "boundary",
+      "startedAt": "2026-11-06T13:22:07.164Z",
+      "command": "node --test --test-reporter=tap tests/compact-launcher.test.mjs tests/election-join.test.mjs tests/json.test.mjs tests/native-adapter.test.mjs tests/native-connection-errors.test.mjs tests/native-loader.test.mjs tests/native-network-config.test.mjs tests/network-receipt.test.mjs tests/network-timing.test.mjs tests/network-voting.test.mjs tests/private-key.test.mjs tests/public-testnet.test.mjs tests/qr.test.mjs tests/trustee-key.test.mjs tests/voter-file-label.test.mjs",
+      "expectedTests": 101,
+      "tests": 101,
+      "pass": 101,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "status": "passed",
+      "completedAt": "2026-11-06T13:22:07.369Z",
+      "outputSha256": "b2c5960e1c6572b854c076e716e23ec38a9478ae0562299a70fcfc897659380d"
+    },
+    {
+      "name": "generated-native",
+      "startedAt": "2026-11-06T13:22:07.370Z",
+      "command": "node --test --test-reporter=tap contracts/native/test/indexed-observation.test.mjs contracts/native/test/native-election.test.mjs contracts/native/test/network-timing.test.mjs contracts/native/test/network-voting.test.mjs contracts/native/test/public-verifier.test.mjs contracts/native/test/receipt-id.test.mjs contracts/native/test/trustee-key.test.mjs",
+      "expectedTests": 62,
+      "tests": 62,
+      "pass": 62,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "status": "passed",
+      "completedAt": "2026-11-06T13:22:16.972Z",
+      "outputSha256": "fe829b6ead1d63f27a96940bdcf2a395acf93b52362686949f8832ba89739df2"
+    },
+    {
+      "name": "installed-provider-api",
+      "startedAt": "2026-11-06T13:22:16.972Z",
+      "command": "node --test --test-reporter=tap contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs",
+      "expectedTests": 10,
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "status": "passed",
+      "completedAt": "2026-11-06T13:22:17.781Z",
+      "outputSha256": "7abe5ff3007f5bd56eb8100e204d5e8205226c14e5740dfaf9275f2bd581be49"
+    }
+  ],
+  "sourceHashes": {
+    "src/voter-file-label.mjs": "02f77fa24d678345a8b3c82d0fff482007923f0533f87ec779af04edbd2c1957",
+    "tests/voter-file-label.test.mjs": "3bb48fd112f46f7581e0e634f0bffdfb545b653034e10e3f852255218215808a",
+    "src/network-navigation.mjs": "faf5ddefb676630a75d865cdf73203c4b5f3a25d6194b478ca95d3996576e8da",
+    "src/network-loader.mjs": "aaf6aba500e58b94715e6abce9c1bb9cdb6692f2b6b28f614c3c24b305b22dd9",
+    "src/native-app.mjs": "25c4e56f31f30381a8ff4a51dd00598b80177bb67accf3dcbf92785285be2f3e",
+    "src/network-app.mjs": "ac42b160c3a76e26a6855f04e301ebac77a00099d30ce90fda05021ac5c16b99",
+    "src/native.html": "c5ccddde5ba315c2fcee217efeabe2e8c1eda762b59ab50c1ed23096046b8d0a",
+    "src/network.html": "d4f50e7076cebe6e08b3a624ad99289a337fb088f986c2a2f686bdbb4a171767",
+    "src/network-theme.css": "1c0ee8907b7510422f8eb3ab54ba5b4bfc85ffeddc02725d566e212d51b8b027",
+    "src/private-key.mjs": "e69ceb6a9b1c7854faafb153de8619ceb9ce3d8d5a82f3e02556ea507399191b",
+    "src/json.mjs": "8221f1122211797e3c788e40e1b30d6a9c90cc4bb6f3f738eea1f72ed7783e2f",
+    "src/network-receipt.mjs": "9b9cb2daf1c292d3d97210021a7fef10605b3673a9a81c98b5d3b3929b43612e",
+    "contracts/native/verify-public.mjs": "48c3d6851517591d699a3f74351d97b13843f818ada5ed8905046959507b488e",
+    "contracts/native/record.mjs": "6b48614c74fdfe642d03e6d0ea696390dc45cb950ca42677aeac7ae3b3de69d3",
+    "contracts/native/test/indexed-observation.test.mjs": "3857f7d4c53d8b471f94582addfd0d04239b5fe33550165ccb5790d1b345935e",
+    "contracts/native/test/public-verifier.test.mjs": "81ed8374a639484d5f87a75c3d97bc1fd48a7be07b249f38b518763c79fabd49",
+    "contracts/native/connection-errors.mjs": "3547d4b6efe27ef8ac5f4c25917ca210618e3767e94a68bbf23cf6d33f98a63b",
+    "contracts/native/browser-providers.mjs": "bb6d1baad71a84084e445a30d4896aee88d041aac74665553184bb1e92e2a4af",
+    "contracts/managed/native-election/contract/index.js": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7",
+    "contracts/native-election.compact": "78200f0fdd6c884785395ba5ca6a8b58e2d302b5c24db51462ea83998482fbc3",
+    "contracts/package-lock.json": "69bed5ffc5a3ca803136cc7d2cbab69dfa8a6b0c41a0e759be17f5ca69b40b48",
+    "scripts/build-network-browser.mjs": "f5e57e1464af9dd95efc2ad62d60f9a58ce59b0c39bea6b857cb35ab11c1cc42",
+    "scripts/build.mjs": "1cf01231706905ee636fba77a76e7c845379f6f1bd8a2f23144584123d096008",
+    "scripts/test-native-browser.mjs": "163a74004366153da2c94187fb8abd6266875a6507db01c278ce56cdd07c57d5",
+    "dist/network-bundle.mjs": "4763a17dd7106bfc262b4d713dd8526db6c34fd3bdd4e9ee1a5a42ef14c422df",
+    "dist/native-bundle.mjs": "dde3b295e04a4058113bfa55d3b7c49b0104e122c775568f37622dda4f3ca5a9"
+  },
+  "status": "passed",
+  "sourceUnchangedDuringTests": true,
+  "runtimeBundles": {
+    "dist/native-bundle.mjs": {
+      "bytes": 588128,
+      "sha256": "dde3b295e04a4058113bfa55d3b7c49b0104e122c775568f37622dda4f3ca5a9"
+    },
+    "dist/network-bundle.mjs": {
+      "bytes": 2942503,
+      "sha256": "4763a17dd7106bfc262b4d713dd8526db6c34fd3bdd4e9ee1a5a42ef14c422df"
+    }
+  },
+  "harnessSha256": "d32d134dd718c4e7a40ee0117e3d290c237e00eada49578c812387d195b5d8a4"
+}

@@ -25,7 +25,9 @@ The generated-contract suite covers all supported candidate counts, invalid priv
 
 `native/sdk-client.mjs` and `native/browser-providers.mjs` use actual Midnight.js contract, wallet, prover, indexer and submission APIs. The isolated `devnet/` graph has its own reviewed lockfile and a complete wallet acceptance runner. Its recorded local and hosted runs each confirmed 17 transactions and finalized five ballots with two trustees. See [GitHub execution evidence](../docs/GITHUB_EXECUTION.md) for exact tested commits, transaction IDs and confirmation scope.
 
-An actual browser-wallet transaction remains unvalidated. The main browser experience executes native cryptography locally. Pages serves the frontend; a configured prover and network services are separate.
+The separate Lace 2.5.0 / API 4.0.1 browser-wallet election completed nine accepted transactions on the local development chain; see [its recorded scope](../docs/NATIVE_NETWORK.md#wallet-compatibility). Public Preview connection checks are distinct from accepted application transactions, which remain unverified on Preview and Preprod. The browser demo executes native cryptography locally. Pages serves the frontend; a configured prover and network services are separate.
+
+The network interface presents Connect, Set up election, Vote, Reveal results and Verify election as separate screens. Switching screens preserves the session without running an SDK operation. The verifier accepts downloaded network observations without a wallet and reports supplied-record consistency only. See [the current network guide](../docs/NATIVE_NETWORK.md#run-the-flow).
 
 ## Privacy and trust
 

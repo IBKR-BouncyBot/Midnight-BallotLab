@@ -2,9 +2,9 @@
 
 Every voter can import a public election JSON file in the browser demo's **Verify election**, including in a fresh browser session with no election or private credentials loaded. A QR or JSON receipt can then be compared with that record. This checks the consistency of the supplied public data. It does not authenticate an election or guarantee fairness.
 
-The testnet page has its own **Upload a saved election record** control for downloaded `native-indexed-observation/v1` files. It uses the same native point, configuration, receipt, aggregate and threshold consistency checks, with a separate exact network schema. No wallet is required. The saved result appears separately from the live indexer record and does not change the connected election or enable voting. Its network and address are supplied labels, not authenticated chain evidence; an optional choice manifest is checked against the committed digest. Network receipt lookups still use the joined election's live indexer record. See [the network upload guide](NATIVE_NETWORK.md#upload-a-downloaded-network-record).
+The testnet page has its own **Upload a saved election record** control for downloaded `native-indexed-observation/v1` files. Choose **05 Verify election** directly; no wallet or completion of the earlier screens is required. It uses the same native point, configuration, receipt, aggregate and threshold consistency checks, with a separate exact network schema. The saved result survives switching screens and appears separately from the live indexer record; it does not change the connected election or enable voting. Its network and address are supplied labels, not authenticated chain evidence; an optional choice manifest is checked against the committed digest. Network receipt lookups still use the joined election's live indexer record. See [the network upload guide](NATIVE_NETWORK.md#upload-a-downloaded-network-record).
 
-## For voters
+## For browser-demo voters
 
 1. Keep the receipt produced when you cast a ballot. It contains the election context, ballot index and receipt commitment, without the choice or credential secret.
 2. Obtain the public election record and independently confirm the expected configuration digest. A file supplied by an untrusted party can describe an entirely different, internally consistent election.

@@ -17,8 +17,6 @@ The homepage explains the lab and offers two ways to try it:
 
 Anyone with the browser demo's shared election file can check that its record and totals agree. Each voter can paste a receipt ID to look up their encrypted ballot, or check a saved full receipt. An ID lookup does not prove who cast the ballot. These checks do not establish that the record is authentic or that the election was fair.
 
-**Can two trustees read individual votes? Yes.** Any two trustees who cooperate can decrypt individual ballots outside the app, even before results are revealed. The interface shows combined totals, but the key shares do not prevent this. This demo also creates all three trustee shares in one browser; it does not establish independent custody.
-
 ## Try an election in a few clicks
 
 Open **Browser demo**, then:
@@ -52,7 +50,9 @@ In **Set up election**, the **Save this election for later** card lets you downl
 
 Voter keys and receipts use matching file numbers: `midnight-voter-key-000001.private.txt` and `midnight-voter-000001-receipt.json`. Keep the original key filename when loading it later to restore its number. The number is a local filing label; it is not included in the receipt contents or shared election record.
 
-Five blue shortcuts guide you through the testnet workspace: **Connect**, **Set up election**, **Vote**, **Reveal results** and **Verify election**. **Election activity** shows the contract’s voting schedule, a countdown and the last recorded phase. Countdowns use your device clock; refresh the election record for the latest network status.
+The testnet workspace shows one screen at a time: **Connect**, **Set up election**, **Vote**, **Reveal results** and **Verify election**. Use the five blue buttons or **Back / Next** to move between them. Switching screens keeps your form values, keys, receipts and uploaded result in this tab; it does not connect a wallet or submit anything. You can go straight to **Verify election** without a wallet. Navigation waits while an action is running.
+
+**Election activity** remains available alongside the current screen, with the contract’s voting schedule, a countdown and the last recorded phase. Countdowns use your device clock; refresh the election record for the latest network status.
 
 If voting is unavailable, **Ready to vote?** explains why and links to the next step. Register voters before the opening time, then submit **Open voting** during the voting window—the scheduled time alone does not open voting. Load the registered voter key and choose an option. Use **Refresh voting status** if another participant has opened the election or its record has changed. A used key, unresolved vote attempt or elapsed voting window keeps submission locked.
 
@@ -97,6 +97,8 @@ python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
 ```
 
 Run both browser bundlers after each static build. The build only enables the app when real generated code and assets are present. Use `python` instead of `python3` on Windows if needed.
+
+The [latest screen-navigation checks](evidence/2026-11-06/testnet-step-screens/README.md) cover desktop/mobile use, preserved entries, saved-record uploads and browser history, alongside fresh native-election and provider tests. They do not claim new proof generation or accepted testnet transactions.
 
 | Start here | Explore |
 | --- | --- |

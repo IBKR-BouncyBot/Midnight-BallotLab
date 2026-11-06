@@ -16,19 +16,19 @@
   <main id="main" class="page">
     <section class="hero"><div><p class="eyebrow">MIDNIGHT / PUBLIC PREVIEW</p><h1>Try voting on<br><em>the public testnet.</em></h1><p class="hero-copy">Connect Lace to Midnight Preview, create a test election and submit encrypted votes. The shared network services are already selected. You need test DUST and a local prover; your wallet approves each transaction.</p></div><div class="hero-note"><p>Distinct evidence at every stage</p><small>Local execution, a prover response, submission and indexer confirmation are different events. An indexer observation is not independent chain verification.</small></div></section>
     <div id="network-availability" class="global-status" role="status" aria-live="polite">Loading the network tools…</div>
-    <div id="network-status" class="global-status" role="status" aria-live="polite" hidden></div>
     <noscript><p>Turn on JavaScript to use the network client.</p></noscript>
     <div class="workspace">
       <nav class="steps network-steps" aria-labelledby="network-election-steps-heading">
-        <div class="steps-heading"><h2 id="network-election-steps-heading">Your election, step by step.</h2><p>Choose a stage to continue.</p></div>
-        <a class="step" href="#connect-heading"><span>01</span><div>Connect<small>Get your wallet ready</small></div></a>
-        <a class="step" href="#contract-heading"><span>02</span><div>Set up election<small>Create or join an election</small></div></a>
-        <a class="step" href="#vote-heading"><span>03</span><div>Vote<small>Register and cast a ballot</small></div></a>
-        <a class="step" href="#tally-heading"><span>04</span><div>Reveal results<small>Combine trustee contributions</small></div></a>
-        <a class="step" href="#check-heading"><span>05</span><div>Verify election<small>Check the record and receipts</small></div></a>
+        <div class="steps-heading"><h2 id="network-election-steps-heading">Your election, step by step.</h2><p>One step at a time. Your entries stay here when you switch.</p></div>
+        <button type="button" class="step active" data-network-nav="connect" aria-controls="network-panel-connect" aria-current="step" data-network-control disabled><span>01</span><div>Connect<small>Get your wallet ready</small></div></button>
+        <button type="button" class="step" data-network-nav="setup" aria-controls="network-panel-setup" data-network-control disabled><span>02</span><div>Set up election<small>Create or join an election</small></div></button>
+        <button type="button" class="step" data-network-nav="vote" aria-controls="network-panel-vote" data-network-control disabled><span>03</span><div>Vote<small>Register and cast a ballot</small></div></button>
+        <button type="button" class="step" data-network-nav="tally" aria-controls="network-panel-tally" data-network-control disabled><span>04</span><div>Reveal results<small>Combine trustee contributions</small></div></button>
+        <button type="button" class="step" data-network-nav="check" aria-controls="network-panel-check" data-network-control disabled><span>05</span><div>Verify election<small>Check the record and receipts</small></div></button>
       </nav>
       <div class="work-main">
-      <section class="panel" aria-labelledby="connect-heading">
+      <div id="network-status" class="global-status" role="status" aria-live="polite" hidden></div>
+      <section class="panel" id="network-panel-connect" data-network-panel="connect" aria-labelledby="connect-heading">
         <div class="panel-head"><p class="eyebrow">01 / CONNECT</p><span class="panel-tag">Wallet connection</span></div>
         <h2 id="connect-heading" tabindex="-1">Connect to the public testnet.</h2>
         <div class="public-network-intro"><p>Preview is a shared test network. You do not need to run your own node or indexer.</p><ol><li>Install <a href="https://www.lace.io/" target="_blank" rel="noopener noreferrer">Lace ↗<span class="sr-only"> (opens in a new tab)</span></a>, enable Midnight and choose <strong>Preview</strong>.</li><li>Get free test NIGHT from the <a href="https://midnight-tmnight-preview.nethermind.dev/" target="_blank" rel="noopener noreferrer">Preview faucet ↗<span class="sr-only"> (opens in a new tab)</span></a>, then use <strong>Generate tDUST</strong> in Lace and wait for usable DUST.</li><li>Run Midnight proof server <strong>8.1.3</strong> using the <a href="https://docs.midnight.network/guides/run-proof-server" target="_blank" rel="noopener noreferrer">local prover setup guide ↗<span class="sr-only"> (opens in a new tab)</span></a> and set Lace’s prover address to <code>http://localhost:6300</code>.</li></ol><p class="field-note">Use test tokens only. The local prover processes private data; public network services do not replace it.</p></div>
@@ -57,8 +57,9 @@
           <button class="button primary" type="submit" id="network-connect" data-network-control disabled>Connect selected wallet →</button><button class="button secondary" type="button" id="network-disconnect" data-network-control disabled>Disconnect</button>
           <p id="network-connection-status" class="global-status" role="status" aria-live="polite">Not connected. Connection progress and any errors will appear here.</p>
         </form>
+        <div class="step-actions"><p class="field-note">Continue when you’re ready. You can return to any step.</p><button class="button primary" type="button" data-network-nav="setup" aria-controls="network-panel-setup" data-network-control disabled>Next: Set up election →</button></div>
       </section>
-      <section class="panel" aria-labelledby="contract-heading">
+      <section class="panel" id="network-panel-setup" data-network-panel="setup" hidden aria-labelledby="contract-heading">
         <div class="panel-head"><p class="eyebrow">02 / SET UP ELECTION</p><span class="panel-tag">Test election</span></div><h2 id="contract-heading" tabindex="-1">Set up or join an election.</h2>
         <div class="button-row election-setup-options" role="group" aria-label="Choose how to set up an election"><button class="button primary" type="button" id="network-mode-create" aria-pressed="true" aria-controls="network-create-panel" data-network-control disabled>Create a new election</button><button class="button secondary" type="button" id="network-mode-join" aria-pressed="false" aria-controls="network-join-panel" data-network-control disabled>Join an election</button></div>
         <p id="network-setup-note" class="field-note">Create a new test election with your own choices and voting schedule.</p>
@@ -100,8 +101,9 @@
           <button class="button primary" type="button" id="network-download-election" aria-describedby="network-election-download-note" data-network-control disabled>Download election details</button>
           <p id="network-election-download-note" class="field-note">Create the election and register its trustee keys first. Registration gives the election its fingerprint.</p>
         </section>
+        <div class="step-actions"><button class="button secondary" type="button" data-network-nav="connect" aria-controls="network-panel-connect" data-network-control disabled>← Back: Connect</button><button class="button primary" type="button" data-network-nav="vote" aria-controls="network-panel-vote" data-network-control disabled>Next: Vote →</button></div>
       </section>
-      <section class="panel" aria-labelledby="vote-heading">
+      <section class="panel" id="network-panel-vote" data-network-panel="vote" hidden aria-labelledby="vote-heading">
         <div class="panel-head"><p class="eyebrow">03 / VOTE</p><span class="panel-tag">Encrypted ballot</span></div><h2 id="vote-heading" tabindex="-1">Register a voter, then vote.</h2>
         <div class="voting-readiness" aria-labelledby="network-voting-readiness-heading">
           <h3 id="network-voting-readiness-heading">Ready to vote?</h3>
@@ -129,8 +131,9 @@
         <section id="network-receipt-panel" class="receipt-panel" hidden><h3>Receipt found in the network record</h3><div id="network-receipt-qr" class="receipt-qr"></div><p class="field-note">Receipt ID</p><code id="network-receipt-id-display" class="fingerprint"></code><button class="button secondary" type="button" id="network-copy-receipt-id" data-network-control disabled>Copy receipt ID</button><details><summary>Full QR receipt text</summary><code id="network-receipt-code" class="fingerprint"></code></details><button class="button primary" type="button" id="network-save-receipt" data-network-control disabled>Save public receipt</button><p class="field-note">This receipt identifies your ballot and election. It matches the record returned by your indexer; that alone does not independently verify the blockchain. The QR code does not include a transaction ID.</p>
           <p id="network-receipt-filename" class="field-note"></p><div id="network-next-steps" class="vote-next-steps"><h3>What happens next?</h3><p id="network-next-steps-text"></p><a class="button primary" href="#network-verification-heading">Go to election checks →</a></div>
         </section>
+        <div class="step-actions"><button class="button secondary" type="button" data-network-nav="setup" aria-controls="network-panel-setup" data-network-control disabled>← Back: Set up election</button><button class="button primary" type="button" data-network-nav="tally" aria-controls="network-panel-tally" data-network-control disabled>Next: Reveal results →</button></div>
       </section>
-      <section class="panel" aria-labelledby="tally-heading">
+      <section class="panel" id="network-panel-tally" data-network-panel="tally" hidden aria-labelledby="tally-heading">
         <div class="panel-head"><p class="eyebrow">04 / REVEAL RESULTS</p><span class="panel-tag">2 of 3</span></div><h2 id="tally-heading" tabindex="-1">Reveal the combined results.</h2>
         <p class="field-note">Voting can close only after the time set in the contract. Then two trustees each use their secret share to help reveal the total. Each contribution is checked against all accepted votes.</p>
         <p class="field-note">For automatic closing in a local test, run the <a href="./network-guide.html#external-scheduled-development-operator" target="_blank" rel="noopener noreferrer">timed-election operator<span class="sr-only"> (opens in a new tab)</span></a>. It needs a running node, indexer, prover, test wallet and two trustee shares. This website does not run that background service.</p>
@@ -150,8 +153,9 @@
           <label class="trustee-card selection-card" for="network-pair-23"><input id="network-pair-23" type="radio" name="network-pair" value="2,3" data-network-control disabled><span class="selection-copy"><strong>Trustees 2 + 3</strong><small>Two contributions</small></span></label>
         </div></fieldset>
         <button class="button primary" type="button" id="network-finalize" data-network-control disabled>Reveal and record results →</button>
+        <div class="step-actions"><button class="button secondary" type="button" data-network-nav="vote" aria-controls="network-panel-vote" data-network-control disabled>← Back: Vote</button><button class="button primary" type="button" data-network-nav="check" aria-controls="network-panel-check" data-network-control disabled>Next: Verify election →</button></div>
       </section>
-      <section class="panel" aria-labelledby="check-heading"><div class="panel-head"><p class="eyebrow">05 / VERIFY ELECTION</p><span class="panel-tag">Network record</span></div><h2 id="check-heading" tabindex="-1">Check the public election record.</h2>
+      <section class="panel" id="network-panel-check" data-network-panel="check" hidden aria-labelledby="check-heading"><div class="panel-head"><p class="eyebrow">05 / VERIFY ELECTION</p><span class="panel-tag">Network record</span></div><h2 id="check-heading" tabindex="-1">Check the public election record.</h2>
         <div class="button-row"><button class="button primary" type="button" id="network-read" data-network-control disabled>Refresh election record</button><button class="button primary" type="button" id="network-export" data-network-control disabled>Download election record</button></div>
         <section class="saved-record-check" aria-labelledby="network-upload-heading">
           <h3 id="network-upload-heading">Upload a saved election record</h3>
@@ -162,6 +166,7 @@
         </section>
         <div class="receipt-id-lookup"><h3 id="network-verification-heading">Check your own receipt</h3><label for="network-receipt-id">Paste receipt ID</label><input id="network-receipt-id" type="text" maxlength="256" placeholder="Paste the 64-character ID from your receipt" autocomplete="off" spellcheck="false" aria-describedby="network-receipt-id-help" data-network-control disabled><p id="network-receipt-id-help" class="field-note">Looks up an encrypted ballot in the election you joined. An ID alone does not prove who cast it or independently verify the blockchain. Save the full receipt too: it includes the election details.</p><button class="button primary" type="button" id="network-check-receipt-id" data-network-control disabled>Look up receipt ID</button><p id="network-receipt-id-result" class="inline-status" role="status" aria-live="polite"></p></div><label for="network-receipt-input">Or paste your full receipt or its QR code text</label><textarea id="network-receipt-input" rows="4" maxlength="4096" spellcheck="false" data-network-control disabled></textarea><button class="button primary" type="button" id="network-check-receipt" data-network-control disabled>Check receipt</button>
         <p class="field-note">The download includes encrypted ballots and public trustee contributions, without private choices or keys. It is a copy of your indexer’s record, not a complete proof of the election. Keep the page open until each transaction finishes, and check an uncertain transaction before retrying.</p>
+        <div class="step-actions"><button class="button secondary" type="button" data-network-nav="tally" aria-controls="network-panel-tally" data-network-control disabled>← Back: Reveal results</button><button class="button primary" type="button" data-network-nav="setup" aria-controls="network-panel-setup" data-network-control disabled>Go to Set up election</button></div>
       </section>
     </div><aside class="record-panel" tabindex="0" aria-labelledby="network-activity-heading"><div class="record-title"><span class="status-dot"></span><h2 id="network-activity-heading">Election activity</h2></div><p class="record-intro">Public progress and transaction details.</p>
       <section id="network-election-timing" class="election-timing" aria-labelledby="network-election-timing-heading">

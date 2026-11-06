@@ -64,7 +64,9 @@ With the real generated circuit/key files and a loopback-bound proof server 8.1.
 
 ### Native cryptography in the browser
 
-`src/index.html` introduces the application and links to **Browser demo** (`native.html`) and **Public testnet** (`network.html`). `src/native.html` and `src/native-app.mjs` provide **Set up election**, **Vote / Cast a ballot**, **Reveal results** and **Verify election**. Configure 2–5 choice labels and 1–1,024 synthetic voters, select unused credentials privately, cast encrypted ballots and save QR receipts. Manual mode permits selecting any trustee pair. Scheduled local preview uses a 15–3,600-second real-clock window and automatically closes and reveals with two synthetic shares. All roles still share the browser session. The QR encoder formats receipt bytes; it supplies no encryption.
+`src/index.html` introduces the application and links to **Browser demo** (`native.html`) and **Public testnet** (`network.html`). `src/native.html` and `src/native-app.mjs` provide four screens: **Set up election**, **Vote / Cast a ballot**, **Reveal results** and **Verify election**. Configure 2–5 choice labels and 1–1,024 synthetic voters, select unused credentials privately, cast encrypted ballots and save QR receipts. Manual mode permits selecting any trustee pair. Scheduled local preview uses a 15–3,600-second real-clock window and automatically closes and reveals with two synthetic shares. All roles still share the browser session. The QR encoder formats receipt bytes; it supplies no encryption.
+
+The testnet page uses five screens, adding **Connect** before **Set up election**, **Vote**, **Reveal results** and **Verify election**. Its blue navigation buttons and **Back / Next** controls show one screen while preserving the in-memory session and existing form elements. Navigation does not run a contract operation or refresh network data. **Verify election** stays reachable without a wallet, and the activity panel stays available. See [the network flow](NATIVE_NETWORK.md#run-the-flow) for saved election details, private key files and offline network-record uploads.
 
 After native compilation and emulator tests pass, run these commands from the repository root:
 
@@ -92,7 +94,7 @@ Under **Verify election**, select this tab's election or first upload and check 
 
 An ID match does not prove who cast the ballot, reveal the choice, authenticate the record, establish fairness or demonstrate proof generation or blockchain confirmation. Keep the full JSON or QR receipt too: it includes election and configuration details that an ID alone does not carry. An uploaded record must pass its public consistency checks before it can be selected.
 
-Both demo interfaces explicitly warn that **any two cooperating trustees can decrypt individual ballots outside the app, even before the totals are revealed**. Restricting the app's display and contract tally operation to combined totals does not prevent that cooperation. The browser demo creates all three shares in one session; it does not provide independent trustees or unconditional ballot secrecy.
+**Any two cooperating trustees can decrypt individual ballots outside the app, even before the totals are revealed.** Restricting the app's display and contract tally operation to combined totals does not prevent that cooperation. The browser demo creates all three shares in one session; it does not provide independent trustees or unconditional ballot secrecy.
 
 The [6 November voter-guidance evidence](../evidence/2026-11-06/voter-guidance/README.md) records fresh local receipt-ID and guidance checks: 65 unit tests, 44 native-suite tests, nine native/landing browser cases and eight unconnected network browser cases. These results add no proof-generation or accepted-network-transaction claim.
 

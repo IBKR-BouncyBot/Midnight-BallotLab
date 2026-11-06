@@ -19,6 +19,7 @@ Use only the public owner alias `IBKR-BouncyBot` in notices, documentation and G
 - Missing native prerequisites must remain failures. Never substitute mock cryptography or manually enable a success flag.
 - Separate emulator success, proof generation, network acceptance, independent public verification and GitHub deployment in reports.
 - Keep the Midnight styling and a clear native election experience. Describe user-facing behavior in plain language and keep implementation detail in developer documentation.
+- Keep the network client's five screens separate from its contract phases. Navigation preserves the in-memory session, private fields, receipts and uploaded result, performs no network action and cannot bypass action-specific checks. Verify remains reachable without a wallet; existing heading/control hash links must reveal their owning screen.
 
 ## Contract boundaries to preserve
 

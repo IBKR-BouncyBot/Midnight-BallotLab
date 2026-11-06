@@ -15,6 +15,7 @@ import { describeNetworkVoting } from './network-voting.mjs';
 import { createVoterFileLabels, receiptFilenameForLabel } from './voter-file-label.mjs';
 import { decodeJsonUtf8, BROWSER_JSON_LIMIT } from './json.mjs';
 import { verifyNativeIndexedObservation } from '../contracts/native/verify-public.mjs';
+import { initNetworkNavigation } from './network-navigation.mjs';
 
 const hex = bytes => [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 const bytes = value => {
@@ -749,6 +750,7 @@ export async function initNetworkApplication() {
     status('Receipt ID check finished. See the result beside the receipt ID input.');
   });
   selectEnvironment(); refreshWallets(); refreshControls();
+  initNetworkNavigation({ isBusy: () => busy });
   renderElectionTiming();
   // Paint the last read public state only. No provider call or transaction is
   // triggered by this timer; the user refreshes the election record explicitly.

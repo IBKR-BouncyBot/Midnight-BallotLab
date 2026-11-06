@@ -88,8 +88,12 @@
 .network-page .global-status.working:not(.error) { border-left-color: var(--blue); }
 .network-page .global-status.working::before { border-color: #666; border-top-color: var(--white); }
 
-.network-page .step { text-decoration: none; }
 .network-page .network-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.network-page .step-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+.network-page .step-actions .field-note { flex: 1 1 220px; margin: 0; }
+.network-page .step-actions .button { max-width: 100%; white-space: normal; }
+.network-page .work-main > .global-status { margin: 0 0 18px; }
+.network-page [data-network-panel] [id] { scroll-margin-top: 24px; }
 @media (max-width: 1200px) {
   .network-page .network-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .network-page .network-steps .step:last-child { grid-column: 1 / -1; }

@@ -67,6 +67,17 @@ async function sanitizedImportDiagnostic(page, url) {
   }, url);
 }
 
+async function goNetworkPanel(page, name) {
+  const button = page.locator(`.network-steps [data-network-nav="${name}"]`);
+  await button.click();
+  await page.waitForFunction(stageName => {
+    const panel = document.getElementById(`network-panel-${stageName}`);
+    return panel && !panel.hidden;
+  }, name);
+  assert.equal(await page.locator('[data-network-panel]:visible').count(), 1, 'Exactly one network stage must be displayed');
+  assert.equal(await button.getAttribute('aria-current'), 'step');
+}
+
 async function downloadPrivateKey(page, role, expectedKey, expectedFilename, observeFilename) {
   const pending = page.waitForEvent('download');
   await page.locator(`#network-download-${role}`).click();
@@ -87,6 +98,7 @@ async function downloadPrivateKey(page, role, expectedKey, expectedFilename, obs
 }
 
 async function assertUnconfiguredElectionBackup(page) {
+  await goNetworkPanel(page, 'setup');
   assert.equal(await page.locator('#network-backup-heading').isVisible(), true);
   assert.equal(await page.locator('#network-download-election').isVisible(), true,
     'The public election backup must remain discoverable in either setup mode');
@@ -119,6 +131,140 @@ try {
   browser = await chromium.launch({ headless: true }); evidence.chromium = browser.version();
   server = await startServer();
   const origin = `http://127.0.0.1:${server.address().port}`;
+
+  stage = 'five-network-screens';
+  {
+    const screens = ['connect','setup','vote','tally','check'];
+    const headings = ['connect-heading','contract-heading','vote-heading','tally-heading','check-heading'];
+    const widths = [];
+    for (const width of [1440,1100,390,320]) {
+      const context = await browser.newContext({ viewport: { width, height: 1100 } });
+      try {
+        const page = await context.newPage(); page.setDefaultTimeout(30_000);
+        let pageErrors = 0, consoleErrors = 0, externalRequests = 0;
+        page.on('pageerror', () => { pageErrors++; });
+        page.on('console', message => { if (message.type() === 'error') consoleErrors++; });
+        page.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests++; });
+        await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
+        await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+        assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+        const assertScreen = async name => {
+          await page.waitForFunction(value => !document.getElementById(`network-panel-${value}`).hidden, name);
+          assert.equal(await page.locator('[data-network-panel]:visible').count(), 1);
+          assert.equal(await page.locator(`[data-network-panel="${name}"]`).isVisible(), true);
+          const topButtons = page.locator('.network-steps [data-network-nav]');
+          assert.equal(await topButtons.count(), 5);
+          for (const screen of screens) {
+            const button = page.locator(`.network-steps [data-network-nav="${screen}"]`);
+            assert.equal(await button.getAttribute('aria-controls'), `network-panel-${screen}`);
+            assert.equal((await button.getAttribute('aria-current')) === 'step', screen === name);
+          }
+          assert.ok(await page.evaluate(() => Math.max(document.documentElement.scrollWidth,document.body.scrollWidth) <= document.documentElement.clientWidth + 1));
+        };
+        await assertScreen('connect');
+        stage = `five-network-screens:${width}:bare-url-history`;
+        assert.equal(new URL(page.url()).hash,'');
+        await goNetworkPanel(page,'setup');
+        await page.goBack(); await assertScreen('connect');
+        assert.equal(new URL(page.url()).hash,'', 'Back to the original bare URL must restore Connect');
+        for (const [index, name] of screens.entries()) {
+          stage = `five-network-screens:${width}:${name}`;
+          const button = page.locator(`.network-steps [data-network-nav="${name}"]`);
+          await button.focus(); await button.press(index % 2 ? 'Space' : 'Enter'); await assertScreen(name);
+          assert.equal(await page.locator(`#${headings[index]}`).evaluate(el => document.activeElement === el), true);
+          await goNetworkPanel(page, name); await assertScreen(name);
+          if (name === 'setup') await page.locator('#network-title').fill('Stage navigation — not submitted');
+        }
+        assert.equal(await page.locator('#network-title').inputValue(), 'Stage navigation — not submitted');
+        stage = `five-network-screens:${width}:back-next`;
+        await goNetworkPanel(page, 'connect');
+        for (const name of screens.slice(1)) {
+          await page.locator(`[data-network-panel]:visible [data-network-nav="${name}"]`).click(); await assertScreen(name);
+        }
+        for (const name of screens.slice(0,-1).reverse()) {
+          await page.locator(`[data-network-panel]:visible [data-network-nav="${name}"]`).click(); await assertScreen(name);
+        }
+        stage = `five-network-screens:${width}:private-field-preservation`;
+        await goNetworkPanel(page, 'vote');
+        await page.locator('#network-generate-voter').click();
+        const generatedKey = await page.locator('#network-voter').inputValue();
+        assert.match(generatedKey,/^[0-9a-f]{64}$/);
+        await page.locator('#network-show-voter').click();
+        await goNetworkPanel(page, 'setup'); await goNetworkPanel(page, 'vote');
+        assert.equal(await page.locator('#network-voter').inputValue(), generatedKey);
+        assert.equal(await page.locator('#network-voter').getAttribute('type'), 'password');
+        await page.locator('#network-show-voter').click();
+        await goNetworkPanel(page, 'tally'); await goNetworkPanel(page, 'vote');
+        assert.equal(await page.locator('#network-voter').inputValue(), generatedKey);
+        assert.equal(await page.locator('#network-voter').getAttribute('type'), 'text');
+        await page.locator('#network-voter').fill('');
+        assert.equal(await page.locator('#network-cast').isDisabled(), true);
+        stage = `five-network-screens:${width}:import-preservation-and-links`;
+        await goNetworkPanel(page, 'check');
+        const publicFixture = await readFile(join(root,'evidence/2026-11-03/lace-wallet/attempt-2/public-indexed-observation.json'));
+        await page.locator('#network-import-record').setInputFiles({ name:'saved-public-record.json',mimeType:'application/json',buffer:publicFixture });
+        await page.waitForFunction(() => document.getElementById('network-import-record').value === '');
+        assert.match(await page.locator('#network-record-file-status').textContent(),/^Saved record checked locally\./);
+        const importedSummary = await page.locator('#network-imported-record-summary').textContent();
+        await goNetworkPanel(page,'setup'); await goNetworkPanel(page,'check');
+        assert.equal(await page.locator('#network-imported-record').isVisible(),true);
+        assert.equal(await page.locator('#network-imported-record-summary').textContent(),importedSummary);
+        assert.equal(await page.locator('#network-title').inputValue(),'Stage navigation — not submitted');
+        await goNetworkPanel(page,'connect');
+        await page.locator('.record-panel a[href="#check-heading"]').click(); await assertScreen('check');
+        assert.equal(await page.locator('#check-heading').evaluate(el => document.activeElement === el),true);
+        await goNetworkPanel(page,'vote'); await page.locator('#network-voting-next').click(); await assertScreen('connect');
+        stage = `five-network-screens:${width}:deep-link-and-history`;
+        await page.goto(`${origin}/network.html?entry-check#check-heading`,{waitUntil:'networkidle'});
+        await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+        await assertScreen('check');
+        stage = `five-network-screens:${width}:history-back-forward`;
+        await goNetworkPanel(page,'setup'); await goNetworkPanel(page,'vote');
+        await page.goBack(); await assertScreen('setup');
+        await page.goForward(); await assertScreen('vote');
+        stage = `five-network-screens:${width}:nested-input-deep-link`;
+        await page.goto(`${origin}/network.html?entry-check#network-receipt-input`);
+        await assertScreen('check');
+        assert.equal(await page.locator('#network-receipt-input').evaluate(el => document.activeElement === el),true);
+        stage = `five-network-screens:${width}:disabled-target-deep-link`;
+        await page.goto(`${origin}/network.html?entry-check#network-cast`);
+        await assertScreen('vote');
+        await page.waitForFunction(() => {
+          const heading = document.getElementById('vote-heading'), box = heading.getBoundingClientRect();
+          return document.activeElement === heading && box.top >= -1 && box.bottom <= innerHeight + 1;
+        }, null, { timeout: 5000 });
+        assert.equal(await page.locator('#network-cast').isDisabled(),true);
+        assert.equal(await page.locator('#vote-heading').evaluate(el => document.activeElement === el),true);
+        assert.ok(await page.locator('#vote-heading').evaluate(el => { const box=el.getBoundingClientRect(); return box.top>=-1 && box.bottom<=innerHeight+1; }));
+        stage = `five-network-screens:${width}:hidden-receipt-deep-link`;
+        await page.goto(`${origin}/network.html?entry-check#network-receipt-panel`);
+        await assertScreen('vote');
+        assert.equal(await page.locator('#network-receipt-panel').isVisible(),false, 'Deep links must not expose an unearned receipt state');
+        stage = `five-network-screens:${width}:unknown-fragment`;
+        await page.goto(`${origin}/network.html?entry-check#unknown-stage`);
+        assert.equal(await page.locator('[data-network-panel]:visible').count(),1);
+        await goNetworkPanel(page,'connect'); await assertScreen('connect');
+        for (const id of ['network-password','network-admin','network-voter','network-setup-secret','network-setup-slope','network-share']) {
+          assert.equal(await page.locator(`#${id}`).inputValue(),'');
+        }
+        for (const id of ['network-deploy','network-join','network-cast','network-finalize','network-download-election']) assert.equal(await page.locator(`#${id}`).isDisabled(),true);
+        assert.equal(await page.locator('#network-events').textContent(),'');
+        if ([1440,390].includes(width)) {
+          await goNetworkPanel(page,width===1440?'setup':'vote');
+          await page.locator('.network-steps').evaluate(el => el.scrollIntoView({block:'start'}));
+          await page.screenshot({path:join(evidenceDirectory,`network-screens-${width}.png`),fullPage:false});
+        }
+        assert.equal(pageErrors,0); assert.equal(consoleErrors,0); assert.equal(externalRequests,0);
+        widths.push({width,passed:true,oneVisiblePanel:true,selectedAria:true,keyboardAndPointer:true,backNext:true,
+          publicInputsPreserved:true,privateInputAndMaskPreserved:true,privateValuesRetained:false,
+          importedRecordPreserved:true,sidebarAndReadinessLinksRevealPanel:true,initialDeepLink:true,
+          bareUrlHistoryRestoresConnect:true,browserBackForward:true,nestedTargetDeepLink:true,
+          disabledTargetFocusesVisibleHeading:true,hiddenReceiptRemainsHidden:true,invalidHashRecoverable:true,
+          walletGatesPreserved:true,pageErrors,consoleErrors,externalRequests});
+      } finally { await context.close(); }
+    }
+    evidence.cases.push({case:'five-network-screens',status:'passed',widths});
+  }
 
   for (const prefix of ['/', '/project-prefix/']) {
     stage = `${prefix}:load-real-sdk`;
@@ -241,6 +387,7 @@ try {
       assert.equal(await page.locator('#network-events').textContent(), '');
       assert.ok([...requests].every(url => new URL(url).origin === origin), 'Changing presets must not contact services or wallets');
       for (const [fieldset, name] of [['network-selection', 'network-choice'], ['network-trustee', 'network-trustee'], ['network-pair', 'network-pair']]) {
+        await goNetworkPanel(page, fieldset === 'network-selection' ? 'vote' : 'tally');
         assert.equal(await page.locator(`#${fieldset}`).evaluate(element => element.tagName), 'FIELDSET');
         assert.equal(await page.locator(`#${fieldset} label.selection-card`).count(), name === 'network-choice' ? 5 : 3);
         assert.equal(await page.locator(`#${fieldset} label.selection-card:visible`).count(), 3);
@@ -255,6 +402,7 @@ try {
       stage = `${prefix}:unjoined-voting-readiness-and-backup`;
       await assertUnconfiguredElectionBackup(page);
       stage = `${prefix}:unjoined-voting-readiness-message`;
+      await goNetworkPanel(page, 'vote');
       const readiness = page.locator('#network-voting-readiness');
       assert.equal(await readiness.isVisible(), true);
       assert.match(await readiness.textContent(), /Connect your wallet first.*create or join the election/);
@@ -273,6 +421,7 @@ try {
       assert.equal(await page.locator('#network-receipt-id-display').textContent(), '');
       assert.equal(await page.locator('#network-receipt-id-result').textContent(), '');
       assert.equal(await page.locator('#network-receipt-id').getAttribute('aria-describedby'), 'network-receipt-id-help');
+      await goNetworkPanel(page, 'check');
       assert.match(await page.locator('#network-receipt-id-help').textContent(), /ID alone does not prove who cast it or independently verify the blockchain/);
       // An inert public ID can be pasted without granting a client or causing
       // any lookup. Do not inject a wallet, state, or successful receipt here.
@@ -293,13 +442,16 @@ try {
         assert.equal(width.viewport, viewport);
         assert.ok(width.content <= width.viewport + 1, 'Network UI must fit the mobile viewport');
         if (prefix === '/' && viewport === 390) {
+          await goNetworkPanel(page, 'setup');
           await page.locator('.election-backup').screenshot({ path: join(evidenceDirectory, 'election-backup-unconfigured-390.png') });
+          await goNetworkPanel(page, 'vote');
           await page.locator('.voting-readiness').screenshot({ path: join(evidenceDirectory, 'voting-readiness-no-wallet-390.png') });
         }
       }
       await page.setViewportSize({ width: 1365, height: 1000 });
 
       stage = `${prefix}:no-wallet-failure`;
+      await goNetworkPanel(page, 'connect');
       // Synthetic storage-password fixture, never a wallet seed or real account.
       await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
       await page.locator('#network-connect').click();
@@ -349,6 +501,7 @@ try {
       await page.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
       await page.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
+      await goNetworkPanel(page, 'setup');
       const create = page.locator('#network-mode-create'), joinButton = page.locator('#network-mode-join');
       assert.equal(await create.getAttribute('aria-pressed'), 'true');
       assert.equal(await joinButton.getAttribute('aria-pressed'), 'false');
@@ -429,14 +582,18 @@ try {
       }
       // Changing the selected network is an actual form interaction. A file
       // for Preview must not silently change it back or replace current fields.
+      await goNetworkPanel(page, 'connect');
       await page.locator('#network-id').selectOption('undeployed');
+      await goNetworkPanel(page, 'setup');
       await detailsInput.setInputFiles({ name: 'preview-election.json', mimeType: 'application/json', buffer: validBytes });
       await page.waitForFunction(() => document.getElementById('network-import-election').value === '');
       assert.equal(await page.locator('#network-id').inputValue(), 'undeployed');
       assert.match(await detailsStatus.textContent(), /^Could not load election details\./);
       assert.equal(await page.locator('#network-address').inputValue(), canonicalAddress);
       assert.equal(await page.locator('#network-digest').inputValue(), canonicalDigest);
+      await goNetworkPanel(page, 'connect');
       await page.locator('#network-id').selectOption('preview');
+      await goNetworkPanel(page, 'setup');
       await detailsInput.setInputFiles({ name: 'public-election.json', mimeType: 'application/json', buffer: validBytes });
       await page.waitForFunction(() => document.getElementById('network-import-election').value === '');
       assert.match(await detailsStatus.textContent(), /^Election details loaded\./);
@@ -495,6 +652,7 @@ try {
       const summary = page.locator('#network-imported-record-summary'), feedback = page.locator('#network-record-file-status');
       assert.equal(await upload.isDisabled(), false, 'Saved public record checks must not need a wallet');
       assert.equal(await result.isVisible(), false);
+      await goNetworkPanel(page, 'setup');
       await page.locator('#network-mode-join').click();
       await page.locator('#network-address').fill('a'.repeat(64));
       await page.locator('#network-digest').fill('b'.repeat(64));
@@ -509,6 +667,7 @@ try {
         assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
       };
       const importValid = async () => {
+        await goNetworkPanel(page, 'check');
         await upload.setInputFiles({ name: 'saved-election-record.JSON', mimeType: 'application/json', buffer: fixtureBytes });
         await page.waitForFunction(() => document.getElementById('network-import-record').value === '');
         assert.match(await feedback.textContent(), /^Saved record checked locally\./);
@@ -594,6 +753,7 @@ try {
       let savedVoterText;
       for (const role of ['admin', 'voter']) {
         stage = `private-key-${role}:generate-and-reveal`;
+        await goNetworkPanel(page, role === 'admin' ? 'setup' : 'vote');
         const input = page.locator(`#network-${role}`), toggle = page.locator(`#network-show-${role}`);
         const fileInput = page.locator(`#network-import-${role}`), keyStatus = page.locator(`#network-${role}-key-status`);
         assert.equal(await input.getAttribute('type'), 'password');
@@ -714,6 +874,7 @@ try {
         restoredPage.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests++; });
         await restoredPage.goto(`${origin}/network.html`, { waitUntil: 'networkidle' });
         await restoredPage.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+        await goNetworkPanel(restoredPage, 'vote');
         assert.equal(await restoredPage.evaluate(() => localStorage.length + sessionStorage.length), 0);
         await restoredPage.locator('#network-import-voter').setInputFiles({ name: 'midnight-voter-key-000001.private.txt',
           mimeType: 'text/plain', buffer: Buffer.from(savedVoterText, 'utf8') });
@@ -737,6 +898,7 @@ try {
       } finally { savedVoterText = undefined; await restoredContext.close(); }
 
       stage = 'real-dealer-generation';
+      await goNetworkPanel(page, 'setup');
       const dealerButton = page.locator('#network-generate-dealer');
       assert.equal(await dealerButton.isVisible(), true); assert.equal(await dealerButton.isDisabled(), false);
       assert.equal(await dealerButton.evaluate(element => element.classList.contains('primary')), true);
@@ -774,6 +936,7 @@ try {
         assert.equal(await page.locator(`#${id}`).inputValue(), '');
       }
       assert.equal(await page.locator('#network-admin').evaluate(input => input.readOnly), true);
+      await goNetworkPanel(page, 'vote');
       await page.locator('#network-generate-voter').click();
       const afterReloadKey = await page.locator('#network-voter').inputValue();
       await downloadPrivateKey(page, 'voter', afterReloadKey, 'midnight-voter-key-000003.private.txt');
@@ -815,6 +978,7 @@ try {
       for (const viewport of [1365, 390, 320]) {
         await page.setViewportSize({ width: viewport, height: 1000 });
         for (const heading of ['contract-heading', 'vote-heading']) {
+          await goNetworkPanel(page, heading === 'contract-heading' ? 'setup' : 'vote');
           const panel = page.locator(`section[aria-labelledby="${heading}"]`);
           const height = await panel.evaluate(element => element.getBoundingClientRect().height);
           await page.setViewportSize({ width: viewport, height: Math.ceil(height) + 40 });
@@ -847,8 +1011,9 @@ try {
   for (const failedService of ['node', 'indexer']) {
     stage = `preview-${failedService}-transport-failure`;
     const context = await browser.newContext();
-    let releaseSibling;
+    let releaseSibling, releaseTarget;
     const siblingReleased = new Promise(resolveSibling => { releaseSibling = resolveSibling; });
+    const targetReleased = new Promise(resolveTarget => { releaseTarget = resolveTarget; });
     const routeTasks = [];
     try {
       const page = await context.newPage(); page.setDefaultTimeout(30_000);
@@ -871,6 +1036,7 @@ try {
             assert.equal(route.request().method(), 'POST');
           }
           if (endpoint !== targetedEndpoint && [previewNode, previewIndexer].includes(endpoint)) await siblingReleased;
+          if (endpoint === targetedEndpoint) await targetReleased;
           await route.abort('failed');
         })();
         routeTasks.push(task); return task;
@@ -880,6 +1046,10 @@ try {
       assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
       assert.equal(blockedRequests, 0, 'Public service checks must require an explicit click');
       await page.locator('#network-check-services').click();
+      assert.equal(await page.locator('#network-check-services').isDisabled(), true);
+      for (const navigation of await page.locator('[data-network-nav]').all()) assert.equal(await navigation.isDisabled(), true,
+        'Navigation must wait for the current operation instead of hiding its progress');
+      releaseTarget();
       await page.waitForFunction(() => !document.getElementById('network-check-services').disabled);
       const expected = `Your browser could not reach the public Preview ${failedService}. Check your connection and browser or network restrictions; the service may also be temporarily unavailable. This check did not connect a wallet or submit a transaction.`;
       stage = `preview-${failedService}-transport-failure:service-message`;
@@ -891,6 +1061,7 @@ try {
       for (const id of ['network-check-services', 'network-connect', 'network-id', 'network-refresh-wallets']) {
         assert.equal(await page.locator(`#${id}`).isDisabled(), false, 'Connection and retry controls must be restored');
       }
+      for (const navigation of await page.locator('[data-network-nav]').all()) assert.equal(await navigation.isDisabled(), false);
       for (const id of ['network-deploy', 'network-join', 'network-cast', 'network-finalize']) {
         assert.equal(await page.locator(`#${id}`).isDisabled(), true);
       }
@@ -907,9 +1078,10 @@ try {
       assert.equal(pageErrors, 0); assert.equal(unexpectedConsoleErrors, 0);
       evidence.cases.push({ case: `preview-${failedService}-transport-failure`, status: 'passed',
         failureInjection: 'request-abort-only', fabricatedSuccessResponses: 0, externalRequestsAllowed: 0,
-        safeServiceMessage: true, controlsRestored: true, walletConnected: false, pageErrors, unexpectedConsoleErrors });
+        safeServiceMessage: true, controlsRestored: true, navigationLockedWhileBusyAndRestored: true,
+        walletConnected: false, pageErrors, unexpectedConsoleErrors });
     } finally {
-      releaseSibling(); await Promise.allSettled(routeTasks); await context.close();
+      releaseTarget(); releaseSibling(); await Promise.allSettled(routeTasks); await context.close();
     }
   }
 
