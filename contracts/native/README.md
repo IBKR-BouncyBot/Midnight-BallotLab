@@ -1,6 +1,6 @@
 # Native Midnight implementation
 
-See [current verification status](../../docs/VERIFICATION_STATUS.md) for completed runs, the live Preview browser-wallet attempt, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
+See [current verification status](../../docs/VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
 This directory uses the generated bindings for [`../native-election.compact`](../native-election.compact). The contract performs ballot encryption and threshold decryption with Midnight's native Jubjub operations, and derives identities, nullifiers and receipts with Compact's typed hashes. It has 2–5 active choices, five fixed ciphertext lanes, up to 1,024 voters and two-of-three trustees.
 

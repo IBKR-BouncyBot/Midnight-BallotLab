@@ -17,6 +17,8 @@ function report() {
     runnerSha256: 'd'.repeat(64), networkBundleSha256: 'e'.repeat(64), workerSha256: 'f'.repeat(64),
     diagnosticBuildSha256: '1'.repeat(64), proverObserverSha256: '2'.repeat(64),
     walletConnected: true, walletOnDeviceWasmSelectedThroughUi: true,
+    fundlessWalletAvailability: { matchingWalletCount: 1, expectedApi: true },
+    fundlessFixtureState: { status: 'passed', stage: 'complete' },
     contractProof: { circuit: 'openVoting', constraintCheck: 'passed', bytes: 42, sha256: 'b'.repeat(64), elapsedMs: 1000 },
     walletProverObservation: {
       observed: true, status: 'observed', failureCategory: null, targetCounts: { offscreen: 1, worker: 1 },
@@ -36,7 +38,10 @@ test('fundless publication keeps a failure distinct from completed proof/resourc
     } };
   validateDiagnosticReport(failed, expected, false);
   assert.throws(() => validateDiagnosticReport(failed, expected, true));
-  const partial = { ...failed }; delete partial.contractProof;
+  const partial = { ...failed,
+    fundlessFixtureState: { status: 'failed', stage: 'connecting', failureCategory: 'wallet-connection-failed' },
+    fundlessWalletAvailability: { matchingWalletCount: 0, expectedApi: false } };
+  delete partial.contractProof;
   validateDiagnosticReport(partial, expected, false);
   assert.throws(() => validateDiagnosticReport(partial, expected, true));
 });
@@ -49,6 +54,10 @@ test('fundless boundary rejects funding/submission, wrong identity, private fiel
     { walletProverObservation: { ...report().walletProverObservation, sha256: 'c'.repeat(64) } },
     { walletProverObservation: { ...report().walletProverObservation, bytes: 1 } },
     { walletProverObservation: { ...report().walletProverObservation, completeNetworkCoverage: true } },
+    { fundlessWalletAvailability: { matchingWalletCount: 1, expectedApi: true, text: 'unreviewed' } },
+    { fundlessWalletAvailability: { matchingWalletCount: 0, expectedApi: false } },
+    { fundlessFixtureState: { status: 'passed', stage: 'unreviewed' } },
+    { fundlessFixtureState: { status: 'passed', stage: 'complete', failureCategory: 'unreviewed' } },
     { contractProof: { ...report().contractProof, bytes: 0 } },
     { contractProof: { ...report().contractProof, circuit: 'configureKeys' } },
     { contractProof: { ...report().contractProof, preimage: 'never-publish' } },

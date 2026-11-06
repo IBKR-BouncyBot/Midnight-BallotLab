@@ -10,7 +10,7 @@ This is the current summary of what has been executed and what remains unverifie
 
 The [evidence notes](../evidence/2026-11-06/lace-preview/attempt-9/README.md) separate sponsor funding, DUST registration, application proofs and indexed acceptance. The application ran at a local origin on the CI host while connecting to **public Preview**; the hosted GitHub Pages origin was not tested. This result establishes the recorded application election, not complete browser-only wallet-proof verification.
 
-A [separate fundless diagnostic](CI_LACE_PREVIEW.md#separate-fundless-wallet-prover-diagnostic) is prepared to investigate the missing resource observation through a genuine Lace contract-proof request. It has not yet run and will not register DUST or submit another election.
+The [first separate fundless diagnostic](../evidence/2026-11-06/lace-preview/fundless-diagnostic-1/README.md) timed out during application connection before reaching its proof fixture. It requested no funding, DUST proof, signing or submission and observed no wallet proving resource. That failure neither establishes a successful proof nor diagnoses the prover. A narrower direct-fixture connection is being prepared; it is not yet execution evidence.
 
 ## Completed evidence
 

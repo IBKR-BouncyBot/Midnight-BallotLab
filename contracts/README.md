@@ -1,6 +1,6 @@
 # Native Midnight election contract
 
-See [current verification status](../docs/VERIFICATION_STATUS.md) for completed runtime, proof and network runs, the live Preview browser-wallet attempt and remaining limits.
+See [current verification status](../docs/VERIFICATION_STATUS.md) for completed runtime, proof and network runs, the latest Preview browser-wallet result and remaining limits.
 
 `native-election.compact` implements an encrypted election with 2–5 active choices and Midnight's native Jubjub operations. It checks key setup, voter membership, nullifier uniqueness, five-lane ciphertexts, receipt binding, aggregation and two-of-three trustee finalization. The sealed candidate count is bound into the configuration; inactive totals must be zero.
 

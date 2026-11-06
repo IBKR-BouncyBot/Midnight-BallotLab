@@ -1,6 +1,6 @@
 # Isolated local network acceptance
 
-See [current verification status](../../docs/VERIFICATION_STATUS.md) for completed runs, the live Preview browser-wallet attempt, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
+See [current verification status](../../docs/VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
 This package exercises the existing generated Compact contract and SDK client on an explicitly selected fresh local `undeployed` chain. It is separate from the browser dependency graph. It does not connect to Preview, Preprod or mainnet. No public-network funds or user wallet credentials are required.
 

@@ -93,7 +93,7 @@ const DIAGNOSTIC_PUBLIC_FIELDS = Object.freeze([
   'visibleWalletServicesBeforeSave', 'settingsModeObservations', 'walletSettingsSaveActivations',
   'walletSettingsClose', 'walletOnDeviceWasmSelectedThroughUi', 'walletConnected', 'walletServices',
   'walletPublicConfigurationReloaded', 'contractProof', 'walletProverObservation',
-  'failureCategory', 'failedStage', 'settingsControls',
+  'failureCategory', 'failedStage', 'settingsControls', 'fundlessFixtureState', 'fundlessWalletAvailability',
 ]);
 let saving = Promise.resolve();
 function save() {
@@ -574,9 +574,10 @@ async function publicApi(includeBalances = false) {
     && value.dustAddress === publicIdentity.dustAddress, 'wallet-account-changed');
   return value;
 }
-async function approval(route, timeout) {
+async function approval(route, timeout, beforePoll) {
   requireThat(!diagnosticMode || route === '#/midnight-authorize-dapp', 'fundless-diagnostic-no-transaction-approval');
   return poll(async () => {
+    if (beforePoll) await beforePoll();
     const pages = browserContext.pages().filter(page => page.url().startsWith(extensionOrigin + '/') && page.url().includes(route));
     requireThat(pages.length <= 1, 'ambiguous-wallet-approval');
     if (pages[0] && await pages[0].getByTestId('dapp-connector-primary-button').isVisible().catch(() => false)) return pages[0];
@@ -673,28 +674,72 @@ async function readFundlessFixture() {
       'walletModeApiAttestation', 'httpProofProviderConfigured'].every(key => value[key] === false),
   'invalid-fundless-fixture-report');
   if (value.apiVersion !== undefined) requireThat(value.apiVersion === LACE_API_VERSION, 'unexpected-fundless-wallet-api');
+  if (value.failureCategory !== undefined) requireThat(['wallet-connection-failed', 'contract-proof-diagnostic-failed'].includes(value.failureCategory),
+    'unexpected-fundless-fixture-failure');
+  const state = { status: value.status, stage: value.stage,
+    ...(value.failureCategory === undefined ? {} : { failureCategory: value.failureCategory }) };
+  if (JSON.stringify(report.fundlessFixtureState) !== JSON.stringify(state)) {
+    report.fundlessFixtureState = state; await save();
+  }
   requireThat(!browserContext.pages().some(page => page.url().startsWith(extensionOrigin + '/')
     && page.url().includes('#/prove-midnight-transaction')), 'unexpected-fundless-transaction-approval');
   return value;
 }
-async function runFundlessDiagnostic() {
+async function runFundlessDiagnostic(addressCodec) {
   requireThat(diagnosticMode && report.operations.length === 0 && !report.fundingRequestSha256
     && !report.testNightObserved && !report.dustRegistration && proverObserver,
   'fundless-diagnostic-entry-boundary');
+  await setStage('create-fundless-diagnostic-page');
+  app = await browserContext.newPage();
   await setStage('open-fundless-prover-diagnostic');
   await app.goto(origin + '/lace-prover-diagnostic.html');
+  await setStage('wait-fundless-fixture-ready');
   await app.waitForFunction(() => document.getElementById('lace-diagnostic-report')?.textContent.startsWith('{'));
   requireThat((await readFundlessFixture()).status === 'ready', 'fundless-fixture-not-ready');
+  await setStage('wait-fundless-wallet-injection');
+  await poll(async () => {
+    const value = await app.evaluate(expectedVersion => {
+      const wallets = Object.values(window.midnight ?? {}).filter(entry => entry?.rdns === 'io.lace.wallet');
+      return { matchingWalletCount: Math.min(wallets.length, 99),
+        expectedApi: wallets.length === 1 && wallets[0].apiVersion === expectedVersion };
+    }, LACE_API_VERSION);
+    if (JSON.stringify(report.fundlessWalletAvailability) !== JSON.stringify(value)) {
+      report.fundlessWalletAvailability = value; await save();
+    }
+    return value.matchingWalletCount === 1 && value.expectedApi === true;
+  }, 30_000, 250);
   await setStage('connect-fundless-prover-diagnostic');
   await app.locator('#lace-diagnostic-connect').click();
+  await setStage('wait-fundless-wallet-permission');
+  const permission = await approval('#/midnight-authorize-dapp', 180_000, async () => {
+    const value = await readFundlessFixture();
+    if (value.status === 'failed') fail('fundless-fixture-connection-failed');
+    requireThat(value.status !== 'connected', 'unexpected-fundless-preauthorized-origin');
+  });
+  await setStage('approve-fundless-wallet-origin');
+  requireThat((await permission.getByTestId('dapp-info-url').textContent()).trim() === origin, 'wallet-permission-origin-mismatch');
+  await permission.getByTestId('dropdown-button').click(); await permission.getByTestId('dropdown-menu-item-0').click();
+  await permission.getByTestId('dapp-connector-primary-button').click();
+  await setStage('wait-fundless-wallet-connected');
   await poll(async () => {
     const value = await readFundlessFixture();
     if (value.status === 'failed') fail('fundless-fixture-connection-failed');
     return value.status === 'connected' && value.apiVersion === LACE_API_VERSION;
   }, 60_000, 250);
-  // Genuine same-origin authorization already exists; no signing approval,
-  // balance query, funding, DUST registration or network submission is requested.
+  // The real fixture now has ordinary origin/account authorization. This path
+  // has no application worker/store setup, balance query or signing request.
+  await setStage('read-fundless-wallet-public-metadata');
   const metadata = await publicApi();
+  publicIdentity = { unshieldedAddress: publicAddress(metadata.unshieldedAddress, 'addr', addressCodec),
+    dustAddress: publicAddress(metadata.dustAddress, 'dust', addressCodec) };
+  report.apiVersion = metadata.apiVersion; report.walletConnected = true;
+  report.walletServices = { networkId: metadata.configuration.networkId,
+    indexerUri: redactedServiceUrl(metadata.configuration.indexerUri),
+    indexerWsUri: redactedServiceUrl(metadata.configuration.indexerWsUri),
+    substrateNodeUri: redactedServiceUrl(metadata.configuration.substrateNodeUri),
+    externalProverReported: metadata.configuration.externalProverReported, queryValuesExported: false };
+  await Promise.all(configurationResponses);
+  requireThat(!configurationFailure && traffic.publicConfigurationResponses > 0, 'normal-wallet-public-configuration-required');
   requireThat(['indexerUri', 'indexerWsUri', 'substrateNodeUri'].every(field =>
     walletVendorServiceUrls.has(new URL(metadata.configuration[field]).href)), 'wallet-current-vendor-services-required');
   await setStage('run-fundless-lace-proof');
@@ -980,6 +1025,9 @@ try {
   await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
   await settingsClick('portfolio-tab-btn', 'return-wallet-portfolio');
   report.walletOnDeviceWasmSelectedThroughUi = true;
+  if (diagnosticMode) {
+    await runFundlessDiagnostic(addressCodec);
+  } else {
   await setStage('connect-genuine-application');
   app = await browserContext.newPage(); await app.goto(origin + '/network.html');
   await app.waitForFunction(() => document.getElementById('network-availability')?.dataset.state === 'ready');
@@ -1015,9 +1063,6 @@ try {
   requireThat(!configurationFailure && traffic.publicConfigurationResponses > 0, 'normal-wallet-public-configuration-required');
   requireThat(['indexerUri', 'indexerWsUri', 'substrateNodeUri'].every(field =>
     walletVendorServiceUrls.has(new URL(metadata.configuration[field]).href)), 'wallet-current-vendor-services-required');
-  if (diagnosticMode) {
-    await runFundlessDiagnostic();
-  } else {
   await setStage('check-wallet-indexer-before-funding');
   await checkWalletIndexerBeforeFunding(metadata.configuration.indexerUri, metadata.configuration.indexerWsUri);
   const unfunded = await publicApi(true);

@@ -1,0 +1,277 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-prover-diagnostic/v1",
+  "status": "failed",
+  "startedAt": "2026-11-06T23:15:54.052Z",
+  "finishedAt": "2026-11-06T23:19:33.195Z",
+  "networkId": "preview",
+  "execution": "genuine-disposable-Lace-fundless-contract-proof",
+  "runId": "42310311381",
+  "headSha": "3d8fe965dca6424c1500c876da1c7cc7c5b4759b",
+  "fundingAttempted": false,
+  "walletDustProofsTested": false,
+  "networkSubmissionAttempted": false,
+  "independentProofVerification": false,
+  "privateArtifactsExported": false,
+  "hostedOriginTested": false,
+  "walletModeApiAttestation": false,
+  "httpProofProviderConfigured": false,
+  "laceVersion": "2.5.1",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "runnerSha256": "1caef3afd887fa1211d9f2293d5999dd300cc9875aeef2baa413f8ed85bda457",
+  "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "diagnosticBuildSha256": "49ecddf69faa99aa3b19c2c9a469e288ca1ed0c39028d928f5ae9d5e7501c722",
+  "proverObserverSha256": "794ed820f1121f9dc09bab03b019c0aa20af181d72c266bbb4c0cc9b7bd3ebb1",
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "vendorServiceConfiguration": {
+    "source": "signed-wallet-normal-public-feature-service",
+    "indexer": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWs": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "node": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "nodeWs": {
+      "origin": "wss://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "queryValuesExported": false
+  },
+  "publicConfigurationPreflight": true,
+  "normalBrowserContextRestart": {
+    "beforeWalletCreation": true,
+    "sameIsolatedProfile": true,
+    "closedExtensionViews": 1,
+    "previousWorkerClosed": true,
+    "previousContextClosed": true,
+    "contextReopened": true,
+    "serviceWorkerObserved": true,
+    "onboardingReady": true,
+    "effectiveConfigurationStillRequired": true,
+    "scope": "ordinary-same-profile-browser-restart-not-configuration-attestation"
+  },
+  "midnightOnlyAccountSelectionVerified": true,
+  "freshWalletCreated": true,
+  "lastSettingsControl": "portfolio-tab-btn",
+  "visibleWalletServicesBeforeSave": {
+    "node": "current",
+    "indexer": "current"
+  },
+  "settingsModeObservations": [
+    {
+      "point": "before-save",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    },
+    {
+      "point": "after-reopen",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    },
+    {
+      "point": "failure",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": false
+        },
+        {
+          "mode": "local-host",
+          "present": false
+        }
+      ]
+    }
+  ],
+  "walletSettingsSaveActivations": [
+    "mouse"
+  ],
+  "walletSettingsClose": "automatic-after-mouse-save",
+  "walletOnDeviceWasmSelectedThroughUi": true,
+  "walletProverObservation": {
+    "observed": false,
+    "status": "armed",
+    "failureCategory": null,
+    "targetCounts": {
+      "offscreen": 0,
+      "worker": 0
+    },
+    "requestPayloadsInspected": false,
+    "unrelatedEventsRetained": false,
+    "completeNetworkCoverage": false,
+    "runtimeEvaluationUsed": false,
+    "executionPaused": false
+  },
+  "failureCategory": "bounded-stage-timeout",
+  "failedStage": "connect-genuine-application",
+  "settingsControls": [
+    {
+      "control": "settings-tab-btn",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    },
+    {
+      "control": "option-list-item-network",
+      "count": 1,
+      "visible": false,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    },
+    {
+      "control": "radio-button-testnet",
+      "count": 0
+    },
+    {
+      "control": "radio-button-midnight-preview",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet-confirm-button",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet",
+      "count": 0
+    },
+    {
+      "control": "option-list-item-midnight",
+      "count": 1,
+      "visible": false,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    },
+    {
+      "control": "proof-server-in-process-radio",
+      "count": 0
+    },
+    {
+      "control": "proof-server-local-host-radio",
+      "count": 0
+    },
+    {
+      "control": "save-configuration-button",
+      "count": 0
+    },
+    {
+      "control": "midnight-settings-sheet-header",
+      "count": 0
+    },
+    {
+      "control": "side-sheet-close-button",
+      "count": 0
+    },
+    {
+      "control": "portfolio-tab-btn",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    }
+  ],
+  "currentStage": "connect-genuine-application",
+  "traffic": {
+    "blockedRequests": 130,
+    "blockedWebSockets": 0,
+    "walletWasmResources": 0,
+    "appWasmResources": 2,
+    "publicConfigurationRequests": 3,
+    "publicConfigurationResponses": 2,
+    "pageErrors": 0,
+    "consoleErrors": 4,
+    "consoleWarnings": 0,
+    "blockedRequestCategories": {
+      "unknownHost": 77,
+      "unexpectedKnownPathOrMethod": 40,
+      "queryOrCredentials": 13,
+      "unexpectedPort": 0,
+      "invalidUrl": 0
+    },
+    "blockedKnownPaths": {
+      "wallet-public-flags": 0,
+      "wallet-telemetry": 69,
+      "wallet-config-other-path": 0,
+      "wallet-indexer-current": 0,
+      "wallet-indexer-current-other-path": 0,
+      "wallet-node-current": 0,
+      "wallet-node-current-other-path": 0,
+      "wallet-indexer-retired": 0,
+      "wallet-node-retired": 0,
+      "public-proving-assets": 0,
+      "loopback-prover": 0,
+      "other": 61
+    }
+  }
+}

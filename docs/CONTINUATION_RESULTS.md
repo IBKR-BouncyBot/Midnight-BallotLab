@@ -1,6 +1,6 @@
 # Native execution evidence
 
-See [current verification status](VERIFICATION_STATUS.md) for completed runs, the live Preview browser-wallet attempt, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
+See [current verification status](VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
 This report summarizes completed native-contract, proving, network and browser runs. It describes the tested source recorded in the linked reports, not unverified changes.
 

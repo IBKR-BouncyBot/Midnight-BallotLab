@@ -1,6 +1,6 @@
 # Host Midnight Ballot Lab on GitHub Pages
 
-See [current verification status](VERIFICATION_STATUS.md) for completed runs, the live Preview browser-wallet attempt, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
+See [current verification status](VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
 The project is a static website: HTML, CSS, JavaScript and WASM execute in each visitor's browser. GitHub Pages serves the frontend, proof worker and public proving assets without an application backend or repository wallet secret. The browser-only network path uses an application worker for contract proofs and Lace’s **Run in this app (WASM)** mode for wallet/DUST proofs; visitors do not need Docker, Node.js or an HTTP proof service. Pages does not provide a shared election database, a wallet, a Midnight node or an indexer.
 

@@ -1,6 +1,6 @@
 # Native Midnight implementation
 
-See [current verification status](VERIFICATION_STATUS.md) for completed runs, the live Preview browser-wallet attempt, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
+See [current verification status](VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
 The native election in `contracts/native-election.compact` uses Compact 0.31.1 / language 0.23.0 / runtime 0.16.0 and ledger 8. Version 0.6.1 compiles all seven circuits with 2–5 active choices and five fixed ciphertext lanes. Its combined 40-case native suite passed, including 26 generated-contract and 14 public-verifier cases; 26 isolated-runtime cases and eight actual standalone proofs also passed. Proof, browser and network results are tied to the source revisions in [the execution report](CONTINUATION_RESULTS.md); a successful compile is not evidence for those later stages. The main browser page uses the actual generated contract and native WASM locally. The separate local Lace browser-wallet election passed.
 

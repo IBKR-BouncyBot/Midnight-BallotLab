@@ -1,6 +1,6 @@
 # Security assumptions and limits
 
-See [current verification status](VERIFICATION_STATUS.md) for completed runs, the live Preview browser-wallet attempt, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
+See [current verification status](VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
 Midnight Ballot Lab encrypts ballots with 2–5 active choices using native Jubjub operations and constrains their aggregation and two-of-three trustee tally in Compact. Five ciphertext lanes are always present; inactive totals must be zero. Its generated runtime, standalone circuit proofs and development-network transactions have separate evidence. A successful execution is not an independent security audit.
 

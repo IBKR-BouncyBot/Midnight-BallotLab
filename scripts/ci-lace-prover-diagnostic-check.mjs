@@ -16,6 +16,7 @@ const FIELDS = new Set([
   'walletSettingsClose', 'walletOnDeviceWasmSelectedThroughUi', 'walletConnected', 'walletServices',
   'walletPublicConfigurationReloaded', 'contractProof', 'walletProverObservation',
   'failureCategory', 'failedStage', 'settingsControls', 'currentStage', 'traffic',
+  'fundlessFixtureState', 'fundlessWalletAvailability',
 ]);
 const FALSE_FIELDS = ['fundingAttempted', 'walletDustProofsTested', 'networkSubmissionAttempted',
   'independentProofVerification', 'privateArtifactsExported', 'hostedOriginTested',
@@ -107,6 +108,22 @@ export function validateDiagnosticReport(value, expected, completed = false) {
       && hash(proof.sha256) && boundedInteger(proof.elapsedMs, 20 * 60_000));
   }
   if (Object.hasOwn(value, 'walletProverObservation')) observation(value.walletProverObservation);
+  if (Object.hasOwn(value, 'fundlessFixtureState')) {
+    const fixture = value.fundlessFixtureState;
+    plain(fixture);
+    requireValue(Object.keys(fixture).length === (Object.hasOwn(fixture, 'failureCategory') ? 3 : 2)
+      && ['ready', 'connected', 'running', 'passed', 'failed'].includes(fixture.status)
+      && ['ready', 'connecting', 'connected', 'validate-connection', 'load-public-material',
+        'prepare-real-circuit', 'check-openVoting', 'prove-openVoting', 'complete'].includes(fixture.stage)
+      && (!Object.hasOwn(fixture, 'failureCategory') || ['wallet-connection-failed',
+        'contract-proof-diagnostic-failed'].includes(fixture.failureCategory)));
+  }
+  if (Object.hasOwn(value, 'fundlessWalletAvailability')) {
+    const availability = value.fundlessWalletAvailability;
+    plain(availability);
+    requireValue(Object.keys(availability).length === 2
+      && boundedInteger(availability.matchingWalletCount, 99) && typeof availability.expectedApi === 'boolean');
+  }
   if (completed) {
     requireValue(value.status === 'passed' && value.finishedAt && value.contractProof
       && value.laceVersion === '2.5.1' && value.extensionId === 'gafhhkghbfjjkeiendhlofajokpaflmk'
@@ -115,6 +132,9 @@ export function validateDiagnosticReport(value, expected, completed = false) {
       && ['runnerSha256', 'networkBundleSha256', 'workerSha256', 'diagnosticBuildSha256',
         'proverObserverSha256'].every(key => hash(value[key]))
       && value.walletConnected === true && value.walletOnDeviceWasmSelectedThroughUi === true
+      && value.fundlessWalletAvailability?.matchingWalletCount === 1 && value.fundlessWalletAvailability.expectedApi === true
+      && value.fundlessFixtureState?.status === 'passed' && value.fundlessFixtureState.stage === 'complete'
+      && !Object.hasOwn(value.fundlessFixtureState, 'failureCategory')
       && value.walletProverObservation?.observed === true
       && value.walletProverObservation.status === 'observed' && value.walletProverObservation.failureCategory === null
       && value.failureCategory == null && value.failedStage == null);
