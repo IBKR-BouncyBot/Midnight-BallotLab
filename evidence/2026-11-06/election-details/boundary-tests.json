@@ -1,0 +1,27 @@
+{
+  "startedAt": "2026-11-06T09:34:31.705Z",
+  "command": "node --test --test-reporter=tap tests/*.test.mjs",
+  "status": "passed",
+  "node": "v24.18.0",
+  "tests": 79,
+  "pass": 79,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "scope": "JavaScript boundary and file-format tests, no generated native circuits or wallet transactions",
+  "rawOutputRetainedInFile": false,
+  "files": {
+    "tests/compact-launcher.test.mjs": "90514165d0cab28d531990a2e04809122f637636dc55893a5635e537bce57494",
+    "tests/election-join.test.mjs": "ee32b9177f57b47e16b099c1d699685f0d9eac2359024396c20992a0b97a6ceb",
+    "tests/json.test.mjs": "8c0330feb844aa22709f4e686a3b86de417a7e070e8ac144cd90d7ba3a35d272",
+    "tests/native-adapter.test.mjs": "d3373e92d5bd4e789869023c63ee735b6c24271e406b2bb259ca052f080d6eb2",
+    "tests/native-loader.test.mjs": "4cdc4afd8ad94ea03b7d146efb3574dac6f0524bc2206a0ad4fd71163f269d79",
+    "tests/native-network-config.test.mjs": "940c0fc48d910214257ad00c4903211e6e63f1b5f559ea255194745406b6bf14",
+    "tests/network-receipt.test.mjs": "c97c8fa60c8ead2fe1e96e2bb40248ad0059118f2dcca00cc8c264b6c29b4659",
+    "tests/private-key.test.mjs": "c279ad824b965593f1b14e2ca1491b5d9a20f8e2694fb53fcc537bd0b90ea5e3",
+    "tests/public-testnet.test.mjs": "cee56e3b0e229e3dc3237326403f44fc8fe80e52f25ee5b3c155caffcf925ee9",
+    "tests/qr.test.mjs": "41589d0e9bf4fd2124a25e6648fbfe3b1cfc4e3d9bae260954238024d7cac55b",
+    "tests/trustee-key.test.mjs": "90bcf58fd5fbffe3b235bf5bf28db8083716def78611ab39e392873e44a1f721"
+  }
+}

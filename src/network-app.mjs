@@ -8,6 +8,8 @@ import * as Native from '../contracts/managed/native-election/contract/index.js'
 import { encodeNetworkReceipt, decodeNetworkReceipt, networkReceiptNextSteps } from './network-receipt.mjs';
 import { qrSvg } from './qr.mjs';
 import { normalizePrivateKey, privateKeyText, readPrivateKeyFile } from './private-key.mjs';
+import { encodeElectionJoinFile, readElectionJoinFile } from './election-join.mjs';
+import { encodeTrusteeKeyFile, readTrusteeKeyFile, assertTrusteeKeyMatches } from './trustee-key.mjs';
 
 const hex = bytes => [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 const bytes = value => {
@@ -27,12 +29,15 @@ const stages = Object.freeze({
   'submission-returned': 'Transaction submitted. Waiting for confirmation from your indexer…',
 });
 
-function savePublicJson(filename, value) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2) + '\n'], { type: 'application/json' }));
+function saveJsonText(filename, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
   const anchor = document.createElement('a');
   anchor.href = url; anchor.download = filename;
   document.body.append(anchor); anchor.click(); anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function savePublicJson(filename, value) {
+  saveJsonText(filename, JSON.stringify(value, null, 2) + '\n');
 }
 
 export async function initNetworkApplication() {
@@ -121,6 +126,11 @@ export async function initNetworkApplication() {
     $('network-receipt-input').value = '';
     $('network-receipt-id').value = '';
     $('network-public-state').textContent = 'No contract connected';
+    for (const kind of ['election', 'trustee']) {
+      $(`network-import-${kind}`).value = '';
+      $(`network-${kind}-file-status`).textContent = '';
+    }
+    $('network-trustee-download-status').textContent = 'Generate and register the trustee shares before downloading them. Save all three before leaving this setup session.';
   };
   const event = message => {
     const item = document.createElement('p'); item.textContent = message; $('network-events').prepend(item);
@@ -129,6 +139,14 @@ export async function initNetworkApplication() {
   const status = message => {
     $('network-status').textContent = message; $('network-status').hidden = false;
     if (connectionFeedback) $('network-connection-status').textContent = message;
+  };
+  const hasConfiguredElection = () => Boolean(session && client?.contractAddress && client.configurationDigest
+    && state?.keysConfigured === true && hex(state.configurationDigest) === hex(client.configurationDigest));
+  const electionDetails = () => {
+    if (!hasConfiguredElection()) throw new Error('A configured election is required');
+    // Read the pinned SDK context, never editable form fields or zero setup placeholders.
+    return { networkId: session.networkId, contractAddress: client.contractAddress,
+      configurationDigest: hex(client.configurationDigest) };
   };
   const refreshControls = () => {
     controls.forEach(control => { control.disabled = busy; });
@@ -146,7 +164,17 @@ export async function initNetworkApplication() {
     $('network-submit-share').disabled = busy || !client?.configurationDigest || !/^[123]$/.test(selectedValue('network-trustee'));
     $('network-finalize').disabled = busy || !client?.configurationDigest || !['1,2', '1,3', '2,3'].includes(selectedValue('network-pair'));
     $('network-configure').disabled = busy || !client?.contractAddress || state?.keysConfigured === true;
+    $('network-generate-dealer').disabled = busy || state?.keysConfigured === true || Boolean(client?.configurationDigest);
     $('network-use-share').disabled = busy || !dealer || !/^[123]$/.test(selectedValue('network-trustee'));
+    $('network-import-election').disabled = busy || Boolean(client?.contractAddress);
+    $('network-download-election').disabled = busy || !hasConfiguredElection();
+    $('network-import-trustee').disabled = busy || !hasConfiguredElection();
+    for (let index = 1; index <= 3; index++) {
+      $(`network-download-trustee-${index}`).disabled = busy || !dealer || !hasConfiguredElection();
+    }
+    $('network-election-download-note').textContent = hasConfiguredElection()
+      ? 'Save this public file to join again later, or share it with voters and trustees. It contains the network, address and fingerprint, without private keys.'
+      : 'Create the election and register its trustee keys first. Registration gives the election its fingerprint. If it is already configured, join it or refresh the election record.';
     $('network-save-receipt').disabled = busy || !latestReceipt;
     $('network-copy-receipt-id').disabled = busy || !latestReceipt;
     $('network-recover-receipt').disabled = busy || !client?.pendingBallotReceipt;
@@ -180,7 +208,7 @@ export async function initNetworkApplication() {
       : setupMode === 'create' ? 'Create a new test election with your own choices and voting schedule.'
         : 'Join an existing election using its contract address and fingerprint. You do not need to create new election keys.';
     $('network-identity-note').textContent = client?.contractAddress
-      ? 'Keep this address and fingerprint with your private key backups. The fingerprint appears after trustee keys are registered. These details identify the election; they do not independently verify its history.'
+      ? 'Download these public election details so you can join again later. The fingerprint appears after trustee keys are registered. These details identify the election; they do not independently verify its history.'
       : 'Get the contract address and fingerprint from a source you trust. The app checks that the contract’s keys and settings match, but cannot prove that its initial setup or history was honest.';
     $('network-admin-help').textContent = client?.contractAddress
       ? 'Only the election administrator needs this key. Keep the key used to create this election; do not replace it with a newly generated key.'
@@ -232,6 +260,7 @@ export async function initNetworkApplication() {
   const selectEnvironment = () => {
     if (session || busy) return;
     clearReceiptIdResult();
+    $('network-election-file-status').textContent = '';
     const network = $('network-id').value;
     if (network === 'preview') {
       $('network-indexer').value = PREVIEW_PUBLIC_SERVICES.indexerUri;
@@ -273,8 +302,9 @@ export async function initNetworkApplication() {
   });
   document.querySelectorAll('input[name="network-choice"], input[name="network-pair"]').forEach(input => input.addEventListener('change', refreshControls));
   document.querySelectorAll('input[name="network-trustee"]').forEach(input => input.addEventListener('change', () => {
-    $('network-share').value = ''; refreshControls();
+    $('network-share').value = ''; $('network-trustee-file-status').textContent = ''; refreshControls();
   }));
+  $('network-share').addEventListener('input', () => { $('network-trustee-file-status').textContent = ''; });
   $('network-refresh-wallets').addEventListener('click', refreshWallets);
   for (const mode of ['create', 'join']) $(`network-mode-${mode}`).addEventListener('click', () => {
     if (busy || client?.contractAddress) return;
@@ -339,6 +369,60 @@ export async function initNetworkApplication() {
     await client.join($('network-address').value.trim().toLowerCase(), bytes($('network-digest').value.trim()));
     await refreshState(); status('The contract keys and settings match your indexer’s record. Its initial setup and blockchain history still need independent checks.');
   });
+  $('network-import-election').addEventListener('change', () => void run(async () => {
+    try {
+      if (client?.contractAddress || setupMode !== 'join') throw new Error('Choose Join before loading election details');
+      const record = await readElectionJoinFile($('network-import-election').files?.[0], session?.networkId ?? $('network-id').value);
+      $('network-address').value = record.contractAddress;
+      $('network-digest').value = record.configurationDigest;
+      clearReceiptIdResult();
+      $('network-election-file-status').textContent = 'Election details loaded. Connect a wallet on this network, then click Join election. Loading this file has not joined or verified the election.';
+      status('Election details loaded. No connection or transaction was made.');
+    } catch {
+      $('network-election-file-status').textContent = 'Could not load election details. Choose a valid election-details .json file for the selected network, up to 4 KB. The address and fingerprint have not changed.';
+      status('Election-details file rejected. The existing details have not changed.');
+    } finally { $('network-import-election').value = ''; }
+  }));
+  click('network-download-election', async () => {
+    if (!hasConfiguredElection()) throw new Error('Register trustee keys or join a configured election first');
+    await refreshState();
+    const record = electionDetails();
+    saveJsonText(`midnight-election-${record.contractAddress.slice(0, 12)}.json`, encodeElectionJoinFile(record));
+    status('Public election details downloaded. Load this file under Join an election when you return.');
+  });
+  for (let index = 1; index <= 3; index++) {
+    click(`network-download-trustee-${index}`, async () => {
+      try {
+        if (!dealer || !hasConfiguredElection()) throw new Error('Trustee shares unavailable');
+        await refreshState();
+        const record = { schema: 'midnight-ballot-lab/trustee-key/v1', ...electionDetails(),
+          trusteeIndex: index, secretShare: String(dealer.trustees.find(item => item.index === BigInt(index)).secretShare) };
+        assertTrusteeKeyMatches(record, state.trusteeKeys, Native.pureCircuits.nativePublicKey);
+        saveJsonText(`midnight-trustee-${index}-${record.contractAddress.slice(0, 12)}.private.json`, encodeTrusteeKeyFile(record));
+        $('network-trustee-download-status').textContent = `Trustee ${index} key download started. Give this private, unencrypted file only to trustee ${index}.`;
+        status(`Trustee ${index} private key download started. No transaction was submitted.`);
+      } catch {
+        $('network-trustee-download-status').textContent = 'Could not download this trustee key. The app must reach the configured election and match the share in this tab to its registered public key. Keep this session open and use the shares originally registered for this election.';
+        status('Trustee key download failed. No key was exported.');
+      }
+    });
+  }
+  $('network-import-trustee').addEventListener('change', () => void run(async () => {
+    try {
+      const record = await readTrusteeKeyFile($('network-import-trustee').files?.[0], electionDetails());
+      await refreshState();
+      assertTrusteeKeyMatches(record, state.trusteeKeys, Native.pureCircuits.nativePublicKey);
+      // Commit both fields only after file/context/native-key validation succeeds.
+      $(`network-trustee-${record.trusteeIndex}`).checked = true;
+      $('network-share').type = 'password';
+      $('network-share').value = record.secretShare;
+      $('network-trustee-file-status').textContent = `Trustee ${record.trusteeIndex} selected and key loaded hidden. It matches this election’s registered public key. Click Submit trustee contribution when you are ready.`;
+      status('Trustee key loaded. No contribution or transaction was submitted.');
+    } catch {
+      $('network-trustee-file-status').textContent = 'Could not load this trustee key. Join its election, then choose the matching private .json file, up to 4 KB. The selected trustee and key have not changed.';
+      status('Trustee key file rejected. The existing trustee and key have not changed.');
+    } finally { $('network-import-trustee').value = ''; }
+  }));
   $('network-use-existing-admin').addEventListener('click', () => void run(async () => {
     $('network-admin').readOnly = false;
     $('network-admin').placeholder = 'Paste your saved 64-character key';
@@ -387,6 +471,7 @@ export async function initNetworkApplication() {
     }));
   }
   click('network-generate-dealer', async () => {
+    if (state?.keysConfigured === true || client?.configurationDigest) throw new Error('Keep the trustee shares already registered for this election');
     dealer = createDemoDealer(); $('network-setup-secret').value = String(dealer.setupSecret); $('network-setup-slope').value = String(dealer.setupSlope);
     status('Created all three trustee key shares in this tab. Use “Register trustee keys” to send the public keys to the network.');
   });
@@ -443,13 +528,14 @@ export async function initNetworkApplication() {
     const trustee = selectedValue('network-trustee');
     if (!/^[123]$/.test(trustee)) throw new Error('Choose one trustee');
     $('network-share').value = String(dealer.trustees.find(item => item.index === BigInt(trustee)).secretShare);
+    $('network-trustee-file-status').textContent = '';
     status('Loaded this demo trustee’s private share. It has not been submitted.');
   });
   click('network-submit-share', async () => {
     const trustee = selectedValue('network-trustee');
     if (!/^[123]$/.test(trustee)) throw new Error('Choose one trustee');
     confirmed('Trustee contribution', await client.submitDecryption(BigInt(trustee), scalar($('network-share').value)));
-    $('network-share').value = ''; await refreshState();
+    $('network-share').value = ''; $('network-trustee-file-status').textContent = ''; await refreshState();
   });
   click('network-finalize', async () => {
     const pair = selectedValue('network-pair');

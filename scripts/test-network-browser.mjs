@@ -237,7 +237,8 @@ try {
         for (const input of await page.locator(`input[name="${name}"]`).all()) assert.equal(await input.isDisabled(), true,
           'Ballot and trustee cards must remain disabled without a connected election');
       }
-      for (const selector of ['#network-deploy', '#network-join', '#network-cast', '#network-finalize', '#network-check-receipt', '#network-check-receipt-id', '#network-copy-receipt-id']) {
+      for (const selector of ['#network-deploy', '#network-join', '#network-cast', '#network-finalize', '#network-check-receipt', '#network-check-receipt-id', '#network-copy-receipt-id',
+        '#network-download-election', '#network-download-trustee-1', '#network-download-trustee-2', '#network-download-trustee-3', '#network-import-trustee']) {
         assert.equal(await page.locator(selector).isDisabled(), true, 'Network actions need an actual connected wallet');
       }
       stage = `${prefix}:receipt-id-guidance`;
@@ -348,16 +349,91 @@ try {
       await joinButton.click();
       assert.equal(await page.locator('#network-address').inputValue(), 'd'.repeat(64));
       assert.equal(await page.locator('#network-digest').inputValue(), 'e'.repeat(64));
+      assert.equal(await page.locator('#network-download-election').isDisabled(), true, 'Typed fields must not enable authoritative election-details export');
+      stage = 'election-setup-chooser:public-details-import';
+      const detailsInput = page.locator('#network-import-election');
+      const detailsStatus = page.locator('#network-election-file-status');
+      const details = { schema: 'midnight-ballot-lab/election-join/v1', networkId: 'preview',
+        contractAddress: 'AB'.repeat(32), configurationDigest: 'CD'.repeat(32) };
+      const canonicalAddress = details.contractAddress.toLowerCase(), canonicalDigest = details.configurationDigest.toLowerCase();
+      const validBytes = Buffer.from(JSON.stringify({ ...details, contractAddress: `  ${details.contractAddress}  ` }));
+      await detailsInput.setInputFiles({ name: 'public-election.JSON', mimeType: 'application/json', buffer: validBytes });
+      await page.waitForFunction(() => document.getElementById('network-import-election').value === '');
+      assert.equal(await page.locator('#network-address').inputValue(), canonicalAddress);
+      assert.equal(await page.locator('#network-digest').inputValue(), canonicalDigest);
+      assert.equal(await page.locator('#network-id').inputValue(), 'preview');
+      assert.equal(await joinButton.getAttribute('aria-pressed'), 'true');
+      assert.match(await detailsStatus.textContent(), /^Election details loaded\./);
+      assert.equal(await page.locator('#network-title').inputValue(), 'Chooser browser check');
+      assert.equal(await page.locator('#network-choices').inputValue(), 'Test A\nTest B');
+      const rejectedDetails = [
+        ['malformed', Buffer.from('{')], ['empty', Buffer.alloc(0)], ['oversize', Buffer.alloc(4097, 32)],
+        ['invalid-utf8', Buffer.from([0xff, 0xfe, 0xff])], ['bom', Buffer.from('\ufeff' + JSON.stringify(details))],
+        ['private-field', Buffer.from(JSON.stringify({ ...details, privateKey: 'withheld-private-diagnostic' }))],
+        ['extra-field', Buffer.from(JSON.stringify({ ...details, title: 'unsupported' }))],
+        ['duplicate-field', Buffer.from(JSON.stringify(details).replace('"networkId":"preview"', '"networkId":"preview","networkId":"preview"'))],
+        ['wrong-network', Buffer.from(JSON.stringify({ ...details, networkId: 'preprod' }))],
+        ['mainnet', Buffer.from(JSON.stringify({ ...details, networkId: 'mainnet' }))],
+        ['zero-address', Buffer.from(JSON.stringify({ ...details, contractAddress: '0'.repeat(64) }))],
+        ['zero-digest', Buffer.from(JSON.stringify({ ...details, configurationDigest: '0'.repeat(64) }))],
+        ['wrong-extension', validBytes, 'withheld-file-diagnostic.txt'],
+      ];
+      for (const [invalidKind, buffer, filename = 'withheld-file-diagnostic.json'] of rejectedDetails) {
+        stage = `election-setup-chooser:reject-details-${invalidKind}`;
+        await detailsInput.setInputFiles({ name: filename, mimeType: 'application/json', buffer });
+        await page.waitForFunction(() => document.getElementById('network-import-election').value === '');
+        assert.equal(await page.locator('#network-address').inputValue(), canonicalAddress);
+        assert.equal(await page.locator('#network-digest').inputValue(), canonicalDigest);
+        assert.equal(await page.locator('#network-id').inputValue(), 'preview');
+        assert.equal(await joinButton.getAttribute('aria-pressed'), 'true');
+        assert.match(await detailsStatus.textContent(), /^Could not load election details\./);
+        assert.doesNotMatch(await detailsStatus.textContent(), /withheld-private-diagnostic|withheld-file-diagnostic/);
+        assert.equal(await page.locator('#network-download-election').isDisabled(), true);
+      }
+      // Changing the selected network is an actual form interaction. A file
+      // for Preview must not silently change it back or replace current fields.
+      await page.locator('#network-id').selectOption('undeployed');
+      await detailsInput.setInputFiles({ name: 'preview-election.json', mimeType: 'application/json', buffer: validBytes });
+      await page.waitForFunction(() => document.getElementById('network-import-election').value === '');
+      assert.equal(await page.locator('#network-id').inputValue(), 'undeployed');
+      assert.match(await detailsStatus.textContent(), /^Could not load election details\./);
+      assert.equal(await page.locator('#network-address').inputValue(), canonicalAddress);
+      assert.equal(await page.locator('#network-digest').inputValue(), canonicalDigest);
+      await page.locator('#network-id').selectOption('preview');
+      await detailsInput.setInputFiles({ name: 'public-election.json', mimeType: 'application/json', buffer: validBytes });
+      await page.waitForFunction(() => document.getElementById('network-import-election').value === '');
+      assert.match(await detailsStatus.textContent(), /^Election details loaded\./);
+      assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
+      for (const id of ['network-join','network-deploy','network-download-election','network-import-trustee',
+        'network-download-trustee-1','network-download-trustee-2','network-download-trustee-3']) assert.equal(await page.locator(`#${id}`).isDisabled(), true);
+      for (const id of ['network-password','network-admin','network-voter','network-setup-secret','network-setup-slope','network-share']) {
+        assert.equal(await page.locator(`#${id}`).inputValue(), '');
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      const desktopDetailsPanel = page.locator('#network-join-panel');
+      const desktopDetailsHeight = await desktopDetailsPanel.evaluate(element => Math.ceil(element.getBoundingClientRect().height) + 100);
+      await page.setViewportSize({ width: 1440, height: desktopDetailsHeight }); await desktopDetailsPanel.scrollIntoViewIfNeeded();
+      await desktopDetailsPanel.screenshot({ path: join(evidenceDirectory, 'public-election-details-unjoined-1440.png') });
       for (const viewport of [390, 320]) {
         await page.setViewportSize({ width: viewport, height: 844 });
         assert.equal(await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= document.documentElement.clientWidth + 1), true);
       }
+      await page.setViewportSize({ width: 390, height: 1000 });
+      const detailsPanel = page.locator('#network-join-panel');
+      const detailsHeight = await detailsPanel.evaluate(element => Math.ceil(element.getBoundingClientRect().height) + 100);
+      await page.setViewportSize({ width: 390, height: detailsHeight }); await detailsPanel.scrollIntoViewIfNeeded();
+      assert.equal(await page.locator('#network-admin').inputValue(), '');
+      await detailsPanel.screenshot({ path: join(evidenceDirectory, 'public-election-details-unjoined-390.png') });
       for (const id of ['network-join', 'network-deploy']) assert.equal(await page.locator(`#${id}`).isDisabled(), true);
       assert.equal(await page.locator('#network-events').textContent(), '');
       assert.equal(externalRequests, 0); assert.equal(pageErrors, 0); assert.equal(consoleErrors, 0);
       evidence.cases.push({ case: 'election-setup-chooser', status: 'passed', defaultMode: 'create',
         keyboardActivation: ['Enter', 'Space'], panelVisibility: true, publicFieldPreservation: true,
         administratorControlsShared: true, actionsDisabledWithoutWallet: true, mobileWidths: [390, 320],
+        publicDetailsImportPrefillsOnly: true, publicImportCanonicalizesHex: true, publicDetailsRejectedFiles: rejectedDetails.length,
+        wrongSelectedNetworkPreserved: true, rejectedImportsPreserveFieldsAndMode: true, noAutomaticJoin: true,
+        manualOrImportedFieldsCannotEnableElectionExport: true, configuredElectionExportExecuted: false,
+        trusteePrivateFileControlsRequireConfiguredElection: true,
         connectedModeLocksTested: false, externalRequests, pageErrors, consoleErrors });
     } finally { await context.close(); }
   }
@@ -506,6 +582,9 @@ try {
         assert.ok(!(await page.locator('body').innerText()).includes(setupValues[index]));
       }
       assert.equal(await page.locator('#network-configure').isDisabled(), true, 'Local generation must not register keys or unlock network actions');
+      for (const id of ['network-download-election','network-import-trustee','network-download-trustee-1','network-download-trustee-2','network-download-trustee-3']) {
+        assert.equal(await page.locator(`#${id}`).isDisabled(), true, 'Unregistered local shares cannot be exported as election-bound trustee files');
+      }
       assert.equal(await page.locator('#network-events').textContent(), '');
       await dealerButton.click();
       const nextSetup = [await page.locator('#network-setup-secret').inputValue(), await page.locator('#network-setup-slope').inputValue()];

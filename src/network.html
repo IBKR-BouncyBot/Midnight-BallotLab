@@ -54,9 +54,13 @@
         <div class="button-row election-setup-options" role="group" aria-label="Choose how to set up an election"><button class="button primary" type="button" id="network-mode-create" aria-pressed="true" aria-controls="network-create-panel" data-network-control disabled>Create a new election</button><button class="button secondary" type="button" id="network-mode-join" aria-pressed="false" aria-controls="network-join-panel" data-network-control disabled>Join an election</button></div>
         <p id="network-setup-note" class="field-note">Create a new test election with your own choices and voting schedule.</p>
         <div id="network-join-panel" hidden>
+        <label for="network-import-election">Load saved election details</label><input id="network-import-election" type="file" accept=".json,application/json" aria-describedby="network-election-file-status" data-network-control disabled>
+        <p id="network-election-file-status" class="field-note" role="status" aria-live="polite">Choose an election-details file to fill in its address and fingerprint, or enter them below.</p>
         <label for="network-address">Contract address</label><input id="network-address" spellcheck="false" maxlength="64" data-network-control disabled>
         <label for="network-digest">Election fingerprint</label><input id="network-digest" spellcheck="false" maxlength="64" data-network-control disabled>
         <p id="network-identity-note" class="field-note">Get the contract address and fingerprint from a source you trust. The app checks that the contract’s keys and settings match, but cannot prove that its initial setup or history was honest.</p>
+        <button class="button primary" type="button" id="network-download-election" aria-describedby="network-election-download-note" data-network-control disabled>Download election details</button>
+        <p id="network-election-download-note" class="field-note">Create the election and register its trustee keys first. Registration gives the election its fingerprint.</p>
         <button class="button primary" type="button" id="network-join" data-network-control disabled>Join election</button>
         </div>
         <label for="network-admin">Administrator key (64 hexadecimal characters)</label><input id="network-admin" name="midnight-election-administrator-key" type="password" autocomplete="new-password" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="64" placeholder="Click Generate administrator key" aria-describedby="network-admin-help network-admin-key-status" readonly data-network-control disabled>
@@ -78,6 +82,10 @@
           <label for="network-setup-slope">Key-sharing secret (decimal)</label><input id="network-setup-slope" type="password" autocomplete="off" data-network-control disabled>
           <p class="field-note">This test setup creates all three key shares in one place. They are not held by independent people. Two people with these shares could also decrypt individual ballots outside the app.</p>
           <button class="button primary" type="button" id="network-configure" data-network-control disabled>Register trustee keys →</button>
+          <h3>Save the trustee keys</h3>
+          <p class="field-note">After registration, download one private file for each trustee. Each contains that trustee’s key share and the election details. These files are unencrypted: give each trustee only their own file and keep them separate from public election details and receipts.</p>
+          <div class="button-row"><button class="button primary" type="button" id="network-download-trustee-1" data-network-control disabled>Download trustee 1 key</button><button class="button primary" type="button" id="network-download-trustee-2" data-network-control disabled>Download trustee 2 key</button><button class="button primary" type="button" id="network-download-trustee-3" data-network-control disabled>Download trustee 3 key</button></div>
+          <p id="network-trustee-download-status" class="field-note" role="status" aria-live="polite">Generate and register the trustee shares before downloading them. Save all three before leaving this setup session.</p>
         </div>
       </section>
       <section class="panel" aria-labelledby="vote-heading">
@@ -114,6 +122,8 @@
           <label class="trustee-card selection-card" for="network-trustee-3"><input id="network-trustee-3" type="radio" name="network-trustee" value="3" data-network-control disabled><span class="selection-copy"><strong>Trustee 3</strong><small>Submit share 3</small></span></label>
         </div></fieldset>
         <label for="network-share">Trustee’s secret key share (decimal)</label><input id="network-share" type="password" autocomplete="off" data-network-control disabled>
+        <label for="network-import-trustee">Or load your saved trustee key</label><input id="network-import-trustee" type="file" accept=".json,application/json" aria-describedby="network-trustee-file-status" data-network-control disabled>
+        <p id="network-trustee-file-status" class="field-note" role="status" aria-live="polite">Join the election first, then load your private trustee file. The app checks the key and selects the matching trustee. You still choose when to submit the contribution.</p>
         <button class="button primary" type="button" id="network-use-share" data-network-control disabled>Use this demo trustee’s share</button><button class="button primary" type="button" id="network-submit-share" data-network-control disabled>Submit trustee contribution →</button>
         <fieldset id="network-pair" data-network-control disabled><legend>2. Choose two trustees who have contributed</legend><p class="selection-help">Both trustees must have submitted their contributions before you can reveal the results.</p><div class="trustee-options trustee-pairs">
           <label class="trustee-card selection-card" for="network-pair-12"><input id="network-pair-12" type="radio" name="network-pair" value="1,2" data-network-control disabled><span class="selection-copy"><strong>Trustees 1 + 2</strong><small>Two contributions</small></span></label>
