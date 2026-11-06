@@ -105,6 +105,38 @@ async function settingsClick(id, name, { visibleOnly = false } = {}) {
   const control = wallet.getByTestId(id);
   await (visibleOnly ? control.filter({ visible: true }) : control).click();
 }
+async function clearWalletPointerAndFocus(focusControl) {
+  await wallet.mouse.move(0, 0);
+  await wallet.getByTestId(focusControl).focus();
+}
+async function onboardingToggleMatches(id, checked) {
+  return wallet.getByTestId(id).evaluate((element, expected) => {
+    // Signed Lace 2.5.1's RN Web filter drops accessibilityState. Its Toggle
+    // instead exposes this ordinary rendered track/knob geometry (module2760).
+    // Exclude hover/press/focus so the transient wider knob cannot look checked.
+    if (element.matches(':hover, :active, :focus-within')) return false;
+    const track = element.parentElement, knob = element.nextElementSibling;
+    if (!track || !knob) return false;
+    const trackWidth = track.getBoundingClientRect().width, style = getComputedStyle(knob);
+    const width = Number.parseFloat(style.width), x = new DOMMatrixReadOnly(style.transform).m41;
+    return Math.abs(trackWidth - 64) < 0.5 && Math.abs(width - 30) < 0.5 && Math.abs(x - (expected ? 32 : 2)) < 0.5;
+  }, checked);
+}
+async function inProcessRadioSelected() {
+  return wallet.getByTestId('proof-server-in-process-radio').evaluate(element => {
+    // RadioButton module2768 renders this marker for selected OR focus/hover.
+    // After both interaction states are absent, the marker represents selection.
+    return !element.matches(':hover, :active, :focus-within')
+      && element.querySelector('[data-testid="proof-server-in-process-radio-checkmark"]') !== null;
+  });
+}
+async function provingSettingsUsable() {
+  // Pressable module1352 explicitly preserves aria-disabled, unlike the
+  // selected/checked fields passed inside accessibilityState. Radio disabled
+  // is exactly the settings isSaving state in the signed sheet source.
+  return await wallet.getByTestId('proof-server-in-process-radio').getAttribute('aria-disabled') === 'false'
+    && await wallet.getByTestId('save-configuration-button').isEnabled();
+}
 async function bounded(work, milliseconds) {
   let timer;
   try {
@@ -424,10 +456,20 @@ try {
   await wallet.getByTestId('new-password-input-value').fill(walletPassword);
   await wallet.getByTestId('confirm-password-input-value').fill(walletPassword);
   await wallet.getByTestId('next-btn').click();
-  await wallet.getByTestId('onboarding-create-wallet-toggle-cardano').click();
-  await delay(250);
+  // Lace refuses to deselect the last enabled account. Enable Midnight first,
+  // then remove Cardano so this isolated test creates only its intended chain.
+  await setStage('enable-midnight-onboarding-account');
   await wallet.getByTestId('onboarding-create-wallet-toggle-midnight').click();
-  await delay(250);
+  await clearWalletPointerAndFocus('onboarding-create-wallet-finish-button');
+  await poll(() => onboardingToggleMatches('onboarding-create-wallet-toggle-midnight', true), 10_000, 100);
+  await setStage('disable-cardano-onboarding-account');
+  await wallet.getByTestId('onboarding-create-wallet-toggle-cardano').click();
+  await clearWalletPointerAndFocus('onboarding-create-wallet-finish-button');
+  await poll(() => onboardingToggleMatches('onboarding-create-wallet-toggle-cardano', false), 10_000, 100);
+  requireThat(await onboardingToggleMatches('onboarding-create-wallet-toggle-midnight', true),
+    'midnight-only-onboarding-required');
+  report.midnightOnlyAccountSelectionVerified = true; await save();
+  await setStage('finish-fresh-midnight-wallet');
   await wallet.getByTestId('onboarding-create-wallet-finish-button').click();
   await wallet.getByTestId('settings-tab-btn').waitFor({ timeout: 120_000 });
   report.freshWalletCreated = true;
@@ -441,12 +483,25 @@ try {
   await settingsClick('option-list-item-midnight', 'open-wallet-proving-settings');
   // Exact current selectors are verified from the signed Lace source before CI.
   await settingsClick('proof-server-in-process-radio', 'select-wallet-on-device-wasm');
+  await clearWalletPointerAndFocus('save-configuration-button');
+  await poll(inProcessRadioSelected, 10_000, 100);
   await settingsClick('save-configuration-button', 'save-wallet-on-device-wasm');
   await setStage('wait-wallet-proving-settings-close');
-  await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
+  const provingHeader = wallet.getByTestId('midnight-settings-sheet-header');
+  const automaticallyClosed = await provingHeader.waitFor({ state: 'hidden', timeout: 5000 }).then(() => true, () => false);
+  if (!automaticallyClosed) {
+    // Do not mistake an open sheet for a failed save, or close an active save.
+    // A fresh sheet must subsequently initialize from persisted configuration.
+    await setStage('wait-wallet-proving-save-controls-usable');
+    await poll(provingSettingsUsable, 45_000, 100);
+    await settingsClick('side-sheet-close-button', 'close-saved-wallet-proving-settings', { visibleOnly: true });
+  }
+  await wallet.getByTestId('proof-server-in-process-radio').waitFor({ state: 'detached' });
+  report.walletSettingsClose = automaticallyClosed ? 'automatic' : 'normal-close-control'; await save();
   await settingsClick('option-list-item-midnight', 'reopen-wallet-proving-settings');
   await setStage('verify-persisted-wallet-on-device-selection');
-  await poll(async () => await wallet.getByTestId('proof-server-in-process-radio').getAttribute('aria-selected') === 'true', 30_000);
+  await clearWalletPointerAndFocus('save-configuration-button');
+  await poll(inProcessRadioSelected, 10_000, 100);
   await settingsClick('side-sheet-close-button', 'close-reviewed-wallet-proving-settings', { visibleOnly: true });
   await setStage('wait-reviewed-wallet-proving-settings-close');
   await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
@@ -494,6 +549,13 @@ try {
     scope: 'separate-wallet-UI-operation-not-one-of-nine-application-transactions', ledgerInclusionIndependentlyVerified: false };
   journal.dustRegistration = report.dustRegistration; await save();
   await wallet.getByTestId('account-card-generate-dust-button').click();
+  const dustRecipient = wallet.getByTestId('dust-address-input-value');
+  await dustRecipient.waitFor({ state: 'visible' });
+  const displayedDustAddress = await dustRecipient.inputValue();
+  requireThat(displayedDustAddress === '' || displayedDustAddress === publicIdentity.dustAddress,
+    'wallet-dust-recipient-mismatch');
+  if (displayedDustAddress === '') await dustRecipient.fill(publicIdentity.dustAddress);
+  requireThat(await dustRecipient.inputValue() === publicIdentity.dustAddress, 'wallet-own-dust-address-required');
   await poll(() => wallet.getByTestId('designate-button').isEnabled(), 45 * 60_000, 2000);
   await wallet.getByTestId('designate-button').click();
   await poll(() => wallet.getByTestId('confirm-designation-button').isEnabled(), 5 * 60_000, 1000);

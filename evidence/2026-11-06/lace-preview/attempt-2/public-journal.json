@@ -1,0 +1,7 @@
+{
+  "schema": "midnight-ballot-lab/ci-public-transaction-journal/v1",
+  "networkId": "preview",
+  "operations": [],
+  "runId": "42283256725",
+  "headSha": "888ef89251bee78d89af0297b479c4effc260f61"
+}

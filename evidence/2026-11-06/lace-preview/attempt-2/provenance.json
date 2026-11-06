@@ -1,0 +1,32 @@
+{
+  "schema": "midnight-ballot-lab/lace-ci-attempt-provenance/v1",
+  "runId": "42283256725",
+  "headSha": "888ef89251bee78d89af0297b479c4effc260f61",
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42283256725",
+  "artifactId": 13536836915,
+  "artifactSha256": "f4e83ff90a4273943ce38c635a62707ccb83bbee92be54e58e5cc6e287fc695c",
+  "conclusion": "failure",
+  "publicReportsBytePreserved": true,
+  "files": [
+    {
+      "path": "browser-report.json",
+      "bytes": 3475,
+      "sha256": "a26075bcb04eb265bb4cdf68924002aaa051edd2dcde5ba778c7b0d42e34c9e4"
+    },
+    {
+      "path": "lace-acquisition.json",
+      "bytes": 2060,
+      "sha256": "bd3e9dc57dd256e3d53d2e7fe7e6a917aeb8105a979b8793ec3e114abf552373"
+    },
+    {
+      "path": "public-journal.json",
+      "bytes": 200,
+      "sha256": "ecb17e0df06d1d9b5588985cb70f523bbcfc9d1d9d2fb6122dc85ca117f0e233"
+    }
+  ],
+  "scope": "fresh official Lace wallet created; proving settings sheet remained open after Save; timed out before funding request or application connection",
+  "fundingPerformed": false,
+  "applicationTransactions": 0,
+  "privateArtifactsCollected": false,
+  "hostedOriginRequested": false
+}

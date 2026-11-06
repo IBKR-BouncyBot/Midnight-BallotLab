@@ -27,3 +27,5 @@ Cleanup signals only the verified task-owned process group. The runner closes it
 ## Executed attempts
 
 The [first isolated run](../evidence/2026-11-06/lace-preview/attempt-1/README.md) created a genuine Lace 2.5.1 wallet, then timed out while selecting network/prover settings. It produced no funding request and executed no application transaction. The retained report is failure evidence, not a completed browser-wallet election.
+
+The [second run](../evidence/2026-11-06/lace-preview/attempt-2/README.md) identified the timeout after Save in the proving settings: the sheet remained open. It also stopped before funding or application connection. Its control-level diagnostics do not establish a saved proving mode.
