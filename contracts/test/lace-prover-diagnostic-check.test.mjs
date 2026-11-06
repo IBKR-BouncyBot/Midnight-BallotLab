@@ -26,6 +26,10 @@ function report() {
       sha256: 'f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb',
       targetKind: 'worker', evidence: 'passive-cdp-resource-response', requestPayloadsInspected: false,
       unrelatedEventsRetained: false, completeNetworkCoverage: false, runtimeEvaluationUsed: false, executionPaused: false,
+      discovery: { snapshots: 3, refreshLimit: 3600, classifiedTargets: {
+        offscreenExact: 1, offscreenOtherType: 0, workerExact: 1, workerOtherType: 0,
+        workerUrlEmpty: 1, extensionBlobWorker: 0, extensionOther: 0, other: 1,
+      } },
     }, currentStage: 'fundless-wallet-contract-proof',
   };
 }
@@ -67,6 +71,25 @@ test('fundless boundary rejects funding/submission, wrong identity, private fiel
   Object.defineProperty(getter, 'status', { get() { throw new Error('Accessor must not run'); } });
   assert.throws(() => validateDiagnosticReport(getter, expected), /Public diagnostic evidence validation failed/);
 });
+test('observer discovery accepts only bounded counts and fixed classifications, never target details', () => {
+  const valid = report();
+  validateDiagnosticReport(valid, expected, true);
+  const discovery = valid.walletProverObservation.discovery;
+  for (const invalid of [
+    { ...discovery, snapshots: -1 }, { ...discovery, snapshots: 3601 },
+    { ...discovery, refreshLimit: 7200 }, { ...discovery, targetId: 'not-public' },
+    { ...discovery, classifiedTargets: { ...discovery.classifiedTargets, workerUrlEmpty: 257 } },
+    { ...discovery, classifiedTargets: { ...discovery.classifiedTargets, workerExact: '1' } },
+    { ...discovery, classifiedTargets: { ...discovery.classifiedTargets, url: 'not-public' } },
+    { ...discovery, classifiedTargets: { offscreenExact: 1 } },
+  ]) assert.throws(() => validateDiagnosticReport({ ...report(), walletProverObservation: {
+    ...report().walletProverObservation, discovery: invalid,
+  } }, expected, false));
+  const missing = report();
+  delete missing.walletProverObservation.discovery;
+  assert.throws(() => validateDiagnosticReport(missing, expected, true));
+});
+
 test('transport rejects duplicate JSON, oversized files and invalid UTF-8 without printing values', () => {
   const bytes = new TextEncoder().encode(JSON.stringify(report()));
   assert.equal(decodeDiagnosticReport(bytes, expected, true).status, 'passed');

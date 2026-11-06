@@ -1,0 +1,14 @@
+{
+  "schema": "midnight-ballot-lab/ci-public-environment-provenance/v1",
+  "runId": "42311886874",
+  "headSha": "3251fcc364114ac2c806a421df9910ad8303d6f8",
+  "artifactId": "13548334543",
+  "archiveBytes": 643,
+  "archiveSha256": "0c36ea0d18a30503807cc4f042972d35ee36a0ac061cd9ab67ab90d91f13802a",
+  "archiveDigestMatchedGitHubApi": true,
+  "retainedReportUnmodified": true,
+  "path": "environment-initial.json",
+  "bytes": 815,
+  "sha256": "b7505d728f3fc42c38162bf81fd6d83657a105b051bd7161c6f5f7e41dce8585",
+  "scope": "Initial headed browser environment only; no Lace proof or transaction execution in this check."
+}

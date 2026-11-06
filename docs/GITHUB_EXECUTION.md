@@ -8,6 +8,8 @@ See [current verification status](VERIFICATION_STATUS.md) for completed runs, th
 
 The later [e22832c run 42300588172](../evidence/2026-11-06/browser-wasm/github-42300588172/README.md) passed the same build/proof/browser gates, with 897 source files and 132 references, but its publish job was cancelled at the ten-minute limit. It reported 114 `syncing_files` polls and then `The operation was canceled.` That run is passed build evidence, not a successful deployment; its exact partial outcome is retained. No automatic retry or timeout change was made.
 
+The later [3d8fe96 run 42310290799](../evidence/2026-11-06/browser-wasm/github-42310290799/README.md) also passed all build, browser and proof gates, with **937 source files and 130 references**. Its deploy job was cancelled at **23:38:52 UTC**, after **116 `syncing_files` polls** and the same ten-minute limit; deployment **7613197818** recorded an error. The exact original proof report and compact audit are retained. This is not a newer successful publication, and no backend cause or timeout remedy is inferred.
+
 The [read-only CI service diagnostic](../evidence/2026-11-06/lace-preview/service-diagnostic/README.md) separately observed HTTP 410 from Lace's built-in default Preview indexer URL and HTTP 200 from the official Preview endpoint. It used no wallet and does not establish the cause of a wallet wait. Pages success does not imply a completed Lace/DUST proof or accepted browser-wallet transaction, and no direct hosted-origin request was made.
 
 ## Pages deployment at d2f5889 — 6 November 2026

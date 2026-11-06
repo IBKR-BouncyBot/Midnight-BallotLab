@@ -1,0 +1,46 @@
+{
+  "schema": "midnight-ballot-lab/github-evidence-provenance/v1",
+  "headSha": "3d8fe965dca6424c1500c876da1c7cc7c5b4759b",
+  "runId": 42310290799,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42310290799",
+  "runAttempt": 1,
+  "runConclusion": "cancelled",
+  "buildConclusion": "success",
+  "deploymentId": 7613197818,
+  "deploymentConclusion": "error",
+  "deploymentCompletedAt": "2026-11-06T23:38:53Z",
+  "artifactDigests": {
+    "github-pages": {
+      "id": 13548473387,
+      "name": "github-pages",
+      "bytes": 143584011,
+      "expired": false,
+      "digest": "sha256:94501d3252e50d8a65d04d783b43122bd08d8f2caa4c38e07f16195b8dba8ed4",
+      "headSha": "3d8fe965dca6424c1500c876da1c7cc7c5b4759b"
+    },
+    "pages-build-evidence": {
+      "id": 13548399538,
+      "name": "pages-build-evidence",
+      "bytes": 4376670,
+      "expired": false,
+      "digest": "sha256:0b9b573be931f977f29efa0c4c79aa5a3660e6cd556e91640c2fcae302bdda26",
+      "headSha": "3d8fe965dca6424c1500c876da1c7cc7c5b4759b"
+    }
+  },
+  "downloadedArtifacts": [
+    "pages-build-evidence"
+  ],
+  "pagesArchiveDownloadedThisRun": false,
+  "proofReportBytePreserved": true,
+  "publishLog": {
+    "jobId": 128216016174,
+    "bytes": 18768,
+    "sha256": "634e7be08164c0d04fbce28154ee8584a4f80498dea151e7d0dd6be91d52233d",
+    "syncingFilesPolls": 116,
+    "retainedExcerpt": "First and last syncing_files lines and the three cancellation/error lines; all excerpt text unchanged.",
+    "causeClaim": "Publication remained syncing_files until the configured ten-minute job limit; precise backend cause not established."
+  },
+  "hostedOriginRequested": false,
+  "walletActionsPerformed": false,
+  "networkTransactionsPerformed": false
+}

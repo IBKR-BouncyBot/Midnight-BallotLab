@@ -56,17 +56,26 @@ function publicTree(value, depth = 0) {
 function observation(value) {
   plain(value);
   const required = ['observed', 'status', 'failureCategory', 'targetCounts', 'requestPayloadsInspected',
-    'unrelatedEventsRetained', 'completeNetworkCoverage', 'runtimeEvaluationUsed', 'executionPaused'];
+    'unrelatedEventsRetained', 'completeNetworkCoverage', 'runtimeEvaluationUsed', 'executionPaused', 'discovery'];
   const resource = ['path', 'bytes', 'sha256', 'targetKind', 'evidence'];
   const fields = value.observed === true ? [...required, ...resource] : required;
   requireValue(Object.keys(value).length === fields.length && fields.every(key => Object.hasOwn(value, key))
     && typeof value.observed === 'boolean' && ['armed', 'closed', 'observed', 'failed'].includes(value.status)
     && (value.failureCategory === null || typeof value.failureCategory === 'string'
       && /^[a-z][a-z0-9-]{0,99}$/.test(value.failureCategory))
-    && required.slice(4).every(key => value[key] === false));
+    && required.slice(4, 9).every(key => value[key] === false));
   plain(value.targetCounts);
   requireValue(Object.keys(value.targetCounts).length === 2
     && ['offscreen', 'worker'].every(key => boundedInteger(value.targetCounts[key], 8)));
+  plain(value.discovery);
+  requireValue(Object.keys(value.discovery).length === 3
+    && boundedInteger(value.discovery.snapshots, 3600) && value.discovery.refreshLimit === 3600);
+  const classifications = ['offscreenExact', 'offscreenOtherType', 'workerExact', 'workerOtherType',
+    'workerUrlEmpty', 'extensionBlobWorker', 'extensionOther', 'other'];
+  plain(value.discovery.classifiedTargets);
+  requireValue(Object.keys(value.discovery.classifiedTargets).length === classifications.length
+    && classifications.every(key => Object.hasOwn(value.discovery.classifiedTargets, key)
+      && boundedInteger(value.discovery.classifiedTargets[key], 256)));
   if (value.observed) requireValue(value.path === 'js/bb7c1f073eb0bc071ea5.module.wasm'
     && value.bytes === 3_413_037
     && value.sha256 === 'f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb'
