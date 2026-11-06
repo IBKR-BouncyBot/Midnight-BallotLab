@@ -171,11 +171,9 @@ body { background: var(--black); }
 }
 
 /* Plain-language guidance stays visible beside voting and receipt controls. */
-.trustee-privacy, .vote-next-steps { margin: 22px 0; padding: 22px; border: 1px solid #595975; border-radius: 4px; background: #15151e; }
-.trustee-privacy h3, .vote-next-steps h3 { margin: 0 0 12px; color: #e2e2ff; font-size: 19px; line-height: 1.35; font-weight: 500; }
-.trustee-privacy p, .vote-next-steps p { margin: 0 0 12px; color: #c7c7cf; font-size: 14px; line-height: 1.75; }
-.trustee-privacy p:last-child { margin-bottom: 0; }
-.trustee-privacy strong { color: #eeeef4; font-weight: 500; }
+.vote-next-steps { margin: 22px 0; padding: 22px; border: 1px solid #595975; border-radius: 4px; background: #15151e; }
+.vote-next-steps h3 { margin: 0 0 12px; color: #e2e2ff; font-size: 19px; line-height: 1.35; font-weight: 500; }
+.vote-next-steps p { margin: 0 0 12px; color: #c7c7cf; font-size: 14px; line-height: 1.75; }
 .receipt-id-lookup { margin: 24px 0; padding-bottom: 20px; border-bottom: 1px solid #3a3a3a; }
 .receipt-id-lookup input { width: 100%; min-width: 0; }
 .receipt-id-lookup .inline-status { overflow-wrap: anywhere; }
@@ -183,4 +181,4 @@ body { background: var(--black); }
 #network-receipt-panel details { margin: 18px 0; }
 #network-receipt-panel summary { cursor: pointer; color: #c6c6ff; }
 #network-receipt-id-display { display: block; margin: 10px 0 16px; overflow-wrap: anywhere; }
-@media (max-width: 400px) { .trustee-privacy, .vote-next-steps { padding: 17px; } }
+@media (max-width: 400px) { .vote-next-steps { padding: 17px; } }

@@ -221,14 +221,13 @@ try {
       for (const selector of ['#network-deploy', '#network-join', '#network-cast', '#network-finalize', '#network-check-receipt', '#network-check-receipt-id', '#network-copy-receipt-id']) {
         assert.equal(await page.locator(selector).isDisabled(), true, 'Network actions need an actual connected wallet');
       }
-      stage = `${prefix}:receipt-id-and-privacy-guidance`;
+      stage = `${prefix}:receipt-id-guidance`;
       assert.equal(await page.locator('#network-receipt-panel').isVisible(), false, 'No receipt or next-step success may be shown before a confirmed or recovered vote');
       assert.equal(await page.locator('#network-next-steps').isVisible(), false);
       assert.equal(await page.locator('#network-receipt-id-display').textContent(), '');
       assert.equal(await page.locator('#network-receipt-id-result').textContent(), '');
       assert.equal(await page.locator('#network-receipt-id').getAttribute('aria-describedby'), 'network-receipt-id-help');
       assert.match(await page.locator('#network-receipt-id-help').textContent(), /ID alone does not prove who cast it or independently verify the blockchain/);
-      assert.match(await page.locator('#network-privacy-heading').locator('..').textContent(), /Any two trustees who cooperate can decrypt individual ballots outside this app, even before the totals are revealed/);
       // An inert public ID can be pasted without granting a client or causing
       // any lookup. Do not inject a wallet, state, or successful receipt here.
       await page.locator('#network-receipt-id').fill(`  ${'AB'.repeat(32)}  `);

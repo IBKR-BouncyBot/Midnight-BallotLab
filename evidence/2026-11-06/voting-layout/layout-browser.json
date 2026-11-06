@@ -1,0 +1,124 @@
+{
+  "executedAt": "2026-11-06T08:41:12.76Z",
+  "scope": "local-empty-voting-layout-and-real-wasm-loading",
+  "node": "v24.18.0",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "cases": [
+    {
+      "kind": "native",
+      "width": 1440,
+      "passed": true,
+      "wasmLoaded": 1,
+      "geometry": {
+        "width": 1440,
+        "content": 1440,
+        "sectionWidth": 1007
+      },
+      "castDisabled": true,
+      "noSelectedChoice": true,
+      "receiptHidden": true,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "kind": "native",
+      "width": 390,
+      "passed": true,
+      "wasmLoaded": 1,
+      "geometry": {
+        "width": 390,
+        "content": 390,
+        "sectionWidth": 354
+      },
+      "castDisabled": true,
+      "noSelectedChoice": true,
+      "receiptHidden": true,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "kind": "native",
+      "width": 320,
+      "passed": true,
+      "wasmLoaded": 1,
+      "geometry": {
+        "width": 320,
+        "content": 320,
+        "sectionWidth": 284
+      },
+      "castDisabled": true,
+      "noSelectedChoice": true,
+      "receiptHidden": true,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "kind": "network",
+      "width": 1440,
+      "passed": true,
+      "wasmLoaded": 2,
+      "geometry": {
+        "width": 1440,
+        "content": 1440,
+        "sectionWidth": 806.9375
+      },
+      "castDisabled": true,
+      "noSelectedChoice": true,
+      "receiptHidden": true,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "kind": "network",
+      "width": 390,
+      "passed": true,
+      "wasmLoaded": 2,
+      "geometry": {
+        "width": 390,
+        "content": 390,
+        "sectionWidth": 354
+      },
+      "castDisabled": true,
+      "noSelectedChoice": true,
+      "receiptHidden": true,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "kind": "network",
+      "width": 320,
+      "passed": true,
+      "wasmLoaded": 2,
+      "geometry": {
+        "width": 320,
+        "content": 320,
+        "sectionWidth": 284
+      },
+      "castDisabled": true,
+      "noSelectedChoice": true,
+      "receiptHidden": true,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    }
+  ],
+  "artifacts": {
+    "native.html": "d73e761d1c380a52fc2f95fbaaa685e3b85e4972f37373ed317cbeb5ce7ec54e",
+    "network.html": "2a5a5659cb5b30c76bd48b4556628de43d17f6df9d244f406df0c829e6ef9cb4",
+    "styles.css": "4e0bc404735ed882d4c3cc9adae79fff09a2547a7b27ee5741e46a0b03bb6f5c",
+    "network-theme.css": "c588481b0864a98fc623d9b1414e761f4b4e64dbac1d0b024f1abcfe5454f8c5",
+    "native-bundle.mjs": "9eab45976edf646eaf2d1c360ce238fb7ca487a959d199eb05a4c12752bb105a",
+    "network-bundle.mjs": "55939740a81c9f195b52e3036d83ecfea3e21194bcf95944f2e56b9e401cb637",
+    "overview.css": "7f28da07006bd919e8a1371582df05ff8721639ae9a9a5d8080da7843e55fcb3"
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}

@@ -1,0 +1,285 @@
+{
+  "executedAt": "2026-11-06T08:40:26.453Z",
+  "node": "v24.18.0",
+  "execution": "real-sdk-and-wasm-browser-loading",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "independentChainVerification": false,
+  "cases": [
+    {
+      "case": "actual-sdk-load-and-no-wallet-failure",
+      "path": "/",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "circuitAssetsServed": 21,
+      "ballotAndTrusteeCardsPresent": true,
+      "cardControlsDisabled": true,
+      "previewDefaultAndPinnedEndpoints": true,
+      "localAndPreprodPresets": true,
+      "requiredServiceAndPasswordFields": true,
+      "helpLinksChecked": true,
+      "laceSetupGuideChecked": true,
+      "inlineRequiredFieldAndWalletFeedback": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "connectedSessionUiTested": false,
+      "receiptIdLookupRequiresConfiguredElection": true,
+      "receiptSuccessHiddenBeforeVote": true,
+      "trusteeCollusionLimitVisible": true,
+      "receiptIdNetworkLookupExecuted": false,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "remoteRequests": 0
+    },
+    {
+      "case": "actual-sdk-load-and-no-wallet-failure",
+      "path": "/project-prefix/",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "circuitAssetsServed": 21,
+      "ballotAndTrusteeCardsPresent": true,
+      "cardControlsDisabled": true,
+      "previewDefaultAndPinnedEndpoints": true,
+      "localAndPreprodPresets": true,
+      "requiredServiceAndPasswordFields": true,
+      "helpLinksChecked": true,
+      "laceSetupGuideChecked": true,
+      "inlineRequiredFieldAndWalletFeedback": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "connectedSessionUiTested": false,
+      "receiptIdLookupRequiresConfiguredElection": true,
+      "receiptSuccessHiddenBeforeVote": true,
+      "trusteeCollusionLimitVisible": true,
+      "receiptIdNetworkLookupExecuted": false,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "remoteRequests": 0
+    },
+    {
+      "case": "election-setup-chooser",
+      "status": "passed",
+      "defaultMode": "create",
+      "keyboardActivation": [
+        "Enter",
+        "Space"
+      ],
+      "panelVisibility": true,
+      "publicFieldPreservation": true,
+      "administratorControlsShared": true,
+      "actionsDisabledWithoutWallet": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "connectedModeLocksTested": false,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "case": "private-key-file-utilities",
+      "status": "passed",
+      "roles": [
+        {
+          "role": "admin",
+          "generated": true,
+          "revealAndHide": true,
+          "privateDownloadRoundTrip": true,
+          "rejectedFiles": 8,
+          "invalidImportPreservesKey": true,
+          "maskedAfterRestore": true,
+          "setupModePreservesKey": true
+        },
+        {
+          "role": "voter",
+          "generated": true,
+          "revealAndHide": true,
+          "privateDownloadRoundTrip": true,
+          "rejectedFiles": 8,
+          "invalidImportPreservesKey": true,
+          "maskedAfterRestore": true
+        }
+      ],
+      "generatedKeysRetained": false,
+      "downloadBodiesRetained": false,
+      "screenshotsOnlyAfterReloadWithEmptyPrivateInputs": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "publicExportExecutionTested": false,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "case": "preview-node-transport-failure",
+      "status": "passed",
+      "failureInjection": "request-abort-only",
+      "fabricatedSuccessResponses": 0,
+      "externalRequestsAllowed": 0,
+      "safeServiceMessage": true,
+      "controlsRestored": true,
+      "walletConnected": false,
+      "pageErrors": 0,
+      "unexpectedConsoleErrors": 0
+    },
+    {
+      "case": "preview-indexer-transport-failure",
+      "status": "passed",
+      "failureInjection": "request-abort-only",
+      "fabricatedSuccessResponses": 0,
+      "externalRequestsAllowed": 0,
+      "safeServiceMessage": true,
+      "controlsRestored": true,
+      "walletConnected": false,
+      "pageErrors": 0,
+      "unexpectedConsoleErrors": 0
+    },
+    {
+      "case": "disabled-manifest",
+      "status": "passed",
+      "controls": "all-disabled"
+    },
+    {
+      "case": "missing-wasm",
+      "status": "passed",
+      "controls": "all-disabled"
+    }
+  ],
+  "bundleSha256": "55939740a81c9f195b52e3036d83ecfea3e21194bcf95944f2e56b9e401cb637",
+  "compiler": "0.31.1",
+  "runtime": "0.16.0",
+  "sdk": "4.1.1",
+  "circuitAssets": [
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "bytes": 21583889,
+      "sha256": "d4671180b4c9acd6906b3c97486dc97cce6fc1a1ec7cd54e9a060d9d93256b1c"
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "bytes": 2311,
+      "sha256": "9a8a2b0161333a799f138f9cc9558070307d5673c09fc944d9fcd782166c802a"
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "bytes": 5118,
+      "sha256": "37b40bf5f1d671ddb8b2b05a9506832bd802c1012673ad306a9a3ac094acc88a"
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "bytes": 2824231,
+      "sha256": "bbf0cc28fb04325ef60607268e89ab333d229379bb0464a4ad341017f3f9fb6a"
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "bytes": 2119,
+      "sha256": "b470e120b4b2383f0308093a510a31d042536adef44f64e6a57b45a58ffd3903"
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "bytes": 677,
+      "sha256": "57825fff7c84c7ac7bef6e50545cebf6c2b994fb8ae61c7aa4f4ade0045665d1"
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "bytes": 39815,
+      "sha256": "dbdd56ce8ee7660c4b88f5fa4f92049c77d5fcc57d794cfd0e5ae23eec0a45dc"
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "bytes": 1351,
+      "sha256": "8c791aff6f25f7b85e716a2eccf3f709d133e3dce774f500adf1698e06a51fbf"
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "bytes": 463,
+      "sha256": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb"
+    },
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "bytes": 42701779,
+      "sha256": "915506f640bddc7c50ba21c03d2aeb119d7aa04cbc19c24d2362a95121b1f3e7"
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "bytes": 2311,
+      "sha256": "bcc71d275ad591ea9685ea07edea95b8f8103f5ce491e5207f4df94ceec71768"
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "bytes": 4788,
+      "sha256": "6b3fe9762445e623de3d8a61f3e0c2ec62982ab1a5c0ce82a3d1a2db05def0d4"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "bytes": 39799,
+      "sha256": "5195f6f6d3c1e9859084a64502b569cf90c0751239821fcd35934085bee10be4"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "bytes": 1351,
+      "sha256": "b9df6a64bfbc1aedaab445553adae78abfd28270ebdf47000501cbd6e94e2b9d"
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "bytes": 367,
+      "sha256": "88966fcf98cfa388d42d87825a09456d6f18066efeec6dae7d686514e90c78b9"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "bytes": 2668409,
+      "sha256": "b56283c88cb1f886e095a255901dec970e6b02dc6e4fc409d2999edecbb88435"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "bytes": 1591,
+      "sha256": "b046dae1c5d4b3cf174d1d9c1b6d1a07ec56015a2e8d6a67ae1c5c22c07a80e1"
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "bytes": 1683,
+      "sha256": "708c2562588fa80d35d83b03122c2156f10fd7e9634e4005e1f1fa880df606b3"
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "bytes": 10597369,
+      "sha256": "27bfc36a2b986da4192450440c38fb51a545763e021bebf8bb86717bbc4efa1f"
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "bytes": 1591,
+      "sha256": "120b8072921ca04d74b128621fb6edc81f8363860be306db72bf8fa83ab51b9d"
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "bytes": 3316,
+      "sha256": "eb2ba4cd0917c192c8788866110c32d01fea996219ec0159da3caa62e43f93ac"
+    }
+  ],
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "lastBrowserCounters": {
+    "path": "/project-prefix/",
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleCategories": [],
+    "remoteRequests": 0
+  },
+  "lastTransportFailureCounters": {
+    "failedService": "indexer",
+    "blockedRequests": 2,
+    "targetedRequests": 1,
+    "unexpectedRequests": 0,
+    "pageErrors": 0,
+    "unexpectedConsoleErrors": 0
+  },
+  "status": "passed"
+}

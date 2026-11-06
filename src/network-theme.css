@@ -67,12 +67,8 @@
 .network-page .public-network-intro a,
 .network-page #network-service-settings summary,
 .network-page #network-receipt-panel summary { color: var(--white); }
-.network-page .trustee-privacy,
 .network-page .vote-next-steps { background: #151515; border-color: var(--line-light); }
-.network-page .trustee-privacy h3,
-.network-page .vote-next-steps h3,
-.network-page .trustee-privacy strong { color: var(--white); }
-.network-page .trustee-privacy p,
+.network-page .vote-next-steps h3 { color: var(--white); }
 .network-page .vote-next-steps p { color: #d0d0d0; }
 .network-page .receipt-panel { border-color: var(--line-light); }
 .network-page .receipt-qr { background: var(--white); color: var(--black); border-color: #ddd; }

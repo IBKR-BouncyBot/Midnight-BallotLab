@@ -79,7 +79,7 @@
         </div>
       </section>
       <section class="panel" aria-labelledby="vote-heading">
-        <div class="panel-head"><p class="eyebrow">03 / VOTE</p><span class="panel-tag">Encrypted ballot</span></div><h2 id="vote-heading">Register a voter, then vote.</h2><aside class="trustee-privacy" aria-labelledby="network-privacy-heading"><h3 id="network-privacy-heading">Can trustees read individual votes?</h3><p><strong>Yes. Any two trustees who cooperate can decrypt individual ballots outside this app, even before the totals are revealed.</strong> The app shows combined totals, but the key shares do not prevent this kind of cooperation. In this demo, one browser creates all three trustee shares.</p></aside>
+        <div class="panel-head"><p class="eyebrow">03 / VOTE</p><span class="panel-tag">Encrypted ballot</span></div><h2 id="vote-heading">Register a voter, then vote.</h2>
         <label for="network-voter">Voter key (64 hexadecimal characters)</label><input id="network-voter" type="password" autocomplete="off" spellcheck="false" maxlength="64" data-network-control disabled>
         <div class="button-row private-key-tools"><button class="button secondary" type="button" id="network-generate-voter" data-network-control disabled>Generate voter key</button><button class="button secondary" type="button" id="network-show-voter" aria-controls="network-voter" aria-pressed="false" data-network-control disabled>Show key</button><button class="button secondary" type="button" id="network-download-voter" data-network-control disabled>Download key</button></div>
         <label for="network-import-voter">Load a saved voter key</label><input id="network-import-voter" type="file" accept=".txt,text/plain" data-network-control disabled>
