@@ -1,0 +1,90 @@
+{
+  "startedAt": "2026-11-06 09:48:57 UTC",
+  "command": "node --test contracts/native/test/*.test.mjs",
+  "status": "passed",
+  "exitCode": 0,
+  "tests": 49,
+  "passed": 49,
+  "failed": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "durationMs": 7978.5926,
+  "generatedContractTests": 26,
+  "publicVerificationTests": 14,
+  "receiptIdTests": 4,
+  "trusteeKeyTests": 3,
+  "generatedLedgerTimingTests": 2,
+  "scope": "Actual generated-contract/runtime execution with read-only timing display over real lifecycle states",
+  "rawOutputRetainedInFile": true,
+  "rawOutputFile": "native-tests.log",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "hostedOriginRequested": false,
+  "privateDataRetained": false,
+  "sourceFiles": {
+    "contracts/native/test/native-election.test.mjs": {
+      "bytes": 18689,
+      "sha256": "39686f456a267127646d8d671bde313d672f84058e52d8a74b1f1488cac5abf6"
+    },
+    "contracts/native/test/network-timing.test.mjs": {
+      "bytes": 3928,
+      "sha256": "f8e1464bd4a93574e3b5f33c6c751303678319fae3db2c249a2fd8fcca0ad0b2"
+    },
+    "contracts/native/test/public-verifier.test.mjs": {
+      "bytes": 12122,
+      "sha256": "81ed8374a639484d5f87a75c3d97bc1fd48a7be07b249f38b518763c79fabd49"
+    },
+    "contracts/native/test/receipt-id.test.mjs": {
+      "bytes": 3655,
+      "sha256": "30add43a8666b4b2c6c2be937e6f5243225e0475feec3d00a5542313d2f9e26d"
+    },
+    "contracts/native/test/trustee-key.test.mjs": {
+      "bytes": 3675,
+      "sha256": "e9bfc62fcc4a9cefbe9a159415021c960ad4d081ea5bae19cd7cdc02cfd64cd6"
+    },
+    "contracts/managed/native-election/contract/index.js": {
+      "bytes": 517989,
+      "sha256": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7"
+    },
+    "contracts/native/harness.mjs": {
+      "bytes": 6783,
+      "sha256": "1555547bd4b4a18954f13a2a41a15ed4beef51e67463f8483a4d8c27c4d61a7f"
+    },
+    "contracts/native/adapter.mjs": {
+      "bytes": 4987,
+      "sha256": "6bdbd467edbad74269818b240b120f711c46c26d6cfb1494e651757d22e3a68c"
+    },
+    "contracts/native/verify-public.mjs": {
+      "bytes": 15581,
+      "sha256": "fbc93c98a1229763ae0cb8393e30c1550c31013f6209d6178525686bf2715961"
+    },
+    "contracts/native/sdk-client.mjs": {
+      "bytes": 18768,
+      "sha256": "d80c527f494f22491af39bdd2d47b96f29a286856a3f1532022b9812d2303595"
+    },
+    "src/network-timing.mjs": {
+      "bytes": 5097,
+      "sha256": "509aa4b1c2c4f0f9694a7ccf5af86afb1ab752e0af9904800244b64e85888f51"
+    },
+    "src/trustee-key.mjs": {
+      "bytes": 3712,
+      "sha256": "3d04c3f32bf57efc1475380543377534ee0e65048bed7b4591c44859fd7f3995"
+    },
+    "src/election-join.mjs": {
+      "bytes": 3021,
+      "sha256": "42d355596d23af66a434f6c5f48d697d34229ebc0b4358ead1c9a9f4ef0783f9"
+    },
+    "src/key-file-json.mjs": {
+      "bytes": 1543,
+      "sha256": "3e48496d2c8e0f0c91b05dae957ecf645db3a8e12a33f427c57f9eb8ec95e028"
+    },
+    "src/json.mjs": {
+      "bytes": 5070,
+      "sha256": "8221f1122211797e3c788e40e1b30d6a9c90cc4bb6f3f738eea1f72ed7783e2f"
+    }
+  },
+  "node": "v24.18.0",
+  "compactRuntime": "0.16.0",
+  "rawOutputSha256": "d98d959b1544172c213a0e3cde8253483b50b032fa3cf29c1cf25852dd89a579"
+}

@@ -15,7 +15,7 @@ await rm(join(dist, 'native-app.mjs'), { force: true });
 await rm(join(dist, 'network-app.mjs'), { force: true });
 await rm(join(dist, 'network-receipt.mjs'), { force: true });
 await rm(join(dist, 'private-key.mjs'), { force: true });
-for (const name of ['election-join.mjs', 'trustee-key.mjs', 'key-file-json.mjs']) await rm(join(dist, name), { force: true });
+for (const name of ['election-join.mjs', 'trustee-key.mjs', 'key-file-json.mjs', 'network-timing.mjs']) await rm(join(dist, name), { force: true });
 await writeFile(join(dist, 'native-build.json'), JSON.stringify({
   enabled: false,
   reason: 'The native compiler output and browser bundle are not included in this build.',

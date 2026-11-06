@@ -10,6 +10,7 @@ import { qrSvg } from './qr.mjs';
 import { normalizePrivateKey, privateKeyText, readPrivateKeyFile } from './private-key.mjs';
 import { encodeElectionJoinFile, readElectionJoinFile } from './election-join.mjs';
 import { encodeTrusteeKeyFile, readTrusteeKeyFile, assertTrusteeKeyMatches } from './trustee-key.mjs';
+import { describeNetworkElectionTiming, formatNetworkTimingDate } from './network-timing.mjs';
 
 const hex = bytes => [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 const bytes = value => {
@@ -53,6 +54,26 @@ export async function initNetworkApplication() {
   let dealer = null, latestReceipt = null, manifest = null;
   let connectionFeedback = false;
   let setupMode = 'create';
+  let lastStateReadAt = null;
+  const setTimingText = (id, text) => {
+    const element = $(id);
+    if (element.textContent !== text) element.textContent = text;
+  };
+  const setTimingDate = (id, value) => {
+    const element = $(id); setTimingText(id, value.text);
+    if (element.tagName !== 'TIME') return;
+    if (value.dateTime === null) { if (element.hasAttribute('datetime')) element.removeAttribute('datetime'); }
+    else if (element.getAttribute('datetime') !== value.dateTime) element.setAttribute('datetime', value.dateTime);
+  };
+  const renderElectionTiming = () => {
+    const timing = describeNetworkElectionTiming(lastStateReadAt === null ? null : state, Date.now());
+    setTimingText('network-election-phase', timing.phase);
+    setTimingText('network-election-countdown', timing.countdown);
+    setTimingDate('network-election-opens', timing.opens);
+    setTimingDate('network-election-closes', timing.closes);
+    setTimingText('network-election-updated', lastStateReadAt === null ? 'Election record not loaded yet.' : `Last refreshed: ${formatNetworkTimingDate(lastStateReadAt).text}`);
+    setTimingText('network-election-timing-note', timing.note);
+  };
   const selectedValue = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? '';
   const clearSelection = name => document.querySelectorAll(`input[name="${name}"]`).forEach(input => { input.checked = false; });
   const keyRoles = ['admin', 'voter'];
@@ -116,6 +137,7 @@ export async function initNetworkApplication() {
     $('network-next-steps').hidden = false;
   };
   const resetSessionDisplay = () => {
+    lastStateReadAt = null; renderElectionTiming();
     ['network-choice', 'network-trustee', 'network-pair'].forEach(clearSelection);
     $('network-share').value = '';
     for (let index = 0; index < 5; index++) {
@@ -233,9 +255,10 @@ export async function initNetworkApplication() {
     status(`${label}: your indexer reports confirmation. This app has not independently verified the blockchain.`);
   };
   const refreshState = async () => {
-    state = client.configurationDigest ? await client.refreshConfiguration() : await client.readPublicLedger();
-    const candidateCount = Number(state.candidateCount);
+    const nextState = client.configurationDigest ? await client.refreshConfiguration() : await client.readPublicLedger();
+    const candidateCount = Number(nextState.candidateCount);
     if (!Number.isInteger(candidateCount) || candidateCount < 2 || candidateCount > 5) throw new Error('Unsupported candidate count');
+    state = nextState; lastStateReadAt = Date.now(); renderElectionTiming();
     for (let index = 0; index < 5; index++) $(`network-choice-${index}`).closest('label').hidden = index >= candidateCount;
     $('network-address').value = client.contractAddress;
     $('network-digest').value = client.configurationDigest ? hex(client.configurationDigest) : '';
@@ -581,4 +604,8 @@ export async function initNetworkApplication() {
     status('Receipt ID check finished. See the result beside the receipt ID input.');
   });
   selectEnvironment(); refreshWallets(); refreshControls();
+  renderElectionTiming();
+  // Paint the last read public state only. No provider call or transaction is
+  // triggered by this timer; the user refreshes the election record explicitly.
+  setInterval(renderElectionTiming, 1000);
 }

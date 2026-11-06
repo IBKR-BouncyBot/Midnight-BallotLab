@@ -1,5 +1,5 @@
-/* Testnet page palette. Load after the shared layout styles; no runtime or
-   layout changes. White text stays readable on Midnight blue and dark surfaces. */
+/* Testnet palette and scoped navigation/activity layout. Load after the shared
+   styles. White text stays readable on Midnight blue and dark surfaces. */
 .network-page {
   --black: #0a0a0a;
   --white: #fff;
@@ -87,3 +87,16 @@
 .network-page .global-status:not(.error) { background: var(--surface-raised); border-color: var(--line-light); color: #ddd; }
 .network-page .global-status.working:not(.error) { border-left-color: var(--blue); }
 .network-page .global-status.working::before { border-color: #666; border-top-color: var(--white); }
+
+.network-page .step { text-decoration: none; }
+.network-page .steps-heading a { color: var(--white); text-underline-offset: 4px; }
+.network-page .work-main h2[tabindex="-1"] { scroll-margin-top: 24px; }
+.network-page .election-timing { border-block: 1px solid var(--line); padding: 20px 0; margin-bottom: 24px; }
+.network-page .election-timing h3 { margin: 0 0 12px; font-size: 15px; font-weight: 500; color: var(--muted); }
+.network-page .election-phase { margin: 0 0 10px; color: var(--white); font-size: 21px; line-height: 1.3; }
+.network-page .election-countdown { margin: 0 0 18px; padding-left: 12px; border-left: 3px solid var(--blue); font-size: 22px; line-height: 1.35; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.network-page .election-schedule { display: grid; gap: 12px; margin: 0 0 18px; }
+.network-page .election-schedule dt { color: var(--muted); font-size: 12px; }
+.network-page .election-schedule dd { margin: 4px 0 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.network-page .election-timing .field-note { margin: 12px 0; font-size: 12px; line-height: 1.6; }
+.network-page .election-timing .text-button { font-size: 13px; line-height: 1.5; }

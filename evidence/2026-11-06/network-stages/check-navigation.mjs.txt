@@ -1,0 +1,78 @@
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {createHash} from 'node:crypto';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {dirname,extname,join,resolve,sep} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),dist=join(root,'dist'),out=join(root,'evidence/2026-11-06/network-stages');
+process.env.PLAYWRIGHT_BROWSERS_PATH=join(root,'.browser-cache');
+const requireContracts=createRequire(join(root,'contracts/package.json'));
+const report={executedAt:new Date().toISOString(),scope:'real-network-navigation-and-unjoined-timing',node:process.version,
+  walletConnected:false,proofGeneration:false,networkSubmission:false,cases:[]};
+let browser,server,stage='prerequisites';
+try{
+  await mkdir(out,{recursive:true});report.artifacts={};
+  for(const file of ['network.html','styles.css','overview.css','network-theme.css','network-bundle.mjs'])report.artifacts[file]=createHash('sha256').update(await readFile(join(dist,file))).digest('hex');
+  const manifest=JSON.parse(await readFile(join(dist,'network-build.json'),'utf8'));assert.equal(manifest.enabled,true);
+  const{chromium}=requireContracts('playwright');report.playwright=requireContracts('playwright/package.json').version;
+  browser=await chromium.launch({headless:true});report.chromium=browser.version();
+  const types={'.html':'text/html','.mjs':'text/javascript','.js':'text/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm','.svg':'image/svg+xml','.woff2':'font/woff2'};
+  server=createServer(async(req,res)=>{try{const path=decodeURIComponent(new URL(req.url,'http://127.0.0.1').pathname);if(path==='/favicon.ico')return res.writeHead(204).end();const target=resolve(dist,`.${path}`);if(!target.startsWith(`${dist}${sep}`))return res.writeHead(403).end();res.writeHead(200,{'Content-Type':types[extname(target)]??'application/octet-stream','Cache-Control':'no-store'}).end(await readFile(target));}catch{res.writeHead(404).end();}});
+  await new Promise(done=>server.listen(0,'127.0.0.1',done));const origin=`http://127.0.0.1:${server.address().port}`;
+  for(const width of [1440,390]){
+    stage=`${width}:load`;
+    const context=await browser.newContext({viewport:{width,height:1000}});
+    try{
+      const page=await context.newPage();page.setDefaultTimeout(30_000);
+      let errors=0,consoleErrors=0,external=0,loads=0;const wasm=new Set();
+      page.on('pageerror',()=>errors++);page.on('console',msg=>{if(msg.type()==='error')consoleErrors++;});
+      page.on('request',r=>{if(new URL(r.url()).origin!==origin)external++;});page.on('load',()=>loads++);
+      page.on('response',r=>{if(r.ok()&&r.url().endsWith('.wasm'))wasm.add(new URL(r.url()).pathname);});
+      await page.goto(`${origin}/network.html`,{waitUntil:'networkidle'});await page.waitForFunction(()=>document.getElementById('network-availability').dataset.state==='ready');
+      for(const asset of manifest.wasmAssets)assert.ok(wasm.has(`/${asset}`));
+      const nav=page.locator('.network-steps'),anchors=nav.locator('a.step');assert.equal(await anchors.count(),4);
+      assert.equal(await page.locator('aside.record-panel').evaluate(el=>getComputedStyle(el).position),width===1440?'sticky':'static');
+      assert.equal(await page.locator('#network-election-steps-heading').textContent(),'Your election, step by step.');
+      const timing=async()=>page.evaluate(()=>Object.fromEntries(['phase','countdown','opens','closes','updated','timing-note'].map(name=>[name,document.getElementById(`network-election-${name}`).textContent])));
+      const initialTiming=await timing();assert.match(initialTiming.phase,/No election connected/);
+      for(const key of ['countdown','opens','closes'])assert.equal(initialTiming[key],'—');
+      assert.match(initialTiming.updated,/not loaded/i);assert.match(initialTiming['timing-note'],/Join or create/i);
+      assert.equal(await page.locator('#network-election-countdown').getAttribute('role'),'timer');
+      assert.equal(await page.locator('#network-election-countdown').getAttribute('aria-live'),'off');
+      await page.locator('#network-title').fill('Navigation check — not submitted');
+      const destinations=[];
+      for(const [index,id]of ['connect-heading','contract-heading','vote-heading','tally-heading'].entries()){
+        stage=`${width}:${id}`;const link=anchors.nth(index);assert.equal(await link.getAttribute('href'),`#${id}`);
+        assert.equal(await link.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(0, 0, 254)');
+        for(const method of ['keyboard-enter','pointer']){
+          if(method==='keyboard-enter'){await link.focus();await page.keyboard.press('Enter');}else await link.click();
+          assert.equal(new URL(page.url()).hash,`#${id}`);
+          await page.waitForFunction(target=>{const box=document.getElementById(target).getBoundingClientRect();return box.top>=0&&box.bottom<=innerHeight;},id);
+          assert.equal(await page.locator(`#${id}`).evaluate(el=>document.activeElement===el),true);
+          assert.equal(await page.locator('#network-title').inputValue(),'Navigation check — not submitted');
+          assert.equal(await page.locator('#network-id').inputValue(),'preview');
+          if(width===1440){const top=await page.locator('aside.record-panel').evaluate(el=>el.getBoundingClientRect().top);assert.ok(Math.abs(top-24)<=1);}
+        }
+        destinations.push({id,keyboardAndClick:true,focusMoved:true});
+      }
+      await nav.locator('a[href="#check-heading"]').click();assert.equal(new URL(page.url()).hash,'#check-heading');
+      assert.equal(await page.locator('#network-title').inputValue(),'Navigation check — not submitted');
+      // Observe a normal display-clock tick without substituting time or ledger data.
+      await page.waitForTimeout(1200);assert.deepEqual(await timing(),initialTiming);
+      for(const id of ['network-password','network-admin','network-voter','network-setup-secret','network-setup-slope','network-share'])assert.equal(await page.locator(`#${id}`).inputValue(),'');
+      for(const id of ['network-deploy','network-join','network-cast','network-finalize','network-read'])assert.equal(await page.locator(`#${id}`).isDisabled(),true);
+      assert.equal(await page.locator('#network-events').textContent(),'');assert.equal(await page.evaluate(()=>typeof globalThis.midnight),'undefined');
+      assert.ok(await page.evaluate(()=>Math.max(document.body.scrollWidth,document.documentElement.scrollWidth)<=document.documentElement.clientWidth+1));
+      const height=await nav.evaluate(el=>Math.ceil(el.getBoundingClientRect().height)+100);await page.setViewportSize({width,height:Math.max(1000,height)});await nav.scrollIntoViewIfNeeded();
+      await nav.screenshot({path:join(out,`network-stage-navigation-${width}.png`)});
+      if(width===390){const timingPanel=page.locator('#network-election-timing');await timingPanel.scrollIntoViewIfNeeded();await timingPanel.screenshot({path:join(out,'activity-timing-unjoined-390.png')});}
+      assert.equal(errors,0);assert.equal(consoleErrors,0);assert.equal(external,0);assert.equal(loads,1);
+      report.cases.push({width,passed:true,destinations,checksShortcut:true,publicInputPreserved:true,realWasmAssets:wasm.size,
+        unjoinedTiming:initialTiming,unjoinedTickObservationMs:1200,desktopActivitySticky:width===1440,
+        walletGatesPreserved:true,documentLoads:loads,pageErrors:errors,consoleErrors,externalRequests:external});
+    }finally{await context.close();}
+  }
+  report.passed=true;console.log(JSON.stringify({networkStages:'passed',cases:report.cases.length}));
+}catch{report.passed=false;report.failedStage=stage;process.exitCode=1;console.log(JSON.stringify({networkStages:'failed',stage}));}
+finally{await browser?.close();if(server)await new Promise(done=>server.close(done));await mkdir(out,{recursive:true});await writeFile(join(out,'navigation-browser.json'),JSON.stringify(report,null,2)+'\n');}
