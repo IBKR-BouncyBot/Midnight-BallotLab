@@ -1,0 +1,448 @@
+{
+  "executedAt": "2026-11-06T08:07:05.151Z",
+  "node": "v24.18.0",
+  "scope": "local-landing-layout-and-real-destination-loaders",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "cases": [
+    {
+      "prefix": "/",
+      "width": 1440,
+      "destinations": [
+        {
+          "demo": "browser",
+          "ready": true,
+          "wasmLoaded": 1,
+          "activation": "keyboard-enter",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        },
+        {
+          "demo": "testnet",
+          "ready": true,
+          "wasmLoaded": 2,
+          "activation": "pointer",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        }
+      ],
+      "layout": {
+        "viewport": 1440,
+        "content": 1440,
+        "heroDisplay": "block",
+        "heroColumns": "none",
+        "heroWidth": 1320,
+        "introductionWidth": 950,
+        "outfitLoaded": true,
+        "bodyBackground": "rgb(10, 10, 10)"
+      },
+      "palette": [
+        "linear-gradient(145deg, rgb(23, 23, 23), rgb(16, 16, 16) 70%)",
+        "none",
+        "rgb(0, 0, 0)",
+        "rgb(0, 0, 254)",
+        "rgb(10, 10, 10)",
+        "rgb(104, 104, 104)",
+        "rgb(16, 16, 16)",
+        "rgb(160, 160, 160)",
+        "rgb(170, 170, 170)",
+        "rgb(185, 185, 185)",
+        "rgb(189, 189, 189)",
+        "rgb(193, 193, 193)",
+        "rgb(200, 200, 200)",
+        "rgb(208, 208, 208)",
+        "rgb(213, 213, 213)",
+        "rgb(221, 221, 221)",
+        "rgb(24, 24, 24)",
+        "rgb(255, 255, 255)",
+        "rgb(32, 32, 32)",
+        "rgb(36, 36, 36)",
+        "rgb(48, 48, 48)",
+        "rgb(51, 51, 51)",
+        "rgb(54, 54, 54)",
+        "rgb(69, 69, 69)",
+        "rgb(72, 72, 72)",
+        "rgb(74, 74, 74)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "screenshot": "landing-root-1440.png",
+      "supportQrLoaded": true,
+      "passed": true
+    },
+    {
+      "prefix": "/",
+      "width": 390,
+      "destinations": [
+        {
+          "demo": "browser",
+          "ready": true,
+          "wasmLoaded": 1,
+          "activation": "keyboard-enter",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        },
+        {
+          "demo": "testnet",
+          "ready": true,
+          "wasmLoaded": 2,
+          "activation": "pointer",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        }
+      ],
+      "layout": {
+        "viewport": 390,
+        "content": 390,
+        "heroDisplay": "block",
+        "heroColumns": "none",
+        "heroWidth": 354,
+        "introductionWidth": 354,
+        "outfitLoaded": true,
+        "bodyBackground": "rgb(10, 10, 10)"
+      },
+      "palette": [
+        "linear-gradient(145deg, rgb(23, 23, 23), rgb(16, 16, 16) 70%)",
+        "none",
+        "rgb(0, 0, 0)",
+        "rgb(0, 0, 254)",
+        "rgb(10, 10, 10)",
+        "rgb(104, 104, 104)",
+        "rgb(16, 16, 16)",
+        "rgb(160, 160, 160)",
+        "rgb(170, 170, 170)",
+        "rgb(185, 185, 185)",
+        "rgb(189, 189, 189)",
+        "rgb(193, 193, 193)",
+        "rgb(200, 200, 200)",
+        "rgb(208, 208, 208)",
+        "rgb(213, 213, 213)",
+        "rgb(221, 221, 221)",
+        "rgb(24, 24, 24)",
+        "rgb(255, 255, 255)",
+        "rgb(32, 32, 32)",
+        "rgb(36, 36, 36)",
+        "rgb(48, 48, 48)",
+        "rgb(51, 51, 51)",
+        "rgb(54, 54, 54)",
+        "rgb(69, 69, 69)",
+        "rgb(72, 72, 72)",
+        "rgb(74, 74, 74)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "screenshot": "landing-root-390.png",
+      "supportQrLoaded": true,
+      "passed": true
+    },
+    {
+      "prefix": "/",
+      "width": 320,
+      "destinations": [
+        {
+          "demo": "browser",
+          "ready": true,
+          "wasmLoaded": 1,
+          "activation": "keyboard-enter",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        },
+        {
+          "demo": "testnet",
+          "ready": true,
+          "wasmLoaded": 2,
+          "activation": "pointer",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        }
+      ],
+      "layout": {
+        "viewport": 320,
+        "content": 320,
+        "heroDisplay": "block",
+        "heroColumns": "none",
+        "heroWidth": 284,
+        "introductionWidth": 284,
+        "outfitLoaded": true,
+        "bodyBackground": "rgb(10, 10, 10)"
+      },
+      "palette": [
+        "linear-gradient(145deg, rgb(23, 23, 23), rgb(16, 16, 16) 70%)",
+        "none",
+        "rgb(0, 0, 0)",
+        "rgb(0, 0, 254)",
+        "rgb(10, 10, 10)",
+        "rgb(104, 104, 104)",
+        "rgb(16, 16, 16)",
+        "rgb(160, 160, 160)",
+        "rgb(170, 170, 170)",
+        "rgb(185, 185, 185)",
+        "rgb(189, 189, 189)",
+        "rgb(193, 193, 193)",
+        "rgb(200, 200, 200)",
+        "rgb(208, 208, 208)",
+        "rgb(213, 213, 213)",
+        "rgb(221, 221, 221)",
+        "rgb(24, 24, 24)",
+        "rgb(255, 255, 255)",
+        "rgb(32, 32, 32)",
+        "rgb(36, 36, 36)",
+        "rgb(48, 48, 48)",
+        "rgb(51, 51, 51)",
+        "rgb(54, 54, 54)",
+        "rgb(69, 69, 69)",
+        "rgb(72, 72, 72)",
+        "rgb(74, 74, 74)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "screenshot": "landing-root-320.png",
+      "supportQrLoaded": true,
+      "passed": true
+    },
+    {
+      "prefix": "/Midnight-BallotLab/",
+      "width": 1440,
+      "destinations": [
+        {
+          "demo": "browser",
+          "ready": true,
+          "wasmLoaded": 1,
+          "activation": "keyboard-enter",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        },
+        {
+          "demo": "testnet",
+          "ready": true,
+          "wasmLoaded": 2,
+          "activation": "pointer",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        }
+      ],
+      "layout": {
+        "viewport": 1440,
+        "content": 1440,
+        "heroDisplay": "block",
+        "heroColumns": "none",
+        "heroWidth": 1320,
+        "introductionWidth": 950,
+        "outfitLoaded": true,
+        "bodyBackground": "rgb(10, 10, 10)"
+      },
+      "palette": [
+        "linear-gradient(145deg, rgb(23, 23, 23), rgb(16, 16, 16) 70%)",
+        "none",
+        "rgb(0, 0, 0)",
+        "rgb(0, 0, 254)",
+        "rgb(10, 10, 10)",
+        "rgb(104, 104, 104)",
+        "rgb(16, 16, 16)",
+        "rgb(160, 160, 160)",
+        "rgb(170, 170, 170)",
+        "rgb(185, 185, 185)",
+        "rgb(189, 189, 189)",
+        "rgb(193, 193, 193)",
+        "rgb(200, 200, 200)",
+        "rgb(208, 208, 208)",
+        "rgb(213, 213, 213)",
+        "rgb(221, 221, 221)",
+        "rgb(24, 24, 24)",
+        "rgb(255, 255, 255)",
+        "rgb(32, 32, 32)",
+        "rgb(36, 36, 36)",
+        "rgb(48, 48, 48)",
+        "rgb(51, 51, 51)",
+        "rgb(54, 54, 54)",
+        "rgb(69, 69, 69)",
+        "rgb(72, 72, 72)",
+        "rgb(74, 74, 74)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "screenshot": "landing-project-1440.png",
+      "supportQrLoaded": true,
+      "passed": true
+    },
+    {
+      "prefix": "/Midnight-BallotLab/",
+      "width": 390,
+      "destinations": [
+        {
+          "demo": "browser",
+          "ready": true,
+          "wasmLoaded": 1,
+          "activation": "keyboard-enter",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        },
+        {
+          "demo": "testnet",
+          "ready": true,
+          "wasmLoaded": 2,
+          "activation": "pointer",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        }
+      ],
+      "layout": {
+        "viewport": 390,
+        "content": 390,
+        "heroDisplay": "block",
+        "heroColumns": "none",
+        "heroWidth": 354,
+        "introductionWidth": 354,
+        "outfitLoaded": true,
+        "bodyBackground": "rgb(10, 10, 10)"
+      },
+      "palette": [
+        "linear-gradient(145deg, rgb(23, 23, 23), rgb(16, 16, 16) 70%)",
+        "none",
+        "rgb(0, 0, 0)",
+        "rgb(0, 0, 254)",
+        "rgb(10, 10, 10)",
+        "rgb(104, 104, 104)",
+        "rgb(16, 16, 16)",
+        "rgb(160, 160, 160)",
+        "rgb(170, 170, 170)",
+        "rgb(185, 185, 185)",
+        "rgb(189, 189, 189)",
+        "rgb(193, 193, 193)",
+        "rgb(200, 200, 200)",
+        "rgb(208, 208, 208)",
+        "rgb(213, 213, 213)",
+        "rgb(221, 221, 221)",
+        "rgb(24, 24, 24)",
+        "rgb(255, 255, 255)",
+        "rgb(32, 32, 32)",
+        "rgb(36, 36, 36)",
+        "rgb(48, 48, 48)",
+        "rgb(51, 51, 51)",
+        "rgb(54, 54, 54)",
+        "rgb(69, 69, 69)",
+        "rgb(72, 72, 72)",
+        "rgb(74, 74, 74)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "screenshot": "landing-project-390.png",
+      "supportQrLoaded": true,
+      "passed": true
+    },
+    {
+      "prefix": "/Midnight-BallotLab/",
+      "width": 320,
+      "destinations": [
+        {
+          "demo": "browser",
+          "ready": true,
+          "wasmLoaded": 1,
+          "activation": "keyboard-enter",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        },
+        {
+          "demo": "testnet",
+          "ready": true,
+          "wasmLoaded": 2,
+          "activation": "pointer",
+          "runtimeBeforeChoice": false,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "consoleErrors": 0
+        }
+      ],
+      "layout": {
+        "viewport": 320,
+        "content": 320,
+        "heroDisplay": "block",
+        "heroColumns": "none",
+        "heroWidth": 284,
+        "introductionWidth": 284,
+        "outfitLoaded": true,
+        "bodyBackground": "rgb(10, 10, 10)"
+      },
+      "palette": [
+        "linear-gradient(145deg, rgb(23, 23, 23), rgb(16, 16, 16) 70%)",
+        "none",
+        "rgb(0, 0, 0)",
+        "rgb(0, 0, 254)",
+        "rgb(10, 10, 10)",
+        "rgb(104, 104, 104)",
+        "rgb(16, 16, 16)",
+        "rgb(160, 160, 160)",
+        "rgb(170, 170, 170)",
+        "rgb(185, 185, 185)",
+        "rgb(189, 189, 189)",
+        "rgb(193, 193, 193)",
+        "rgb(200, 200, 200)",
+        "rgb(208, 208, 208)",
+        "rgb(213, 213, 213)",
+        "rgb(221, 221, 221)",
+        "rgb(24, 24, 24)",
+        "rgb(255, 255, 255)",
+        "rgb(32, 32, 32)",
+        "rgb(36, 36, 36)",
+        "rgb(48, 48, 48)",
+        "rgb(51, 51, 51)",
+        "rgb(54, 54, 54)",
+        "rgb(69, 69, 69)",
+        "rgb(72, 72, 72)",
+        "rgb(74, 74, 74)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "screenshot": "landing-project-320.png",
+      "supportQrLoaded": true,
+      "passed": true
+    }
+  ],
+  "harnessSha256": "14bf482242ba11fe74e1841f503d6c189f2e88e27e4e17ffc7e6cfc19e96b4be",
+  "artifacts": {
+    "index.html": {
+      "bytes": 9243,
+      "sha256": "ba29e36a050c76b90c4bbbd48c95960a5a88921eb36f4cb5d8e09cd1c68a4780"
+    },
+    "landing.css": {
+      "bytes": 7187,
+      "sha256": "1593018e2d631aa1e3653d1ca09dcf491817ab0965ba5a6d3e475ce026a6122d"
+    },
+    "styles.css": {
+      "bytes": 30408,
+      "sha256": "4e0bc404735ed882d4c3cc9adae79fff09a2547a7b27ee5741e46a0b03bb6f5c"
+    },
+    "overview.css": {
+      "bytes": 13391,
+      "sha256": "b7f6b2bc8a6a27e6dd3336fc08817c1ad82c703e6f03b36a6869ff282271ef54"
+    },
+    "native-bundle.mjs": {
+      "bytes": 582431,
+      "sha256": "9eab45976edf646eaf2d1c360ce238fb7ca487a959d199eb05a4c12752bb105a"
+    },
+    "network-bundle.mjs": {
+      "bytes": 2872109,
+      "sha256": "55939740a81c9f195b52e3036d83ecfea3e21194bcf95944f2e56b9e401cb637"
+    }
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}
