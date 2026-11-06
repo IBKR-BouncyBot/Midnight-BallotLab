@@ -1,0 +1,64 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const source = await readFile(resolve(root, 'scripts/test-lace-preview-browser.mjs'), 'utf8');
+const extracted = source.slice(source.indexOf('function normalSettingsControlUsable('), source.indexOf('async function provingSettingsUsable('))
+  + source.slice(source.indexOf('function knownRequestPathLabel('), source.indexOf('const walletPublicAssetPaths ='))
+  + source.slice(source.indexOf('function visibleServiceCategory('), source.indexOf('async function waitForVisibleCurrentWalletServices('))
+  + source.slice(source.indexOf('function safeNavigationCategory('), source.indexOf('async function cycleNormalWalletViewsForConfiguration('));
+const vendorUrls = new Set(['https://midnight-preview.blockfrost.io/api/v0?project_id=public-policy-fixture',
+  'https://rpc.midnight-preview.blockfrost.io/?project_id=public-policy-fixture']);
+const context = vm.createContext({ URL, walletVendorServiceUrls: vendorUrls }); vm.runInContext(extracted, context, { timeout: 1000 });
+const cases = [
+  ['enabled-control-with-omitted-false-attribute', [true, true, null], true],
+  ['enabled-control-with-explicit-false', [true, true, 'false'], true],
+  ['reject-explicit-disabled-attribute', [true, true, 'true'], false],
+  ['reject-playwright-disabled-control', [true, false, null], false],
+  ['reject-hidden-control', [false, true, null], false],
+  ['reject-unexpected-disabled-attribute', [true, true, 'unexpected'], false],
+  ['reject-unavailable-disabled-observation', [true, true, undefined], false],
+  ['reject-coerced-visibility-value', ['true', true, null], false],
+].map(([name, values, expected]) => ({ name, passed: context.normalSettingsControlUsable(...values) === expected }));
+for (const [name, input, expected] of [
+  ['flags-label-with-query-values-omitted', 'https://e.lw.iog.io/flags/?privateFixture=value', 'wallet-public-flags'],
+  ['telemetry-fixed-label', 'https://e.lw.iog.io/batch/', 'wallet-telemetry'],
+  ['indexer-query-values-not-returned', 'https://midnight-preview.blockfrost.io/api/v0?project_id=private-fixture', 'wallet-indexer-current'],
+  ['unknown-indexer-path-not-returned', 'https://midnight-preview.blockfrost.io/private-fixture', 'wallet-indexer-current-other-path'],
+  ['node-fixed-label', 'https://rpc.midnight-preview.blockfrost.io/ws?project_id=private-fixture', 'wallet-node-current'],
+  ['unknown-host-not-returned', 'https://private-fixture.example/private-fixture', 'other'],
+  ['malformed-url-not-returned', 'private-fixture', 'other'],
+  ['loopback-prover-label-only', 'http://127.0.0.1:6300/prove/private-fixture', 'loopback-prover'],
+]) cases.push({ name, passed: context.knownRequestPathLabel(input) === expected });
+for (const [name, label, kind, expected] of [
+  ['current-visible-indexer', 'Indexer: https://midnight-preview.blockfrost.io/api/v0?project_id=public-policy-fixture', 'indexer', 'current'],
+  ['current-visible-node-normalized-slash', 'Node: https://rpc.midnight-preview.blockfrost.io?project_id=public-policy-fixture', 'node', 'current'],
+  ['retired-visible-indexer', 'Indexer: https://blockfrost.lw.iog.io/midnight-preview/', 'indexer', 'retired'],
+  ['retired-visible-node', 'Node: https://blockfrost.lw.iog.io/midnight-preview-rpc/', 'node', 'retired'],
+  ['reject-mismatched-visible-project', 'Indexer: https://midnight-preview.blockfrost.io/api/v0?project_id=not-observed', 'indexer', 'other'],
+  ['reject-mainnet-visible-service', 'Indexer: https://midnight-mainnet.blockfrost.io/api/v0?project_id=public-policy-fixture', 'indexer', 'other'],
+  ['reject-visible-service-wrong-role', 'Node: https://midnight-preview.blockfrost.io/api/v0?project_id=public-policy-fixture', 'node', 'other'],
+  ['missing-visible-label-unavailable', null, 'indexer', 'unavailable'],
+]) cases.push({ name, passed: context.visibleServiceCategory(label, kind) === expected });
+for (const [name, error, expected] of [
+  ['navigation-timeout-fixed-category', { name: 'TimeoutError', message: 'private-fixture' }, 'timeout'],
+  ['navigation-abort-redacts-message', { message: 'net::ERR_ABORTED private-fixture' }, 'navigation-aborted'],
+  ['navigation-block-redacts-message', { message: 'net::ERR_BLOCKED_BY_CLIENT private-fixture' }, 'navigation-blocked'],
+  ['navigation-failure-redacts-message', { message: 'net::ERR_FAILED private-fixture' }, 'navigation-failed'],
+  ['navigation-close-redacts-message', { message: 'Target closed private-fixture' }, 'page-or-context-closed'],
+  ['navigation-unknown-redacts-message', { message: 'private-fixture' }, 'other-boundary-failure'],
+]) cases.push({ name, passed: context.safeNavigationCategory(error) === expected });
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const report = { schema: 'midnight-ballot-lab/ci-lace-settings-usability-check/v1',
+  status: cases.every(item => item.passed) ? 'passed' : 'failed',
+  scope: 'exact-pure-runner-predicates-in-Node-VM-no-browser-wallet-network-or-proof-execution',
+  runnerSha256: hash(source), extractedFunctionSha256: hash(extracted),
+  harnessSha256: hash(await readFile(fileURLToPath(import.meta.url))), node: process.version,
+  passed: cases.filter(item => item.passed).length, total: cases.length, cases };
+await mkdir(dirname(fileURLToPath(import.meta.url)), { recursive: true });
+await writeFile(new URL('./result.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify({ status: report.status, passed: report.passed, total: report.total, runnerSha256: report.runnerSha256 }));
+if (report.status !== 'passed') process.exitCode = 1;

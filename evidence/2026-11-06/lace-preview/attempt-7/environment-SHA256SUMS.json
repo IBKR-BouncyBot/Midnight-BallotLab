@@ -1,0 +1,15 @@
+{
+  "schema": "midnight-ballot-lab/retained-evidence/v1",
+  "files": [
+    {
+      "path": "environment-initial.json",
+      "bytes": 815,
+      "sha256": "ff704a982115976c37be33d72da36984d8ba77e1dba376b0e1a18876b70fd282"
+    },
+    {
+      "path": "environment-provenance.json",
+      "bytes": 1944,
+      "sha256": "a8d8899bd7cc3dc47ae321d3ccbbb13c224ef4a893949544ffa4d55a5657b27f"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-settings-usability-check/v1",
+  "status": "passed",
+  "scope": "exact-pure-runner-predicates-in-Node-VM-no-browser-wallet-network-or-proof-execution",
+  "runnerSha256": "1a4321f8b4ec0d50bed8eaf0c3362839dc9dc248e90af0ceb41a9be589477e32",
+  "extractedFunctionSha256": "4df068ed15a5ff51bb32c7b9a977d0f83e33e3c5d7114a3cecde99a9d98172bb",
+  "harnessSha256": "001e2f0b97530aa9f99d8e7ec45708bae5878b9ce590f73e6f1cc92f0fe053b5",
+  "node": "v24.18.0",
+  "passed": 30,
+  "total": 30,
+  "cases": [
+    {
+      "name": "enabled-control-with-omitted-false-attribute",
+      "passed": true
+    },
+    {
+      "name": "enabled-control-with-explicit-false",
+      "passed": true
+    },
+    {
+      "name": "reject-explicit-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-playwright-disabled-control",
+      "passed": true
+    },
+    {
+      "name": "reject-hidden-control",
+      "passed": true
+    },
+    {
+      "name": "reject-unexpected-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-unavailable-disabled-observation",
+      "passed": true
+    },
+    {
+      "name": "reject-coerced-visibility-value",
+      "passed": true
+    },
+    {
+      "name": "flags-label-with-query-values-omitted",
+      "passed": true
+    },
+    {
+      "name": "telemetry-fixed-label",
+      "passed": true
+    },
+    {
+      "name": "indexer-query-values-not-returned",
+      "passed": true
+    },
+    {
+      "name": "unknown-indexer-path-not-returned",
+      "passed": true
+    },
+    {
+      "name": "node-fixed-label",
+      "passed": true
+    },
+    {
+      "name": "unknown-host-not-returned",
+      "passed": true
+    },
+    {
+      "name": "malformed-url-not-returned",
+      "passed": true
+    },
+    {
+      "name": "loopback-prover-label-only",
+      "passed": true
+    },
+    {
+      "name": "current-visible-indexer",
+      "passed": true
+    },
+    {
+      "name": "current-visible-node-normalized-slash",
+      "passed": true
+    },
+    {
+      "name": "retired-visible-indexer",
+      "passed": true
+    },
+    {
+      "name": "retired-visible-node",
+      "passed": true
+    },
+    {
+      "name": "reject-mismatched-visible-project",
+      "passed": true
+    },
+    {
+      "name": "reject-mainnet-visible-service",
+      "passed": true
+    },
+    {
+      "name": "reject-visible-service-wrong-role",
+      "passed": true
+    },
+    {
+      "name": "missing-visible-label-unavailable",
+      "passed": true
+    },
+    {
+      "name": "navigation-timeout-fixed-category",
+      "passed": true
+    },
+    {
+      "name": "navigation-abort-redacts-message",
+      "passed": true
+    },
+    {
+      "name": "navigation-block-redacts-message",
+      "passed": true
+    },
+    {
+      "name": "navigation-failure-redacts-message",
+      "passed": true
+    },
+    {
+      "name": "navigation-close-redacts-message",
+      "passed": true
+    },
+    {
+      "name": "navigation-unknown-redacts-message",
+      "passed": true
+    }
+  ]
+}

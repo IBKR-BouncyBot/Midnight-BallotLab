@@ -143,6 +143,15 @@ async function clearWalletPointerAndFocus(focusControl) {
   await wallet.mouse.move(0, 0);
   await wallet.getByTestId(focusControl).focus();
 }
+function safeNavigationCategory(error) {
+  if (error?.name === 'TimeoutError') return 'timeout';
+  const message = typeof error?.message === 'string' ? error.message : '';
+  if (message.includes('net::ERR_ABORTED')) return 'navigation-aborted';
+  if (message.includes('net::ERR_BLOCKED_BY_CLIENT')) return 'navigation-blocked';
+  if (message.includes('net::ERR_FAILED')) return 'navigation-failed';
+  if (message.includes('has been closed') || message.includes('Target closed')) return 'page-or-context-closed';
+  return 'other-boundary-failure';
+}
 async function cycleNormalWalletViewsForConfiguration() {
   // Signed Lace activates pending public flags only when no extension views
   // remain open. Observe its ordinary lifecycle; never call runtime.reload or
@@ -164,14 +173,40 @@ async function cycleNormalWalletViewsForConfiguration() {
   requireThat(browserContext.pages().every(page => !page.url().startsWith(extensionOrigin + '/')), 'extension-views-still-open');
   await setStage('wait-normal-wallet-worker-close');
   await poll(() => closed.size === previousWorkers.length, 45_000, 100);
-  await setStage('reopen-wallet-after-normal-configuration-activation');
-  wallet = await browserContext.newPage(); await wallet.goto(`${extensionOrigin}/expo/index.html`);
-  await poll(() => browserContext.serviceWorkers().some(worker => worker.url() === workerUrl && !previousWorkers.includes(worker)),
-    45_000, 100);
+  const replacementPresent = () => browserContext.serviceWorkers().some(worker => worker.url() === workerUrl && !previousWorkers.includes(worker));
   report.normalWalletViewCycle = { closedExtensionViews: closedViews, oldWorkerClosed: true,
-    replacementWorkerObserved: true, effectiveConfigurationStillRequired: true,
+    replacementWorkerObserved: false, replacementBeforeViewOpen: false, navigationAttempts: [],
+    onboardingReady: false, effectiveConfigurationStillRequired: true,
     scope: 'ordinary-view-and-worker-lifecycle-not-configuration-attestation' };
-  await save();
+  await setStage('wait-normal-wallet-replacement-before-view');
+  try { await poll(replacementPresent, 10_000, 100); report.normalWalletViewCycle.replacementBeforeViewOpen = true; }
+  catch (error) { if (safeFailures.get(error) !== 'bounded-stage-timeout') throw error; }
+  // The replacement worker can need a normal page to wake it. Only precreation
+  // navigation is retried, never wallet creation, funding, approval or submission.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const observation = { ordinal: attempt, action: 'page-creation', outcome: 'started' };
+    report.normalWalletViewCycle.navigationAttempts.push(observation);
+    try {
+      await setStage('reopen-wallet-after-normal-configuration-activation');
+      wallet = await browserContext.newPage();
+      observation.action = 'navigation'; await setStage('navigate-wallet-after-normal-configuration-activation');
+      await wallet.goto(`${extensionOrigin}/expo/index.html`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
+      observation.action = 'replacement-worker'; await setStage('wait-normal-wallet-replacement-after-view');
+      await poll(replacementPresent, 15_000, 100);
+      report.normalWalletViewCycle.replacementWorkerObserved = true;
+      observation.action = 'onboarding'; await setStage('wait-wallet-onboarding-after-configuration-activation');
+      await wallet.getByTestId('onboarding-start-create-wallet-button').waitFor({ state: 'visible', timeout: 20_000 });
+      observation.outcome = 'ready'; report.normalWalletViewCycle.onboardingReady = true;
+      await save(); return;
+    } catch (error) {
+      observation.outcome = safeFailures.get(error) === 'bounded-stage-timeout' ? 'timeout' : safeNavigationCategory(error);
+      await save();
+      await wallet?.close().catch(() => {});
+      if (!browserContext.browser()?.isConnected()) fail('wallet-browser-closed-during-precreation-navigation');
+      if (attempt < 3) await delay(250 * attempt);
+    }
+  }
+  fail('wallet-onboarding-reopen-unavailable');
 }
 function visibleServiceCategory(label, kind) {
   if (typeof label !== 'string' || label.length > 2048) return 'unavailable';

@@ -1,0 +1,163 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-preview-browser/v1",
+  "status": "failed",
+  "startedAt": "2026-11-06T21:39:50.028Z",
+  "networkId": "preview",
+  "execution": "genuine-disposable-Lace-and-application-UI",
+  "operations": [],
+  "transactionsRetried": 0,
+  "independentChainVerification": false,
+  "fundingSource": "separately-authorized-isolated-SDK-sponsor-not-browser-proof-evidence",
+  "privateArtifactsExported": false,
+  "hostedOriginTested": false,
+  "walletModeApiAttestation": false,
+  "httpProofProviderConfigured": false,
+  "runId": "42298074974",
+  "headSha": "12b431812fde99917bfe0739f4e64fe0a2ceb08f",
+  "laceVersion": "2.5.1",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "runnerSha256": "67a3057ced6ad8e9c8447c31ae633f9759a8a586d10a2cd3d340b1e609a2ec3e",
+  "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "playwright": "1.64.1",
+  "vendorServiceConfiguration": {
+    "source": "signed-wallet-normal-public-feature-service",
+    "indexer": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWs": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "node": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "nodeWs": {
+      "origin": "wss://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "queryValuesExported": false
+  },
+  "publicConfigurationPreflight": true,
+  "chromium": "156.0.8078.4",
+  "failedStage": "reopen-wallet-after-normal-configuration-activation",
+  "failureCategory": "sanitized-boundary-or-runtime-failure",
+  "settingsControls": [
+    {
+      "control": "settings-tab-btn",
+      "count": 0
+    },
+    {
+      "control": "option-list-item-network",
+      "count": 0
+    },
+    {
+      "control": "radio-button-testnet",
+      "count": 0
+    },
+    {
+      "control": "radio-button-midnight-preview",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet-confirm-button",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet",
+      "count": 0
+    },
+    {
+      "control": "option-list-item-midnight",
+      "count": 0
+    },
+    {
+      "control": "proof-server-in-process-radio",
+      "count": 0
+    },
+    {
+      "control": "proof-server-local-host-radio",
+      "count": 0
+    },
+    {
+      "control": "save-configuration-button",
+      "count": 0
+    },
+    {
+      "control": "midnight-settings-sheet-header",
+      "count": 0
+    },
+    {
+      "control": "side-sheet-close-button",
+      "count": 0
+    },
+    {
+      "control": "portfolio-tab-btn",
+      "count": 0
+    }
+  ],
+  "settingsModeObservations": [
+    {
+      "point": "failure",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": false
+        },
+        {
+          "mode": "local-host",
+          "present": false
+        }
+      ]
+    }
+  ],
+  "finishedAt": "2026-11-06T21:39:56.685Z",
+  "currentStage": "reopen-wallet-after-normal-configuration-activation",
+  "traffic": {
+    "blockedRequests": 10,
+    "blockedWebSockets": 0,
+    "walletWasmResources": 0,
+    "appWasmResources": 0,
+    "publicConfigurationRequests": 2,
+    "publicConfigurationResponses": 1,
+    "pageErrors": 0,
+    "consoleErrors": 1,
+    "consoleWarnings": 0,
+    "blockedRequestCategories": {
+      "unknownHost": 3,
+      "unexpectedKnownPathOrMethod": 4,
+      "queryOrCredentials": 3,
+      "unexpectedPort": 0,
+      "invalidUrl": 0
+    },
+    "blockedKnownPaths": {
+      "wallet-public-flags": 0,
+      "wallet-telemetry": 1,
+      "wallet-config-other-path": 0,
+      "wallet-indexer-current": 0,
+      "wallet-indexer-current-other-path": 0,
+      "wallet-node-current": 0,
+      "wallet-node-current-other-path": 0,
+      "wallet-indexer-retired": 0,
+      "wallet-node-retired": 0,
+      "public-proving-assets": 0,
+      "loopback-prover": 0,
+      "other": 9
+    }
+  }
+}
