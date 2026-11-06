@@ -41,7 +41,7 @@ const report = {
 const journal = { schema: 'midnight-ballot-lab/ci-public-transaction-journal/v1', networkId: 'preview', operations: report.operations };
 let output, browserContext, app, wallet, server, origin, profileRoot;
 let stage = 'ci-prerequisites', currentOperation, canSave = false, shuttingDown = false;
-let walletPassword, appPassword, publicIdentity;
+let walletPassword, appPassword, publicIdentity, detachWalletResponseObserver;
 const walletWasmObservations = [];
 const walletVendorServiceUrls = new Set(), configurationResponses = [];
 let configurationFailure = false;
@@ -152,61 +152,65 @@ function safeNavigationCategory(error) {
   if (message.includes('has been closed') || message.includes('Target closed')) return 'page-or-context-closed';
   return 'other-boundary-failure';
 }
-async function cycleNormalWalletViewsForConfiguration() {
-  // Signed Lace activates pending public flags only when no extension views
-  // remain open. Observe its ordinary lifecycle; never call runtime.reload or
-  // inspect/change worker, extension-storage, or application-private state.
-  const workerUrl = `${extensionOrigin}/js/sw/sw-script.js`;
-  const previousWorkers = browserContext.serviceWorkers().filter(worker => worker.url() === workerUrl);
+async function restartNormalWalletContextBeforeCreation(launchContext) {
+  requireThat(!report.freshWalletCreated && walletPassword === undefined && appPassword === undefined
+    && report.operations.length === 0 && !report.fundingRequestSha256 && !report.normalBrowserContextRestart,
+  'browser-restart-only-before-wallet-creation');
+  requireThat(!configurationFailure && traffic.publicConfigurationResponses > 0, 'normal-wallet-public-configuration-required');
+  // Freeze observation of the retiring context, then drain every already
+  // captured normal response before closing it. A genuine malformed response
+  // remains fatal; context termination cannot silently reset that failure.
+  detachWalletResponseObserver();
+  await bounded(Promise.all(configurationResponses), 30_000);
+  requireThat(!configurationFailure, 'invalid-wallet-public-configuration-response');
+  const previousWorkers = browserContext.serviceWorkers().filter(worker => worker.url() === `${extensionOrigin}/js/sw/sw-script.js`);
   requireThat(previousWorkers.length === 1, 'one-current-extension-worker-required');
   const closed = new Set();
   for (const worker of previousWorkers) worker.once('close', () => { closed.add(worker); });
-  await browserContext.newPage(); // Keep an ordinary blank tab/context alive.
-  await setStage('close-wallet-views-for-normal-configuration-activation');
-  let closedViews = 0;
-  for (let pass = 0; pass < 3; pass++) {
-    const views = browserContext.pages().filter(page => page.url().startsWith(extensionOrigin + '/'));
-    if (views.length === 0) break;
-    for (const view of views) { await view.close(); closedViews++; }
-    await delay(100);
-  }
-  requireThat(browserContext.pages().every(page => !page.url().startsWith(extensionOrigin + '/')), 'extension-views-still-open');
-  await setStage('wait-normal-wallet-worker-close');
-  await poll(() => closed.size === previousWorkers.length, 45_000, 100);
-  const replacementPresent = () => browserContext.serviceWorkers().some(worker => worker.url() === workerUrl && !previousWorkers.includes(worker));
-  report.normalWalletViewCycle = { closedExtensionViews: closedViews, oldWorkerClosed: true,
-    replacementWorkerObserved: false, replacementBeforeViewOpen: false, navigationAttempts: [],
+  report.normalBrowserContextRestart = { beforeWalletCreation: true, sameIsolatedProfile: true,
+    closedExtensionViews: 0, previousWorkerClosed: false,
+    previousContextClosed: false, contextReopened: false, serviceWorkerObserved: false,
     onboardingReady: false, effectiveConfigurationStillRequired: true,
-    scope: 'ordinary-view-and-worker-lifecycle-not-configuration-attestation' };
-  await setStage('wait-normal-wallet-replacement-before-view');
-  try { await poll(replacementPresent, 10_000, 100); report.normalWalletViewCycle.replacementBeforeViewOpen = true; }
-  catch (error) { if (safeFailures.get(error) !== 'bounded-stage-timeout') throw error; }
-  // The replacement worker can need a normal page to wake it. Only precreation
-  // navigation is retried, never wallet creation, funding, approval or submission.
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const observation = { ordinal: attempt, action: 'page-creation', outcome: 'started' };
-    report.normalWalletViewCycle.navigationAttempts.push(observation);
-    try {
-      await setStage('reopen-wallet-after-normal-configuration-activation');
-      wallet = await browserContext.newPage();
-      observation.action = 'navigation'; await setStage('navigate-wallet-after-normal-configuration-activation');
-      await wallet.goto(`${extensionOrigin}/expo/index.html`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
-      observation.action = 'replacement-worker'; await setStage('wait-normal-wallet-replacement-after-view');
-      await poll(replacementPresent, 15_000, 100);
-      report.normalWalletViewCycle.replacementWorkerObserved = true;
-      observation.action = 'onboarding'; await setStage('wait-wallet-onboarding-after-configuration-activation');
-      await wallet.getByTestId('onboarding-start-create-wallet-button').waitFor({ state: 'visible', timeout: 20_000 });
-      observation.outcome = 'ready'; report.normalWalletViewCycle.onboardingReady = true;
-      await save(); return;
-    } catch (error) {
-      observation.outcome = safeFailures.get(error) === 'bounded-stage-timeout' ? 'timeout' : safeNavigationCategory(error);
-      await save();
-      await wallet?.close().catch(() => {});
-      if (!browserContext.browser()?.isConnected()) fail('wallet-browser-closed-during-precreation-navigation');
-      if (attempt < 3) await delay(250 * attempt);
+    scope: 'ordinary-same-profile-browser-restart-not-configuration-attestation' };
+  let action = 'view-close';
+  try {
+    await browserContext.newPage();
+    await setStage('close-wallet-views-for-normal-configuration-activation');
+    for (let pass = 0; pass < 3; pass++) {
+      const views = browserContext.pages().filter(page => page.url().startsWith(extensionOrigin + '/'));
+      if (views.length === 0) break;
+      for (const view of views) { await view.close(); report.normalBrowserContextRestart.closedExtensionViews++; }
+      await delay(100);
     }
+    requireThat(browserContext.pages().every(page => !page.url().startsWith(extensionOrigin + '/')), 'extension-views-still-open');
+    action = 'worker-handoff'; await setStage('wait-normal-wallet-worker-close');
+    // Lace persists flags before requesting its normal worker reload. Wait for
+    // that handoff, then relaunch the command-line-loaded unmodified extension.
+    await poll(() => closed.size === previousWorkers.length, 45_000, 100);
+    report.normalBrowserContextRestart.previousWorkerClosed = true;
+    action = 'context-close';
+    await setStage('restart-browser-context-before-wallet-creation');
+    await bounded(browserContext.close(), 30_000);
+    report.normalBrowserContextRestart.previousContextClosed = true;
+    action = 'context-launch'; await setStage('relaunch-browser-context-with-same-profile');
+    await bounded(launchContext(), 60_000);
+    report.normalBrowserContextRestart.contextReopened = true;
+    action = 'navigation'; await setStage('open-wallet-after-normal-browser-restart');
+    wallet = await browserContext.newPage();
+    await wallet.goto(`${extensionOrigin}/expo/index.html`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
+    action = 'service-worker';
+    await poll(() => browserContext.serviceWorkers().some(worker => worker.url() === `${extensionOrigin}/js/sw/sw-script.js`), 30_000, 100);
+    report.normalBrowserContextRestart.serviceWorkerObserved = true;
+    action = 'onboarding'; await setStage('wait-onboarding-after-normal-browser-restart');
+    await wallet.getByTestId('onboarding-start-create-wallet-button').waitFor({ state: 'visible', timeout: 30_000 });
+    requireThat(!configurationFailure, 'invalid-wallet-public-configuration-response');
+    report.normalBrowserContextRestart.onboardingReady = true; await save();
+  } catch (error) {
+    report.normalBrowserContextRestart.failedAction = action;
+    report.normalBrowserContextRestart.failureCategory = safeFailures.get(error) === 'bounded-stage-timeout'
+      ? 'timeout' : safeNavigationCategory(error);
+    await save(); throw error;
   }
-  fail('wallet-onboarding-reopen-unavailable');
 }
 function visibleServiceCategory(label, kind) {
   if (typeof label !== 'string' || label.length > 2048) return 'unavailable';
@@ -701,6 +705,7 @@ try {
   profileRoot = await mkdtemp(join(temp, 'lace-preview-wallet-'));
   server = await startServer(); origin = `http://127.0.0.1:${server.address().port}`;
   await setStage('start-genuine-extension');
+  const launchWalletContext = async () => {
   const allowedHosts = ['127.0.0.1', 'localhost', 'indexer.preview.midnight.network', 'rpc.preview.midnight.network',
     'blockfrost.lw.iog.io', 'e.lw.iog.io', 'midnight-preview.blockfrost.io', 'rpc.midnight-preview.blockfrost.io',
     ...new Set([...walletPublicAssetPaths].map(path => new URL(path).hostname))];
@@ -722,7 +727,8 @@ try {
     if (allowedNetworkUrl(socket.url(), 'GET') && new URL(socket.url()).protocol === 'wss:') socket.connectToServer();
     else { traffic.blockedWebSockets++; socket.close(); }
   });
-  browserContext.on('response', response => {
+  const activeContext = browserContext;
+  const responseObserver = response => {
     const url = response.url();
     if (response.ok() && validPublicConfigurationRequest(response.request()) && response.request().method() === 'POST') {
       configurationResponses.push((async () => {
@@ -741,7 +747,11 @@ try {
       if (url.startsWith(extensionOrigin + '/')) traffic.walletWasmResources++;
       else if (url.startsWith(origin + '/')) traffic.appWasmResources++;
     }
-  });
+  };
+  activeContext.on('response', responseObserver);
+  detachWalletResponseObserver = () => activeContext.off('response', responseObserver);
+  };
+  await launchWalletContext();
   wallet = await browserContext.newPage(); await wallet.goto(`${extensionOrigin}/expo/index.html`);
   await setStage('observe-normal-wallet-public-service-configuration');
   const normalConfigurationReady = () => {
@@ -759,7 +769,7 @@ try {
     await wallet.reload({ waitUntil: 'domcontentloaded' });
     await poll(normalConfigurationReady, 30_000, 250);
   }
-  await cycleNormalWalletViewsForConfiguration();
+  await restartNormalWalletContextBeforeCreation(launchWalletContext);
   await setStage('create-fresh-test-wallet');
   const freshPassword = prefix => {
     for (let attempt = 0; attempt < 32; attempt++) {

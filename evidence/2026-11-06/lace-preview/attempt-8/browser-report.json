@@ -1,0 +1,121 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-preview-browser/v1",
+  "status": "failed",
+  "startedAt": "2026-11-06T21:48:19.967Z",
+  "networkId": "preview",
+  "execution": "genuine-disposable-Lace-and-application-UI",
+  "operations": [],
+  "transactionsRetried": 0,
+  "independentChainVerification": false,
+  "fundingSource": "separately-authorized-isolated-SDK-sponsor-not-browser-proof-evidence",
+  "privateArtifactsExported": false,
+  "hostedOriginTested": false,
+  "walletModeApiAttestation": false,
+  "httpProofProviderConfigured": false,
+  "runId": "42299289221",
+  "headSha": "cf18b45b33c023b30840fa9a5880551745474650",
+  "laceVersion": "2.5.1",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "runnerSha256": "1a4321f8b4ec0d50bed8eaf0c3362839dc9dc248e90af0ceb41a9be589477e32",
+  "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "playwright": "1.64.1",
+  "vendorServiceConfiguration": {
+    "source": "signed-wallet-normal-public-feature-service",
+    "indexer": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWs": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "node": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "nodeWs": {
+      "origin": "wss://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "queryValuesExported": false
+  },
+  "publicConfigurationPreflight": true,
+  "chromium": "156.0.8078.4",
+  "normalWalletViewCycle": {
+    "closedExtensionViews": 1,
+    "oldWorkerClosed": true,
+    "replacementWorkerObserved": false,
+    "replacementBeforeViewOpen": false,
+    "navigationAttempts": [
+      {
+        "ordinal": 1,
+        "action": "navigation",
+        "outcome": "navigation-blocked"
+      },
+      {
+        "ordinal": 2,
+        "action": "navigation",
+        "outcome": "navigation-blocked"
+      },
+      {
+        "ordinal": 3,
+        "action": "navigation",
+        "outcome": "navigation-blocked"
+      }
+    ],
+    "onboardingReady": false,
+    "effectiveConfigurationStillRequired": true,
+    "scope": "ordinary-view-and-worker-lifecycle-not-configuration-attestation"
+  },
+  "failedStage": "navigate-wallet-after-normal-configuration-activation",
+  "failureCategory": "wallet-onboarding-reopen-unavailable",
+  "settingsControls": [],
+  "finishedAt": "2026-11-06T21:48:37.814Z",
+  "currentStage": "navigate-wallet-after-normal-configuration-activation",
+  "traffic": {
+    "blockedRequests": 11,
+    "blockedWebSockets": 0,
+    "walletWasmResources": 0,
+    "appWasmResources": 0,
+    "publicConfigurationRequests": 2,
+    "publicConfigurationResponses": 1,
+    "pageErrors": 0,
+    "consoleErrors": 2,
+    "consoleWarnings": 0,
+    "blockedRequestCategories": {
+      "unknownHost": 3,
+      "unexpectedKnownPathOrMethod": 4,
+      "queryOrCredentials": 4,
+      "unexpectedPort": 0,
+      "invalidUrl": 0
+    },
+    "blockedKnownPaths": {
+      "wallet-public-flags": 0,
+      "wallet-telemetry": 1,
+      "wallet-config-other-path": 0,
+      "wallet-indexer-current": 0,
+      "wallet-indexer-current-other-path": 0,
+      "wallet-node-current": 0,
+      "wallet-node-current-other-path": 0,
+      "wallet-indexer-retired": 0,
+      "wallet-node-retired": 0,
+      "public-proving-assets": 0,
+      "loopback-prover": 0,
+      "other": 10
+    }
+  }
+}

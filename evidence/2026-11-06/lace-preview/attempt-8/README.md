@@ -1,0 +1,13 @@
+# Lace Preview attempt 8
+
+[GitHub run 42299289221](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42299289221) executed commit `cf18b45b33c023b30840fa9a5880551745474650`. Its unchanged [browser report](browser-report.json) records closure of the old extension worker, no replacement during the short preliminary wait, and three ordinary navigation attempts classified as `navigation-blocked` (`ERR_BLOCKED_BY_CLIENT`). Onboarding was not reached. The result is more specific than a timeout, but does not independently establish why Chromium blocked the reloaded extension page.
+
+The attempt ended at `wallet-onboarding-reopen-unavailable`, before wallet creation, application connection or funding. The [public journal](public-journal.json) contains no application operations. No DUST registration, proof or transaction result is claimed.
+
+The revised runner replaces the failed reopening/retry path with exactly one ordinary browser-context close and relaunch using the same isolated profile, signed extension and shared launch/request policies. It first drains already-observed configuration responses without clearing a genuine validation failure, closes ordinary extension views, and waits for the old-worker handoff that follows Lace's normal flag persistence. It then restarts the context; it does not call `runtime.reload`, inspect private storage, inject configuration or retry wallet creation or transactions. Current visible services before Save and exact connector/service-health/balance gates remain mandatory before funding. This revised browser path has not been executed in this retained attempt.
+
+[30 pure boundary checks](precreation-boundary-check.json) and [36 request-policy checks](request-policy-check.json) passed against revised runner `1769149587313f149301e4595698d38160f452fcffdfad6dc806c031cb9e9b35`; exact [boundary](check-precreation-boundaries.mjs.txt) and [policy](check-request-policy.mjs.txt) harnesses are retained. These Node checks and peer review do not establish that the new restart succeeds in Chromium.
+
+The separate [environment report](environment-initial.json), [provenance](environment-provenance.json) and [hashes](environment-SHA256SUMS.json) cover a successful initial headed Chromium launch only. Dependency repair was skipped. That gate did not load Lace, generate proofs or transact.
+
+The [artifact validation](evidence-artifact-validation.json) binds the verified GitHub archive digest to the byte-exact browser report, journal and [official extension acquisition report](lace-acquisition.json). No private logs, profiles, keys, witness data, screenshots, traces or service query values were retained.

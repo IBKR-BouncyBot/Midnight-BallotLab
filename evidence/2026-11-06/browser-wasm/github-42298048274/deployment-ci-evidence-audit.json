@@ -1,0 +1,249 @@
+{
+  "schema": "midnight-ballot-lab/pages-ci-evidence-audit/v1",
+  "status": "passed",
+  "checkedAt": "2026-11-06T21:52:29.278880+00:00",
+  "headSha": "12b431812fde99917bfe0739f4e64fe0a2ceb08f",
+  "runId": 42298048274,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42298048274",
+  "runAttempt": 1,
+  "artifacts": {
+    "pages-build-evidence": {
+      "id": 13542519356,
+      "name": "pages-build-evidence",
+      "bytes": 4387379,
+      "expired": false,
+      "digest": "sha256:0f714625828c189163e11a2457f6fc3dc00a4078f77f9c651c849d745753b133",
+      "headSha": "12b431812fde99917bfe0739f4e64fe0a2ceb08f"
+    },
+    "github-pages": {
+      "id": 13542469354,
+      "name": "github-pages",
+      "bytes": 143520003,
+      "expired": false,
+      "digest": "sha256:e7e987268bdeef5c2d19a672bbc9fbc213f2716274ba9f22df4e88f00e497f84",
+      "headSha": "12b431812fde99917bfe0739f4e64fe0a2ceb08f"
+    }
+  },
+  "downloadedArtifacts": [
+    "pages-build-evidence"
+  ],
+  "pagesArchiveDownloadedThisRun": false,
+  "scope": "Exact-head GitHub deployment and digest-verified CI reports. Runtime hashes match the previously fully audited Pages artifact; no new full Pages archive comparison.",
+  "priorFullArchiveAudit": {
+    "headSha": "71ad012db09b797e8dff8a7300b13a8632d81bcb",
+    "runId": 42276992287,
+    "artifactId": 13533963266
+  },
+  "changedSourcePaths": [
+    ".gitattributes",
+    ".github/workflows/lace-preview-acceptance.yml",
+    ".github/workflows/preview-service-diagnostic.yml",
+    "README.md",
+    "contracts/test/lace-ci-progress.test.mjs",
+    "contracts/test/lace-ci-public-files.test.mjs",
+    "docs/CI_LACE_PREVIEW.md",
+    "docs/GITHUB_EXECUTION.md",
+    "evidence/2026-11-06/browser-wasm/github-42276992287/README.md",
+    "evidence/2026-11-06/browser-wasm/github-42276992287/SHA256SUMS.json",
+    "evidence/2026-11-06/browser-wasm/github-42276992287/browser-proof-evidence.json",
+    "evidence/2026-11-06/browser-wasm/github-42276992287/deployment-artifact-audit.json",
+    "evidence/2026-11-06/browser-wasm/github-42276992287/provenance.json",
+    "evidence/2026-11-06/browser-wasm/github-42285171322/README.md",
+    "evidence/2026-11-06/browser-wasm/github-42285171322/SHA256SUMS.json",
+    "evidence/2026-11-06/browser-wasm/github-42285171322/browser-proof-evidence.json",
+    "evidence/2026-11-06/browser-wasm/github-42285171322/deployment-ci-evidence-audit.json",
+    "evidence/2026-11-06/browser-wasm/github-42285171322/provenance.json",
+    "evidence/2026-11-06/browser-wasm/github-42292559682/README.md",
+    "evidence/2026-11-06/browser-wasm/github-42292559682/SHA256SUMS.json",
+    "evidence/2026-11-06/browser-wasm/github-42292559682/browser-proof-evidence.json",
+    "evidence/2026-11-06/browser-wasm/github-42292559682/deployment-ci-evidence-audit.json",
+    "evidence/2026-11-06/browser-wasm/github-42292559682/prior-pages-deployment.json",
+    "evidence/2026-11-06/browser-wasm/github-42292559682/provenance.json",
+    "evidence/2026-11-06/lace-2.5.1/README.md",
+    "evidence/2026-11-06/lace-2.5.1/acquisition.json",
+    "evidence/2026-11-06/lace-2.5.1/static-review.json",
+    "evidence/2026-11-06/lace-preview/attempt-1/README.md",
+    "evidence/2026-11-06/lace-preview/attempt-1/browser-report.json",
+    "evidence/2026-11-06/lace-preview/attempt-1/lace-acquisition.json",
+    "evidence/2026-11-06/lace-preview/attempt-1/provenance.json",
+    "evidence/2026-11-06/lace-preview/attempt-1/public-journal.json",
+    "evidence/2026-11-06/lace-preview/attempt-2/README.md",
+    "evidence/2026-11-06/lace-preview/attempt-2/browser-report.json",
+    "evidence/2026-11-06/lace-preview/attempt-2/lace-acquisition.json",
+    "evidence/2026-11-06/lace-preview/attempt-2/provenance.json",
+    "evidence/2026-11-06/lace-preview/attempt-2/public-journal.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/README.md",
+    "evidence/2026-11-06/lace-preview/attempt-3/browser-report.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/evidence-artifact-validation.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/funding-artifact-validation.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/funding-files.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/funding-request.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/funding.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/lace-acquisition.json",
+    "evidence/2026-11-06/lace-preview/attempt-3/public-journal.json",
+    "evidence/2026-11-06/lace-preview/attempt-4/README.md",
+    "evidence/2026-11-06/lace-preview/attempt-4/browser-report.json",
+    "evidence/2026-11-06/lace-preview/attempt-4/check-settings.mjs.txt",
+    "evidence/2026-11-06/lace-preview/attempt-4/evidence-artifact-validation.json",
+    "evidence/2026-11-06/lace-preview/attempt-4/lace-acquisition.json",
+    "evidence/2026-11-06/lace-preview/attempt-4/public-journal.json",
+    "evidence/2026-11-06/lace-preview/attempt-4/settings-predicate-check.json",
+    "evidence/2026-11-06/lace-preview/attempt-5/README.md",
+    "evidence/2026-11-06/lace-preview/attempt-5/browser-report.json",
+    "evidence/2026-11-06/lace-preview/attempt-5/check-request-policy.mjs.txt",
+    "evidence/2026-11-06/lace-preview/attempt-5/check-settings-diagnostics.mjs.txt",
+    "evidence/2026-11-06/lace-preview/attempt-5/evidence-artifact-validation.json",
+    "evidence/2026-11-06/lace-preview/attempt-5/lace-acquisition.json",
+    "evidence/2026-11-06/lace-preview/attempt-5/public-journal.json",
+    "evidence/2026-11-06/lace-preview/attempt-5/request-policy-check.json",
+    "evidence/2026-11-06/lace-preview/attempt-5/settings-diagnostics-check.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/README.md",
+    "evidence/2026-11-06/lace-preview/attempt-6/browser-report.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/check-request-policy.mjs.txt",
+    "evidence/2026-11-06/lace-preview/attempt-6/check-settings-activation.mjs.txt",
+    "evidence/2026-11-06/lace-preview/attempt-6/environment-SHA256SUMS.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/environment-initial.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/environment-provenance.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/evidence-artifact-validation.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/lace-acquisition.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/public-journal.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/request-policy-recheck.json",
+    "evidence/2026-11-06/lace-preview/attempt-6/settings-activation-check.json",
+    "evidence/2026-11-06/lace-preview/normal-configuration-source-review.json",
+    "evidence/2026-11-06/lace-preview/policy-review/README.md",
+    "evidence/2026-11-06/lace-preview/policy-review/result.json",
+    "evidence/2026-11-06/lace-preview/policy-review/tested-harness.txt",
+    "evidence/2026-11-06/lace-preview/service-diagnostic/README.md",
+    "evidence/2026-11-06/lace-preview/service-diagnostic/SHA256SUMS.json",
+    "evidence/2026-11-06/lace-preview/service-diagnostic/audit.json",
+    "evidence/2026-11-06/lace-preview/service-diagnostic/report.json",
+    "scripts/ci-acquire-lace.mjs",
+    "scripts/ci-browser-environment.mjs",
+    "scripts/ci-lace-preview-process.sh",
+    "scripts/ci-lace-preview-progress.mjs",
+    "scripts/ci-lace-preview-public-check.mjs",
+    "scripts/ci-preview-service-diagnostic.mjs",
+    "scripts/test-lace-preview-browser.mjs"
+  ],
+  "applicationRuntimeSourceUnchanged": true,
+  "runtimeHashes": {
+    "native": "dde3b295e04a4058113bfa55d3b7c49b0104e122c775568f37622dda4f3ca5a9",
+    "network": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+    "worker": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+    "manifest": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+  },
+  "circuitAssetRecordsCompared": 21,
+  "parameterRecordsCompared": 5,
+  "networkWasmAssetsCompared": 3,
+  "tests": [
+    {
+      "log": "native-boundary-tests.log",
+      "tests": 111,
+      "passed": 111,
+      "failed": 0
+    },
+    {
+      "log": "native-election-tests.log",
+      "tests": 62,
+      "passed": 62,
+      "failed": 0
+    },
+    {
+      "log": "provider-api-tests.log",
+      "tests": 13,
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "log": "browser-prover-failure-tests.log",
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "report": "native-browser/result.json",
+      "cases": 9,
+      "status": "passed"
+    },
+    {
+      "report": "network-browser/evidence.json",
+      "cases": 10,
+      "status": "passed"
+    }
+  ],
+  "packaging": {
+    "status": "passed",
+    "localReferences": 132,
+    "sourceFiles": 863,
+    "nativeMode": "included",
+    "networkClient": "included",
+    "urlShapes": [
+      "https://example.github.io/",
+      "https://example.github.io/arbitrary-repository-name/"
+    ],
+    "scope": "Static packaging and path checks; no browser or GitHub deployment execution"
+  },
+  "testedVersions": {
+    "compiler": "0.31.1",
+    "runtime": "0.16.0",
+    "midnightJs": "4.1.1",
+    "ledger": "8.1.0",
+    "zkir": "2.1.1",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4",
+    "node": "24.22.2",
+    "npm": "11.19.1",
+    "python": "3.12.16"
+  },
+  "browserProofs": {
+    "standaloneProofs": 8,
+    "circuits": 7,
+    "boundTransactionProofs": 1,
+    "transactionRecord": {
+      "circuit": "configureKeys",
+      "construction": "official-sdk-from-generated-state",
+      "provider": "production-proveTx",
+      "callbackOrder": [
+        "check",
+        "prove"
+      ],
+      "bindingOverridePresent": true,
+      "proofBytes": 4853,
+      "proofSha256": "32c00461c9259d2f2881aa0ac3c669d3598ea16ba08b7c4aa7bc4b82f3578e14",
+      "checkElapsedMs": 8,
+      "proveElapsedMs": 86087,
+      "elapsedMs": 86104
+    },
+    "negativeChecks": 2,
+    "unexpectedRequestsOrErrors": 0,
+    "startedAt": "2026-11-06T21:40:38.755Z",
+    "finishedAt": "2026-11-06T21:47:35.633Z"
+  },
+  "jobs": [
+    {
+      "id": 128168296819,
+      "name": "Test native election and build static site",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:35:57Z",
+      "completedAt": "2026-11-06T21:47:45Z",
+      "successfulSteps": 26
+    },
+    {
+      "id": 128173743888,
+      "name": "Deploy GitHub Pages frontend",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:47:49Z",
+      "completedAt": "2026-11-06T21:48:12Z",
+      "successfulSteps": 4
+    }
+  ],
+  "deploymentId": 7611591118,
+  "deploymentConclusion": "success",
+  "deploymentUrl": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+  "deploymentCompletedAt": "2026-11-06T21:48:13Z",
+  "privateTextFindings": [],
+  "hostedOriginRequested": false,
+  "walletActionsPerformedByAudit": false,
+  "networkTransactionsPerformedByAudit": false,
+  "laceWorkflowControlledByThisAudit": false
+}
