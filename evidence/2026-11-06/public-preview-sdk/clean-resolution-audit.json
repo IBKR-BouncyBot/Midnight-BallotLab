@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-11-06T17:08:59.896Z",
+  "scope": "staged-source-hashes-and-clean-package-resolutions",
+  "walletStarted": false,
+  "networkRequests": false,
+  "privateStateRead": false,
+  "dependencyRoot": "sdk",
+  "runtimeRoot": "sdk/runtime",
+  "stagedFiles": 40,
+  "sourceMismatches": [],
+  "lockHashMatches": true,
+  "routes": [
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/compact-runtime",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/compact-runtime/dist/index.js"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/midnight-js-protocol/ledger",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-protocol/dist/ledger.cjs"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/midnight-js-protocol/compact-js",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-protocol/dist/compact-js.cjs"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/midnight-js-contracts",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-contracts/dist/index.cjs"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/wallet-sdk",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk/dist/index.js"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/ledger-v8",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/ledger-v8/midnight_ledger_wasm_fs.js"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/onchain-runtime-v3",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/onchain-runtime-v3/midnight_onchain_runtime_wasm_fs.js"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/wallet-sdk-shielded",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/index.js"
+    },
+    {
+      "origin": "package.json",
+      "package": "@midnight-ntwrk/wallet-sdk-dust-wallet",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/compact-runtime",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/compact-runtime/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/midnight-js-protocol/ledger",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-protocol/dist/ledger.cjs"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/midnight-js-protocol/compact-js",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-protocol/dist/compact-js.cjs"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/midnight-js-contracts",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-contracts/dist/index.cjs"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/wallet-sdk",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/ledger-v8",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/ledger-v8/midnight_ledger_wasm_fs.js"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/onchain-runtime-v3",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/onchain-runtime-v3/midnight_onchain_runtime_wasm_fs.js"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/wallet-sdk-shielded",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/native/sdk-client.mjs",
+      "package": "@midnight-ntwrk/wallet-sdk-dust-wallet",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/compact-runtime",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/compact-runtime/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/midnight-js-protocol/ledger",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-protocol/dist/ledger.cjs"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/midnight-js-protocol/compact-js",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-protocol/dist/compact-js.cjs"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/midnight-js-contracts",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/midnight-js-contracts/dist/index.cjs"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/wallet-sdk",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/ledger-v8",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/ledger-v8/midnight_ledger_wasm_fs.js"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/onchain-runtime-v3",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/onchain-runtime-v3/midnight_onchain_runtime_wasm_fs.js"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/wallet-sdk-shielded",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk-shielded/dist/index.js"
+    },
+    {
+      "origin": "runtime/contracts/managed/native-election/contract/index.js",
+      "package": "@midnight-ntwrk/wallet-sdk-dust-wallet",
+      "clean": true,
+      "resolvedWithinSdk": "node_modules/@midnight-ntwrk/wallet-sdk-dust-wallet/dist/index.js"
+    }
+  ]
+}

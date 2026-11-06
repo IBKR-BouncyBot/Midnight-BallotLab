@@ -1,0 +1,58 @@
+{
+  "valid": true,
+  "scope": "indexed-observation-consistency",
+  "schema": "midnight-ballot-lab/native-indexed-observation/v1",
+  "source": "supplied-indexer-observation",
+  "networkId": "preview",
+  "contractAddress": "85cac7e2cc83baaf7f26ec0fb6875f04088c631cd445d992175b0031834b361a",
+  "electionId": "f4c5484ca974eb57039e98fa6475abe01afc8fdc434f4abe505be12d7130ff72",
+  "configurationDigest": "a857d00ed53d82b8969fc586d60181434f88ef4e3558b3b38fecc3c7faa70ffc",
+  "phase": 3,
+  "finalized": true,
+  "accepted": 1,
+  "candidateCount": 2,
+  "opensAt": "1793986227",
+  "closesAt": "1793986707",
+  "totals": [
+    0,
+    1
+  ],
+  "checkedPairs": [
+    [
+      1,
+      3
+    ]
+  ],
+  "manifestIncluded": true,
+  "title": "Isolated Preview acceptance",
+  "candidates": [
+    "Option A",
+    "Option B"
+  ],
+  "checks": {
+    "schema": true,
+    "nativePoints": true,
+    "manifestDigest": true,
+    "configurationDigest": true,
+    "keyRelations": true,
+    "nullifierUniqueness": true,
+    "receiptUniqueness": true,
+    "receiptDigests": true,
+    "aggregate": true,
+    "thresholdTally": true
+  },
+  "proofVerified": false,
+  "eligibilityVerified": false,
+  "trusteeContributionsAuthenticated": false,
+  "chainInclusionVerified": false,
+  "electionFairnessEstablished": false,
+  "networkAuthenticated": false,
+  "contractAddressAuthenticated": false,
+  "limitations": [
+    "Checks consistency of the supplied public record, not an authenticated election or live network state.",
+    "No ballot eligibility proof, ciphertext well-formedness proof or trustee share proof is included in this observation.",
+    "The supplied network and contract address are labels; this file does not authenticate them or prove blockchain inclusion.",
+    "An internally consistent replacement record can pass; compare the configuration and your receipt through an independently trusted channel.",
+    "These checks do not establish honest enrollment, omission resistance, cast-as-intended voting or election fairness."
+  ]
+}

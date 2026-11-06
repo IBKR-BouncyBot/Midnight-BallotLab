@@ -1,6 +1,6 @@
 # Host Midnight Ballot Lab on GitHub Pages
 
-Actual Lace 2.5.0 / API 4.0.1 completed nine local `undeployed` application transactions (eight native calls), finalizing `[0,1,0,0,0]`. See [wallet compatibility](NATIVE_NETWORK.md#wallet-compatibility) and [retained evidence](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/tree/main/evidence/2026-11-03/lace-wallet). Hosted-origin, Preview and Preprod transactions remain untested; mainnet is blocked. Confirmation relies on the configured local indexer and does not independently verify consensus.
+Actual Lace 2.5.0 / API 4.0.1 completed nine local `undeployed` application transactions (eight native calls), finalizing `[0,1,0,0,0]`. See [wallet compatibility](NATIVE_NETWORK.md#wallet-compatibility) and [retained evidence](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/tree/main/evidence/2026-11-03/lace-wallet). A separate [Node Wallet SDK run on public Preview](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/blob/main/evidence/2026-11-06/public-preview-sdk/election-acceptance.json) completed nine accepted application transactions and eight proved contract calls. Browser-wallet transactions on Preview, wallet connection or transactions from the hosted GitHub Pages origin, and Preprod transactions remain untested; mainnet is blocked. Each run relies on its configured indexer and does not independently verify consensus.
 
 The project is a static website: HTML, CSS and JavaScript execute in each visitor's browser. GitHub Pages can serve it without a backend, wallet, paid token or custom secret. It does not provide a shared election database, persistent private state, a Midnight node or a proof server.
 
@@ -71,7 +71,7 @@ The [hosted devnet workflow also passed](https://github.com/IBKR-BouncyBot/Midni
 
 The [five-screen testnet evidence](../evidence/2026-11-06/testnet-step-screens/README.md) records the current navigation checks, exact runtime/harness hashes, responsive captures and the corrected history regression. The Pages workflow runs the updated network-browser harness alongside the native-browser suite before publishing. Local browser results and GitHub workflow/deployment results remain distinct.
 
-Hosted workflow execution, live HTTP assets/headers and real browser behavior at the deployed project URL have separate retained evidence. The live browser run verifies the local WASM experience and the network client's no-wallet behavior; the separate local Lace browser-wallet election passed; hosted-origin wallet transactions remain untested. Network acceptance has its own isolated-devnet transaction reports, and authenticated public election verification requires more than an indexer response.
+Hosted workflow execution, live HTTP assets/headers and real browser behavior at the deployed project URL have separate retained evidence. The live browser run verifies the local WASM experience and the network client's no-wallet behavior; the separate local Lace browser-wallet election passed; hosted-origin wallet transactions remain untested. Network acceptance has separate isolated-devnet and public Preview Node Wallet SDK reports. The public SDK run does not establish hosted-origin wallet behavior, and authenticated public election verification requires more than an indexer response.
 
 ## Official references
 

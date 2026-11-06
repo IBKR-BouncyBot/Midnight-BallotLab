@@ -1,0 +1,67 @@
+{
+  "schema": "midnight-ballot-lab/preview-dust-registration/v1",
+  "networkId": "preview",
+  "startedAt": "2026-11-06T17:09:38.508Z",
+  "walletIdentity": "fresh-isolated-node-sdk-test-wallet",
+  "status": "passed",
+  "submissionAttempted": true,
+  "transactionSubmitted": true,
+  "contractProofGenerated": false,
+  "independentlyVerifiedChainInclusion": false,
+  "browserWalletTested": false,
+  "feeEstimationIsProofEvidence": false,
+  "confirmationSource": "configured-public-preview-indexer",
+  "dependencyLockSha256": "1d8262cd228ed815ee7111d783a9b45639af99b770595824a1dc7ee0f15b1929",
+  "versions": {
+    "midnight-js-contracts": "4.1.1",
+    "midnight-js-protocol": "4.1.1",
+    "wallet-sdk": "1.2.0",
+    "ledger-v8": "8.1.2",
+    "onchain-runtime-v3": "3.0.0"
+  },
+  "runnerSha256": "d60f59268d292b2408f83e6a27977d4dab499c2be562e968096a913678dc7c30",
+  "helperSourceHashes": {
+    "dependencies.mjs": "c4035b3753987503a4f8553bf37b2e4b12b87550b98d59659b1235aab229efb9",
+    "private-vault.mjs": "d9169d646f9103fafc141c4c39aaa4a48068cf01ee55d719b7e16c9117ca933d",
+    "wallet.mjs": "2112f8b24a75762c96d2651bd13a8bd641d7271f224887da77bdcb2987a8b1d2",
+    "preview-services.mjs": "46538dab8e53e70fdfbedf1e35df3dc13bbbdbe5186007bd3e04d3bbb7f8b6e0",
+    "services/demo/key-vault.mjs": "d9b70ecbb244254965362ee02895e65bbad73551a32a4aa7caa2f67f348643e8"
+  },
+  "suppressedLibraryConsoleCalls": 2,
+  "publicServices": {
+    "chain": "Midnight Preview",
+    "blockHeight": "1627053",
+    "timestampSeconds": 1793984964
+  },
+  "walletSyncProgress": {
+    "shielded": {
+      "complete": true,
+      "connected": true,
+      "applied": "284998",
+      "highestRelevant": "284998"
+    },
+    "dust": {
+      "complete": true,
+      "connected": true,
+      "applied": "284996",
+      "highestRelevant": "284996"
+    },
+    "unshielded": {
+      "complete": true,
+      "connected": true,
+      "applied": "80446",
+      "highestRelevant": "80446"
+    }
+  },
+  "receivedNightAtomic": "10000000000",
+  "unregisteredNightCoinCount": 2,
+  "estimatedFeeAtomic": "300000000000001",
+  "acceptedTransaction": {
+    "operation": "register-night-dust",
+    "txId": "0069eead64597fc81d8804ee0ba913fd4b421af74473b53ac0a7dad09916061680",
+    "status": "SucceedEntirely",
+    "blockHeight": "1627156",
+    "confirmedAt": "2026-11-06T17:19:54.958Z"
+  },
+  "completedAt": "2026-11-06T17:19:54.986Z"
+}

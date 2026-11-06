@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-11-06T16:57:49.7977644Z",
+  "service": "task-owned-loopback-proof-server",
+  "version": "8.1.3",
+  "endpoint": "http://127.0.0.1:6300",
+  "container": "midnight-ballot-preview-prover",
+  "image": "midnightntwrk/proof-server:8.1.3",
+  "imageDigest": "sha256:0f4ab0716985eaebbe55a970348f52ff05ffd8a96631ed7232bd0c4ba02c115c",
+  "loggingDriver": "none",
+  "verboseLogging": false,
+  "ready": "ok",
+  "jobsProcessing": 0,
+  "jobsPending": 0,
+  "scope": "service-health-only",
+  "proofGenerated": false,
+  "networkSubmission": false
+}

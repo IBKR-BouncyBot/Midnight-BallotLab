@@ -1,0 +1,34 @@
+✔ constructor has no private setup; proved configureKeys is required and single use (125.103ms)
+✔ setup enforces its deadline and nonzero canonical keys and shares (483.2561ms)
+✔ canonical native scalar boundaries use q, not the Compact Field modulus (2.5589ms)
+✔ configuration digest binds actual key commitments, administrator, metadata and schedule (76.22ms)
+✔ only the administrator enrolls and the frozen electorate cannot change (90.2785ms)
+✔ a ballot stores all native ciphertext coordinates and its configuration-bound receipt (172.0924ms)
+✔ native circuit rejects invalid selection and zero, noncanonical or repeated masks (329.6272ms)
+✔ a new ciphertext cannot bypass a previously spent voter nullifier (156.5616ms)
+✔ membership path must be bound to the private voter secret (101.6562ms)
+✔ an earlier subset electorate root cannot be used after enrollment is frozen (97.8254ms)
+✔ mutating a Merkle sibling invalidates voter eligibility (105.6585ms)
+✔ the deadline rejects ballots even before the closing transaction (107.8154ms)
+✔ decryption requires a frozen aggregate and knowledge of the registered share (292.4549ms)
+✔ trustees 1+2 finalize the complete three-ballot aggregate (344.6264ms)
+✔ trustees 1+3 finalize the complete three-ballot aggregate (365.4442ms)
+✔ trustees 2+3 finalize the complete three-ballot aggregate (374.2606ms)
+✔ finalization rejects invalid pairs, excess counts and wrong count sums (292.173ms)
+✔ empty configured elections have valid identity aggregates and zero totals (132.1094ms)
+✔ valid nonzero ballot randomness may cancel to an identity aggregate (266.4806ms)
+✔ native membership and nullifier hashes are domain and election separated (0.4795ms)
+✔ candidate count is constructor-bounded and changes the sealed configuration (256.4343ms)
+✔ explicit emulator initial time is enforced by the real key-setup deadline (122.097ms)
+✔ 2 active choices preserve five encrypted lanes and zero inactive totals (377.1132ms)
+✔ 3 active choices preserve five encrypted lanes and zero inactive totals (368.9561ms)
+✔ 4 active choices preserve five encrypted lanes and zero inactive totals (373.0214ms)
+✔ 5 active choices preserve five encrypted lanes and zero inactive totals (369.9309ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5986.421

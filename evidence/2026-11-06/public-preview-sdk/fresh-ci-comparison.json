@@ -1,0 +1,63 @@
+{
+  "scope": "original-install-versus-fresh-npm-ci-ignore-scripts",
+  "codeExecuted": false,
+  "dependenciesModified": false,
+  "lockMatches": true,
+  "packages": [
+    {
+      "package": "@midnight-ntwrk/wallet-sdk-shielded",
+      "version": "3.0.2",
+      "comparedFiles": 32,
+      "differentFiles": [],
+      "missingInOriginal": [],
+      "extraInOriginal": [],
+      "freshFileManifestSha256": "38cbf71a141616185d89324b043a004f942e1e3d079eb4da64809ae41bb5f120"
+    },
+    {
+      "package": "@midnight-ntwrk/wallet-sdk-dust-wallet",
+      "version": "4.2.0",
+      "comparedFiles": 38,
+      "differentFiles": [],
+      "missingInOriginal": [],
+      "extraInOriginal": [],
+      "freshFileManifestSha256": "8fcbe36eb37d617437a95d0e35d848ab982080fe3e1ecf5416880b64cda86b01"
+    },
+    {
+      "package": "@midnight-ntwrk/wallet-sdk-unshielded-wallet",
+      "version": "3.1.0",
+      "comparedFiles": 38,
+      "differentFiles": [],
+      "missingInOriginal": [],
+      "extraInOriginal": [],
+      "freshFileManifestSha256": "206bc162f66a4842c54384aee71f8a9f3c6d0f869bba028ba6ef1fddc393042b"
+    },
+    {
+      "package": "@midnight-ntwrk/wallet-sdk-facade",
+      "version": "4.1.0",
+      "comparedFiles": 6,
+      "differentFiles": [],
+      "missingInOriginal": [],
+      "extraInOriginal": [],
+      "freshFileManifestSha256": "0a56ebcc90ea7303d229929ce80172ef18bbf900a85b349d49a520a67c0e5afa"
+    },
+    {
+      "package": "@midnight-ntwrk/wallet-sdk-abstractions",
+      "version": "2.1.0",
+      "comparedFiles": 24,
+      "differentFiles": [],
+      "missingInOriginal": [],
+      "extraInOriginal": [],
+      "freshFileManifestSha256": "c7c252056ca3261be7283afb602be9452d370adeaff9331e5d3691592f916649"
+    },
+    {
+      "package": "@midnight-ntwrk/wallet-sdk-indexer-client",
+      "version": "1.2.3",
+      "comparedFiles": 78,
+      "differentFiles": [],
+      "missingInOriginal": [],
+      "extraInOriginal": [],
+      "freshFileManifestSha256": "ecfcd91d1888b8b79b258678149410af06bc0fe8e07e000532f316f5a0f7ef4a"
+    }
+  ],
+  "checkedAt": "2026-11-06T17:08:20.178429+00:00"
+}

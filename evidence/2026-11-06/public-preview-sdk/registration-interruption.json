@@ -1,0 +1,12 @@
+{
+  "schema": "midnight-ballot-lab/preview-registration-interruption/v1",
+  "checkedAt": "2026-11-06T17:06:47.770Z",
+  "reason": "stopped-before-submission-pending-installed-dependency-provenance-review",
+  "lastReportedStage": "synchronize-preview-wallet",
+  "publicSubmissionAttempted": false,
+  "encryptedUncertainTransactionPresent": false,
+  "acceptedRegistrationInJournal": false,
+  "processConfirmedStopped": true,
+  "walletSeedPreservedEncrypted": true,
+  "networkRequestMadeByAudit": false
+}

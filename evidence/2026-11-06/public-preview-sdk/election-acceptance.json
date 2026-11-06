@@ -1,0 +1,205 @@
+{
+  "schema": "midnight-ballot-lab/preview-election-acceptance/v1",
+  "networkId": "preview",
+  "environment": "public-preview-synthetic-node-sdk-wallet",
+  "startedAt": "2026-11-06T17:20:25.465Z",
+  "status": "passed",
+  "browserWalletTested": false,
+  "hostedFrontendTested": false,
+  "independentlyVerifiedChainInclusion": false,
+  "confirmationSource": "configured-public-preview-indexer",
+  "onChainSelfExecution": false,
+  "acceptedTransactions": [
+    {
+      "operation": "deploy",
+      "txId": "007a155f6d60c3b98018204a53bb16197a804f22d16b23e6684018fb78829bcc4a",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627165",
+      "confirmedAt": "2026-11-06T17:20:49.317Z"
+    },
+    {
+      "operation": "configure-keys",
+      "txId": "00d5eb85f37fe374053447b22051c887aa183738516fac249f593cab620f1c2807",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627169",
+      "confirmedAt": "2026-11-06T17:21:13.413Z"
+    },
+    {
+      "operation": "enroll-one-synthetic-voter",
+      "txId": "00d77c34aabde9e10e412a986a88be3a4ec2bedf9668ff48a7e95e3b1f670c2661",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627172",
+      "confirmedAt": "2026-11-06T17:21:32.641Z"
+    },
+    {
+      "operation": "open-voting",
+      "txId": "005af2ad9de8779c0bda8b8832c21420e64f7463e2edf23f91b4473973261d1380",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627268",
+      "confirmedAt": "2026-11-06T17:31:06.787Z"
+    },
+    {
+      "operation": "cast-one-synthetic-ballot",
+      "txId": "00c4988fa7a4f4444852943f7bf5fb1266b81421533f5f1027b3211a3c987f29d5",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627273",
+      "confirmedAt": "2026-11-06T17:31:37.866Z"
+    },
+    {
+      "operation": "close-voting",
+      "txId": "006ec0ff327a65e3b0915343a5c0d8a71b7b0b7a98baba511695e83cdc6242e34f",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627347",
+      "confirmedAt": "2026-11-06T17:39:01.920Z"
+    },
+    {
+      "operation": "trustee-1",
+      "txId": "009997be67a375ac9c12977f30ea9465b06b481ab71ab3e77719f8c9b1d28a7a26",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627351",
+      "confirmedAt": "2026-11-06T17:39:25.259Z"
+    },
+    {
+      "operation": "trustee-3",
+      "txId": "00094deeef913eb72b696a3a3ed74631cc4709bb2c9232382ca83509097fccae3d",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627354",
+      "confirmedAt": "2026-11-06T17:39:42.811Z"
+    },
+    {
+      "operation": "finalize",
+      "txId": "00d1f34ba80fa05c25230251b2b6283452e9b2a3d7e851bfb0a6eec9525ea0f4ef",
+      "status": "SucceedEntirely",
+      "blockHeight": "1627358",
+      "confirmedAt": "2026-11-06T17:40:07.500Z"
+    }
+  ],
+  "contractProofProviderCompletions": 8,
+  "submissionAttempts": 9,
+  "suppressedLibraryConsoleCalls": 2,
+  "runtime": {
+    "stagedAt": "2026-11-06T17:07:39.157Z",
+    "byteIdenticalSources": true,
+    "sourceHashes": {
+      "contracts/native/sdk-client.mjs": "d80c527f494f22491af39bdd2d47b96f29a286856a3f1532022b9812d2303595",
+      "contracts/native/adapter.mjs": "6bdbd467edbad74269818b240b120f711c46c26d6cfb1494e651757d22e3a68c",
+      "contracts/native/harness.mjs": "1555547bd4b4a18954f13a2a41a15ed4beef51e67463f8483a4d8c27c4d61a7f",
+      "contracts/native/record.mjs": "6b48614c74fdfe642d03e6d0ea696390dc45cb950ca42677aeac7ae3b3de69d3",
+      "contracts/native/browser-config.mjs": "ec9469405c2214300dc19ffe57602bea83d354dd639334d92eda10e2117f7b21",
+      "contracts/native/verify-public.mjs": "48c3d6851517591d699a3f74351d97b13843f818ada5ed8905046959507b488e",
+      "contracts/native/test/native-election.test.mjs": "39686f456a267127646d8d671bde313d672f84058e52d8a74b1f1488cac5abf6",
+      "src/json.mjs": "8221f1122211797e3c788e40e1b30d6a9c90cc4bb6f3f738eea1f72ed7783e2f",
+      "contracts/managed/native-election/compiler/contract-info.json": "69a624dec82c0fb33fa7273ce65cc5635fe0c822c876de94347216e129770426",
+      "contracts/managed/native-election/contract/index.d.ts": "fd048baf52cc38872ec9b598cde6291b04381f46c4dc6de4d0ae2135f1e252e9",
+      "contracts/managed/native-election/contract/index.js": "756dd1653ddc39e3230125cf1f7a769ca341b3e0346a37823495a1333605a3d7",
+      "contracts/managed/native-election/contract/index.js.map": "f9cc6351ea2a2bfe66f497817eeff0897652e3a338917464b1d467008015765c",
+      "contracts/managed/native-election/keys/castBallot.prover": "915506f640bddc7c50ba21c03d2aeb119d7aa04cbc19c24d2362a95121b1f3e7",
+      "contracts/managed/native-election/keys/castBallot.verifier": "bcc71d275ad591ea9685ea07edea95b8f8103f5ce491e5207f4df94ceec71768",
+      "contracts/managed/native-election/keys/closeVoting.prover": "5195f6f6d3c1e9859084a64502b569cf90c0751239821fcd35934085bee10be4",
+      "contracts/managed/native-election/keys/closeVoting.verifier": "b9df6a64bfbc1aedaab445553adae78abfd28270ebdf47000501cbd6e94e2b9d",
+      "contracts/managed/native-election/keys/configureKeys.prover": "d4671180b4c9acd6906b3c97486dc97cce6fc1a1ec7cd54e9a060d9d93256b1c",
+      "contracts/managed/native-election/keys/configureKeys.verifier": "9a8a2b0161333a799f138f9cc9558070307d5673c09fc944d9fcd782166c802a",
+      "contracts/managed/native-election/keys/enroll.prover": "bbf0cc28fb04325ef60607268e89ab333d229379bb0464a4ad341017f3f9fb6a",
+      "contracts/managed/native-election/keys/enroll.verifier": "b470e120b4b2383f0308093a510a31d042536adef44f64e6a57b45a58ffd3903",
+      "contracts/managed/native-election/keys/finalize.prover": "27bfc36a2b986da4192450440c38fb51a545763e021bebf8bb86717bbc4efa1f",
+      "contracts/managed/native-election/keys/finalize.verifier": "120b8072921ca04d74b128621fb6edc81f8363860be306db72bf8fa83ab51b9d",
+      "contracts/managed/native-election/keys/openVoting.prover": "dbdd56ce8ee7660c4b88f5fa4f92049c77d5fcc57d794cfd0e5ae23eec0a45dc",
+      "contracts/managed/native-election/keys/openVoting.verifier": "8c791aff6f25f7b85e716a2eccf3f709d133e3dce774f500adf1698e06a51fbf",
+      "contracts/managed/native-election/keys/submitDecryption.prover": "b56283c88cb1f886e095a255901dec970e6b02dc6e4fc409d2999edecbb88435",
+      "contracts/managed/native-election/keys/submitDecryption.verifier": "b046dae1c5d4b3cf174d1d9c1b6d1a07ec56015a2e8d6a67ae1c5c22c07a80e1",
+      "contracts/managed/native-election/zkir/castBallot.bzkir": "6b3fe9762445e623de3d8a61f3e0c2ec62982ab1a5c0ce82a3d1a2db05def0d4",
+      "contracts/managed/native-election/zkir/castBallot.zkir": "5cb9c5e5c313313d17ca9bf767f58d321e8c89381d58d9467c0fd9df1f166585",
+      "contracts/managed/native-election/zkir/closeVoting.bzkir": "88966fcf98cfa388d42d87825a09456d6f18066efeec6dae7d686514e90c78b9",
+      "contracts/managed/native-election/zkir/closeVoting.zkir": "8ed1c613219ef92b3565ef2423006a8715303242e29ce9a94c1dcd3ac8ccbc87",
+      "contracts/managed/native-election/zkir/configureKeys.bzkir": "37b40bf5f1d671ddb8b2b05a9506832bd802c1012673ad306a9a3ac094acc88a",
+      "contracts/managed/native-election/zkir/configureKeys.zkir": "cc9a7cd4567377d8b40e6d7c2ee3d84386c44046e687d367d73ae26a8e6b0a86",
+      "contracts/managed/native-election/zkir/enroll.bzkir": "57825fff7c84c7ac7bef6e50545cebf6c2b994fb8ae61c7aa4f4ade0045665d1",
+      "contracts/managed/native-election/zkir/enroll.zkir": "a8402a64424ba77aee8fdba8dec9359cc446bde7626ebbbe29d4cd6a7779ab1a",
+      "contracts/managed/native-election/zkir/finalize.bzkir": "eb2ba4cd0917c192c8788866110c32d01fea996219ec0159da3caa62e43f93ac",
+      "contracts/managed/native-election/zkir/finalize.zkir": "e173a6e5fdb2d93ba7f7b354dd72f8e610b859043e2ad7d77291b531820cb734",
+      "contracts/managed/native-election/zkir/openVoting.bzkir": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb",
+      "contracts/managed/native-election/zkir/openVoting.zkir": "967b2cd791751e76266da09f87f901d2c17aa4d2e5ffdd107dd6bbaa6c6fa9fe",
+      "contracts/managed/native-election/zkir/submitDecryption.bzkir": "708c2562588fa80d35d83b03122c2156f10fd7e9634e4005e1f1fa880df606b3",
+      "contracts/managed/native-election/zkir/submitDecryption.zkir": "b137ede1220c9434b293b103f4127727733c493aa4e8385f78ad85ea40f5c2eb"
+    },
+    "dependencyLockSha256": "1d8262cd228ed815ee7111d783a9b45639af99b770595824a1dc7ee0f15b1929",
+    "versions": {
+      "compact-runtime": "0.16.0",
+      "midnight-js-contracts": "4.1.1",
+      "midnight-js-protocol": "4.1.1",
+      "testkit-js": "4.1.1",
+      "wallet-sdk": "1.2.0",
+      "ledger-v8": "8.1.2",
+      "onchain-runtime-v3": "3.0.0",
+      "zkir-v2": "2.1.1"
+    },
+    "networkStarted": false,
+    "proofGenerated": false,
+    "transactionSubmitted": false
+  },
+  "runnerSha256": "81f1581559b905d853686b0108551ed5dad3b80883a27dae204b0a75d67a276d",
+  "helperSourceHashes": {
+    "dependencies.mjs": "48e7ccf9c9d6ae88cc65509a0df9edbb564170c78438dd7cb6424a208fb7aa4b",
+    "private-vault.mjs": "d9169d646f9103fafc141c4c39aaa4a48068cf01ee55d719b7e16c9117ca933d",
+    "wallet.mjs": "2112f8b24a75762c96d2651bd13a8bd641d7271f224887da77bdcb2987a8b1d2",
+    "preview-services.mjs": "46538dab8e53e70fdfbedf1e35df3dc13bbbdbe5186007bd3e04d3bbb7f8b6e0",
+    "stage-runtime.mjs": "81c9ebdad17874fc8011b93c55de0ed9a4e0ded798a29ce29e4949aa15dadd07",
+    "services/demo/key-vault.mjs": "d9b70ecbb244254965362ee02895e65bbad73551a32a4aa7caa2f67f348643e8"
+  },
+  "publicServices": {
+    "chain": "Midnight Preview",
+    "blockHeight": "1627161",
+    "timestampSeconds": 1793985612
+  },
+  "localProverHealthy": true,
+  "walletSyncProgress": {
+    "shielded": {
+      "complete": true,
+      "connected": true,
+      "applied": "285004",
+      "highestRelevant": "285004"
+    },
+    "dust": {
+      "complete": true,
+      "connected": true,
+      "applied": "285001",
+      "highestRelevant": "285001"
+    },
+    "unshielded": {
+      "complete": true,
+      "connected": true,
+      "applied": "80461",
+      "highestRelevant": "80461"
+    }
+  },
+  "schedule": {
+    "opensAt": 1793986227,
+    "closesAt": 1793986707
+  },
+  "candidateCount": 2,
+  "contractAddress": "85cac7e2cc83baaf7f26ec0fb6875f04088c631cd445d992175b0031834b361a",
+  "configurationDigest": "a857d00ed53d82b8969fc586d60181434f88ef4e3558b3b38fecc3c7faa70ffc",
+  "receipt": {
+    "schema": "midnight-ballot-lab/native-receipt/v1",
+    "networkId": "preview",
+    "contractAddress": "85cac7e2cc83baaf7f26ec0fb6875f04088c631cd445d992175b0031834b361a",
+    "configurationDigest": "a857d00ed53d82b8969fc586d60181434f88ef4e3558b3b38fecc3c7faa70ffc",
+    "index": 0,
+    "receipt": "6770c0138a28905463db994f05287a129781760407a3822440254c477b56222e",
+    "txId": "00c4988fa7a4f4444852943f7bf5fb1266b81421533f5f1027b3211a3c987f29d5",
+    "blockHeight": "1627273"
+  },
+  "closeRequestedAfterIndexedTime": 1793986710,
+  "publicObservationSha256": "e5e63ccb0c0fa9472ac5faa0b2d40933150b2d9058bd925383f6ba73f6830553",
+  "publicRecordConsistencyVerified": true,
+  "finalPhase": 3,
+  "acceptedBallots": 1,
+  "finalizedTotals": [
+    0,
+    1,
+    0,
+    0,
+    0
+  ],
+  "completedAt": "2026-11-06T17:40:07.714Z"
+}

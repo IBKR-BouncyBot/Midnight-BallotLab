@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-11-06T17:02:55.4037661Z",
+  "repository": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab",
+  "commit": "d22ce6171b5548f70b8360f12709562e9e8051fa",
+  "trackedSourceClean": true,
+  "stagedSourceVerification": "runtime-provenance.json",
+  "network": "preview",
+  "walletImplementation": "actual-node-wallet-sdk",
+  "browserWalletTested": false,
+  "mainnetAllowed": false
+}
