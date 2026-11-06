@@ -12,15 +12,17 @@ The [evidence notes](../evidence/2026-11-06/lace-preview/attempt-9/README.md) se
 
 The [first separate fundless diagnostic](../evidence/2026-11-06/lace-preview/fundless-diagnostic-1/README.md) timed out during application connection before reaching its proof fixture. The [second diagnostic](../evidence/2026-11-06/lace-preview/fundless-diagnostic-2/README.md), at commit `3251fcc364114ac2c806a421df9910ad8303d6f8`, used normal authorization to connect a narrower test fixture directly to genuine Lace. Its `openVoting` constraint check completed and the wallet provider returned a **2,933-byte contract proof**; preparation, checking and proving took 17,319 ms. No independent cryptographic proof verification was performed. The overall diagnostic **failed** because its passive observer saw no matching wallet WASM resource or target. It requested no balance query, funding, DUST proof, signing or network submission. This result does not establish the full wallet/DUST proof backend or resolve the first diagnostic's application-connection timeout.
 
+The [third fundless diagnostic](../evidence/2026-11-06/lace-preview/fundless-diagnostic-3/README.md), at commit `5cf2e019f82721318da85aa9bda114c0b5f1cc34`, also returned a 2,933-byte genuine Lace `openVoting` proof (43,630 ms for preparation/check/proving). Its observer found one offscreen document and one worker across 133 metadata snapshots, but failed `prover-resource-body-unavailable-or-invalid`. The overall result remains **failed**: no exact proving-WASM body was validated. This narrows the observation gap; it does not establish the wallet/DUST backend, independent proof verification or any new network transaction.
+
 ## Completed evidence
 
 | Execution | What the retained result establishes |
 | --- | --- |
-| [Browser runtime and proof CI](../evidence/2026-11-06/browser-wasm/github-42299277893/README.md) | Real generated contract/WASM execution; eight standalone proofs across seven circuits; one genuine bound SDK `configureKeys` transaction proof; two rejected invalid cases. No wallet or network submission in this gate. |
+| [Browser runtime and proof CI](../evidence/2026-11-06/browser-wasm/github-42311868015/README.md) | Real generated contract/WASM execution; eight standalone proofs across seven circuits; one genuine bound SDK `configureKeys` transaction proof; two rejected invalid cases. No wallet or network submission in this gate. |
 | [Public Preview Node SDK election](../evidence/2026-11-06/public-preview-sdk/README.md) | Nine indexer-accepted election transactions and eight proved contract calls, final totals `[0,1,0,0,0]`. Separate Node wallet/HTTP-prover path; not a browser or Lace test. |
 | [Local Lace election](../evidence/2026-11-03/lace-wallet/README.md) | Lace 2.5.0/API 4.0.1 completed nine application transactions on a local `undeployed` chain. This historical server-prover result does not establish the newer browser-only proving path. |
 | [Local devnet acceptance](../evidence/2026-11-03/v0.6.1/github/devnet/reports/network-evidence.json) | Seventeen indexer-accepted transactions and an externally scheduled five-ballot tally. Separate Node wallet and local services. |
-| [Pages publication](GITHUB_EXECUTION.md) | Commit `cf18b45` deployed successfully. Subsequent `e22832c` and `3d8fe96` build/proof gates passed, but their publications were cancelled at the ten-minute limit while `syncing_files`. Their application runtime bytes match the preceding deployment. |
+| [Pages publication](GITHUB_EXECUTION.md) | Commit `3251fcc364114ac2c806a421df9910ad8303d6f8` deployed successfully at 23:42:44 UTC on 6 November. Earlier `e22832c` and `3d8fe96` publication cancellations remain retained separately. Documentation-only revisions after this tested commit are not additional deployment evidence. |
 
 The local browser demo executes native cryptography but neither generates network proofs nor submits ballots. Public-record imports verify consistency using native WASM; they are not authenticated proof packages or independent chain verification.
 
@@ -28,7 +30,7 @@ The local browser demo executes native cryptography but neither generates networ
 
 The current browser application uses **Compact 0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1**, ledger-v8 **8.1.0**, onchain-runtime-v3 **3.0.0** and ZKIR **2.1.1**. The retained CI gate used Node **24.22.2**, npm **11.19.1**, Python **3.12.16**, Playwright **1.64.1** and Chromium **156.0.8078.4**. Attempt 9 uses signed Lace **2.5.1**, reporting API **4.1.0-canary.20260819082604-3b622cb**. The separate SDK/devnet dependency graphs retain their own versions.
 
-The [exact asset audit](../evidence/2026-11-06/browser-wasm/github-42299277893/deployment-ci-evidence-audit.json) records native/network bundle, worker and manifest hashes, with 21 circuit assets, five pinned public parameter files and three network-bundle WASM files. No proof witnesses, private key files or wallet profile are included. The worker uses official WASM and verifies public asset hashes; there is no HTTP-prover fallback in the browser contract path.
+The [exact asset audit](../evidence/2026-11-06/browser-wasm/github-42311868015/deployment-ci-evidence-audit.json) records native/network bundle, worker and manifest hashes, with 21 circuit assets, five pinned public parameter files and three network-bundle WASM files. No proof witnesses, private key files or wallet profile are included. The worker uses official WASM and verifies public asset hashes; there is no HTTP-prover fallback in the browser contract path.
 
 ## Limits
 

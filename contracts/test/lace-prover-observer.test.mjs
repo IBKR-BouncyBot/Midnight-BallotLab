@@ -28,7 +28,7 @@ test('unsupported CDP rejects with fixed text without leaking transport details'
 
 // Transport-boundary fixtures only: no wallet, proof, WASM response or observed
 // success is fabricated. They model documented CDP metadata/message ordering.
-function transport({ lateWorker = false, childWorker = false } = {}) {
+function transport({ lateWorker = false, childWorker = false, bodyResult, bodyError } = {}) {
   const root = new EventEmitter(), calls = [];
   let snapshots = 0;
   const directReply = (sessionId, data) => queueMicrotask(() => root.emit('Target.receivedMessageFromTarget', {
@@ -52,7 +52,9 @@ function transport({ lateWorker = false, childWorker = false } = {}) {
       if (message.method === 'Target.sendMessageToTarget') {
         const nested = JSON.parse(message.params.message);
         calls.push({ method: nested.method, params: nested.params, sessionId: message.params.sessionId });
-        childReply({ id: nested.id, result: {} });
+        childReply(nested.method === 'Network.getResponseBody'
+          ? bodyError ? { id: nested.id, error: bodyError } : { id: nested.id, result: bodyResult }
+          : { id: nested.id, result: {} });
       }
       directReply(params.sessionId, { id: message.id, result: {} });
       if (childWorker && message.method === 'Target.setAutoAttach' && message.params.autoAttach) {
@@ -65,7 +67,7 @@ function transport({ lateWorker = false, childWorker = false } = {}) {
     return {};
   };
   root.detach = async () => {};
-  return { root, calls, browser: { newBrowserCDPSession: async () => root } };
+  return { root, calls, childReply, browser: { newBrowserCDPSession: async () => root } };
 }
 
 test('bounded refresh reconsiders a worker whose URL was initially empty', async () => {
@@ -96,6 +98,12 @@ test('only the exact offscreen session auto-attaches its worker without pausing'
     assert.ok(auto.length === 1 && auto[0].sessionId === 'offscreen-session'
       && auto[0].params.waitForDebuggerOnStart === false && auto[0].params.flatten === false,
     'Auto-attachment must remain on our exact offscreen session without pausing');
+    const buffers = fixture.calls.filter(call => call.method === 'Network.enable');
+    const encodedLength = Math.ceil(3_413_037 / 3) * 4;
+    assert.ok(buffers.length === 2 && buffers.every(call => call.params.maxResourceBufferSize >= encodedLength * 2
+      && call.params.maxTotalBufferSize === call.params.maxResourceBufferSize * 2
+      && call.params.maxTotalBufferSize <= 24 * 1024 * 1024),
+    'Bounded inspector buffers must fit the base64 content even as a two-byte string');
     fixture.root.emit('Target.receivedMessageFromTarget', { sessionId: 'offscreen-session', message: JSON.stringify({
       method: 'Target.receivedMessageFromTarget', params: { sessionId: 'worker-session',
         message: '{"method":"Network.requestWillBeSent","params": deliberately-unparsed-private-body' },
@@ -105,4 +113,32 @@ test('only the exact offscreen session auto-attaches its worker without pausing'
     assert.ok(!fixture.calls.some(call => call.method === 'Network.getResponseBody'), 'Unrelated requests must not trigger body reads');
   } finally { await observer.close(); }
   assert.equal(observer.snapshot().status, 'closed');
+});
+
+test('exact public resource failures distinguish CDP retrieval, encoding, length and hash without raw details', async () => {
+  const cases = [
+    { bodyError: { code: -32000, message: 'Request content was evicted from inspector cache' }, expected: 'prover-resource-body-evicted' },
+    { bodyError: { code: -32000, message: 'sensitive-boundary-value' }, expected: 'prover-resource-body-command-rejected' },
+    { bodyResult: { base64Encoded: false, body: 'sensitive-boundary-value' }, expected: 'prover-resource-encoding-invalid' },
+    { bodyResult: { base64Encoded: true, body: 'AA==' }, expected: 'prover-resource-encoded-length-mismatch' },
+    // This exercises the real nested-message parser with a >4 MiB body and
+    // the real SHA check. Substituted bytes must never become an observation.
+    { bodyResult: { base64Encoded: true, body: Buffer.alloc(3_413_037).toString('base64') }, expected: 'prover-resource-hash-mismatch' },
+  ];
+  for (const value of cases) {
+    const fixture = transport({ childWorker: true, ...value });
+    const observer = await observeLaceProverWasm(fixture.browser);
+    try {
+      await delay(5);
+      fixture.childReply({ method: 'Network.responseReceived', params: { requestId: 'synthetic-public-resource',
+        response: { url: origin + '/js/bb7c1f073eb0bc071ea5.module.wasm', status: 200 } } });
+      fixture.childReply({ method: 'Network.loadingFinished', params: { requestId: 'synthetic-public-resource' } });
+      await delay(10);
+      const result = observer.snapshot();
+      assert.equal(result.failureCategory, value.expected);
+      assert.equal(result.observed, false);
+      assert.equal(result.status, 'failed');
+      assert.ok(!JSON.stringify(result).includes('sensitive-boundary-value'), 'Raw diagnostic data must not be exported');
+    } finally { await observer.close(); }
+  }
 });

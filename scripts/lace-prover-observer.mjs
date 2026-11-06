@@ -10,24 +10,42 @@ export const LACE_PROVER_RESOURCE = Object.freeze({
   sha256: 'f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb',
 });
 const resourceUrl = `${origin}/${LACE_PROVER_RESOURCE.path}`;
+const encodedBodyLength = Math.ceil(LACE_PROVER_RESOURCE.bytes / 3) * 4;
+// Chromium accounts the encoded content's character storage, not just the
+// original WASM bytes. Include its possible two-byte string representation.
+const resourceBufferBytes = encodedBodyLength * 2 + 64 * 1024;
 const DISCOVERY_LIMIT = 3600;
 const DISCOVERY_INTERVAL_MS = 500;
 const targetFilter = [{ type: 'background_page' }, { type: 'worker' }, { type: 'page' },
   { type: 'other' }, { type: 'service_worker' }, { exclude: true }];
-const fixedError = () => new Error('Passive Lace prover observation did not complete');
+const failureReasons = new WeakMap();
+function fixedError(reason = 'observer-command-failed') {
+  const error = new Error('Passive Lace prover observation did not complete');
+  failureReasons.set(error, reason); return error;
+}
+function bodyCommandFailure(value) {
+  // Only fixed Chromium protocol messages are classified; raw text/cause is
+  // never retained. This handler is used only for our exact public WASM read.
+  if (value?.message === 'Request content was evicted from inspector cache') return 'prover-resource-body-evicted';
+  if (value?.message === 'No resource with given identifier found') return 'prover-resource-body-request-unavailable';
+  if (value?.message === 'No data found for resource with given identifier') return 'prover-resource-body-data-unavailable';
+  return 'prover-resource-body-command-rejected';
+}
 export function laceProverTargetKind(value) {
   if (value?.type === 'background_page' && value.url === `${origin}/offscreen.html`) return 'offscreen';
   if (value?.type === 'worker' && value.url === `${origin}/js/4352.js`) return 'worker';
   return null;
 }
 export function verifyLaceProverResource(value) {
-  const length = Math.ceil(LACE_PROVER_RESOURCE.bytes / 3) * 4;
-  if (value?.base64Encoded !== true || typeof value.body !== 'string' || value.body.length !== length
-      || !/^[A-Za-z0-9+/]+={0,2}$/.test(value.body)) throw fixedError();
+  if (value?.base64Encoded !== true) throw fixedError('prover-resource-encoding-invalid');
+  if (typeof value.body !== 'string') throw fixedError('prover-resource-body-shape-invalid');
+  if (value.body.length !== encodedBodyLength) throw fixedError('prover-resource-encoded-length-mismatch');
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value.body)) throw fixedError('prover-resource-base64-invalid');
   const bytes = Buffer.from(value.body, 'base64');
   try {
-    if (bytes.length !== LACE_PROVER_RESOURCE.bytes || bytes.toString('base64') !== value.body
-        || createHash('sha256').update(bytes).digest('hex') !== LACE_PROVER_RESOURCE.sha256) throw fixedError();
+    if (bytes.length !== LACE_PROVER_RESOURCE.bytes) throw fixedError('prover-resource-byte-length-mismatch');
+    if (bytes.toString('base64') !== value.body) throw fixedError('prover-resource-base64-noncanonical');
+    if (createHash('sha256').update(bytes).digest('hex') !== LACE_PROVER_RESOURCE.sha256) throw fixedError('prover-resource-hash-mismatch');
     return { ...LACE_PROVER_RESOURCE };
   } finally { bytes.fill(0); }
 }
@@ -54,23 +72,25 @@ export async function observeLaceProverWasm(browser) {
     let timer;
     try {
       return await Promise.race([root.send(method, params), new Promise((_, reject) => {
-        timer = setTimeout(() => reject(fixedError()), 10_000);
+        timer = setTimeout(() => reject(fixedError('observer-command-timeout')), 10_000);
       })]);
-    } catch { throw fixedError(); } finally { clearTimeout(timer); }
+    } catch (error) { throw failureReasons.has(error) ? error : fixedError('observer-transport-rejected'); }
+    finally { clearTimeout(timer); }
   }
   function child(sessionId, method, params = {}) {
     if (closed || pending.size >= 32 || !sessions.has(sessionId)) return Promise.reject(fixedError());
     const id = ++nextId, key = `${sessionId}:${id}`;
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => { pending.delete(key); reject(fixedError()); }, 10_000);
-      pending.set(key, { resolve, reject, timer });
+      const timer = setTimeout(() => { pending.delete(key); reject(fixedError('observer-command-timeout')); }, 10_000);
+      pending.set(key, { resolve, reject, timer, method });
       const parentSessionId = sessions.get(sessionId).parentSessionId;
       const payload = { sessionId, message: JSON.stringify({ id, method, params }) };
       const delivery = parentSessionId
         ? child(parentSessionId, 'Target.sendMessageToTarget', payload)
         : send('Target.sendMessageToTarget', payload);
       delivery
-        .catch(() => { const item = pending.get(key); if (item) { clearTimeout(timer); pending.delete(key); reject(fixedError()); } });
+        .catch(error => { const item = pending.get(key); if (item) { clearTimeout(timer); pending.delete(key);
+          reject(failureReasons.has(error) ? error : fixedError('observer-transport-rejected')); } });
     });
   }
   function receive({ sessionId, message }) {
@@ -92,7 +112,9 @@ export async function observeLaceProverWasm(browser) {
       const key = `${sessionId}:${data.id}`, item = pending.get(key);
       if (!item) return;
       pending.delete(key); clearTimeout(item.timer);
-      if (data.error) item.reject(fixedError()); else item.resolve(data.result);
+      if (data.error) item.reject(fixedError(item.method === 'Network.getResponseBody'
+        ? bodyCommandFailure(data.error) : 'observer-command-rejected'));
+      else item.resolve(data.result);
       return;
     }
     const value = data.params;
@@ -123,7 +145,12 @@ export async function observeLaceProverWasm(browser) {
           body = await child(sessionId, 'Network.getResponseBody', { requestId: value.requestId });
           const verified = verifyLaceProverResource(body);
           observation = { ...verified, targetKind: session.kind, evidence: 'passive-cdp-resource-response' };
-        } catch { fail('prover-resource-body-unavailable-or-invalid'); }
+        } catch (error) {
+          const reason = failureReasons.get(error);
+          fail(reason?.startsWith('prover-resource-') ? reason
+            : reason === 'observer-command-timeout' ? 'prover-resource-body-timeout'
+              : 'prover-resource-body-command-failed');
+        }
         finally { body = undefined; }
       })());
     }
@@ -139,8 +166,8 @@ export async function observeLaceProverWasm(browser) {
   }
   async function enableSession(sessionId, kind, parentSessionId) {
     sessions.set(sessionId, { kind, parentSessionId, requests: new Set() }); targetCounts[kind]++;
-    await child(sessionId, 'Network.enable', { maxPostDataSize: 0, maxResourceBufferSize: 4 * 1024 * 1024,
-      maxTotalBufferSize: 8 * 1024 * 1024, enableDurableMessages: false, reportDirectSocketTraffic: false });
+    await child(sessionId, 'Network.enable', { maxPostDataSize: 0, maxResourceBufferSize: resourceBufferBytes,
+      maxTotalBufferSize: resourceBufferBytes * 2, enableDurableMessages: false, reportDirectSocketTraffic: false });
     if (kind === 'offscreen') {
       // This setting belongs only to our session on the exact signed offscreen
       // page. It neither replaces Playwright's browser policy nor pauses a

@@ -1,0 +1,35 @@
+{
+  "schema": "midnight-ballot-lab/evidence-sha256/v1",
+  "files": [
+    {
+      "path": "environment-initial.json",
+      "bytes": 815,
+      "sha256": "58e7dd49b0ad5d32fc1b4df111e043059d0661220fac94b4d0eafa62bdeffd3e"
+    },
+    {
+      "path": "environment-provenance.json",
+      "bytes": 704,
+      "sha256": "6afb028e5092fd0430668a767f683698a726c6a8767a83129041464c75341b7b"
+    },
+    {
+      "path": "evidence-artifact-validation.json",
+      "bytes": 1182,
+      "sha256": "ffdb199f83b9a92572a1b19946e4550f9e894853692eb0c984a648d235fa97e8"
+    },
+    {
+      "path": "lace-acquisition.json",
+      "bytes": 2060,
+      "sha256": "5b2b4fe20ffa197e5cc16010bd5455a57f5d75b7f321ebb51ed4b5d5b389e385"
+    },
+    {
+      "path": "prover-diagnostic-report.json",
+      "bytes": 8897,
+      "sha256": "ef4a3b19bba96515c97659577e5d3c2172ed3d14d2d0aeb695944e136b07fd68"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3217,
+      "sha256": "4e012b0342880daf683e6b004097b4331fe0e618534d30f4d5109ea54374dbc5"
+    }
+  ]
+}
