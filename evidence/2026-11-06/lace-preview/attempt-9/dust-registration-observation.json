@@ -1,0 +1,45 @@
+{
+  "schema": "midnight-ballot-lab/public-address-progress/v1",
+  "source": "wss://indexer.preview.midnight.network/api/v4/graphql/ws",
+  "networkId": "preview",
+  "runId": "42300599784",
+  "headSha": "e22832c2424cf89c8756e3156e943b1f87021469",
+  "startedAt": "2026-11-06T22:01:53.966Z",
+  "durationLimitSeconds": 60,
+  "observerSha256": "e853fbd356ec9fdf582f114db6c99bb76dbc182cf931c8c93f065c3bc99b06fa",
+  "querySha256": "5460c94f6ce7d810f48d88f548b81ce93d147a6c771524d3ee724dd343d168d8",
+  "status": "observed",
+  "acknowledged": true,
+  "transactions": [
+    {
+      "indexerTransactionId": 80606,
+      "identifiers": [
+        "009f80adc351343199ffb0e5b64c069df767b94c4fcb1ac54109e570e73531c8be",
+        "005299e571790b36fc8d46d2648e1600cd82eeacd2d4363cf098643b5915e67946"
+      ],
+      "indexerStatus": "SUCCESS",
+      "blockHeight": 1629953,
+      "createdOutputCount": 1,
+      "spentOutputCount": 0,
+      "createdRegisteredOutputCount": 0,
+      "spentRegisteredOutputCount": 0
+    },
+    {
+      "indexerTransactionId": 80607,
+      "identifiers": [
+        "0037b2d0f4b6eb822bc4cbd7ae2da8f508b799089bb90571e6a7a939d23ca03503"
+      ],
+      "indexerStatus": "SUCCESS",
+      "blockHeight": 1629960,
+      "createdOutputCount": 1,
+      "spentOutputCount": 1,
+      "createdRegisteredOutputCount": 1,
+      "spentRegisteredOutputCount": 0
+    }
+  ],
+  "highestTransactionId": 80607,
+  "walletOpened": false,
+  "transactionsSubmitted": 0,
+  "scope": "Public unshielded-address events only; fee-only DUST or application calls may be absent. An indexer observation is not independent chain verification.",
+  "finishedAt": "2026-11-06T22:02:53.991Z"
+}

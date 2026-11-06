@@ -1,0 +1,265 @@
+{
+  "schema": "midnight-ballot-lab/browser-wasm-proof-ci/v2",
+  "startedAt": "2026-11-06T22:01:39.274Z",
+  "status": "passed",
+  "node": "v24.22.2",
+  "scope": "real dedicated-worker circuit and SDK transaction proofs from synthetic browser-memory inputs",
+  "walletConnected": false,
+  "networkSubmission": false,
+  "networkAcceptance": false,
+  "independentChainVerification": false,
+  "build": {
+    "worker": {
+      "path": "native-prover-worker.mjs",
+      "bytes": 48048,
+      "sha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4"
+    },
+    "manifest": {
+      "path": "native-contract/prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    },
+    "harnessSha256": "29ecc510a1a1f256a04156836431e63e36a6b49139f54193b27a65f096f71619",
+    "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+    "circuitAssets": 21,
+    "publicParameters": 5
+  },
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "browserEnvironment": {
+    "crossOriginIsolated": false,
+    "walletPresent": false
+  },
+  "completedProofs": [
+    {
+      "circuit": "configureKeys",
+      "constraintCheck": "passed",
+      "proofBytes": 4853,
+      "proofSha256": "81796f83c0d7c61608c7ff8c6109f8156c67ef792a3feabf0ac7e35a3809da7f",
+      "elapsedMs": 147752
+    },
+    {
+      "circuit": "enroll",
+      "constraintCheck": "passed",
+      "proofBytes": 4501,
+      "proofSha256": "6a88d0cca6b275e3124a23f67267b37bcc0ea5ed6917e46d624c794ecb26db07",
+      "elapsedMs": 20957
+    },
+    {
+      "circuit": "openVoting",
+      "constraintCheck": "passed",
+      "proofBytes": 2933,
+      "proofSha256": "31b5e6cfab7f18c4e44aa357790690aee0bc14b4359a160dd1191d9338f7e4fa",
+      "elapsedMs": 507
+    },
+    {
+      "circuit": "castBallot",
+      "constraintCheck": "passed",
+      "proofBytes": 4853,
+      "proofSha256": "7de1004f2362755d8b393b1cda6ded4ab36b1c38818a762bc0ca1527f86f5a6b",
+      "elapsedMs": 291361
+    },
+    {
+      "circuit": "closeVoting",
+      "constraintCheck": "passed",
+      "proofBytes": 2933,
+      "proofSha256": "4f8dbe8132fbea87769789c8580d7e2b90314d86f8de70f1ab7da9a72dc8a9eb",
+      "elapsedMs": 502
+    },
+    {
+      "circuit": "submitDecryption",
+      "constraintCheck": "passed",
+      "proofBytes": 3317,
+      "proofSha256": "346e92eee5d91089150c2379cc64e090fb5decc19c0b8b407704725916fb340a",
+      "elapsedMs": 17559
+    },
+    {
+      "circuit": "submitDecryption",
+      "constraintCheck": "passed",
+      "proofBytes": 3317,
+      "proofSha256": "91c16125b925dcade45f6419c5925ab6920c4ed3b419255d0911fef756b01686",
+      "elapsedMs": 15705
+    },
+    {
+      "circuit": "finalize",
+      "constraintCheck": "passed",
+      "proofBytes": 3317,
+      "proofSha256": "a172d68697d65cf1608492db3118e1c485d954d9e71572282380ea42f092ea98",
+      "elapsedMs": 64837
+    }
+  ],
+  "completedTransactionProofs": [
+    {
+      "circuit": "configureKeys",
+      "construction": "official-sdk-from-generated-state",
+      "provider": "production-proveTx",
+      "callbackOrder": [
+        "check",
+        "prove"
+      ],
+      "bindingOverridePresent": true,
+      "proofBytes": 4853,
+      "proofSha256": "a53615a514af87ab948ae72300cf59a096d432c5604256a225a613eac63d987f",
+      "checkElapsedMs": 13,
+      "proveElapsedMs": 145882,
+      "elapsedMs": 145912
+    }
+  ],
+  "circuitReport": {
+    "schema": "midnight-ballot-lab/browser-circuit-proofs/v2",
+    "startedAt": "2026-11-06T22:01:40.855Z",
+    "execution": "generated-contract-and-sdk-transaction-proofs-in-dedicated-browser-worker",
+    "status": "passed",
+    "versions": {
+      "compiler": "0.31.1",
+      "runtime": "0.16.0",
+      "midnightJs": "4.1.1",
+      "ledger": "8.1.0",
+      "zkir": "2.1.1"
+    },
+    "candidateCount": 5,
+    "proofs": [
+      {
+        "circuit": "configureKeys",
+        "constraintCheck": "passed",
+        "proofBytes": 4853,
+        "proofSha256": "81796f83c0d7c61608c7ff8c6109f8156c67ef792a3feabf0ac7e35a3809da7f",
+        "elapsedMs": 147752
+      },
+      {
+        "circuit": "enroll",
+        "constraintCheck": "passed",
+        "proofBytes": 4501,
+        "proofSha256": "6a88d0cca6b275e3124a23f67267b37bcc0ea5ed6917e46d624c794ecb26db07",
+        "elapsedMs": 20957
+      },
+      {
+        "circuit": "openVoting",
+        "constraintCheck": "passed",
+        "proofBytes": 2933,
+        "proofSha256": "31b5e6cfab7f18c4e44aa357790690aee0bc14b4359a160dd1191d9338f7e4fa",
+        "elapsedMs": 507
+      },
+      {
+        "circuit": "castBallot",
+        "constraintCheck": "passed",
+        "proofBytes": 4853,
+        "proofSha256": "7de1004f2362755d8b393b1cda6ded4ab36b1c38818a762bc0ca1527f86f5a6b",
+        "elapsedMs": 291361
+      },
+      {
+        "circuit": "closeVoting",
+        "constraintCheck": "passed",
+        "proofBytes": 2933,
+        "proofSha256": "4f8dbe8132fbea87769789c8580d7e2b90314d86f8de70f1ab7da9a72dc8a9eb",
+        "elapsedMs": 502
+      },
+      {
+        "circuit": "submitDecryption",
+        "constraintCheck": "passed",
+        "proofBytes": 3317,
+        "proofSha256": "346e92eee5d91089150c2379cc64e090fb5decc19c0b8b407704725916fb340a",
+        "elapsedMs": 17559
+      },
+      {
+        "circuit": "submitDecryption",
+        "constraintCheck": "passed",
+        "proofBytes": 3317,
+        "proofSha256": "91c16125b925dcade45f6419c5925ab6920c4ed3b419255d0911fef756b01686",
+        "elapsedMs": 15705
+      },
+      {
+        "circuit": "finalize",
+        "constraintCheck": "passed",
+        "proofBytes": 3317,
+        "proofSha256": "a172d68697d65cf1608492db3118e1c485d954d9e71572282380ea42f092ea98",
+        "elapsedMs": 64837
+      }
+    ],
+    "transactionProofs": [
+      {
+        "circuit": "configureKeys",
+        "construction": "official-sdk-from-generated-state",
+        "provider": "production-proveTx",
+        "callbackOrder": [
+          "check",
+          "prove"
+        ],
+        "bindingOverridePresent": true,
+        "proofBytes": 4853,
+        "proofSha256": "a53615a514af87ab948ae72300cf59a096d432c5604256a225a613eac63d987f",
+        "checkElapsedMs": 13,
+        "proveElapsedMs": 145882,
+        "elapsedMs": 145912
+      }
+    ],
+    "negativeChecks": [
+      {
+        "case": "wrong registered trustee share",
+        "outcome": "rejected by generated circuit",
+        "proofRequested": false
+      },
+      {
+        "case": "castBallot preimage with enroll key location",
+        "outcome": "rejected by local worker check",
+        "proofRequested": false
+      }
+    ],
+    "witnessSource": "fresh-synthetic-browser-memory",
+    "httpProofProviderConfigured": false,
+    "workerAssetPolicy": "same-origin-public-GET-with-size-and-SHA256",
+    "mainPageConnectCsp": "connect-src 'self'",
+    "walletExecution": "not-attempted",
+    "networkSubmission": "not-attempted",
+    "networkAcceptance": "not-tested",
+    "independentProofVerification": "not-tested",
+    "distinctCircuitsProved": 7,
+    "phase": 3,
+    "acceptedBallots": 1,
+    "finishedAt": "2026-11-06T22:13:26.448Z"
+  },
+  "finishedAt": "2026-11-06T22:13:28.360Z",
+  "requestCounts": {
+    "forbiddenRequests": 0,
+    "serverRejectedRequests": 0,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "sockets": 0
+  },
+  "requestedPublicAssets": [
+    "native-contract/keys/castBallot.prover",
+    "native-contract/keys/castBallot.verifier",
+    "native-contract/keys/closeVoting.prover",
+    "native-contract/keys/closeVoting.verifier",
+    "native-contract/keys/configureKeys.prover",
+    "native-contract/keys/configureKeys.verifier",
+    "native-contract/keys/enroll.prover",
+    "native-contract/keys/enroll.verifier",
+    "native-contract/keys/finalize.prover",
+    "native-contract/keys/finalize.verifier",
+    "native-contract/keys/openVoting.prover",
+    "native-contract/keys/openVoting.verifier",
+    "native-contract/keys/submitDecryption.prover",
+    "native-contract/keys/submitDecryption.verifier",
+    "native-contract/params/bls_midnight_2p13",
+    "native-contract/params/bls_midnight_2p15",
+    "native-contract/params/bls_midnight_2p16",
+    "native-contract/params/bls_midnight_2p17",
+    "native-contract/params/bls_midnight_2p7",
+    "native-contract/prover-manifest.json",
+    "native-contract/zkir/castBallot.bzkir",
+    "native-contract/zkir/closeVoting.bzkir",
+    "native-contract/zkir/configureKeys.bzkir",
+    "native-contract/zkir/enroll.bzkir",
+    "native-contract/zkir/finalize.bzkir",
+    "native-contract/zkir/openVoting.bzkir",
+    "native-contract/zkir/submitDecryption.bzkir",
+    "native-prover-worker.mjs",
+    "network-assets/midnight_zkir_wasm_bg-6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b.wasm",
+    "proof-check-assets/midnight_ledger_wasm_bg-88ff7c7c47c30138ee8f3a0c8bcbf12dbdcdeba591edebfb955c30d732ea7638.wasm",
+    "proof-check-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+    "proof-check-bundle.mjs",
+    "proof-check.css",
+    "proof-check.html"
+  ]
+}

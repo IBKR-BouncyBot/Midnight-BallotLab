@@ -1,0 +1,17 @@
+[
+  {
+    "path": "funding-request.json",
+    "bytes": 478,
+    "sha256": "5b4b2740887c09f00029dd36fac9cdc8e89afb70d2adf1e12f16cc88a0f2a56f"
+  },
+  {
+    "path": "funding-artifact-validation.json",
+    "bytes": 357,
+    "sha256": "0cfc5f3b56828729234f65a3f57e126afa64fb5d8b2d89820c5ad64e3cb3be1a"
+  },
+  {
+    "path": "funding.json",
+    "bytes": 2245,
+    "sha256": "9270fed2e77a0f942a0292b0eacfa6d8270b58afda256a472b0b41a8e0be3fb6"
+  }
+]

@@ -1,0 +1,5 @@
+2026-11-06T22:13:52.1182013Z Current status: syncing_files
+2026-11-06T22:23:42.5565353Z Current status: syncing_files
+2026-11-06T22:23:42.6541552Z Canceling Pages deployment...
+2026-11-06T22:23:43.1425442Z Canceled deployment with ID e22832c2424cf89c8756e3156e943b1f87021469
+2026-11-06T22:23:43.1640073Z ##[error]The operation was canceled.

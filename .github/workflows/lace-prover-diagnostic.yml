@@ -1,0 +1,151 @@
+name: Manual Lace wallet prover diagnostic
+
+# Fundless manual diagnostic only. No funding, DUST registration, signing
+# or submission; never run on pull requests or retry an acceptance run.
+on:
+  workflow_dispatch:
+    inputs:
+      lace_onboarding_approved:
+        description: 'Explicit approval to create a Lace 2.5.1 wallet and accept its Terms and Privacy Policy (see runbook)'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lace-prover-diagnostic
+  cancel-in-progress: false
+
+jobs:
+  lace:
+    name: Observe genuine Lace contract proving without funds
+    if: github.repository == 'IBKR-BouncyBot/Midnight-BallotLab' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out trusted source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Reject workflow reruns
+        env:
+          ATTEMPT: ${{ github.run_attempt }}
+          ONBOARDING_APPROVED: ${{ inputs.lace_onboarding_approved }}
+        run: |
+          test "$ATTEMPT" = 1 || { echo 'Start a separately reviewed fresh dispatch instead of rerunning this diagnostic.'; exit 1; }
+          test "$ONBOARDING_APPROVED" = true || { echo 'Explicit approval of Lace onboarding terms is required before wallet creation.'; exit 1; }
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the pinned toolchain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/ci-install-midnight.sh
+      - name: Install reviewed application dependencies
+        run: npm --prefix contracts ci --ignore-scripts
+      - name: Compile and test actual native code
+        run: |
+          npm test
+          npm --prefix contracts run compile:native
+          npm --prefix contracts run test:native
+          node --test contracts/test/browser-prover-failure.test.mjs
+          node --test contracts/test/lace-ci-public-files.test.mjs contracts/test/lace-ci-progress.test.mjs contracts/test/lace-prover-diagnostic-check.test.mjs contracts/test/lace-ci-diagnostic.test.mjs contracts/test/lace-prover-observer.test.mjs
+      - name: Build the actual browser application and proving assets
+        run: |
+          npm run build
+          node scripts/build-native-browser.mjs
+          node scripts/build-network-browser.mjs
+          python3 scripts/check_pages.py
+      - name: Build the fundless wallet proof fixture
+        run: node scripts/build-lace-prover-diagnostic.mjs "$RUNNER_TEMP/lace-prover-diagnostic-site"
+      - name: Install full Chromium without the unused headless shell
+        timeout-minutes: 8
+        run: node contracts/node_modules/playwright/cli.js install chromium --no-shell
+      - name: Test the existing headed browser environment
+        id: browser_environment
+        continue-on-error: true
+        timeout-minutes: 2
+        run: node scripts/ci-browser-environment.mjs initial
+      - name: Repair missing browser dependencies only after a failed launch check
+        if: steps.browser_environment.outcome == 'failure'
+        timeout-minutes: 10
+        run: |
+          # APT still uses the official Playwright dependency list. Bound
+          # transport retries and total repair time; do not disable validation.
+          cat > "$RUNNER_TEMP/lace-browser-apt.conf" <<'APT'
+          Acquire::Retries "1";
+          Acquire::http::Timeout "20";
+          Acquire::https::Timeout "20";
+          DPkg::Lock::Timeout "60";
+          APT
+          timeout --signal=TERM --kill-after=15s 480s sudo env APT_CONFIG="$RUNNER_TEMP/lace-browser-apt.conf" "$(command -v node)" "$GITHUB_WORKSPACE/contracts/node_modules/playwright/cli.js" install-deps chromium
+          if ! command -v xauth >/dev/null; then
+            timeout --signal=TERM --kill-after=15s 60s sudo env APT_CONFIG="$RUNNER_TEMP/lace-browser-apt.conf" apt-get install -y --no-install-recommends xauth
+          fi
+      - name: Require a real headed launch after dependency repair
+        if: steps.browser_environment.outcome == 'failure'
+        timeout-minutes: 2
+        run: node scripts/ci-browser-environment.mjs after-repair
+      - name: Preserve only public browser-environment checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lace-diagnostic-browser-environment-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/browser-environment-initial.json
+            ${{ runner.temp }}/browser-environment-after-repair.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Acquire and verify official Lace
+        id: lace
+        run: node scripts/ci-acquire-lace.mjs
+      - name: Prepare isolated diagnostic output
+        id: task
+        run: |
+          umask 077
+          task_root="$(mktemp -d "$RUNNER_TEMP/midnight-lace-diagnostic.XXXXXXXX")"
+          mkdir -m 700 "$task_root/public"
+          printf 'task-directory=%s\nevidence-directory=%s\n' "$task_root" "$task_root/public" >> "$GITHUB_OUTPUT"
+      - name: Request a real wallet contract proof without funding or submission
+        id: diagnostic
+        timeout-minutes: 32
+        env:
+          LACE_EXTENSION_PATH: ${{ steps.lace.outputs.extension-path }}
+          LACE_ACQUISITION_REPORT: ${{ steps.lace.outputs.acquisition-report }}
+          LACE_ONBOARDING_APPROVAL: ${{ inputs.lace_onboarding_approved && 'lace-2.5.1-create-terms-and-privacy' || '' }}
+          LACE_TEST_MODE: prover-diagnostic
+          LACE_DIAGNOSTIC_SITE_DIR: ${{ runner.temp }}/lace-prover-diagnostic-site
+          LACE_EVIDENCE_DIR: ${{ steps.task.outputs.evidence-directory }}
+          LACE_DIAGNOSTIC_TASK_DIR: ${{ steps.task.outputs.task-directory }}
+        run: |
+          # Never print the browser's private output, profile, exceptions or URLs.
+          umask 077
+          set +e
+          timeout --signal=TERM --kill-after=20s 30m xvfb-run -a node scripts/test-lace-preview-browser.mjs > "$LACE_DIAGNOSTIC_TASK_DIR/private-runner.log" 2>&1
+          runner_status=$?
+          set -e
+          node scripts/ci-lace-prover-diagnostic-check.mjs publication "$LACE_EVIDENCE_DIR/prover-diagnostic-report.json"
+          printf 'public-report-valid=true\n' >> "$GITHUB_OUTPUT"
+          test "$runner_status" = 0 || { echo 'The fundless wallet-prover diagnostic failed; inspect its public report.'; exit 1; }
+          node scripts/ci-lace-prover-diagnostic-check.mjs completed "$LACE_EVIDENCE_DIR/prover-diagnostic-report.json"
+      - name: Preserve only validated public diagnostic evidence
+        if: always() && steps.diagnostic.outputs.public-report-valid == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lace-prover-diagnostic-${{ github.run_id }}
+          path: |
+            ${{ steps.lace.outputs.acquisition-report }}
+            ${{ steps.task.outputs.evidence-directory }}/prover-diagnostic-report.json
+          if-no-files-found: error
+          retention-days: 30

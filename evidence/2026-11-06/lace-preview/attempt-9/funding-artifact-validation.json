@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "runId": "42300599784",
+  "headSha": "e22832c2424cf89c8756e3156e943b1f87021469",
+  "artifactId": "13544596243",
+  "archiveSha256": "96fa4ae02901444b3f2d52fe3fa338be974a416a9bc5ae98a9c122c44236af5d",
+  "fundingRequestSha256": "5b4b2740887c09f00029dd36fac9cdc8e89afb70d2adf1e12f16cc88a0f2a56f",
+  "fundingExecuted": false
+}

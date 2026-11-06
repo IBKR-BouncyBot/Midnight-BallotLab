@@ -1,0 +1,545 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-preview-browser/v1",
+  "status": "failed",
+  "startedAt": "2026-11-06T21:58:18.059Z",
+  "networkId": "preview",
+  "execution": "genuine-disposable-Lace-and-application-UI",
+  "operations": [
+    {
+      "ordinal": 1,
+      "operation": "Deployment",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:13:08.502Z",
+      "contractCallProofRequired": false,
+      "phases": [
+        "preparation-started",
+        "no-contract-proof-required",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:13:09.592Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:13:09.742Z",
+      "txId": "0001a93127d1280005249ebf11c5442a8f1e55c9bd772fbe6551c67b3980075c96",
+      "blockHeight": 1630086,
+      "acceptedAt": "2026-11-06T22:13:53.107Z"
+    },
+    {
+      "ordinal": 2,
+      "operation": "Key configuration",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:13:53.610Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:16:04.415Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:16:04.637Z",
+      "txId": "00717addfa5b14ca7071e5bd1223de7218a751c33e01674d9bf2c2c0319d2ea005",
+      "blockHeight": 1630114,
+      "acceptedAt": "2026-11-06T22:16:39.514Z"
+    },
+    {
+      "ordinal": 3,
+      "operation": "Enrollment",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:16:39.833Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:16:59.979Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:17:00.115Z",
+      "txId": "0000b6783215fa98a3eb5c69dce05ecff4e7cebf1636f9403ed9491951f8629de2",
+      "blockHeight": 1630123,
+      "acceptedAt": "2026-11-06T22:17:32.908Z"
+    },
+    {
+      "ordinal": 4,
+      "operation": "Voting opened",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:29:16.523Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:29:18.614Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:29:18.753Z",
+      "txId": "00c6f5293724784262883f1e3af1f3641bd433304aeed8b158e9cd95f32820786b",
+      "blockHeight": 1630247,
+      "acceptedAt": "2026-11-06T22:29:56.598Z"
+    },
+    {
+      "ordinal": 5,
+      "operation": "Ballot",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:29:56.990Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:34:14.359Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:34:14.526Z",
+      "txId": "006798efc63297a0e3d77d13627a58c47f1967dcdad70d2ec2387a9938fd17f653",
+      "blockHeight": 1630296,
+      "acceptedAt": "2026-11-06T22:34:50.851Z"
+    },
+    {
+      "ordinal": 6,
+      "operation": "Voting closed",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:54:17.596Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:54:19.673Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:54:19.812Z",
+      "txId": "00fd0a1b6e7bc5934179d80c5a0bc2f204d0ef3d9bae40bc3492e79332342d3562",
+      "blockHeight": 1630497,
+      "acceptedAt": "2026-11-06T22:54:56.706Z"
+    },
+    {
+      "ordinal": 7,
+      "operation": "Trustee contribution",
+      "trusteeIndex": 1,
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:54:57.123Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:55:13.802Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:55:13.940Z",
+      "txId": "0035f110661f0a1b18660db43f6cec37bc337e1c089a07c4c02fd8088d160a4d18",
+      "blockHeight": 1630506,
+      "acceptedAt": "2026-11-06T22:55:52.783Z"
+    },
+    {
+      "ordinal": 8,
+      "operation": "Trustee contribution",
+      "trusteeIndex": 3,
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:55:53.457Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:56:08.575Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:56:08.758Z",
+      "txId": "003ab7d3a578a654dc71e0284805882453081150fa9e5b715b521d8fee89ede92f",
+      "blockHeight": 1630515,
+      "acceptedAt": "2026-11-06T22:56:44.549Z"
+    },
+    {
+      "ordinal": 9,
+      "operation": "Tally finalized",
+      "status": "indexer-accepted",
+      "startedAt": "2026-11-06T22:56:45.110Z",
+      "contractCallProofRequired": true,
+      "phases": [
+        "preparation-started",
+        "contract-constraints-checking",
+        "public-assets-loading",
+        "contract-proving",
+        "contract-proof-completed",
+        "preparation-completed",
+        "wallet-approval-requested",
+        "wallet-signed",
+        "submission-returned"
+      ],
+      "confirmationSource": "configured-indexer",
+      "ledgerInclusionIndependentlyVerified": false,
+      "walletApprovalRequestedAt": "2026-11-06T22:57:43.469Z",
+      "walletApprovalConfirmedAt": "2026-11-06T22:57:43.650Z",
+      "txId": "007913cd2b5f0d61c027a629787c8bab6d81e8d4a9e6b15c1cf373b27d4733c0ad",
+      "blockHeight": 1630531,
+      "acceptedAt": "2026-11-06T22:58:20.484Z"
+    }
+  ],
+  "transactionsRetried": 0,
+  "independentChainVerification": false,
+  "fundingSource": "separately-authorized-isolated-SDK-sponsor-not-browser-proof-evidence",
+  "privateArtifactsExported": false,
+  "hostedOriginTested": false,
+  "walletModeApiAttestation": false,
+  "httpProofProviderConfigured": false,
+  "runId": "42300599784",
+  "headSha": "e22832c2424cf89c8756e3156e943b1f87021469",
+  "laceVersion": "2.5.1",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "runnerSha256": "1769149587313f149301e4595698d38160f452fcffdfad6dc806c031cb9e9b35",
+  "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "playwright": "1.64.1",
+  "vendorServiceConfiguration": {
+    "source": "signed-wallet-normal-public-feature-service",
+    "indexer": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWs": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "node": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "nodeWs": {
+      "origin": "wss://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "queryValuesExported": false
+  },
+  "publicConfigurationPreflight": true,
+  "chromium": "156.0.8078.4",
+  "normalBrowserContextRestart": {
+    "beforeWalletCreation": true,
+    "sameIsolatedProfile": true,
+    "closedExtensionViews": 1,
+    "previousWorkerClosed": true,
+    "previousContextClosed": true,
+    "contextReopened": true,
+    "serviceWorkerObserved": true,
+    "onboardingReady": true,
+    "effectiveConfigurationStillRequired": true,
+    "scope": "ordinary-same-profile-browser-restart-not-configuration-attestation"
+  },
+  "midnightOnlyAccountSelectionVerified": true,
+  "freshWalletCreated": true,
+  "lastSettingsControl": "portfolio-tab-btn",
+  "visibleWalletServicesBeforeSave": {
+    "node": "current",
+    "indexer": "current"
+  },
+  "settingsModeObservations": [
+    {
+      "point": "before-save",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    },
+    {
+      "point": "after-reopen",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    },
+    {
+      "point": "failure",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": false
+        },
+        {
+          "mode": "local-host",
+          "present": false
+        }
+      ]
+    }
+  ],
+  "walletSettingsSaveActivations": [
+    "mouse"
+  ],
+  "walletSettingsClose": "automatic-after-mouse-save",
+  "walletOnDeviceWasmSelectedThroughUi": true,
+  "apiVersion": "4.1.0-canary.20260819082604-3b622cb",
+  "walletConnected": true,
+  "walletServices": {
+    "networkId": "preview",
+    "indexerUri": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWsUri": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "substrateNodeUri": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "externalProverReported": false,
+    "queryValuesExported": false
+  },
+  "walletIndexerHealth": {
+    "checkedBeforeFunding": true,
+    "source": "configured-wallet-indexer-public-read",
+    "status": 200,
+    "blockHeight": 1629939,
+    "independentChainVerification": false,
+    "subscriptionBlockHeight": 1629939,
+    "websocketProtocol": "graphql-transport-ws",
+    "walletSyncAttested": false
+  },
+  "walletBalanceApiBeforeFunding": {
+    "responded": true,
+    "balancesZero": true,
+    "walletSyncAttested": false
+  },
+  "fundingRequestSha256": "5b4b2740887c09f00029dd36fac9cdc8e89afb70d2adf1e12f16cc88a0f2a56f",
+  "testNightObserved": true,
+  "dustRegistration": {
+    "status": "positive-dust-observed",
+    "startedAt": "2026-11-06T22:00:40.510Z",
+    "scope": "separate-wallet-UI-operation-not-one-of-nine-application-transactions",
+    "ledgerInclusionIndependentlyVerified": false,
+    "observedAt": "2026-11-06T22:13:07.935Z"
+  },
+  "dustRegistrationUiApproved": true,
+  "positiveDustObserved": true,
+  "schedule": {
+    "opensAt": 1794004140,
+    "closesAt": 1794005640
+  },
+  "contractAddress": "f8b19ef852720e5ee28c9b612991871672e51cac928b37a232d3c2b06650eee1",
+  "receiptCheckedAgainstIndexer": true,
+  "failedStage": "operation-finalize",
+  "failureCategory": "wallet-prover-WASM-resource-not-observed",
+  "settingsControls": [
+    {
+      "control": "settings-tab-btn",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    },
+    {
+      "control": "option-list-item-network",
+      "count": 1,
+      "visible": false,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    },
+    {
+      "control": "radio-button-testnet",
+      "count": 0
+    },
+    {
+      "control": "radio-button-midnight-preview",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet-confirm-button",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet",
+      "count": 0
+    },
+    {
+      "control": "option-list-item-midnight",
+      "count": 1,
+      "visible": false,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    },
+    {
+      "control": "proof-server-in-process-radio",
+      "count": 0
+    },
+    {
+      "control": "proof-server-local-host-radio",
+      "count": 0
+    },
+    {
+      "control": "save-configuration-button",
+      "count": 0
+    },
+    {
+      "control": "midnight-settings-sheet-header",
+      "count": 0
+    },
+    {
+      "control": "side-sheet-close-button",
+      "count": 2
+    },
+    {
+      "control": "portfolio-tab-btn",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null,
+      "ariaDisabled": null
+    }
+  ],
+  "finishedAt": "2026-11-06T22:58:21.245Z",
+  "currentStage": "operation-finalize",
+  "traffic": {
+    "blockedRequests": 744,
+    "blockedWebSockets": 0,
+    "walletWasmResources": 0,
+    "appWasmResources": 3,
+    "publicConfigurationRequests": 4,
+    "publicConfigurationResponses": 3,
+    "pageErrors": 0,
+    "consoleErrors": 12,
+    "consoleWarnings": 1,
+    "blockedRequestCategories": {
+      "unknownHost": 261,
+      "unexpectedKnownPathOrMethod": 460,
+      "queryOrCredentials": 23,
+      "unexpectedPort": 0,
+      "invalidUrl": 0
+    },
+    "blockedKnownPaths": {
+      "wallet-public-flags": 0,
+      "wallet-telemetry": 253,
+      "wallet-config-other-path": 0,
+      "wallet-indexer-current": 0,
+      "wallet-indexer-current-other-path": 0,
+      "wallet-node-current": 0,
+      "wallet-node-current-other-path": 0,
+      "wallet-indexer-retired": 0,
+      "wallet-node-retired": 0,
+      "public-proving-assets": 0,
+      "loopback-prover": 0,
+      "other": 491
+    }
+  }
+}

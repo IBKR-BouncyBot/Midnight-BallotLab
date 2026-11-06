@@ -1,5 +1,7 @@
 # Native Midnight election contract
 
+See [current verification status](../docs/VERIFICATION_STATUS.md) for completed runtime, proof and network runs, the live Preview browser-wallet attempt and remaining limits.
+
 `native-election.compact` implements an encrypted election with 2–5 active choices and Midnight's native Jubjub operations. It checks key setup, voter membership, nullifier uniqueness, five-lane ciphertexts, receipt binding, aggregation and two-of-three trustee finalization. The sealed candidate count is bound into the configuration; inactive totals must be zero.
 
 The contract supports up to 1,024 accepted ballots. These are implementation bounds, not a throughput or production-readiness claim. See [native implementation](../docs/NATIVE_MIDNIGHT.md) for the equations and [security limits](../docs/THREAT_MODEL.md) for the trust assumptions.
@@ -25,7 +27,7 @@ The generated-contract suite covers all supported candidate counts, invalid priv
 
 `native/sdk-client.mjs` and `native/browser-providers.mjs` use actual Midnight.js contract, wallet, prover, indexer and submission APIs. The isolated `devnet/` graph has its own reviewed lockfile and a complete wallet acceptance runner. Its recorded local and hosted runs each confirmed 17 transactions and finalized five ballots with two trustees. See [GitHub execution evidence](../docs/GITHUB_EXECUTION.md) for exact tested commits, transaction IDs and confirmation scope.
 
-The separate Lace 2.5.0 / API 4.0.1 browser-wallet election completed nine accepted transactions on the local development chain; see [its recorded scope](../docs/NATIVE_NETWORK.md#wallet-compatibility). The separate Node Wallet SDK run completed nine accepted application transactions and eight proved contract calls on public Preview. Browser-wallet Preview transactions, hosted-origin wallet connection/transactions and Preprod transactions remain unverified; see the same guide for the separate evidence. The browser demo executes native cryptography locally. Pages serves the frontend; a configured prover and network services are separate.
+The browser demo executes native cryptography locally. The separate network page generates application proofs in its browser worker and uses a compatible wallet for wallet/DUST work. Pages serves the frontend and public assets; external indexer/node services remain separate. Read the linked verification status before interpreting a runtime, proof or network result.
 
 The network interface presents Connect, Set up election, Vote, Reveal results and Verify election as separate screens. Switching screens preserves the session without running an SDK operation. The verifier accepts downloaded network observations without a wallet and reports supplied-record consistency only. See [the current network guide](../docs/NATIVE_NETWORK.md#run-the-flow).
 

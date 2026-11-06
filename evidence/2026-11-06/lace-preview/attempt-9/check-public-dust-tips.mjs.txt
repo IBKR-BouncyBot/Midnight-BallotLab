@@ -1,0 +1,74 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { randomUUID, createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+const require = createRequire(new URL('../../contracts/package.json', import.meta.url));
+const WebSocket = require('ws');
+const hash = value => createHash('sha256').update(value).digest('hex');
+const query = 'subscription DustLedgerEventTip($id: Int) { dustLedgerEvents(id: $id) { id maxId } }';
+const report = { schema: 'midnight-ballot-lab/public-dust-tip-comparison/v1', runId: '42300599784',
+  headSha: 'e22832c2424cf89c8756e3156e943b1f87021469', networkId: 'preview',
+  startedAt: new Date().toISOString(), status: 'failed', walletOpened: false, transactionsSubmitted: 0,
+  privateInputsRead: false, queryValuesExported: false,
+  scope: 'Public indexer DUST tips only; no wallet sync cursor or independent chain verification.',
+  observerSha256: hash(await readFile(new URL(import.meta.url))), querySha256: hash(query) };
+async function boundedBody(response) {
+  if (!response.ok || !response.body) throw Error();
+  const chunks = []; let length = 0;
+  for await (const chunk of response.body) { length += chunk.length; if (length > 512 * 1024) throw Error(); chunks.push(chunk); }
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+function publicUri(value) {
+  const url = new URL(value); return { origin: url.origin, pathname: url.pathname, queryKeys: [...url.searchParams.keys()] };
+}
+async function tip(uri) {
+  return new Promise(resolve => {
+    const socket = new WebSocket(uri, 'graphql-transport-ws', { maxPayload: 16384, handshakeTimeout: 10000 });
+    let done = false;
+    const finish = value => { if (done) return; done = true; clearTimeout(timer);
+      if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ id: 'public-tip', type: 'complete' }));
+      socket.terminate(); resolve(value); };
+    const timer = setTimeout(() => finish({ status: 'timeout' }), 15000);
+    socket.on('open', () => socket.send(JSON.stringify({ type: 'connection_init' })));
+    socket.on('error', () => finish({ status: 'transport-failed' }));
+    socket.on('close', () => finish({ status: 'stream-closed' }));
+    socket.on('message', bytes => { try {
+      const message = JSON.parse(bytes.toString('utf8'));
+      if (message.type === 'connection_ack') socket.send(JSON.stringify({ id: 'public-tip', type: 'subscribe', payload: { query, variables: { id: null } } }));
+      else if (message.type === 'ping') socket.send(JSON.stringify({ type: 'pong' }));
+      else if (message.type === 'error' || message.payload?.errors) finish({ status: 'query-rejected' });
+      else if (message.type === 'next') {
+        const value = message.payload?.data?.dustLedgerEvents;
+        if (!Number.isSafeInteger(value?.id) || value.id < 0 || !Number.isSafeInteger(value.maxId) || value.maxId < value.id) return finish({ status: 'invalid-tip' });
+        finish({ status: 'observed', id: value.id, maxId: value.maxId });
+      }
+    } catch { finish({ status: 'invalid-response' }); } });
+  });
+}
+try {
+  const source = await readFile(new URL('../lace-preview-42285202601/signed-injected-script.js', import.meta.url));
+  if (hash(source) !== '467ac73b2f001678c81f6cda5ab9982a8fe5b98811ca403a483e8f01fdcde809') throw Error();
+  const token = /POSTHOG_API_TOKEN\s*:\s*["']([^"']+)/.exec(source.toString('utf8'))?.[1];
+  if (!token || hash(token) !== '426d05db61174615365a278ebe9acdfbfcbda9176186f5f2242b87051d0b2908') throw Error();
+  const id = randomUUID();
+  const body = await boundedBody(await fetch('https://e.lw.iog.io/flags/?v=2&config=true', {
+    method: 'POST', redirect: 'error', credentials: 'omit', signal: AbortSignal.timeout(20000),
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, distinct_id: id, groups: {},
+      person_properties: { distinct_id: id, $app_version: '2.5.1' }, group_properties: {} }) }));
+  if (body.errorsWhileComputingFlags || body.quotaLimited?.includes('feature_flags')) throw Error();
+  const flag = body.flags?.BLOCKCHAIN_MIDNIGHT_INDEXER_URLS;
+  if (flag?.enabled !== true) throw Error();
+  const payload = typeof flag.metadata?.payload === 'string' ? JSON.parse(flag.metadata.payload) : flag.metadata?.payload;
+  const vendor = new URL(payload?.preview);
+  if (vendor.protocol !== 'https:' || vendor.hostname !== 'midnight-preview.blockfrost.io' || vendor.pathname !== '/api/v0'
+    || vendor.username || vendor.password || vendor.hash || vendor.port || [...vendor.searchParams.keys()].join('|') !== 'project_id') throw Error();
+  vendor.protocol = 'wss:'; vendor.pathname += '/ws';
+  const endpoints = [ ['official', 'wss://indexer.preview.midnight.network/api/v4/graphql/ws'], ['lace-vendor', vendor.href] ];
+  const results = await Promise.allSettled(endpoints.map(async ([label, uri]) => ({ label, endpoint: publicUri(uri), ...await tip(uri) })));
+  report.results = results.map((result, i) => result.status === 'fulfilled' ? result.value : { label: endpoints[i][0], status: 'observer-failed' });
+  report.status = 'completed';
+} catch { report.failureCategory = 'public-configuration-or-observer-failed'; }
+report.finishedAt = new Date().toISOString();
+const filename = `public-dust-tip-comparison-${Date.now()}.json`;
+await writeFile(new URL(filename, import.meta.url), JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+process.stdout.write(JSON.stringify({ filename, ...report }) + '\n');
+if (report.status !== 'completed') process.exitCode = 1;

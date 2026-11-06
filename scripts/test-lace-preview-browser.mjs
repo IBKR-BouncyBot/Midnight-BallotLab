@@ -28,18 +28,21 @@ const LACE_PUBLIC_CLIENT_TOKEN_SHA = '426d05db61174615365a278ebe9acdfbfcbda91761
 const hash = value => createHash('sha256').update(value).digest('hex');
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
 const extensionOrigin = `chrome-extension://${EXTENSION_ID}`;
-const started = Date.now(), overallDeadline = started + 180 * 60_000;
+const testMode = process.env.LACE_TEST_MODE ?? 'preview-election';
+const diagnosticMode = testMode === 'prover-diagnostic';
+const started = Date.now(), overallDeadline = started + (diagnosticMode ? 30 : 180) * 60_000;
 const report = {
-  schema: 'midnight-ballot-lab/ci-lace-preview-browser/v1', status: 'preparing',
+  schema: diagnosticMode ? 'midnight-ballot-lab/ci-lace-prover-diagnostic/v1' : 'midnight-ballot-lab/ci-lace-preview-browser/v1', status: 'preparing',
   startedAt: new Date(started).toISOString(), networkId: 'preview',
-  execution: 'genuine-disposable-Lace-and-application-UI', operations: [],
+  execution: diagnosticMode ? 'genuine-disposable-Lace-fundless-contract-proof' : 'genuine-disposable-Lace-and-application-UI', operations: [],
+  ...(diagnosticMode ? { fundingAttempted: false, walletDustProofsTested: false, networkSubmissionAttempted: false, independentProofVerification: false } : {}),
   transactionsRetried: 0, independentChainVerification: false,
   fundingSource: 'separately-authorized-isolated-SDK-sponsor-not-browser-proof-evidence',
   privateArtifactsExported: false, hostedOriginTested: false,
   walletModeApiAttestation: false, httpProofProviderConfigured: false,
 };
 const journal = { schema: 'midnight-ballot-lab/ci-public-transaction-journal/v1', networkId: 'preview', operations: report.operations };
-let output, browserContext, app, wallet, server, origin, profileRoot;
+let output, browserContext, app, wallet, server, origin, profileRoot, siteDirectory, proverObserver;
 let stage = 'ci-prerequisites', currentOperation, canSave = false, shuttingDown = false;
 let walletPassword, appPassword, publicIdentity, detachWalletResponseObserver;
 const walletWasmObservations = [];
@@ -74,17 +77,36 @@ const safeFailures = new WeakMap();
 function fail(category) { const error = new Error('CI acceptance stopped'); safeFailures.set(error, category); throw error; }
 function requireThat(condition, category) { if (!condition) fail(category); }
 async function atomic(name, value) {
+  requireThat(!diagnosticMode || name === 'prover-diagnostic-report.json', 'fundless-diagnostic-output-boundary');
   const target = join(output, name), temporary = `${target}.pending`;
   await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 });
   await rename(temporary, target);
 }
+const DIAGNOSTIC_PUBLIC_FIELDS = Object.freeze([
+  'schema', 'status', 'startedAt', 'finishedAt', 'networkId', 'execution', 'runId', 'headSha',
+  'fundingAttempted', 'walletDustProofsTested', 'networkSubmissionAttempted', 'independentProofVerification',
+  'privateArtifactsExported', 'hostedOriginTested', 'walletModeApiAttestation', 'httpProofProviderConfigured',
+  'laceVersion', 'apiVersion', 'extensionId', 'extensionArchiveSha256', 'runnerSha256',
+  'networkBundleSha256', 'workerSha256', 'diagnosticBuildSha256', 'proverObserverSha256', 'playwright', 'chromium',
+  'vendorServiceConfiguration', 'publicConfigurationPreflight', 'normalBrowserContextRestart',
+  'midnightOnlyAccountSelectionVerified', 'freshWalletCreated', 'lastSettingsControl',
+  'visibleWalletServicesBeforeSave', 'settingsModeObservations', 'walletSettingsSaveActivations',
+  'walletSettingsClose', 'walletOnDeviceWasmSelectedThroughUi', 'walletConnected', 'walletServices',
+  'walletPublicConfigurationReloaded', 'contractProof', 'walletProverObservation',
+  'failureCategory', 'failedStage', 'settingsControls',
+]);
 let saving = Promise.resolve();
 function save() {
   if (!canSave) return Promise.resolve();
   // Serialize writes, including progress callbacks, without capturing secrets.
   const persist = async () => {
-    await atomic('public-journal.json', journal);
-    await atomic('browser-report.json', { ...report, currentStage: stage, traffic });
+    if (diagnosticMode) {
+      const publicReport = Object.fromEntries(DIAGNOSTIC_PUBLIC_FIELDS.filter(key => report[key] !== undefined).map(key => [key, report[key]]));
+      await atomic('prover-diagnostic-report.json', { ...publicReport, currentStage: stage, traffic });
+    } else {
+      await atomic('public-journal.json', journal);
+      await atomic('browser-report.json', { ...report, currentStage: stage, traffic });
+    }
   };
   saving = saving.then(persist, persist);
   return saving;
@@ -486,7 +508,7 @@ const walletPublicAssetPaths = new Set([
   ...Array.from({ length: 26 }, (_, k) => `https://srs.midnight.network/bls_midnight_2p${k}`),
 ]);
 async function startServer() {
-  const dist = await realpath(join(root, 'dist'));
+  const dist = siteDirectory;
   const types = { '.html': 'text/html', '.mjs': 'text/javascript', '.js': 'text/javascript', '.css': 'text/css',
     '.json': 'application/json', '.wasm': 'application/wasm', '.woff2': 'font/woff2', '.svg': 'image/svg+xml' };
   const instance = createServer(async (request, response) => {
@@ -524,6 +546,7 @@ async function appIdle() {
     null, { timeout: 30_000 });
 }
 async function publicApi(includeBalances = false) {
+  requireThat(!diagnosticMode || !includeBalances, 'fundless-diagnostic-no-balance-call');
   requireThat(!configurationFailure, 'invalid-wallet-public-configuration-response');
   const value = await bounded(app.evaluate(async balances => {
     const entries = Object.values(window.midnight ?? {}).filter(item => item.rdns === 'io.lace.wallet');
@@ -552,6 +575,7 @@ async function publicApi(includeBalances = false) {
   return value;
 }
 async function approval(route, timeout) {
+  requireThat(!diagnosticMode || route === '#/midnight-authorize-dapp', 'fundless-diagnostic-no-transaction-approval');
   return poll(async () => {
     const pages = browserContext.pages().filter(page => page.url().startsWith(extensionOrigin + '/') && page.url().includes(route));
     requireThat(pages.length <= 1, 'ambiguous-wallet-approval');
@@ -566,6 +590,7 @@ async function authenticate(page) {
   await page.getByTestId('authentication-prompt-button-confirm').click();
 }
 async function operation(label, button, metadata = {}) {
+  requireThat(!diagnosticMode, 'fundless-diagnostic-no-application-transaction');
   await setStage(`operation-${button.replace('network-', '')}`);
   await publicApi();
   const deadline = Date.now() + 20 * 60_000;
@@ -629,9 +654,90 @@ async function publicDownload(button, limit) {
 }
 function exactKeys(value, keys) { requireThat(value && typeof value === 'object' && !Array.isArray(value)
   && Object.keys(value).sort().join('|') === [...keys].sort().join('|'), 'unexpected-public-export-fields'); }
+const FIXTURE_STAGES = new Set(['ready', 'connecting', 'connected', 'validate-connection', 'load-public-material',
+  'prepare-real-circuit', 'check-openVoting', 'prove-openVoting', 'complete']);
+async function readFundlessFixture() {
+  const text = await app.locator('#lace-diagnostic-report').textContent();
+  const value = parseStrictJson(text, { maxBytes: 16 * 1024, maxDepth: 4 });
+  const required = ['schema', 'status', 'stage', 'networkId', 'witnessSource', 'fundingAttempted',
+    'walletDustProofsTested', 'networkSubmissionAttempted', 'independentProofVerification',
+    'walletModeApiAttestation', 'httpProofProviderConfigured'];
+  requireThat(value && typeof value === 'object' && !Array.isArray(value)
+    && required.every(key => Object.hasOwn(value, key))
+    && Object.keys(value).every(key => [...required, 'apiVersion', 'proof', 'failureCategory'].includes(key))
+    && value.schema === 'midnight-ballot-lab/lace-fundless-contract-proof/v1'
+    && value.networkId === 'preview' && value.witnessSource === 'fresh-synthetic-browser-memory'
+    && ['ready', 'connected', 'running', 'passed', 'failed'].includes(value.status)
+    && FIXTURE_STAGES.has(value.stage)
+    && ['fundingAttempted', 'walletDustProofsTested', 'networkSubmissionAttempted', 'independentProofVerification',
+      'walletModeApiAttestation', 'httpProofProviderConfigured'].every(key => value[key] === false),
+  'invalid-fundless-fixture-report');
+  if (value.apiVersion !== undefined) requireThat(value.apiVersion === LACE_API_VERSION, 'unexpected-fundless-wallet-api');
+  requireThat(!browserContext.pages().some(page => page.url().startsWith(extensionOrigin + '/')
+    && page.url().includes('#/prove-midnight-transaction')), 'unexpected-fundless-transaction-approval');
+  return value;
+}
+async function runFundlessDiagnostic() {
+  requireThat(diagnosticMode && report.operations.length === 0 && !report.fundingRequestSha256
+    && !report.testNightObserved && !report.dustRegistration && proverObserver,
+  'fundless-diagnostic-entry-boundary');
+  await setStage('open-fundless-prover-diagnostic');
+  await app.goto(origin + '/lace-prover-diagnostic.html');
+  await app.waitForFunction(() => document.getElementById('lace-diagnostic-report')?.textContent.startsWith('{'));
+  requireThat((await readFundlessFixture()).status === 'ready', 'fundless-fixture-not-ready');
+  await setStage('connect-fundless-prover-diagnostic');
+  await app.locator('#lace-diagnostic-connect').click();
+  await poll(async () => {
+    const value = await readFundlessFixture();
+    if (value.status === 'failed') fail('fundless-fixture-connection-failed');
+    return value.status === 'connected' && value.apiVersion === LACE_API_VERSION;
+  }, 60_000, 250);
+  // Genuine same-origin authorization already exists; no signing approval,
+  // balance query, funding, DUST registration or network submission is requested.
+  const metadata = await publicApi();
+  requireThat(['indexerUri', 'indexerWsUri', 'substrateNodeUri'].every(field =>
+    walletVendorServiceUrls.has(new URL(metadata.configuration[field]).href)), 'wallet-current-vendor-services-required');
+  await setStage('run-fundless-lace-proof');
+  await app.locator('#lace-diagnostic-run').click();
+  const result = await poll(async () => {
+    const value = await readFundlessFixture();
+    if (value.status === 'failed') fail('fundless-contract-proof-failed');
+    return value.status === 'passed' ? value : null;
+  }, 20 * 60_000, 500);
+  const proof = result.proof;
+  exactKeys(proof, ['circuit', 'constraintCheck', 'bytes', 'sha256', 'elapsedMs']);
+  requireThat(result.stage === 'complete' && proof.circuit === 'openVoting' && proof.constraintCheck === 'passed'
+    && Number.isSafeInteger(proof.bytes) && proof.bytes > 0 && proof.bytes <= 16 * 1024 * 1024
+    && /^[0-9a-f]{64}$/.test(proof.sha256) && Number.isSafeInteger(proof.elapsedMs)
+    && proof.elapsedMs >= 0 && proof.elapsedMs <= 20 * 60_000, 'invalid-fundless-contract-proof-result');
+  report.contractProof = { circuit: proof.circuit, constraintCheck: proof.constraintCheck,
+    bytes: proof.bytes, sha256: proof.sha256, elapsedMs: proof.elapsedMs };
+  await save();
+  await setStage('verify-fundless-wallet-prover-observation');
+  try {
+    await poll(() => {
+      const value = proverObserver.snapshot(); report.walletProverObservation = value;
+      if (value.status === 'failed' || value.failureCategory !== null) fail('wallet-prover-passive-observation-failed');
+      return value.observed === true;
+    }, 30_000, 100);
+  } catch (error) {
+    report.walletProverObservation = proverObserver.snapshot();
+    if (safeFailures.get(error) === 'bounded-stage-timeout') fail('wallet-prover-WASM-resource-not-observed');
+    throw error;
+  }
+  const observed = report.walletProverObservation;
+  requireThat(observed.status === 'observed' && observed.failureCategory === null
+    && observed.path === WALLET_PROVER_WASM && observed.bytes === WALLET_PROVER_WASM_BYTES
+    && observed.sha256 === WALLET_PROVER_WASM_SHA, 'wallet-prover-observation-mismatch');
+  requireThat(report.operations.length === 0 && !report.fundingRequestSha256 && !report.dustRegistration,
+    'fundless-diagnostic-exit-boundary');
+  await setStage('fundless-proof-completed');
+  report.status = 'passed'; report.finishedAt = new Date().toISOString(); await save();
+}
 async function shutdown() {
   if (shuttingDown) return; shuttingDown = true;
   walletPassword = undefined; appPassword = undefined;
+  await proverObserver?.close().catch(() => {});
   await browserContext?.close().catch(() => {});
   if (server) await new Promise(done => server.close(done));
   // Only our fresh child directory is removed; evidence is a separate sibling.
@@ -639,6 +745,7 @@ async function shutdown() {
 }
 async function emergencyFailure(category) {
   report.status = 'failed'; report.failureCategory = category; report.failedStage = stage;
+  if (diagnosticMode && proverObserver) report.walletProverObservation = proverObserver.snapshot();
   if (currentOperation?.status === 'requested') currentOperation.status = 'uncertain';
   if (['approval-requested', 'awaiting-wallet-sync'].includes(report.dustRegistration?.status)) report.dustRegistration.status = 'uncertain';
   await save().catch(() => {});
@@ -652,6 +759,7 @@ const watchdog = setTimeout(() => { void emergencyFailure('overall-timeout'); },
 watchdog.unref();
 
 try {
+  requireThat(['preview-election', 'prover-diagnostic'].includes(testMode), 'unsupported-test-mode');
   requireThat(process.env.GITHUB_ACTIONS === 'true' && process.platform === 'linux' && process.env.DISPLAY,
     'ci-linux-display-required');
   // Playwright debug logging can include fill() arguments. It must never be
@@ -667,6 +775,12 @@ try {
   for (const name of ['LACE_EXTENSION_PATH', 'LACE_ACQUISITION_REPORT', 'LACE_EVIDENCE_DIR']) {
     requireThat(typeof process.env[name] === 'string' && resolve(process.env[name]).startsWith(temp + sep), 'task-temp-path-required');
   }
+  if (diagnosticMode) {
+    requireThat(typeof process.env.LACE_DIAGNOSTIC_SITE_DIR === 'string'
+      && resolve(process.env.LACE_DIAGNOSTIC_SITE_DIR).startsWith(temp + sep), 'diagnostic-site-task-temp-required');
+    siteDirectory = await realpath(process.env.LACE_DIAGNOSTIC_SITE_DIR);
+    requireThat(siteDirectory.startsWith(temp + sep), 'diagnostic-site-path-escape');
+  } else siteDirectory = await realpath(join(root, 'dist'));
   output = resolve(process.env.LACE_EVIDENCE_DIR); await mkdir(output, { recursive: true });
   requireThat((await realpath(output)).startsWith(temp + sep), 'evidence-path-escape');
   // New runs must not overwrite a prior transaction journal or funding request.
@@ -692,6 +806,20 @@ try {
   requireThat(build.enabled === true && build.browserProver?.version === '2.1.1', 'real-browser-prover-build-required');
   report.networkBundleSha256 = hash(await readFile(join(root, 'dist/network-bundle.mjs')));
   report.workerSha256 = build.browserProver.worker.sha256;
+  if (diagnosticMode) {
+    const bytes = await readFile(join(siteDirectory, 'lace-diagnostic-build.json'));
+    const fixtureBuild = parseStrictJson(decodeJsonUtf8(bytes, { maxBytes: 16 * 1024 }), { maxBytes: 16 * 1024, maxDepth: 3 });
+    exactKeys(fixtureBuild, ['schema', 'harnessSha256', 'assetManifestSha256', 'sourceSha256', 'circuit', 'proofGeneration']);
+    requireThat(fixtureBuild.schema === 'midnight-ballot-lab/lace-fundless-diagnostic-build/v1'
+      && fixtureBuild.circuit === 'openVoting' && fixtureBuild.proofGeneration === 'not-tested-by-build'
+      && hash(await readFile(join(siteDirectory, 'lace-diagnostic-bundle.mjs'))) === fixtureBuild.harnessSha256
+      && hash(await readFile(join(root, 'contracts/native/lace-prover-diagnostic.mjs'))) === fixtureBuild.sourceSha256
+      && hash(await readFile(join(siteDirectory, 'native-contract/prover-manifest.json'))) === fixtureBuild.assetManifestSha256
+      && fixtureBuild.assetManifestSha256 === build.browserProver.manifest.sha256
+      && hash(await readFile(join(siteDirectory, 'network-bundle.mjs'))) === report.networkBundleSha256,
+    'fundless-diagnostic-build-mismatch');
+    report.diagnosticBuildSha256 = hash(bytes);
+  }
   const { chromium } = requireContracts('playwright');
   const addressPackage = join(root, 'contracts/node_modules/@midnight-ntwrk/wallet-sdk-address-format');
   const addressManifest = JSON.parse(await readFile(join(addressPackage, 'package.json'), 'utf8'));
@@ -770,6 +898,13 @@ try {
     await poll(normalConfigurationReady, 30_000, 250);
   }
   await restartNormalWalletContextBeforeCreation(launchWalletContext);
+  if (diagnosticMode) {
+    await setStage('arm-fundless-wallet-prover-observer');
+    const { observeLaceProverWasm } = await import('./lace-prover-observer.mjs');
+    report.proverObserverSha256 = hash(await readFile(new URL('./lace-prover-observer.mjs', import.meta.url)));
+    proverObserver = await observeLaceProverWasm(browserContext.browser());
+    report.walletProverObservation = proverObserver.snapshot(); await save();
+  }
   await setStage('create-fresh-test-wallet');
   const freshPassword = prefix => {
     for (let attempt = 0; attempt < 32; attempt++) {
@@ -880,6 +1015,9 @@ try {
   requireThat(!configurationFailure && traffic.publicConfigurationResponses > 0, 'normal-wallet-public-configuration-required');
   requireThat(['indexerUri', 'indexerWsUri', 'substrateNodeUri'].every(field =>
     walletVendorServiceUrls.has(new URL(metadata.configuration[field]).href)), 'wallet-current-vendor-services-required');
+  if (diagnosticMode) {
+    await runFundlessDiagnostic();
+  } else {
   await setStage('check-wallet-indexer-before-funding');
   await checkWalletIndexerBeforeFunding(metadata.configuration.indexerUri, metadata.configuration.indexerWsUri);
   const unfunded = await publicApi(true);
@@ -989,12 +1127,14 @@ try {
   report.acceptedApplicationTransactions = 9; report.observedContractProofCompletions = 8;
   report.walletProofScope = 'normal-Lace-on-device-setting-and-real-approved-transactions; API-does-not-attest-mode';
   report.status = 'passed'; report.finishedAt = new Date().toISOString(); await save();
+  }
 } catch (error) {
   report.status = 'failed'; report.failedStage = stage;
   report.failureCategory = safeFailures.get(error)
     ?? (error?.name === 'TimeoutError' ? 'ui-stage-timeout' : 'sanitized-boundary-or-runtime-failure');
   if (currentOperation?.status === 'requested') currentOperation.status = 'uncertain';
   if (['approval-requested', 'awaiting-wallet-sync'].includes(report.dustRegistration?.status)) report.dustRegistration.status = 'uncertain';
+  if (diagnosticMode && proverObserver) report.walletProverObservation = proverObserver.snapshot();
   report.settingsControls = await bounded(settingsControlSnapshot(), 15_000).catch(() => []);
   if (wallet && !wallet.isClosed()) await bounded(settingsModeSnapshot('failure'), 10_000).catch(() => {});
   report.finishedAt = new Date().toISOString();
@@ -1002,5 +1142,6 @@ try {
 } finally {
   clearTimeout(watchdog);
   await shutdown().catch(() => { process.exitCode = 1; });
-  process.stdout.write(JSON.stringify({ status: report.status, stage, acceptedApplicationTransactions: report.operations.filter(op => op.status === 'indexer-accepted').length }) + '\n');
+  process.stdout.write(JSON.stringify(diagnosticMode ? { status: report.status, stage, mode: 'prover-diagnostic' }
+    : { status: report.status, stage, acceptedApplicationTransactions: report.operations.filter(op => op.status === 'indexer-accepted').length }) + '\n');
 }

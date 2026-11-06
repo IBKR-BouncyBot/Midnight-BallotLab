@@ -1,0 +1,54 @@
+{
+  "schema": "midnight-ballot-lab/ci-browser-environment-provenance/v1",
+  "runId": 42300599784,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42300599784",
+  "headSha": "e22832c2424cf89c8756e3156e943b1f87021469",
+  "artifactId": 13543024324,
+  "artifactSha256": "9992b15be76d788abc0013c2abce9c7438e73f88dda1dac6255b16ddc5e0fa7d",
+  "reportBytePreserved": true,
+  "scriptSha256": "2ea9055f5131f17f15d22b6c295233be27e48c41e169cd1de450d5c1c1350870",
+  "steps": [
+    {
+      "number": 10,
+      "name": "Install full Chromium without the unused headless shell",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:58:07Z",
+      "completedAt": "2026-11-06T21:58:12Z"
+    },
+    {
+      "number": 11,
+      "name": "Test the existing headed browser environment",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:58:12Z",
+      "completedAt": "2026-11-06T21:58:14Z"
+    },
+    {
+      "number": 12,
+      "name": "Repair missing browser dependencies only after a failed launch check",
+      "status": "completed",
+      "conclusion": "skipped",
+      "startedAt": "2026-11-06T21:58:14Z",
+      "completedAt": "2026-11-06T21:58:14Z"
+    },
+    {
+      "number": 13,
+      "name": "Require a real headed launch after dependency repair",
+      "status": "completed",
+      "conclusion": "skipped",
+      "startedAt": "2026-11-06T21:58:14Z",
+      "completedAt": "2026-11-06T21:58:14Z"
+    },
+    {
+      "number": 14,
+      "name": "Preserve only public browser-environment checks",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:58:14Z",
+      "completedAt": "2026-11-06T21:58:16Z"
+    }
+  ],
+  "scope": "Passed initial browser environment gate only; the later election and terminal wallet-WASM observation gate are reported separately.",
+  "privateDataFindings": 0
+}

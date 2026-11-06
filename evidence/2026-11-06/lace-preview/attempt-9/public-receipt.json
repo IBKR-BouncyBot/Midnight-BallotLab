@@ -1,0 +1,13 @@
+{
+  "txId": "006798efc63297a0e3d77d13627a58c47f1967dcdad70d2ec2387a9938fd17f653",
+  "blockHeight": "1630296",
+  "confirmationSource": "configured-indexer",
+  "ledgerInclusionIndependentlyVerified": false,
+  "schema": "midnight-ballot-lab/native-receipt/v1",
+  "networkId": "preview",
+  "contractAddress": "f8b19ef852720e5ee28c9b612991871672e51cac928b37a232d3c2b06650eee1",
+  "index": 0,
+  "receipt": "9528ed6b3812da5dab063dfc5cf036399847ccfe997d1b41d5f92e7d8eb0177c",
+  "configurationDigest": "1356422e434ef02e3f9799e1b013d8e2deb93e5ca77b661c673e520662018d06",
+  "transactionReferenceVerified": false
+}

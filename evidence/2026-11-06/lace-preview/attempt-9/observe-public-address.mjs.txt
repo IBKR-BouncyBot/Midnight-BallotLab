@@ -1,0 +1,109 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+
+const require = createRequire(new URL('../../contracts/package.json', import.meta.url));
+const WebSocket = require('ws');
+const endpoint = 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
+const request = JSON.parse(await readFile(new URL('./funding-request.json', import.meta.url), 'utf8'));
+if (request.networkId !== 'preview' || request.runId !== '42300599784'
+  || request.headSha !== 'e22832c2424cf89c8756e3156e943b1f87021469'
+  || request.unshieldedAddress !== 'mn_addr_preview1uj67ll3sfrrvqk0ezyzw9pwhmns9ly6hne8280z66pgy7lagtrqstt6gtv') {
+  throw new Error('Public observation context mismatch');
+}
+
+// Exact fields from wallet-sdk-indexer-client's generated schema and its
+// UnshieldedTransactions subscription, projected to public metadata only.
+const query = `subscription PublicAddressProgress($address: UnshieldedAddress!, $transactionId: Int) {
+  unshieldedTransactions(address: $address, transactionId: $transactionId) {
+    __typename
+    ... on UnshieldedTransaction {
+      transaction {
+        id block { height }
+        ... on RegularTransaction { identifiers transactionResult { status } }
+      }
+      createdUtxos { registeredForDustGeneration }
+      spentUtxos { registeredForDustGeneration }
+    }
+    ... on UnshieldedTransactionsProgress { highestTransactionId }
+  }
+}`;
+const report = {
+  schema: 'midnight-ballot-lab/public-address-progress/v1',
+  source: endpoint, networkId: 'preview', runId: request.runId, headSha: request.headSha,
+  startedAt: new Date().toISOString(), durationLimitSeconds: 60,
+  observerSha256: createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex'),
+  querySha256: createHash('sha256').update(query).digest('hex'),
+  status: 'running', acknowledged: false, transactions: [], highestTransactionId: null,
+  walletOpened: false, transactionsSubmitted: 0,
+  scope: 'Public unshielded-address events only; fee-only DUST or application calls may be absent. An indexer observation is not independent chain verification.',
+};
+let failed = null;
+const integer = value => Number.isSafeInteger(value) && value >= 0;
+const finiteStatuses = new Set(['SUCCESS', 'PARTIAL_SUCCESS', 'FAILURE']);
+await new Promise(resolve => {
+  const socket = new WebSocket(endpoint, 'graphql-transport-ws', { maxPayload: 64 * 1024, handshakeTimeout: 15_000 });
+  let finished = false, frames = 0;
+  const finish = code => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    if (code) failed = code;
+    if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ id: 'public-address', type: 'complete' }));
+    socket.terminate();
+    resolve();
+  };
+  const timer = setTimeout(() => finish(report.acknowledged ? null : 'connection-not-acknowledged'), 60_000);
+  socket.on('open', () => socket.send(JSON.stringify({ type: 'connection_init' })));
+  socket.on('error', () => finish('public-transport-failed'));
+  socket.on('close', () => { if (!finished) finish('public-stream-closed'); });
+  socket.on('message', bytes => {
+    try {
+      if (++frames > 100) return finish('public-event-limit');
+      const message = JSON.parse(bytes.toString('utf8'));
+      if (message.type === 'ping') return socket.send(JSON.stringify({ type: 'pong' }));
+      if (message.type === 'connection_ack') {
+        if (report.acknowledged) return finish('invalid-public-protocol');
+        report.acknowledged = true;
+        socket.send(JSON.stringify({ id: 'public-address', type: 'subscribe', payload: {
+          query, variables: { address: request.unshieldedAddress, transactionId: 0 },
+        } }));
+        return;
+      }
+      if (message.type === 'error' || message.payload?.errors) return finish('public-query-rejected');
+      if (message.type === 'complete') return finish(null);
+      if (message.type !== 'next') return;
+      const event = message.payload?.data?.unshieldedTransactions;
+      if (event?.__typename === 'UnshieldedTransactionsProgress') {
+        if (!integer(event.highestTransactionId)) return finish('invalid-public-progress');
+        report.highestTransactionId = event.highestTransactionId;
+        return;
+      }
+      if (event?.__typename !== 'UnshieldedTransaction') return finish('unknown-public-event');
+      const tx = event.transaction;
+      if (!integer(tx?.id) || !integer(tx?.block?.height) || !Array.isArray(tx.identifiers)
+        || tx.identifiers.length > 16 || !tx.identifiers.every(id => typeof id === 'string' && /^[0-9a-f]{66}$/.test(id))
+        || !finiteStatuses.has(tx.transactionResult?.status)
+        || !Array.isArray(event.createdUtxos) || !Array.isArray(event.spentUtxos)
+        || event.createdUtxos.length > 64 || event.spentUtxos.length > 64
+        || ![...event.createdUtxos, ...event.spentUtxos].every(output => typeof output.registeredForDustGeneration === 'boolean')) {
+        return finish('invalid-public-event');
+      }
+      if (report.transactions.some(item => item.indexerTransactionId === tx.id)) return;
+      report.transactions.push({ indexerTransactionId: tx.id, identifiers: tx.identifiers,
+        indexerStatus: tx.transactionResult.status, blockHeight: tx.block.height,
+        createdOutputCount: event.createdUtxos.length, spentOutputCount: event.spentUtxos.length,
+        createdRegisteredOutputCount: event.createdUtxos.filter(output => output.registeredForDustGeneration).length,
+        spentRegisteredOutputCount: event.spentUtxos.filter(output => output.registeredForDustGeneration).length });
+      if (report.transactions.length >= 32) finish('public-transaction-limit');
+    } catch { finish('invalid-public-response'); }
+  });
+});
+report.status = failed ? 'failed' : 'observed';
+if (failed) report.failure = failed;
+report.finishedAt = new Date().toISOString();
+const output = `public-address-observation-${Date.now()}.json`;
+await writeFile(new URL(output, import.meta.url), JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+process.stdout.write(JSON.stringify({ report: output, status: report.status, acknowledged: report.acknowledged,
+  transactions: report.transactions, highestTransactionId: report.highestTransactionId, failure: failed }) + '\n');
+if (failed) process.exitCode = 1;

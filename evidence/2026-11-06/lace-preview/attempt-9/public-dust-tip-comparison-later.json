@@ -1,0 +1,42 @@
+{
+  "schema": "midnight-ballot-lab/public-dust-tip-comparison/v1",
+  "runId": "42300599784",
+  "headSha": "e22832c2424cf89c8756e3156e943b1f87021469",
+  "networkId": "preview",
+  "startedAt": "2026-11-06T22:15:45.029Z",
+  "status": "completed",
+  "walletOpened": false,
+  "transactionsSubmitted": 0,
+  "privateInputsRead": false,
+  "queryValuesExported": false,
+  "scope": "Public indexer DUST tips only; no wallet sync cursor or independent chain verification.",
+  "observerSha256": "d7006ba60f4551d9c1b324da43bbb4ec17e81f275528a03daa80ef3d77e155c0",
+  "querySha256": "3023ba2290a149af8eec6d194573c531d69f31f503c0a423cafd5561f25f4f63",
+  "results": [
+    {
+      "label": "official",
+      "endpoint": {
+        "origin": "wss://indexer.preview.midnight.network",
+        "pathname": "/api/v4/graphql/ws",
+        "queryKeys": []
+      },
+      "status": "observed",
+      "id": 1,
+      "maxId": 285235
+    },
+    {
+      "label": "lace-vendor",
+      "endpoint": {
+        "origin": "wss://midnight-preview.blockfrost.io",
+        "pathname": "/api/v0/ws",
+        "queryKeys": [
+          "project_id"
+        ]
+      },
+      "status": "observed",
+      "id": 1,
+      "maxId": 285235
+    }
+  ],
+  "finishedAt": "2026-11-06T22:15:45.328Z"
+}
