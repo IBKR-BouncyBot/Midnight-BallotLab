@@ -99,6 +99,8 @@ async function settingsControlSnapshot() {
         const value = await locator.getAttribute(name, { timeout: 1000 }).catch(() => null);
         entry[name === 'aria-selected' ? 'selected' : 'checked'] = value === 'true' ? true : value === 'false' ? false : null;
       }
+      const disabled = await locator.getAttribute('aria-disabled', { timeout: 1000 }).catch(() => undefined);
+      entry.ariaDisabled = disabled === 'true' ? true : disabled === 'false' ? false : null;
     }
     results.push(entry);
   }
@@ -136,12 +138,18 @@ async function inProcessRadioSelected() {
       && element.querySelector('[data-testid="proof-server-in-process-radio-checkmark"]') !== null;
   });
 }
+function normalSettingsControlUsable(visible, enabled, ariaDisabled) {
+  // Signed RN Web createDOMProps emits aria-disabled only when it is true.
+  // Its omission is ordinary enabled rendering, not a literal "false" value.
+  return visible === true && enabled === true && (ariaDisabled === null || ariaDisabled === 'false');
+}
 async function provingSettingsUsable() {
-  // Pressable module1352 explicitly preserves aria-disabled, unlike the
-  // selected/checked fields passed inside accessibilityState. Radio disabled
-  // is exactly the settings isSaving state in the signed sheet source.
-  return await wallet.getByTestId('proof-server-in-process-radio').getAttribute('aria-disabled') === 'false'
-    && await wallet.getByTestId('save-configuration-button').isEnabled();
+  const usable = await Promise.all(['proof-server-in-process-radio', 'save-configuration-button'].map(async id => {
+    const control = wallet.getByTestId(id);
+    return normalSettingsControlUsable(await control.isVisible(), await control.isEnabled(),
+      await control.getAttribute('aria-disabled'));
+  }));
+  return usable.every(Boolean);
 }
 async function bounded(work, milliseconds) {
   let timer;

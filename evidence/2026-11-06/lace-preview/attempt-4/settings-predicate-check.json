@@ -1,0 +1,45 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-settings-usability-check/v1",
+  "status": "passed",
+  "scope": "exact-pure-runner-predicate-in-Node-VM-no-browser-wallet-network-or-proof-execution",
+  "runnerSha256": "be0484c65fbf72acab74deb07b9e3469b03eb13a9953601d3ef368da1e7120bb",
+  "extractedFunctionSha256": "591c74cb93a06d749feecfbfb201416a50b9f2a5b3a5c2a0a5e0ce342c39e65d",
+  "harnessSha256": "6de6714048e5dbe7a05fa039b60cb8b6782dc656a68b09ae2c925b32eed29c5a",
+  "node": "v24.18.0",
+  "passed": 8,
+  "total": 8,
+  "cases": [
+    {
+      "name": "enabled-control-with-omitted-false-attribute",
+      "passed": true
+    },
+    {
+      "name": "enabled-control-with-explicit-false",
+      "passed": true
+    },
+    {
+      "name": "reject-explicit-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-playwright-disabled-control",
+      "passed": true
+    },
+    {
+      "name": "reject-hidden-control",
+      "passed": true
+    },
+    {
+      "name": "reject-unexpected-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-unavailable-disabled-observation",
+      "passed": true
+    },
+    {
+      "name": "reject-coerced-visibility-value",
+      "passed": true
+    }
+  ]
+}

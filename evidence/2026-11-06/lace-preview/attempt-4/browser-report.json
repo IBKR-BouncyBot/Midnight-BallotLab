@@ -1,0 +1,165 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-preview-browser/v1",
+  "status": "failed",
+  "startedAt": "2026-11-06T20:50:50.625Z",
+  "networkId": "preview",
+  "execution": "genuine-disposable-Lace-and-application-UI",
+  "operations": [],
+  "transactionsRetried": 0,
+  "independentChainVerification": false,
+  "fundingSource": "separately-authorized-isolated-SDK-sponsor-not-browser-proof-evidence",
+  "privateArtifactsExported": false,
+  "hostedOriginTested": false,
+  "walletModeApiAttestation": false,
+  "httpProofProviderConfigured": false,
+  "runId": "42291279657",
+  "headSha": "621164df9882184e2227a1d50362198778615278",
+  "laceVersion": "2.5.1",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "runnerSha256": "e06709e68bd46a55ec02a2c9a7a3d621a39e1375a5958911c16d7ecb89189175",
+  "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "playwright": "1.64.1",
+  "vendorServiceConfiguration": {
+    "source": "signed-wallet-normal-public-feature-service",
+    "indexer": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWs": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "node": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "nodeWs": {
+      "origin": "wss://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "queryValuesExported": false
+  },
+  "publicConfigurationPreflight": true,
+  "chromium": "156.0.8078.4",
+  "midnightOnlyAccountSelectionVerified": true,
+  "freshWalletCreated": true,
+  "lastSettingsControl": "save-configuration-button",
+  "failedStage": "wait-wallet-proving-save-controls-usable",
+  "failureCategory": "bounded-stage-timeout",
+  "settingsControls": [
+    {
+      "control": "settings-tab-btn",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "option-list-item-network",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "radio-button-testnet",
+      "count": 0
+    },
+    {
+      "control": "radio-button-midnight-preview",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet-confirm-button",
+      "count": 0
+    },
+    {
+      "control": "network-selection-sheet",
+      "count": 0
+    },
+    {
+      "control": "option-list-item-midnight",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "proof-server-in-process-radio",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "save-configuration-button",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "midnight-settings-sheet-header",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "side-sheet-close-button",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    },
+    {
+      "control": "portfolio-tab-btn",
+      "count": 1,
+      "visible": true,
+      "enabled": true,
+      "selected": null,
+      "checked": null
+    }
+  ],
+  "finishedAt": "2026-11-06T20:52:10.114Z",
+  "currentStage": "wait-wallet-proving-save-controls-usable",
+  "traffic": {
+    "blockedRequests": 60,
+    "blockedWebSockets": 0,
+    "walletWasmResources": 0,
+    "appWasmResources": 0,
+    "publicConfigurationRequests": 1,
+    "publicConfigurationResponses": 1,
+    "pageErrors": 0,
+    "consoleErrors": 1,
+    "consoleWarnings": 0,
+    "blockedRequestCategories": {
+      "unknownHost": 30,
+      "unexpectedKnownPathOrMethod": 24,
+      "queryOrCredentials": 6,
+      "unexpectedPort": 0,
+      "invalidUrl": 0
+    }
+  }
+}
