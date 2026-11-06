@@ -143,6 +143,65 @@ async function clearWalletPointerAndFocus(focusControl) {
   await wallet.mouse.move(0, 0);
   await wallet.getByTestId(focusControl).focus();
 }
+async function cycleNormalWalletViewsForConfiguration() {
+  // Signed Lace activates pending public flags only when no extension views
+  // remain open. Observe its ordinary lifecycle; never call runtime.reload or
+  // inspect/change worker, extension-storage, or application-private state.
+  const workerUrl = `${extensionOrigin}/js/sw/sw-script.js`;
+  const previousWorkers = browserContext.serviceWorkers().filter(worker => worker.url() === workerUrl);
+  requireThat(previousWorkers.length === 1, 'one-current-extension-worker-required');
+  const closed = new Set();
+  for (const worker of previousWorkers) worker.once('close', () => { closed.add(worker); });
+  await browserContext.newPage(); // Keep an ordinary blank tab/context alive.
+  await setStage('close-wallet-views-for-normal-configuration-activation');
+  let closedViews = 0;
+  for (let pass = 0; pass < 3; pass++) {
+    const views = browserContext.pages().filter(page => page.url().startsWith(extensionOrigin + '/'));
+    if (views.length === 0) break;
+    for (const view of views) { await view.close(); closedViews++; }
+    await delay(100);
+  }
+  requireThat(browserContext.pages().every(page => !page.url().startsWith(extensionOrigin + '/')), 'extension-views-still-open');
+  await setStage('wait-normal-wallet-worker-close');
+  await poll(() => closed.size === previousWorkers.length, 45_000, 100);
+  await setStage('reopen-wallet-after-normal-configuration-activation');
+  wallet = await browserContext.newPage(); await wallet.goto(`${extensionOrigin}/expo/index.html`);
+  await poll(() => browserContext.serviceWorkers().some(worker => worker.url() === workerUrl && !previousWorkers.includes(worker)),
+    45_000, 100);
+  report.normalWalletViewCycle = { closedExtensionViews: closedViews, oldWorkerClosed: true,
+    replacementWorkerObserved: true, effectiveConfigurationStillRequired: true,
+    scope: 'ordinary-view-and-worker-lifecycle-not-configuration-attestation' };
+  await save();
+}
+function visibleServiceCategory(label, kind) {
+  if (typeof label !== 'string' || label.length > 2048) return 'unavailable';
+  try {
+    const separator = label.lastIndexOf(': ');
+    if (separator < 0) return 'other';
+    const url = new URL(label.slice(separator + 2));
+    if (url.protocol !== 'https:' || url.username || url.password || url.port || url.hash) return 'other';
+    const expectedHost = kind === 'node' ? 'rpc.midnight-preview.blockfrost.io' : 'midnight-preview.blockfrost.io';
+    if (url.hostname === expectedHost && walletVendorServiceUrls.has(url.href)) return 'current';
+    if (url.hostname === 'blockfrost.lw.iog.io' && !url.search
+      && url.pathname === (kind === 'node' ? '/midnight-preview-rpc/' : '/midnight-preview/')) return 'retired';
+  } catch { /* Do not expose the label or its credentialed URL. */ }
+  return 'other';
+}
+async function waitForVisibleCurrentWalletServices() {
+  await setStage('wait-current-wallet-service-labels');
+  let last = { node: 'unavailable', indexer: 'unavailable' };
+  try {
+    await poll(async () => {
+      const values = {};
+      for (const kind of ['node', 'indexer']) {
+        const control = wallet.getByTestId(`midnight-${kind}-radio`);
+        values[kind] = await control.isVisible() ? visibleServiceCategory(await control.getAttribute('aria-label'), kind) : 'unavailable';
+      }
+      last = values;
+      return values.node === 'current' && values.indexer === 'current';
+    }, 15_000, 250);
+  } finally { report.visibleWalletServicesBeforeSave = last; await save(); }
+}
 async function onboardingToggleMatches(id, checked) {
   return wallet.getByTestId(id).evaluate((element, expected) => {
     // Signed Lace 2.5.1's RN Web filter drops accessibilityState. Its Toggle
@@ -665,6 +724,7 @@ try {
     await wallet.reload({ waitUntil: 'domcontentloaded' });
     await poll(normalConfigurationReady, 30_000, 250);
   }
+  await cycleNormalWalletViewsForConfiguration();
   await setStage('create-fresh-test-wallet');
   const freshPassword = prefix => {
     for (let attempt = 0; attempt < 32; attempt++) {
@@ -703,6 +763,7 @@ try {
   await setStage('wait-wallet-network-sheet-close');
   await wallet.getByTestId('network-selection-sheet').waitFor({ state: 'hidden' });
   await settingsClick('option-list-item-midnight', 'open-wallet-proving-settings');
+  await waitForVisibleCurrentWalletServices();
   // Exact current selectors are verified from the signed Lace source before CI.
   await settingsClick('proof-server-in-process-radio', 'select-wallet-on-device-wasm');
   await clearWalletPointerAndFocus('save-configuration-button');

@@ -1,0 +1,60 @@
+{
+  "schema": "midnight-ballot-lab/ci-browser-environment-provenance/v1",
+  "headSha": "a84f2387a19722804525a76533f1c545d91a309d",
+  "runId": 42296164699,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42296164699",
+  "artifact": {
+    "id": 13541448314,
+    "name": "lace-browser-environment-42296164699",
+    "bytes": 643,
+    "expired": false,
+    "digest": "sha256:0b9672b6f879961d88c8779b0c88180769ea620c48c91ff997581e73b4944516",
+    "headSha": "a84f2387a19722804525a76533f1c545d91a309d"
+  },
+  "reportBytePreserved": true,
+  "scriptSha256": "2ea9055f5131f17f15d22b6c295233be27e48c41e169cd1de450d5c1c1350870",
+  "steps": [
+    {
+      "number": 10,
+      "name": "Install full Chromium without the unused headless shell",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:25:50Z",
+      "completedAt": "2026-11-06T21:25:56Z"
+    },
+    {
+      "number": 11,
+      "name": "Test the existing headed browser environment",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:25:56Z",
+      "completedAt": "2026-11-06T21:25:58Z"
+    },
+    {
+      "number": 12,
+      "name": "Repair missing browser dependencies only after a failed launch check",
+      "status": "completed",
+      "conclusion": "skipped",
+      "startedAt": "2026-11-06T21:25:58Z",
+      "completedAt": "2026-11-06T21:25:58Z"
+    },
+    {
+      "number": 13,
+      "name": "Require a real headed launch after dependency repair",
+      "status": "completed",
+      "conclusion": "skipped",
+      "startedAt": "2026-11-06T21:25:58Z",
+      "completedAt": "2026-11-06T21:25:58Z"
+    },
+    {
+      "number": 14,
+      "name": "Preserve only public browser-environment checks",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T21:25:58Z",
+      "completedAt": "2026-11-06T21:26:00Z"
+    }
+  ],
+  "scope": "Browser environment gate only; not the full Lace workflow result.",
+  "privateDataFindings": 0
+}

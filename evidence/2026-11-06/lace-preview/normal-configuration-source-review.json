@@ -1,0 +1,92 @@
+{
+  "schema": "midnight-ballot-lab/lace-normal-configuration-source-review/v1",
+  "reviewedAt": "2026-11-06T21:35:17.388Z",
+  "reviewType": "read-only-signed-source-and-CI-helper-review",
+  "extension": {
+    "id": "gafhhkghbfjjkeiendhlofajokpaflmk",
+    "version": "2.5.1",
+    "archiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+    "manifestSha256": "5e67d8265b510e9b5b1c0546677d5f3f6316aaa440591dcc0af3d7f4a8858391"
+  },
+  "sources": [
+    {
+      "file": "expo/_expo/static/js/web/index-6bc3038052c9273bbc4603fbcdffc289.js",
+      "modules": [
+        1241,
+        4816
+      ],
+      "bytes": 11523720,
+      "sha256": "984681ba8801fb3fea5bffb95148477b53d23482bd3db5cf62db53c05c72e605",
+      "finding": "Fetched feature updates become pending next state; background startup loads persisted flags while existing UI views use loaded state."
+    },
+    {
+      "file": "expo/_expo/static/js/web/init-fd4f5dd7470f46e4069c54ff7bd262f7.js",
+      "modules": [
+        5361
+      ],
+      "bytes": 2037,
+      "sha256": "feb6ffe14110ac01fcf4a378a2e6476532238d4f5be74629eccb6f741f74ac3a",
+      "finding": "Persist fetched feature flags before dispatching their pending-state update."
+    },
+    {
+      "file": "expo/_expo/static/js/web/init-8e26e8f6130dcc59c2a42d1b192ece8a.js",
+      "modules": [
+        5422
+      ],
+      "bytes": 2267,
+      "sha256": "835b39a9502f8c5128c3d1fb320ee30f87ce42f9506f3fad440caa6cba4a620b",
+      "finding": "On a feature update, wait for zero open extension views, flush persisted state and request application reload."
+    },
+    {
+      "file": "expo/_expo/static/js/web/init-2f192fcf56237e29e9ed237b4f8070fd.js",
+      "modules": [
+        5141
+      ],
+      "bytes": 1718,
+      "sha256": "119feb0a1431fcb7e071aa7e9808b485ee2f5557fc0f0ac4ffb57672b3bbdb68",
+      "finding": "The signed implementation performs its own runtime.reload."
+    },
+    {
+      "file": "expo/_expo/static/js/web/sheetPages-51643c46b267dc3b47c4339a5850cd04.js",
+      "modules": [
+        5684
+      ],
+      "bytes": 25094,
+      "sha256": "07ef1d828bdb37c9096f232758807c433ed7aa3cacf3a4d0f13f689c90ab9530",
+      "finding": "Visible node and indexer radio accessibility labels contain the same effective URLs as the adjacent text; Save submits those network values with the selected prover mode."
+    }
+  ],
+  "conclusions": [
+    "A successful feature-service response alone does not establish activation in the running wallet.",
+    "Closing all ordinary extension views allows the signed wallet to activate pending configuration through its own background reload.",
+    "A replacement worker alone is not configuration attestation; current visible service labels before Save and actual connector URLs afterward remain required.",
+    "A plain UI-page reload can continue using the existing background loaded feature set."
+  ],
+  "reviewedRunner": {
+    "file": "scripts/test-lace-preview-browser.mjs",
+    "sha256": "67a3057ced6ad8e9c8447c31ae633f9759a8a586d10a2cd3d340b1e609a2ec3e",
+    "helpers": [
+      "cycleNormalWalletViewsForConfiguration",
+      "visibleServiceCategory",
+      "waitForVisibleCurrentWalletServices"
+    ],
+    "blockingIssuesFound": 0,
+    "execution": "source-review-only"
+  },
+  "runtimeValidation": {
+    "newLifecycleRunExecutedByReviewer": false,
+    "walletCreatedByReviewer": false,
+    "transactionsSubmittedByReviewer": 0,
+    "claim": "The new lifecycle sequence has not yet been validated by a fresh CI run."
+  },
+  "privacy": {
+    "privateProfilesRead": false,
+    "privateStorageRead": false,
+    "extensionModified": false,
+    "workerCodeEvaluated": false,
+    "hiddenConfigurationChanged": false,
+    "rawServiceLabelsRetained": false,
+    "credentialQueryValuesRetained": false,
+    "sourceBundlesRepublished": false
+  }
+}

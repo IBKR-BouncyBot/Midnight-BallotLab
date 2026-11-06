@@ -1,0 +1,109 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-settings-usability-check/v1",
+  "status": "passed",
+  "scope": "exact-pure-runner-predicates-in-Node-VM-no-browser-wallet-network-or-proof-execution",
+  "runnerSha256": "67a3057ced6ad8e9c8447c31ae633f9759a8a586d10a2cd3d340b1e609a2ec3e",
+  "extractedFunctionSha256": "8039e7389ca2fea6363ab6fdb3b275d80e1b7efdbe2a67273a12ca3346f81a3b",
+  "harnessSha256": "6617580996c351b24c548281a2d0bddd29b9c8737977d075a571b8fa7fdc36fa",
+  "node": "v24.18.0",
+  "passed": 24,
+  "total": 24,
+  "cases": [
+    {
+      "name": "enabled-control-with-omitted-false-attribute",
+      "passed": true
+    },
+    {
+      "name": "enabled-control-with-explicit-false",
+      "passed": true
+    },
+    {
+      "name": "reject-explicit-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-playwright-disabled-control",
+      "passed": true
+    },
+    {
+      "name": "reject-hidden-control",
+      "passed": true
+    },
+    {
+      "name": "reject-unexpected-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-unavailable-disabled-observation",
+      "passed": true
+    },
+    {
+      "name": "reject-coerced-visibility-value",
+      "passed": true
+    },
+    {
+      "name": "flags-label-with-query-values-omitted",
+      "passed": true
+    },
+    {
+      "name": "telemetry-fixed-label",
+      "passed": true
+    },
+    {
+      "name": "indexer-query-values-not-returned",
+      "passed": true
+    },
+    {
+      "name": "unknown-indexer-path-not-returned",
+      "passed": true
+    },
+    {
+      "name": "node-fixed-label",
+      "passed": true
+    },
+    {
+      "name": "unknown-host-not-returned",
+      "passed": true
+    },
+    {
+      "name": "malformed-url-not-returned",
+      "passed": true
+    },
+    {
+      "name": "loopback-prover-label-only",
+      "passed": true
+    },
+    {
+      "name": "current-visible-indexer",
+      "passed": true
+    },
+    {
+      "name": "current-visible-node-normalized-slash",
+      "passed": true
+    },
+    {
+      "name": "retired-visible-indexer",
+      "passed": true
+    },
+    {
+      "name": "retired-visible-node",
+      "passed": true
+    },
+    {
+      "name": "reject-mismatched-visible-project",
+      "passed": true
+    },
+    {
+      "name": "reject-mainnet-visible-service",
+      "passed": true
+    },
+    {
+      "name": "reject-visible-service-wrong-role",
+      "passed": true
+    },
+    {
+      "name": "missing-visible-label-unavailable",
+      "passed": true
+    }
+  ]
+}

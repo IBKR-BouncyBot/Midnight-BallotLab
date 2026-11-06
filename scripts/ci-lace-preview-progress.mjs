@@ -9,6 +9,8 @@ export const LACE_PROGRESS_STAGES = Object.freeze([
   'ci-prerequisites', 'read-signed-wallet-public-service-configuration',
   'start-genuine-extension', 'observe-normal-wallet-public-service-configuration',
   'reload-wallet-before-creation-for-public-configuration', 'create-fresh-test-wallet',
+  'close-wallet-views-for-normal-configuration-activation', 'wait-normal-wallet-worker-close',
+  'reopen-wallet-after-normal-configuration-activation', 'wait-current-wallet-service-labels',
   'enable-midnight-onboarding-account', 'disable-cardano-onboarding-account',
   'finish-fresh-midnight-wallet', 'open-wallet-settings', 'open-wallet-network-settings',
   'select-wallet-testnet', 'select-wallet-midnight-preview', 'save-wallet-preview-network',
