@@ -67,11 +67,44 @@ jobs:
           node scripts/build-native-browser.mjs
           node scripts/build-network-browser.mjs
           python3 scripts/check_pages.py
-      - name: Install Chromium and virtual display dependencies
+      - name: Install full Chromium without the unused headless shell
+        timeout-minutes: 8
+        run: node contracts/node_modules/playwright/cli.js install chromium --no-shell
+      - name: Test the existing headed browser environment
+        id: browser_environment
+        continue-on-error: true
+        timeout-minutes: 2
+        run: node scripts/ci-browser-environment.mjs initial
+      - name: Repair missing browser dependencies only after a failed launch check
+        if: steps.browser_environment.outcome == 'failure'
+        timeout-minutes: 10
         run: |
-          node contracts/node_modules/playwright/cli.js install --with-deps chromium
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb xauth
+          # APT still uses the official Playwright dependency list. Bound
+          # transport retries and total repair time; do not disable validation.
+          cat > "$RUNNER_TEMP/lace-browser-apt.conf" <<'APT'
+          Acquire::Retries "1";
+          Acquire::http::Timeout "20";
+          Acquire::https::Timeout "20";
+          DPkg::Lock::Timeout "60";
+          APT
+          timeout --signal=TERM --kill-after=15s 480s sudo env APT_CONFIG="$RUNNER_TEMP/lace-browser-apt.conf" "$(command -v node)" "$GITHUB_WORKSPACE/contracts/node_modules/playwright/cli.js" install-deps chromium
+          if ! command -v xauth >/dev/null; then
+            timeout --signal=TERM --kill-after=15s 60s sudo env APT_CONFIG="$RUNNER_TEMP/lace-browser-apt.conf" apt-get install -y --no-install-recommends xauth
+          fi
+      - name: Require a real headed launch after dependency repair
+        if: steps.browser_environment.outcome == 'failure'
+        timeout-minutes: 2
+        run: node scripts/ci-browser-environment.mjs after-repair
+      - name: Preserve only public browser-environment checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lace-browser-environment-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/browser-environment-initial.json
+            ${{ runner.temp }}/browser-environment-after-repair.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Acquire and verify official Lace
         id: lace
         run: node scripts/ci-acquire-lace.mjs

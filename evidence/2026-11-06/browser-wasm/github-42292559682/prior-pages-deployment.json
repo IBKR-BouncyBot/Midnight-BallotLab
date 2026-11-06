@@ -1,0 +1,12 @@
+{
+  "schema": "midnight-ballot-lab/prior-pages-deployment/v1",
+  "headSha": "621164df9882184e2227a1d50362198778615278",
+  "runId": 42291235974,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42291235974",
+  "runConclusion": "success",
+  "deploymentId": 7610810758,
+  "deploymentConclusion": "success",
+  "deploymentCompletedAt": "2026-11-06T21:08:04Z",
+  "deploymentUrl": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+  "scope": "GitHub run and environment API metadata only; no archive download or hosted-origin request for this preceding run."
+}

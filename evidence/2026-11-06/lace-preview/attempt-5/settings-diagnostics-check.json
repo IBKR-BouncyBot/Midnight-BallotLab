@@ -1,0 +1,77 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-settings-usability-check/v1",
+  "status": "passed",
+  "scope": "exact-pure-runner-predicate-in-Node-VM-no-browser-wallet-network-or-proof-execution",
+  "runnerSha256": "6b110b037115771ac46fe7a18e6d5099923f4850b0eec10f412e4254cb9e3be4",
+  "extractedFunctionSha256": "2bcbea8ffadf18dc621d59cf812c66aadb49503c5a30ca7957cb587aebbf4957",
+  "harnessSha256": "4b15db0519010ab897f292fdbd2c58aa70d7b72480739ca0cf0b681f8a094109",
+  "node": "v24.18.0",
+  "passed": 16,
+  "total": 16,
+  "cases": [
+    {
+      "name": "enabled-control-with-omitted-false-attribute",
+      "passed": true
+    },
+    {
+      "name": "enabled-control-with-explicit-false",
+      "passed": true
+    },
+    {
+      "name": "reject-explicit-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-playwright-disabled-control",
+      "passed": true
+    },
+    {
+      "name": "reject-hidden-control",
+      "passed": true
+    },
+    {
+      "name": "reject-unexpected-disabled-attribute",
+      "passed": true
+    },
+    {
+      "name": "reject-unavailable-disabled-observation",
+      "passed": true
+    },
+    {
+      "name": "reject-coerced-visibility-value",
+      "passed": true
+    },
+    {
+      "name": "flags-label-with-query-values-omitted",
+      "passed": true
+    },
+    {
+      "name": "telemetry-fixed-label",
+      "passed": true
+    },
+    {
+      "name": "indexer-query-values-not-returned",
+      "passed": true
+    },
+    {
+      "name": "unknown-indexer-path-not-returned",
+      "passed": true
+    },
+    {
+      "name": "node-fixed-label",
+      "passed": true
+    },
+    {
+      "name": "unknown-host-not-returned",
+      "passed": true
+    },
+    {
+      "name": "malformed-url-not-returned",
+      "passed": true
+    },
+    {
+      "name": "loopback-prover-label-only",
+      "passed": true
+    }
+  ]
+}

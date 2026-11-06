@@ -47,12 +47,16 @@ const walletVendorServiceUrls = new Set(), configurationResponses = [];
 let configurationFailure = false;
 const settingsControlIds = Object.freeze(['settings-tab-btn', 'option-list-item-network', 'radio-button-testnet',
   'radio-button-midnight-preview', 'network-selection-sheet-confirm-button', 'network-selection-sheet',
-  'option-list-item-midnight', 'proof-server-in-process-radio', 'save-configuration-button',
+  'option-list-item-midnight', 'proof-server-in-process-radio', 'proof-server-local-host-radio', 'save-configuration-button',
   'midnight-settings-sheet-header', 'side-sheet-close-button', 'portfolio-tab-btn']);
+const REQUEST_PATH_LABELS = Object.freeze(['wallet-public-flags', 'wallet-telemetry', 'wallet-config-other-path',
+  'wallet-indexer-current', 'wallet-indexer-current-other-path', 'wallet-node-current', 'wallet-node-current-other-path',
+  'wallet-indexer-retired', 'wallet-node-retired', 'public-proving-assets', 'loopback-prover', 'other']);
 const traffic = { blockedRequests: 0, blockedWebSockets: 0, walletWasmResources: 0, appWasmResources: 0,
   publicConfigurationRequests: 0, publicConfigurationResponses: 0,
   pageErrors: 0, consoleErrors: 0, consoleWarnings: 0,
-  blockedRequestCategories: { unknownHost: 0, unexpectedKnownPathOrMethod: 0, queryOrCredentials: 0, unexpectedPort: 0, invalidUrl: 0 } };
+  blockedRequestCategories: { unknownHost: 0, unexpectedKnownPathOrMethod: 0, queryOrCredentials: 0, unexpectedPort: 0, invalidUrl: 0 },
+  blockedKnownPaths: Object.fromEntries(REQUEST_PATH_LABELS.map(label => [label, 0])) };
 const allowedPublicPhases = new Map([
   ['Preparing the transaction and any required proofs…', 'preparation-started'],
   ['Transaction preparation finished. The network has not accepted it yet.', 'preparation-completed'],
@@ -106,6 +110,28 @@ async function settingsControlSnapshot() {
   }
   return results;
 }
+async function settingsModeSnapshot(point) {
+  requireThat(['before-save', 'before-keyboard-save', 'after-reopen', 'failure'].includes(point), 'invalid-settings-observation-point');
+  const modes = [];
+  for (const mode of ['in-process', 'local-host']) {
+    const id = `proof-server-${mode}-radio`, control = wallet.getByTestId(id);
+    const count = await control.count();
+    const entry = { mode, present: count === 1 };
+    if (count === 1) {
+      entry.visible = await control.isVisible(); entry.enabled = await control.isEnabled();
+      Object.assign(entry, await control.evaluate((element, expectedId) => ({
+        markerPresent: element.querySelector(`[data-testid="${expectedId}-checkmark"]`) !== null,
+        hovered: element.matches(':hover'), active: element.matches(':active'), focused: element.matches(':focus-within'),
+        ariaDisabled: element.getAttribute('aria-disabled') === 'true' ? true
+          : element.getAttribute('aria-disabled') === 'false' ? false : null,
+      }), id));
+    }
+    modes.push(entry);
+  }
+  report.settingsModeObservations ??= [];
+  report.settingsModeObservations.push({ point, modes });
+  await save();
+}
 async function settingsClick(id, name, { visibleOnly = false } = {}) {
   requireThat(settingsControlIds.includes(id), 'unsupported-settings-diagnostic-control');
   await setStage(name);
@@ -131,12 +157,27 @@ async function onboardingToggleMatches(id, checked) {
   }, checked);
 }
 async function inProcessRadioSelected() {
-  return wallet.getByTestId('proof-server-in-process-radio').evaluate(element => {
+  return wallet.getByTestId('proof-server-in-process-radio').evaluate(async element => {
     // RadioButton module2768 renders this marker for selected OR focus/hover.
-    // After both interaction states are absent, the marker represents selection.
-    return !element.matches(':hover, :active, :focus-within')
-      && element.querySelector('[data-testid="proof-server-in-process-radio-checkmark"]') !== null;
+    // React hover/focus state may settle after the DOM pseudo-state changes.
+    await new Promise(requestAnimationFrame);
+    const local = element.ownerDocument.querySelector('[data-testid="proof-server-local-host-radio"]');
+    const otherModes = [...element.ownerDocument.querySelectorAll('[data-testid^="proof-server-"][data-testid$="-radio"]')]
+      .filter(control => control !== element);
+    return element.isConnected && !element.matches(':hover, :active, :focus-within')
+      && element.querySelector('[data-testid="proof-server-in-process-radio-checkmark"]') !== null
+      && local !== null && !local.matches(':hover, :active, :focus-within')
+      && otherModes.every(control => !control.matches(':hover, :active, :focus-within')
+        && control.querySelector('[data-testid$="-checkmark"]') === null);
   });
+}
+async function waitForInProcessRadioSelection() {
+  let stableSince = 0;
+  await poll(async () => {
+    if (!await inProcessRadioSelected()) { stableSince = 0; return false; }
+    if (!stableSince) stableSince = Date.now();
+    return Date.now() - stableSince >= 250;
+  }, 10_000, 50);
 }
 function normalSettingsControlUsable(visible, enabled, ariaDisabled) {
   // Signed RN Web createDOMProps emits aria-disabled only when it is true.
@@ -317,6 +358,28 @@ function countBlockedRequest(value) {
     else category = 'unknownHost';
   } catch { /* Count only the fixed category; never retain a URL or payload. */ }
   traffic.blockedRequestCategories[category]++;
+  traffic.blockedKnownPaths[knownRequestPathLabel(value)]++;
+}
+function knownRequestPathLabel(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname === 'e.lw.iog.io') {
+      if (url.pathname === '/flags/') return 'wallet-public-flags';
+      if (['/batch/', '/capture/', '/api/surveys/'].includes(url.pathname)) return 'wallet-telemetry';
+      return 'wallet-config-other-path';
+    }
+    if (url.hostname === 'midnight-preview.blockfrost.io')
+      return ['/api/v0', '/api/v0/ws'].includes(url.pathname) ? 'wallet-indexer-current' : 'wallet-indexer-current-other-path';
+    if (url.hostname === 'rpc.midnight-preview.blockfrost.io')
+      return ['/', '/ws'].includes(url.pathname) ? 'wallet-node-current' : 'wallet-node-current-other-path';
+    if (url.hostname === 'blockfrost.lw.iog.io') {
+      if (/^\/midnight-preview\/(?:ws)?$/.test(url.pathname)) return 'wallet-indexer-retired';
+      if (/^\/midnight-preview-rpc\/(?:ws)?$/.test(url.pathname)) return 'wallet-node-retired';
+    }
+    if (url.hostname === 'srs.midnight.network') return 'public-proving-assets';
+    if (['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '6300') return 'loopback-prover';
+  } catch { /* Only the fixed label is emitted. */ }
+  return 'other';
 }
 const walletPublicAssetPaths = new Set([
   ...['spend', 'output', 'sign'].flatMap(circuit => ['prover', 'verifier', 'bzkir']
@@ -643,24 +706,34 @@ try {
   // Exact current selectors are verified from the signed Lace source before CI.
   await settingsClick('proof-server-in-process-radio', 'select-wallet-on-device-wasm');
   await clearWalletPointerAndFocus('save-configuration-button');
-  await poll(inProcessRadioSelected, 10_000, 100);
+  await waitForInProcessRadioSelection();
+  await settingsModeSnapshot('before-save');
+  report.walletSettingsSaveActivations = ['mouse'];
   await settingsClick('save-configuration-button', 'save-wallet-on-device-wasm');
   await setStage('wait-wallet-proving-settings-close');
   const provingHeader = wallet.getByTestId('midnight-settings-sheet-header');
   const automaticallyClosed = await provingHeader.waitFor({ state: 'hidden', timeout: 5000 }).then(() => true, () => false);
   if (!automaticallyClosed) {
-    // Do not mistake an open sheet for a failed save, or close an active save.
-    // A fresh sheet must subsequently initialize from persisted configuration.
+    // One ordinary keyboard activation is a bounded reversible settings retry.
+    // It must not dismiss an unsaved mode or retry any wallet transaction.
     await setStage('wait-wallet-proving-save-controls-usable');
     await poll(provingSettingsUsable, 45_000, 100);
-    await settingsClick('side-sheet-close-button', 'close-saved-wallet-proving-settings', { visibleOnly: true });
+    await clearWalletPointerAndFocus('save-configuration-button');
+    await waitForInProcessRadioSelection();
+    await settingsModeSnapshot('before-keyboard-save');
+    report.walletSettingsSaveActivations.push('keyboard-enter');
+    await setStage('save-wallet-on-device-wasm-keyboard');
+    await wallet.getByTestId('save-configuration-button').press('Enter');
+    await setStage('wait-keyboard-wallet-proving-settings-close');
+    await provingHeader.waitFor({ state: 'hidden', timeout: 10_000 });
   }
   await wallet.getByTestId('proof-server-in-process-radio').waitFor({ state: 'detached' });
-  report.walletSettingsClose = automaticallyClosed ? 'automatic' : 'normal-close-control'; await save();
+  report.walletSettingsClose = automaticallyClosed ? 'automatic-after-mouse-save' : 'automatic-after-keyboard-save'; await save();
   await settingsClick('option-list-item-midnight', 'reopen-wallet-proving-settings');
   await setStage('verify-persisted-wallet-on-device-selection');
   await clearWalletPointerAndFocus('save-configuration-button');
-  await poll(inProcessRadioSelected, 10_000, 100);
+  await settingsModeSnapshot('after-reopen');
+  await waitForInProcessRadioSelection();
   await settingsClick('side-sheet-close-button', 'close-reviewed-wallet-proving-settings', { visibleOnly: true });
   await setStage('wait-reviewed-wallet-proving-settings-close');
   await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
@@ -817,6 +890,7 @@ try {
   if (currentOperation?.status === 'requested') currentOperation.status = 'uncertain';
   if (['approval-requested', 'awaiting-wallet-sync'].includes(report.dustRegistration?.status)) report.dustRegistration.status = 'uncertain';
   report.settingsControls = await bounded(settingsControlSnapshot(), 15_000).catch(() => []);
+  if (wallet && !wallet.isClosed()) await bounded(settingsModeSnapshot('failure'), 10_000).catch(() => {});
   report.finishedAt = new Date().toISOString();
   await save().catch(() => {}); process.exitCode = 1;
 } finally {

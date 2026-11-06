@@ -1,0 +1,32 @@
+{
+  "schema": "midnight-ballot-lab/ci-public-artifact-provenance/v1",
+  "runId": "42292592384",
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42292592384",
+  "headSha": "af1ba1dcc9a636204fe0f8a3b44c0f4ff64e37fc",
+  "artifactId": "13541770600",
+  "archiveBytes": 2995,
+  "archiveSha256": "83a9be8c729bd3e012cc9a03afa735b23a7b3095313d7761fce89850610523b3",
+  "archiveDigestMatchedReportedGitHubApi": true,
+  "retainedReportsUnmodified": true,
+  "files": [
+    {
+      "path": "lace-acquisition.json",
+      "bytes": 2060,
+      "sha256": "75d158581cee96162cd7e891368ecd2d1f36f4c9a400ef23b804e1019b3a184f"
+    },
+    {
+      "path": "browser-report.json",
+      "bytes": 4707,
+      "sha256": "95211fe1e013164d75fa23321329ece17fc25368ab0f7d2ca2f7abda8af1be6a"
+    },
+    {
+      "path": "public-journal.json",
+      "bytes": 200,
+      "sha256": "1185a1903522ca590e0ff361ce0d351ce22e166b3c1d8d1a5556faa07530792e"
+    }
+  ],
+  "executedRunnerSha256": "be0484c65fbf72acab74deb07b9e3469b03eb13a9953601d3ef368da1e7120bb",
+  "fundingRequested": false,
+  "fundingPerformed": false,
+  "privateLogsOrProfilesRead": false
+}

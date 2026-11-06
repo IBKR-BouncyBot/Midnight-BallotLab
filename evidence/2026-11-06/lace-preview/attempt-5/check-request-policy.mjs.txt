@@ -1,0 +1,96 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
+import { decodeJsonUtf8, parseStrictJson } from '../../src/json.mjs';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const source = await readFile(resolve(root, 'scripts/test-lace-preview-browser.mjs'), 'utf8');
+const hash = value => createHash('sha256').update(value).digest('hex');
+const signed = await readFile(resolve(root, 'artifacts/lace-2.5.1-review/extension/js/injected-script.js'), 'utf8');
+const token = /POSTHOG_API_TOKEN\s*:\s*["']([^"']+)/.exec(signed)?.[1];
+const sections = [
+  source.slice(source.indexOf('function redactedServiceUrl('), source.indexOf('async function readPublicResponse(')),
+  source.slice(source.indexOf('function allowedNetworkUrl('), source.indexOf('function countBlockedRequest(')),
+  source.slice(source.indexOf('function exactKeys('), source.indexOf('async function shutdown(')),
+].join('\n');
+const context = vm.createContext({ URL, Buffer, decodeJsonUtf8, parseStrictJson, hash,
+  requireThat: condition => { if (!condition) throw new Error('Policy rejection'); },
+  report: {}, walletVendorServiceUrls: new Set(), walletPublicAssetPaths: new Set(),
+  origin: 'http://127.0.0.1:9999', EXTENSION_ID: 'gafhhkghbfjjkeiendhlofajokpaflmk',
+  LACE_VERSION: '2.5.1', LACE_FLAGS_URL: 'https://e.lw.iog.io/flags/?v=2&config=true',
+  LACE_PUBLIC_CLIENT_TOKEN_SHA: '426d05db61174615365a278ebe9acdfbfcbda9176186f5f2242b87051d0b2908',
+});
+vm.runInContext(sections, context, { timeout: 1000 });
+const cases = [];
+function check(name, operation) {
+  let passed = false; try { passed = operation() === true; } catch { /* Never export input or error text. */ }
+  cases.push({ name, passed });
+}
+const id = randomUUID();
+const body = { token, distinct_id: id, groups: {}, person_properties: { distinct_id: id, $app_version: '2.5.1' }, group_properties: {} };
+const req = (value, options = {}) => ({ url: () => options.url ?? context.LACE_FLAGS_URL, method: () => options.method ?? 'POST',
+  headers: () => options.headers ?? { 'content-type': 'application/json' },
+  postDataBuffer: () => Buffer.from(typeof value === 'string' ? value : JSON.stringify(value)) });
+const policy = (value, options) => context.validPublicConfigurationRequest(req(value, options));
+const change = (key, value) => ({ ...body, [key]: value });
+check('signed-public-client-token-hash', () => token?.length === 48 && hash(token) === context.LACE_PUBLIC_CLIENT_TOKEN_SHA);
+check('exact-normal-public-flags-request', () => policy(body));
+check('reject-altered-client-token', () => !policy(change('token', 'x'.repeat(48))));
+check('reject-private-top-level-field', () => !policy({ ...body, privateKey: 'rejected-fixture' }));
+check('reject-private-person-property', () => !policy(change('person_properties', { ...body.person_properties, witness: 'rejected-fixture' })));
+check('reject-nonempty-groups', () => !policy(change('groups', { identity: 'rejected-fixture' })));
+check('reject-nonempty-group-properties', () => !policy(change('group_properties', { value: 'rejected-fixture' })));
+check('reject-different-nested-id', () => !policy(change('person_properties', { ...body.person_properties, distinct_id: randomUUID() })));
+check('reject-noninstallation-id', () => !policy(change('distinct_id', 'wallet-or-secret-value')));
+check('reject-wrong-app-version', () => !policy(change('person_properties', { ...body.person_properties, $app_version: '2.5.0' })));
+check('reject-duplicate-json-fields', () => !policy(JSON.stringify(body).replace('{', '{"token":"rejected-fixture",')));
+check('reject-oversized-body', () => !policy(' '.repeat(8193)));
+check('reject-telemetry-path', () => !policy(body, { url: 'https://e.lw.iog.io/batch/' }));
+check('reject-additional-query', () => !policy(body, { url: context.LACE_FLAGS_URL + '&extra=1' }));
+check('reject-wrong-method', () => !policy(body, { method: 'PUT' }));
+check('reject-non-json-content', () => !policy(body, { headers: { 'content-type': 'text/plain' } }));
+const indexer = 'https://midnight-preview.blockfrost.io/api/v0?project_id=public-policy-fixture';
+const node = 'https://rpc.midnight-preview.blockfrost.io/?project_id=public-policy-fixture';
+const flags = { flags: {
+  BLOCKCHAIN_MIDNIGHT_INDEXER_URLS: { enabled: true, metadata: { payload: JSON.stringify({ preview: indexer }) } },
+  BLOCKCHAIN_MIDNIGHT_NODE_URLS: { enabled: true, metadata: { payload: { preview: node } } },
+} };
+context.applyPublicVendorFlags(Buffer.from(JSON.stringify(flags)));
+check('vendor-exact-http-service-allowed', () => context.allowedNetworkUrl(indexer, 'POST'));
+check('vendor-exact-ws-service-allowed', () => context.allowedNetworkUrl(indexer.replace('https:', 'wss:').replace('/api/v0?', '/api/v0/ws?'), 'GET'));
+check('reject-unobserved-project-value', () => !context.allowedNetworkUrl(indexer.replace('public-policy-fixture', 'different-value'), 'POST'));
+check('reject-service-extra-query', () => !context.allowedNetworkUrl(indexer + '&extra=1', 'POST'));
+check('reject-http-prover', () => !context.allowedNetworkUrl('http://127.0.0.1:6300/prove', 'POST'));
+for (const [name, value] of [
+  ['http', indexer.replace('https:', 'http:')], ['mainnet', indexer.replace('preview', 'mainnet')],
+  ['wrong-host', indexer.replace('blockfrost.io', 'example.com')], ['wrong-path', indexer.replace('/api/v0', '/prove')],
+  ['port', indexer.replace('.io/', '.io:444/')], ['userinfo', indexer.replace('https://', 'https://user:pass@')],
+  ['fragment', indexer + '#fragment'], ['wrong-query-key', indexer.replace('project_id', 'private_key')],
+  ['duplicated-query', indexer + '&project_id=another'], ['empty-query-value', indexer.replace('public-policy-fixture', '')],
+  ['oversized-query-value', indexer.replace('public-policy-fixture', 'x'.repeat(257))],
+]) check(`reject-vendor-${name}`, () => { try { context.vendorPreviewService(value, 'indexer'); return false; } catch { return true; } });
+check('report-redacts-all-query-values', () => {
+  const text = JSON.stringify(context.report);
+  return !text.includes('public-policy-fixture') && !text.includes(token) && !text.includes(id)
+    && text.includes('project_id') && context.report.vendorServiceConfiguration.queryValuesExported === false;
+});
+check('reject-disabled-feature-override', () => {
+  const changed = structuredClone(flags); changed.flags.BLOCKCHAIN_MIDNIGHT_INDEXER_URLS.enabled = false;
+  try { context.applyPublicVendorFlags(Buffer.from(JSON.stringify(changed))); return false; } catch { return true; }
+});
+for (const [name, field, value] of [['evaluation-error', 'errorsWhileComputingFlags', true],
+  ['feature-quota', 'quotaLimited', ['feature_flags']]]) check(`reject-vendor-${name}`, () => {
+  const changed = structuredClone(flags); changed[field] = value;
+  try { context.applyPublicVendorFlags(Buffer.from(JSON.stringify(changed))); return false; } catch { return true; }
+});
+const result = { schema: 'midnight-ballot-lab/ci-lace-request-policy-check/v1',
+  status: cases.every(item => item.passed) ? 'passed' : 'failed',
+  scope: 'exact-runner-pure-policy-functions-in-Node-VM-no-browser-network-wallet-or-proof-execution',
+  runnerSha256: hash(source), extractedFunctionsSha256: hash(sections), harnessSha256: hash(await readFile(fileURLToPath(import.meta.url))),
+  node: process.version, passed: cases.filter(item => item.passed).length, total: cases.length, cases };
+await mkdir(dirname(fileURLToPath(import.meta.url)), { recursive: true });
+await writeFile(new URL('./result.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify({ status: result.status, passed: result.passed, total: result.total, runnerSha256: result.runnerSha256 }));
+if (result.status !== 'passed') process.exitCode = 1;

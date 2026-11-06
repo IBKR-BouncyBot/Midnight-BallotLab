@@ -1,0 +1,52 @@
+{
+  "schema": "midnight-ballot-lab/public-preview-service-diagnostic/v1",
+  "status": "completed",
+  "startedAt": "2026-11-06T20:47:37.313Z",
+  "finishedAt": "2026-11-06T20:47:38.093Z",
+  "executionEnvironment": "github-actions",
+  "sourceCommit": "621164df9882184e2227a1d50362198778615278",
+  "diagnosticScriptSha256": "15ac9332260da1f0a7d2679330964433cbe9f23b4ec3d666b7f07549711ba4ff",
+  "runId": "42291304775",
+  "nodeVersion": "v24.22.2",
+  "networkId": "preview",
+  "query": "{ block { height timestamp } }",
+  "timeoutMilliseconds": 15000,
+  "maximumResponseBytes": 65536,
+  "authenticationSent": false,
+  "redirectsFollowed": false,
+  "walletAccessed": false,
+  "proofsRequested": false,
+  "transactionsSubmitted": false,
+  "hostedApplicationRequested": false,
+  "rawResponseBodiesRetained": false,
+  "scope": "One public GraphQL block query per fixed endpoint from this host; not a wallet synchronization, subscription, proof or transaction test.",
+  "endpoints": [
+    {
+      "id": "lace-builtin-preview-indexer",
+      "endpoint": "https://blockfrost.lw.iog.io/midnight-preview/",
+      "serverOrigin": "https://blockfrost.lw.iog.io",
+      "startedAt": "2026-11-06T20:47:37.320Z",
+      "finishedAt": "2026-11-06T20:47:37.694Z",
+      "elapsedMilliseconds": 365,
+      "httpStatus": 410,
+      "category": "http-status",
+      "block": null
+    },
+    {
+      "id": "official-preview-indexer",
+      "endpoint": "https://indexer.preview.midnight.network/api/v4/graphql",
+      "serverOrigin": "https://indexer.preview.midnight.network",
+      "startedAt": "2026-11-06T20:47:37.694Z",
+      "finishedAt": "2026-11-06T20:47:38.093Z",
+      "elapsedMilliseconds": 398,
+      "httpStatus": 200,
+      "category": "healthy",
+      "block": {
+        "height": 1629224,
+        "timestampMilliseconds": 1793998044000,
+        "timestampUtc": "2026-11-06T20:47:24.000Z"
+      }
+    }
+  ],
+  "allEndpointsHealthy": false
+}

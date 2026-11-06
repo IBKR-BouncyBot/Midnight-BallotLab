@@ -14,6 +14,7 @@ export const LACE_PROGRESS_STAGES = Object.freeze([
   'select-wallet-testnet', 'select-wallet-midnight-preview', 'save-wallet-preview-network',
   'wait-wallet-network-sheet-close', 'open-wallet-proving-settings',
   'select-wallet-on-device-wasm', 'save-wallet-on-device-wasm',
+  'save-wallet-on-device-wasm-keyboard', 'wait-keyboard-wallet-proving-settings-close',
   'wait-wallet-proving-settings-close', 'wait-wallet-proving-save-controls-usable',
   'close-saved-wallet-proving-settings', 'reopen-wallet-proving-settings',
   'verify-persisted-wallet-on-device-selection', 'close-reviewed-wallet-proving-settings',

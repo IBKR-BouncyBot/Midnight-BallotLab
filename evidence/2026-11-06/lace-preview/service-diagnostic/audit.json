@@ -1,0 +1,25 @@
+{
+  "schema": "midnight-ballot-lab/public-service-diagnostic-audit/v1",
+  "checkedAt": "2026-11-06T20:48:54.092967+00:00",
+  "reportValidated": true,
+  "runId": 42291304775,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42291304775",
+  "headSha": "621164df9882184e2227a1d50362198778615278",
+  "workflowConclusion": "failure",
+  "failedStep": "Request public block metadata once per fixed endpoint",
+  "reportStatus": "completed",
+  "allEndpointsHealthy": false,
+  "artifact": {
+    "id": 13540590231,
+    "name": "preview-service-diagnostic-42291304775",
+    "bytes": 991,
+    "expired": false,
+    "digest": "sha256:1c33482c9351e9750bd826bad9fb5bd88743a041d2abfa65a72e9a16bbaf7946",
+    "headSha": "621164df9882184e2227a1d50362198778615278"
+  },
+  "reportSha256": "6e86475e7e170e8fe05492bf97fe73e2a3f51d8017879758394890346a18190e",
+  "diagnosticScriptSha256": "15ac9332260da1f0a7d2679330964433cbe9f23b4ec3d666b7f07549711ba4ff",
+  "privateDataFindings": 0,
+  "walletStallCausalityEstablished": false,
+  "hostedApplicationRequested": false
+}
