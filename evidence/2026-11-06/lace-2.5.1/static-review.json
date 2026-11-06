@@ -1,0 +1,178 @@
+{
+  "schema": "midnight-ballot-lab/lace-static-review/v1",
+  "reviewedAt": "2026-11-06T19:28:30.922531+00:00",
+  "scope": "signed official archive static inspection and acquisition-script execution only",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "version": "2.5.1",
+  "archiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "apiVersionDeclared": "4.1.0-canary.20260819082604-3b622cb",
+  "proving": {
+    "normalSettingLabel": "Run in this app (WASM)",
+    "normalSettingId": "proof-server-in-process-radio",
+    "saveButtonId": "save-configuration-button",
+    "inProcessSaveNeedsRemoteDisclosure": false,
+    "path": [
+      "js/offscreen.js",
+      "js/4352.js",
+      "js/6895.js",
+      "js/3267.js"
+    ],
+    "zkirWasm": {
+      "path": "js/bb7c1f073eb0bc071ea5.module.wasm",
+      "bytes": 3413037,
+      "sha256": "f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb"
+    },
+    "versionDispatch": "activeProtocolVersion versus V9NativeForkVersion; circuit jobs carry v8 or v9",
+    "v8Descriptor": {
+      "package": "@midnight-ntwrk/ledger-v8",
+      "version": "8.1.0",
+      "keyMaterialGeneration": 9
+    },
+    "v9Descriptor": {
+      "package": "@midnightntwrk/ledger-v9",
+      "version": "1.0.0-rc.7",
+      "keyMaterialGeneration": 10
+    },
+    "publicAssetsOrigin": "https://srs.midnight.network",
+    "v8CircuitPaths": [
+      "zswap/9/spend.prover",
+      "zswap/9/spend.verifier",
+      "zswap/9/spend.bzkir",
+      "zswap/9/output.prover",
+      "zswap/9/output.verifier",
+      "zswap/9/output.bzkir",
+      "zswap/9/sign.prover",
+      "zswap/9/sign.verifier",
+      "zswap/9/sign.bzkir",
+      "dust/9/spend.prover",
+      "dust/9/spend.verifier",
+      "dust/9/spend.bzkir"
+    ],
+    "parameterPaths": [
+      "bls_midnight_2p0",
+      "bls_midnight_2p1",
+      "bls_midnight_2p2",
+      "bls_midnight_2p3",
+      "bls_midnight_2p4",
+      "bls_midnight_2p5",
+      "bls_midnight_2p6",
+      "bls_midnight_2p7",
+      "bls_midnight_2p8",
+      "bls_midnight_2p9",
+      "bls_midnight_2p10",
+      "bls_midnight_2p11",
+      "bls_midnight_2p12",
+      "bls_midnight_2p13",
+      "bls_midnight_2p14",
+      "bls_midnight_2p15",
+      "bls_midnight_2p16",
+      "bls_midnight_2p17",
+      "bls_midnight_2p18",
+      "bls_midnight_2p19",
+      "bls_midnight_2p20",
+      "bls_midnight_2p21",
+      "bls_midnight_2p22",
+      "bls_midnight_2p23",
+      "bls_midnight_2p24",
+      "bls_midnight_2p25"
+    ],
+    "downloadedMaterialSha256CheckedByExtension": true,
+    "bindingOverrideForwarded": true,
+    "apiModeAttestationAvailable": false,
+    "apiLimitation": "getConfiguration may omit proverServerUri for both in-process and tee-delegated modes; omission does not prove local execution"
+  },
+  "previewServices": {
+    "indexer": "https://blockfrost.lw.iog.io/midnight-preview/",
+    "node": "https://blockfrost.lw.iog.io/midnight-preview-rpc/",
+    "indexerWebSocket": "wss://blockfrost.lw.iog.io/midnight-preview/ws"
+  },
+  "uiSelectors": {
+    "home": "portfolio-tab-btn",
+    "settings": "settings-tab-btn",
+    "preview": "radio-button-midnight-preview",
+    "networkConfirm": "network-selection-sheet-confirm-button",
+    "generateDust": "account-card-generate-dust-button",
+    "dustReview": "designate-button",
+    "dustConfirm": "confirm-designation-button",
+    "authenticationInput": "authentication-prompt-input-value",
+    "authenticationConfirm": "authentication-prompt-button-confirm"
+  },
+  "dustBalanceApi": "getDustBalance returns actual wallet-state bigint balance=sum(generatedNow), cap=sum(maxCap); nonzero display alone is not transaction acceptance",
+  "onboarding": {
+    "implicitAgreementActions": [
+      "Create",
+      "Connect",
+      "Restore"
+    ],
+    "termsUrl": "https://www.lace.io/iohktermsandconditions.pdf",
+    "privacyUrl": "https://www.lace.io/lace-privacy-policy.pdf",
+    "agreementPerformed": false
+  },
+  "acquisitionScript": {
+    "path": "scripts/ci-acquire-lace.mjs",
+    "sha256": "9e8c8b3ff5f4212ed14d7652288574f5c2fc7fc541b0b6784c13c906f291d6ee",
+    "actualFreshRunPassed": true
+  },
+  "files": [
+    {
+      "path": "manifest.json",
+      "bytes": 3718,
+      "sha256": "5e67d8265b510e9b5b1c0546677d5f3f6316aaa440591dcc0af3d7f4a8858391"
+    },
+    {
+      "path": "js/injected-script.js",
+      "bytes": 2928007,
+      "sha256": "467ac73b2f001678c81f6cda5ab9982a8fe5b98811ca403a483e8f01fdcde809"
+    },
+    {
+      "path": "js/sw/119.js",
+      "bytes": 61679,
+      "sha256": "4386d430d72b1f64a55387c3dd3137a6ad708bbf7a63caa8c877a5aa5bff8dc4"
+    },
+    {
+      "path": "js/offscreen.js",
+      "bytes": 35857,
+      "sha256": "166a15cd5e223c7f56fcef8542d085432e333ce49abfbcab9cf59856c3fa83da"
+    },
+    {
+      "path": "js/4352.js",
+      "bytes": 10941,
+      "sha256": "c98589bc838dba24ca5dc26c217af8a3ce869708c109bb8bf03dc95ed8d789e9"
+    },
+    {
+      "path": "js/6895.js",
+      "bytes": 4048,
+      "sha256": "a2d5ff9444b6fdcf3d0ca7c98b4ba68acd128cf4f9613197d0debd17e7158642"
+    },
+    {
+      "path": "js/3267.js",
+      "bytes": 816015,
+      "sha256": "f021b27a0b98661b49b261b32fa3933dc4a50c58ac5825fdf93fe26182102b56"
+    },
+    {
+      "path": "js/bb7c1f073eb0bc071ea5.module.wasm",
+      "bytes": 3413037,
+      "sha256": "f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb"
+    },
+    {
+      "path": "expo/_expo/static/js/web/index-6bc3038052c9273bbc4603fbcdffc289.js",
+      "bytes": 11523720,
+      "sha256": "984681ba8801fb3fea5bffb95148477b53d23482bd3db5cf62db53c05c72e605"
+    },
+    {
+      "path": "expo/_expo/static/js/web/sheetPages-51643c46b267dc3b47c4339a5850cd04.js",
+      "bytes": 25094,
+      "sha256": "07ef1d828bdb37c9096f232758807c433ed7aa3cacf3a4d0f13f689c90ab9530"
+    },
+    {
+      "path": "expo/_expo/static/js/web/__common-10278b74291c75135f560a4d7ca1d2ee.js",
+      "bytes": 9650360,
+      "sha256": "9383079455238819564a41b4de9651376e8d230ad20f6b6afa6b98754cc663f6"
+    }
+  ],
+  "extensionLoaded": false,
+  "walletCreated": false,
+  "walletConnected": false,
+  "proofGenerated": false,
+  "transactionSubmitted": false
+}

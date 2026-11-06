@@ -1,0 +1,56 @@
+{
+  "acquiredAt": "2026-11-06T19:26:34.275Z",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "schema": "midnight-ballot-lab/official-lace-acquisition/v1",
+  "version": "2.5.1",
+  "storeUrl": "https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk",
+  "transport": {
+    "verifiedTls": true,
+    "sourceOrigins": [
+      "https://clients2.google.com",
+      "https://clients2.googleusercontent.com"
+    ]
+  },
+  "crxVersion": 3,
+  "crxBytes": 73665394,
+  "crxSha256": "bff973f7c741ccdbf91c4a1125d4d6da8e9a0b2384b6b1f51c6898b24c87e055",
+  "archiveBytes": 73664073,
+  "archiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "manifestBytes": 3718,
+  "manifestSha256": "5e67d8265b510e9b5b1c0546677d5f3f6316aaa440591dcc0af3d7f4a8858391",
+  "extractedFiles": 1086,
+  "uncompressedBytes": 178245221,
+  "developerSignatureVerified": true,
+  "webStorePublisherSignatureVerified": true,
+  "proofs": [
+    {
+      "algorithm": "RSA-PKCS1-SHA256",
+      "publicKeySha256": "b5e4096227b83f82101fc2aa49f2a251accde3d98471464dd17d1819b43786b0",
+      "developerIdMatches": false,
+      "chromiumWebStorePublisherKey": false,
+      "signatureVerified": true
+    },
+    {
+      "algorithm": "RSA-PKCS1-SHA256",
+      "publicKeySha256": "60577a671599a484d37be509eaf05bca221cb9ebc4872d8f77008df0b8b79d86",
+      "developerIdMatches": true,
+      "chromiumWebStorePublisherKey": false,
+      "signatureVerified": true
+    },
+    {
+      "algorithm": "ECDSA-SHA256",
+      "publicKeySha256": "61f7f2a6bfcf74cd0bc1fe2497cc9b04254c658f79f2145392867ea8366367cf",
+      "developerIdMatches": false,
+      "chromiumWebStorePublisherKey": true,
+      "signatureVerified": true
+    }
+  ],
+  "extensionLoaded": false,
+  "walletCreated": false,
+  "walletConnected": false,
+  "transactionSubmitted": false,
+  "verifierSources": [
+    "https://raw.githubusercontent.com/chromium/chromium/main/components/crx_file/crx3.proto",
+    "https://raw.githubusercontent.com/chromium/chromium/main/components/crx_file/crx_verifier.cc"
+  ]
+}

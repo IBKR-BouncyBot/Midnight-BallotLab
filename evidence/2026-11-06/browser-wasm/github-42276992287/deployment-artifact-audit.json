@@ -1,0 +1,181 @@
+{
+  "schema": "midnight-ballot-lab/browser-prover-deployment-audit/v1",
+  "status": "passed",
+  "checkedAt": "2026-11-06T19:32:35.012895+00:00",
+  "headSha": "71ad012db09b797e8dff8a7300b13a8632d81bcb",
+  "runId": 42276992287,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42276992287",
+  "artifacts": {
+    "pages-build-evidence": {
+      "id": 13533978196,
+      "name": "pages-build-evidence",
+      "bytes": 4379263,
+      "expired": false,
+      "digest": "sha256:29e51b95f52c7c0884238c0e0af75b5793582407076cfd7c138fddaaa876231f",
+      "headSha": "71ad012db09b797e8dff8a7300b13a8632d81bcb"
+    },
+    "github-pages": {
+      "id": 13533963266,
+      "name": "github-pages",
+      "bytes": 143436042,
+      "expired": false,
+      "digest": "sha256:aa16e1ee6d6e70dfe03decdc8c5a547c884ce6ae3d07743d8ad3d5d52ad61476",
+      "headSha": "71ad012db09b797e8dff8a7300b13a8632d81bcb"
+    }
+  },
+  "staticComparisons": [
+    {
+      "path": "native-bundle.mjs",
+      "bytes": 588128,
+      "sha256": "dde3b295e04a4058113bfa55d3b7c49b0104e122c775568f37622dda4f3ca5a9",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "network-bundle.mjs",
+      "bytes": 2954976,
+      "sha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "native-prover-worker.mjs",
+      "bytes": 48048,
+      "sha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "native-contract/prover-manifest.json",
+      "bytes": 5138,
+      "sha256": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "network.html",
+      "bytes": 40480,
+      "sha256": "254dfbc6e0deaebfbac2599d1cb31bace1bf04bd47de994e1b2a2dee97155c82",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "index.html",
+      "bytes": 9245,
+      "sha256": "df4faed618d507e6d12ce2264451db429b53fa44297218bda14cad9f9ee778b7",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "styles.css",
+      "bytes": 30622,
+      "sha256": "644b2217aada0394a237f2ab1d1e38f1c08e3f23c5ebf88bbfafed26263db713",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "network-theme.css",
+      "bytes": 8570,
+      "sha256": "f34dd125bd95dffc50071312f0fd0986e203d48602e4af39371cffd94d9d6b24",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "assets/support-ada-qr.svg",
+      "bytes": 17454,
+      "sha256": "3f2491a3fa1371eddc73bf934fe9f0b32e601a9d2e1a262b9f76b3389f7164ee",
+      "exactLocalBuildMatch": true
+    },
+    {
+      "path": "support.mjs",
+      "bytes": 603,
+      "sha256": "84cb444aac93f2acf04ffa4bbc46cbc7164ab485a9d4cdab1441d96d0b91c4e8",
+      "exactLocalBuildMatch": true
+    }
+  ],
+  "sourceFilesComparedToGit": 777,
+  "generatedAssetsCompared": 28,
+  "wasmAssetsCompared": 4,
+  "privateTextFindings": [],
+  "genericGitHubRunnerPaths": 34,
+  "tests": [
+    {
+      "log": "native-boundary-tests.log",
+      "tests": 111,
+      "failed": 0
+    },
+    {
+      "log": "native-election-tests.log",
+      "tests": 62,
+      "failed": 0
+    },
+    {
+      "log": "provider-api-tests.log",
+      "tests": 13,
+      "failed": 0
+    },
+    {
+      "log": "browser-prover-failure-tests.log",
+      "tests": 1,
+      "failed": 0
+    },
+    {
+      "report": "native-browser/result.json",
+      "cases": 9,
+      "status": "passed"
+    },
+    {
+      "report": "network-browser/evidence.json",
+      "cases": 10,
+      "status": "passed"
+    }
+  ],
+  "browserProofs": {
+    "standaloneProofs": 8,
+    "circuits": 7,
+    "boundTransactionProofs": 1,
+    "transactionCircuit": "configureKeys",
+    "negativeChecks": 2,
+    "unexpectedRequestsOrErrors": 0,
+    "startedAt": "2026-11-06T19:15:03.753Z",
+    "finishedAt": "2026-11-06T19:26:57.189Z",
+    "transactionRecord": {
+      "circuit": "configureKeys",
+      "construction": "official-sdk-from-generated-state",
+      "provider": "production-proveTx",
+      "callbackOrder": [
+        "check",
+        "prove"
+      ],
+      "bindingOverridePresent": true,
+      "proofBytes": 4853,
+      "proofSha256": "45e61adbae79666f97945c908044f64621a4a549be59d6c964284e457656d73e",
+      "checkElapsedMs": 13,
+      "proveElapsedMs": 146962,
+      "elapsedMs": 146992
+    },
+    "walletConnected": false,
+    "networkSubmission": false,
+    "networkAcceptance": false,
+    "independentProofVerification": "not-tested"
+  },
+  "hostedOriginRequested": false,
+  "networkTransactionsPerformedByAudit": false,
+  "deploymentConclusion": "success",
+  "deploymentId": 7608924050,
+  "deploymentUrl": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+  "deploymentCompletedAt": "2026-11-06T19:27:29Z",
+  "packaging": {
+    "localReferences": 132,
+    "sourceFiles": 777
+  },
+  "testedVersions": {
+    "node": "24.22.2",
+    "npm": "11.19.1",
+    "python": "3.12.16",
+    "compact": "0.31.1",
+    "runtime": "0.16.0",
+    "sdk": "4.1.1",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4",
+    "zkir": "2.1.1",
+    "ledger": "8.1.0"
+  },
+  "downloadAttempts": {
+    "pagesArtifact": 2,
+    "firstAttempt": "request-failed with120-second bound",
+    "secondAttempt": "digest-verified success with300-second bound"
+  }
+}

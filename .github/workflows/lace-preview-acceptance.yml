@@ -1,0 +1,122 @@
+name: Manual Lace Preview acceptance
+
+# Funding is external and explicit. Never run for PRs or restart an uncertain
+# transaction. One process/profile survives the funding-artifact upload.
+on:
+  workflow_dispatch:
+    inputs:
+      lace_onboarding_approved:
+        description: 'Explicit approval to create a Lace 2.5.1 wallet and accept its Terms and Privacy Policy (see runbook)'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lace-preview-acceptance
+  cancel-in-progress: false
+
+jobs:
+  lace:
+    name: Prove and submit with genuine Lace on public Preview
+    if: github.repository == 'IBKR-BouncyBot/Midnight-BallotLab' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 210
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out trusted source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Reject workflow reruns
+        env:
+          ATTEMPT: ${{ github.run_attempt }}
+          ONBOARDING_APPROVED: ${{ inputs.lace_onboarding_approved }}
+        run: |
+          test "$ATTEMPT" = 1 || { echo 'Review funding and prior submissions before starting a fresh manual dispatch.'; exit 1; }
+          test "$ONBOARDING_APPROVED" = true || { echo 'Explicit approval of Lace onboarding terms is required before wallet creation.'; exit 1; }
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the pinned toolchain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/ci-install-midnight.sh
+      - name: Install reviewed application dependencies
+        run: npm --prefix contracts ci --ignore-scripts
+      - name: Compile and test actual native code
+        run: |
+          npm test
+          npm --prefix contracts run compile:native
+          npm --prefix contracts run test:native
+          node --test contracts/test/browser-prover-failure.test.mjs
+          node --test contracts/test/lace-ci-public-files.test.mjs
+      - name: Build the actual browser application and proving assets
+        run: |
+          npm run build
+          node scripts/build-native-browser.mjs
+          node scripts/build-network-browser.mjs
+          python3 scripts/check_pages.py
+      - name: Install Chromium and virtual display dependencies
+        run: |
+          node contracts/node_modules/playwright/cli.js install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb xauth
+      - name: Acquire and verify official Lace
+        id: lace
+        run: node scripts/ci-acquire-lace.mjs
+      - name: Start one isolated wallet browser
+        id: runner
+        env:
+          LACE_EXTENSION_PATH: ${{ steps.lace.outputs.extension-path }}
+          LACE_ACQUISITION_REPORT: ${{ steps.lace.outputs.acquisition-report }}
+          LACE_ONBOARDING_APPROVAL: ${{ inputs.lace_onboarding_approved && 'lace-2.5.1-create-terms-and-privacy' || '' }}
+        run: bash scripts/ci-lace-preview-process.sh start
+      - name: Wait for the public funding request
+        timeout-minutes: 22
+        env:
+          LACE_TASK_DIR: ${{ steps.runner.outputs.task-directory }}
+        run: bash scripts/ci-lace-preview-process.sh funding
+      - name: Publish only the public funding request
+        uses: actions/upload-artifact@v4
+        with:
+          name: lace-preview-funding-${{ github.run_id }}
+          path: |
+            ${{ steps.runner.outputs.evidence-directory }}/funding-request.json
+            ${{ steps.lace.outputs.acquisition-report }}
+          if-no-files-found: error
+          retention-days: 3
+      - name: Await funding and the same browser's complete election
+        timeout-minutes: 185
+        env:
+          LACE_TASK_DIR: ${{ steps.runner.outputs.task-directory }}
+        run: bash scripts/ci-lace-preview-process.sh wait
+      - name: Stop only this runner's process group
+        if: always() && steps.runner.outputs.task-directory != ''
+        env:
+          LACE_TASK_DIR: ${{ steps.runner.outputs.task-directory }}
+        run: bash scripts/ci-lace-preview-process.sh stop
+      - name: Preserve explicit public evidence only
+        if: always() && steps.runner.outputs.evidence-directory != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: lace-preview-evidence-${{ github.run_id }}
+          path: |
+            ${{ steps.lace.outputs.acquisition-report }}
+            ${{ steps.runner.outputs.evidence-directory }}/funding-request.json
+            ${{ steps.runner.outputs.evidence-directory }}/browser-report.json
+            ${{ steps.runner.outputs.evidence-directory }}/public-journal.json
+            ${{ steps.runner.outputs.evidence-directory }}/public-receipt.json
+            ${{ steps.runner.outputs.evidence-directory }}/public-indexed-observation.json
+          if-no-files-found: error
+          retention-days: 30
