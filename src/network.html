@@ -68,8 +68,6 @@
         <label for="network-address">Contract address</label><input id="network-address" spellcheck="false" maxlength="64" data-network-control disabled>
         <label for="network-digest">Election fingerprint</label><input id="network-digest" spellcheck="false" maxlength="64" data-network-control disabled>
         <p id="network-identity-note" class="field-note">Get the contract address and fingerprint from a source you trust. The app checks that the contract’s keys and settings match, but cannot prove that its initial setup or history was honest.</p>
-        <button class="button primary" type="button" id="network-download-election" aria-describedby="network-election-download-note" data-network-control disabled>Download election details</button>
-        <p id="network-election-download-note" class="field-note">Create the election and register its trustee keys first. Registration gives the election its fingerprint.</p>
         <button class="button primary" type="button" id="network-join" data-network-control disabled>Join election</button>
         </div>
         <label for="network-admin">Administrator key (64 hexadecimal characters)</label><input id="network-admin" name="midnight-election-administrator-key" type="password" autocomplete="new-password" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="64" placeholder="Click Generate administrator key" aria-describedby="network-admin-help network-admin-key-status" readonly data-network-control disabled>
@@ -96,9 +94,21 @@
           <div class="button-row"><button class="button primary" type="button" id="network-download-trustee-1" data-network-control disabled>Download trustee 1 key</button><button class="button primary" type="button" id="network-download-trustee-2" data-network-control disabled>Download trustee 2 key</button><button class="button primary" type="button" id="network-download-trustee-3" data-network-control disabled>Download trustee 3 key</button></div>
           <p id="network-trustee-download-status" class="field-note" role="status" aria-live="polite">Generate and register the trustee shares before downloading them. Save all three before leaving this setup session.</p>
         </div>
+        <section class="election-backup" aria-labelledby="network-backup-heading">
+          <h3 id="network-backup-heading">Save this election for later</h3>
+          <p class="field-note">Keep a public join file with the network, contract address and election fingerprint. When you return, choose Join an election and load this file. Save private voter, administrator and trustee keys separately.</p>
+          <button class="button primary" type="button" id="network-download-election" aria-describedby="network-election-download-note" data-network-control disabled>Download election details</button>
+          <p id="network-election-download-note" class="field-note">Create the election and register its trustee keys first. Registration gives the election its fingerprint.</p>
+        </section>
       </section>
       <section class="panel" aria-labelledby="vote-heading">
         <div class="panel-head"><p class="eyebrow">03 / VOTE</p><span class="panel-tag">Encrypted ballot</span></div><h2 id="vote-heading" tabindex="-1">Register a voter, then vote.</h2>
+        <div class="voting-readiness" aria-labelledby="network-voting-readiness-heading">
+          <h3 id="network-voting-readiness-heading">Ready to vote?</h3>
+          <p id="network-voting-readiness" role="status" aria-live="polite">Connect your wallet, then create or join an election.</p>
+          <div class="button-row"><a class="button primary" id="network-voting-next" href="#connect-heading">Go to wallet connection</a><button class="button primary" type="button" id="network-refresh-voting" data-network-control disabled>Refresh voting status</button></div>
+          <p class="field-note">The scheduled time alone does not open voting. Register voters beforehand, then submit Open voting during the voting window. If someone else opened the election, refresh its status here.</p>
+        </div>
         <label for="network-voter">Voter key (64 hexadecimal characters)</label><input id="network-voter" type="password" autocomplete="off" spellcheck="false" maxlength="64" data-network-control disabled>
         <div class="button-row private-key-tools"><button class="button primary" type="button" id="network-generate-voter" data-network-control disabled>Generate voter key</button><button class="button secondary" type="button" id="network-show-voter" aria-controls="network-voter" aria-pressed="false" data-network-control disabled>Show key</button><button class="button primary" type="button" id="network-download-voter" data-network-control disabled>Download key</button></div>
         <label for="network-import-voter">Load a saved voter key</label><input id="network-import-voter" type="file" accept=".txt,text/plain" data-network-control disabled>

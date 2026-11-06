@@ -1,0 +1,45 @@
+{
+  "node": "v24.18.0",
+  "scope": "Boundary and installed API tests only; connector doubles deliberately fail and never return a working wallet session",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "rawOutputRetainedInFile": false,
+  "previousSandboxAttempt": {
+    "providerTestsPassed": 8,
+    "wasmPackagingTestsFailed": 2,
+    "cause": "esbuild directory access denied; rerun with required filesystem access"
+  },
+  "groups": [
+    {
+      "name": "boundary",
+      "startedAt": "2026-11-06T10:19:44.830Z",
+      "status": "passed",
+      "command": "node --test --test-reporter=tap tests/compact-launcher.test.mjs tests/election-join.test.mjs tests/json.test.mjs tests/native-adapter.test.mjs tests/native-connection-errors.test.mjs tests/native-loader.test.mjs tests/native-network-config.test.mjs tests/network-receipt.test.mjs tests/network-timing.test.mjs tests/private-key.test.mjs tests/public-testnet.test.mjs tests/qr.test.mjs tests/trustee-key.test.mjs",
+      "tests": 88,
+      "pass": 88,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "name": "installed-provider-api",
+      "startedAt": "2026-11-06T10:19:45.019Z",
+      "status": "passed",
+      "command": "node --test --test-reporter=tap contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs",
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  ],
+  "sourceHashes": {
+    "contracts/native/connection-errors.mjs": "3547d4b6efe27ef8ac5f4c25917ca210618e3767e94a68bbf23cf6d33f98a63b",
+    "contracts/native/browser-providers.mjs": "bb6d1baad71a84084e445a30d4896aee88d041aac74665553184bb1e92e2a4af",
+    "src/network-app.mjs": "134fce55a20481bf8bdd1e49d7cf9c590a2bd7664b6ffc75ecaeedda4e0b4a55",
+    "tests/native-connection-errors.test.mjs": "c7101f18efb3c080b4c607c32d423ac50b5fe0bb8bb85d6f38e552faf277320f",
+    "contracts/test/browser-providers-api.test.mjs": "617462d72449839556aee5bca8ac5c1f0a40a340e33ddd6e3284fed8085b580b"
+  }
+}

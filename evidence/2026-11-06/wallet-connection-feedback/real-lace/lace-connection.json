@@ -1,0 +1,72 @@
+{
+  "schema": "midnight-ballot-lab/real-lace-preview-connection-diagnostics/v1",
+  "startedAt": "2026-11-06T10:20:02.468Z",
+  "status": "passed",
+  "networkId": "preview",
+  "origin": "fresh-local-http-test-server",
+  "walletCreated": true,
+  "walletConnected": true,
+  "publicNetwork": true,
+  "publicHostedOriginTested": false,
+  "walletFunded": false,
+  "proofGenerated": false,
+  "transactionSigned": false,
+  "transactionSubmitted": false,
+  "ledgerInclusionIndependentlyVerified": false,
+  "privateDataLogged": false,
+  "privateFilesDownloaded": false,
+  "privateScreenshotsTaken": false,
+  "walletVersion": "2.5.0",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "5e3e993dc126ea09428abb7411b9571f7e1d3200deea20d50d2f94cb52524383",
+  "harnessSha256": "2b1fc9d5c03f067e9935dd4031c60d75a9f8279bc7c3b3f75a9ca767099f0fdb",
+  "networkBundleSha256": "7fada1ba1ba118d64da9420a18b6d8598011f4edab888861e9adf4e15c812688",
+  "playwright": "1.64.1",
+  "stage": "verify-timer-placeholder-and-disconnect",
+  "chromium": "156.0.8078.4",
+  "apiVersion": "4.0.1",
+  "walletServices": {
+    "indexerUri": "https://blockfrost.lw.iog.io/midnight-preview/",
+    "indexerWsUri": "wss://blockfrost.lw.iog.io/midnight-preview/ws",
+    "substrateNodeUri": "https://blockfrost.lw.iog.io/midnight-preview-rpc/",
+    "proverServerUri": "http://localhost:6300/"
+  },
+  "publicPreflightPassed": true,
+  "connectedControls": {
+    "sessionSelectorsLocked": true,
+    "sessionFieldsLocked": true,
+    "createSelected": true,
+    "onlyCreateActionEnabled": true,
+    "createPanelVisible": true,
+    "setupModeControlsEnabled": true,
+    "disconnectedActionEnabled": true,
+    "ballotDisabledWithoutContract": true
+  },
+  "joinMode": {
+    "joinSelected": true,
+    "onlyJoinActionEnabled": true,
+    "onlyJoinPanelVisible": true,
+    "publicIdentityEditable": true
+  },
+  "returnedCreateMode": {
+    "createModeRestored": true,
+    "creationFieldsPreserved": true,
+    "joinFieldsPreserved": true,
+    "noElectionAttached": true
+  },
+  "emptyElectionTiming": true,
+  "disconnectedControls": {
+    "selectorsUnlocked": true,
+    "passwordCleared": true,
+    "contractActionsDisabled": true,
+    "disconnectDisabled": true,
+    "previewEndpointsRemainLocked": true,
+    "keyFieldsClearedAndMasked": true,
+    "keyVisibilityControlsReset": true,
+    "keyDownloadsDisabled": true,
+    "fileInputsCleared": true,
+    "privateFieldsCleared": true
+  },
+  "localSessionDisconnected": true,
+  "completedAt": "2026-11-06T10:20:23.430Z"
+}

@@ -1,0 +1,168 @@
+{
+  "executedAt": "2026-11-06T10:10:37.571Z",
+  "scope": "connect-feedback-without-wallet",
+  "walletInjected": false,
+  "externalRequests": 0,
+  "cases": [
+    {
+      "width": 1440,
+      "kind": "empty",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 568,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "short",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 568,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "long-weak",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 568,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 568,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "enter-valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 1054,
+        "bottom": 1135,
+        "viewport": 900,
+        "visibleFully": false
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "missing-service",
+      "passed": true,
+      "message": "Complete the highlighted connection setting before connecting. No wallet request has been sent.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 505,
+        "bottom": 562,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "empty",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 638,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "short",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 638,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "long-weak",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 638,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487,
+        "bottom": 638,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "enter-valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 1145,
+        "bottom": 1296,
+        "viewport": 900,
+        "visibleFully": false
+      }
+    },
+    {
+      "width": 390,
+      "kind": "missing-service",
+      "passed": true,
+      "message": "Complete the highlighted connection setting before connecting. No wallet request has been sent.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 616,
+        "bottom": 720,
+        "viewport": 900,
+        "visibleFully": true
+      }
+    }
+  ],
+  "bundleSha256": "eb612da75debf7dd27e0b15839fe964ac1e6371e128a9212ae9e1fa33836454c",
+  "chromium": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "passed": true
+}

@@ -1,0 +1,46 @@
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+
+const root = process.cwd();
+const output = resolve(root, 'evidence/2026-11-06/voting-readiness');
+mkdirSync(output, { recursive: true });
+const paths = directory => readdirSync(directory).filter(name => name.endsWith('.test.mjs')).sort().map(name => `${directory}/${name}`);
+const hash = data => createHash('sha256').update(data).digest('hex');
+const report = { node: process.version, scope: 'Actual generated-ledger tests, local boundary checks and installed provider APIs; no proofs or network submissions', proofGeneration: false, networkSubmission: false, groups: [], sourceHashes: {} };
+const groups = [
+  ['boundary', paths('tests')],
+  ['generated-native', paths('contracts/native/test')],
+  ['installed-provider-api', ['contracts/test/browser-providers-api.test.mjs', 'contracts/test/native-wasm-plugin.test.mjs']],
+];
+for (const [name, files] of groups) {
+  const group = { name, startedAt: new Date().toISOString(), command: ['node', '--test', '--test-reporter=tap', ...files].join(' ') };
+  try {
+    const tap = execFileSync(process.execPath, ['--test', '--test-reporter=tap', ...files], { encoding: 'utf8', cwd: root, maxBuffer: 16 * 1024 * 1024 });
+    for (const key of ['tests', 'pass', 'fail', 'cancelled', 'skipped', 'todo']) {
+      const match = tap.match(new RegExp(`^# ${key} (\\d+)$`, 'm'));
+      if (!match) throw new Error('Missing test count');
+      group[key] = Number(match[1]);
+    }
+    if (group.tests !== group.pass || group.fail || group.cancelled || group.skipped || group.todo) throw new Error('Incomplete test group');
+    group.status = 'passed';
+    group.completedAt = new Date().toISOString();
+    group.outputSha256 = hash(tap);
+  } catch {
+    group.status = 'failed';
+    // Never export raw assertion diagnostics: they can contain private inputs.
+    report.groups.push(group);
+    writeFileSync(resolve(output, 'local-tests.json'), JSON.stringify(report, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(group) + '\n');
+    process.exit(1);
+  }
+  report.groups.push(group);
+  process.stdout.write(JSON.stringify({ name, status: group.status, tests: group.tests }) + '\n');
+}
+for (const path of ['src/network-voting.mjs', 'src/network-app.mjs', 'src/network.html', 'src/network-theme.css',
+  'contracts/native/connection-errors.mjs', 'contracts/native/browser-providers.mjs', 'tests/network-voting.test.mjs',
+  'contracts/native/test/network-voting.test.mjs', 'contracts/managed/native-election/contract/index.js',
+  'contracts/native-election.compact', 'contracts/package-lock.json', 'dist/network-bundle.mjs', 'dist/native-bundle.mjs']) report.sourceHashes[path] = hash(readFileSync(path));
+writeFileSync(resolve(output, 'local-tests.json'), JSON.stringify(report, null, 2) + '\n');
+writeFileSync(resolve(output, 'run-final-checks.mjs.txt'), readFileSync(new URL(import.meta.url)));

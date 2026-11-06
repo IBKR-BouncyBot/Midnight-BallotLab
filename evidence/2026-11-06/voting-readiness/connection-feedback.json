@@ -1,0 +1,180 @@
+{
+  "executedAt": "2026-11-06T10:29:47.670Z",
+  "scope": "connect-feedback-without-wallet",
+  "walletInjected": false,
+  "externalRequests": 0,
+  "cases": [
+    {
+      "width": 1440,
+      "kind": "empty",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487.03125,
+        "bottom": 567.8125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "short",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487.03125,
+        "bottom": 567.8125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "long-weak",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487.421875,
+        "bottom": 568.203125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487.421875,
+        "bottom": 568.203125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "enter-valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 819.421875,
+        "bottom": 900.203125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 1440,
+      "kind": "missing-service",
+      "passed": true,
+      "message": "Complete the highlighted connection setting before connecting. No wallet request has been sent.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 505.03125,
+        "bottom": 562.421875,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "empty",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487.125,
+        "bottom": 638.078125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "short",
+      "passed": true,
+      "message": "Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 487.125,
+        "bottom": 638.078125,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "long-weak",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 486.6875,
+        "bottom": 637.640625,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 486.6875,
+        "bottom": 637.640625,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "enter-valid-shape",
+      "passed": true,
+      "message": "No compatible wallet is available in this browser. Open this page in the browser where Lace is installed, enable Midnight, then reload and refresh the wallet list. No connection was requested.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 748.6875,
+        "bottom": 899.640625,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    },
+    {
+      "width": 390,
+      "kind": "missing-service",
+      "passed": true,
+      "message": "Complete the highlighted connection setting before connecting. No wallet request has been sent.",
+      "buttonEnabledAfter": true,
+      "feedbackGeometry": {
+        "top": 615.875,
+        "bottom": 720.046875,
+        "viewport": 900,
+        "toleranceCssPx": 1,
+        "visibleFully": true
+      }
+    }
+  ],
+  "bundleSha256": "0e3686398926d54048aee486d245aaad09848d9890861db0d8dbb25bb655934d",
+  "chromium": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "passed": true
+}

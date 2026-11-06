@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {createHash,randomBytes} from 'node:crypto';
+import {readFile,writeFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {dirname,extname,join,resolve,sep} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),dist=join(root,'dist');
+process.env.PLAYWRIGHT_BROWSERS_PATH=join(root,'.browser-cache');
+const req=createRequire(join(root,'contracts/package.json'));
+const report={executedAt:new Date().toISOString(),scope:'connect-feedback-without-wallet',walletInjected:false,externalRequests:0,cases:[]};
+let server,browser,stage='start';
+try{
+  report.bundleSha256=createHash('sha256').update(await readFile(join(dist,'network-bundle.mjs'))).digest('hex');
+  const types={'.html':'text/html','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm','.svg':'image/svg+xml','.woff2':'font/woff2'};
+  server=createServer(async(request,response)=>{try{const pathname=decodeURIComponent(new URL(request.url,'http://127.0.0.1').pathname);if(pathname==='/favicon.ico')return response.writeHead(204).end();const file=resolve(dist,`.${pathname}`);if(!file.startsWith(`${dist}${sep}`))return response.writeHead(403).end();response.writeHead(200,{'Content-Type':types[extname(file)]??'application/octet-stream','Cache-Control':'no-store'}).end(await readFile(file));}catch{response.writeHead(404).end();}});
+  await new Promise(done=>server.listen(0,'127.0.0.1',done));const origin=`http://127.0.0.1:${server.address().port}`;
+  browser=await req('playwright').chromium.launch({headless:true});report.chromium=browser.version();report.playwright=req('playwright/package.json').version;
+  for(const width of [1440,390]){
+    const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();page.setDefaultTimeout(15_000);
+    let errors=0;page.on('pageerror',()=>errors++);
+    await context.route('**/*',route=>{if(new URL(route.request().url()).origin!==origin){report.externalRequests++;return route.abort();}return route.continue();});
+    for(const kind of ['empty','short','long-weak','valid-shape','enter-valid-shape','missing-service']){
+      stage=`${width}:${kind}`;await page.goto(`${origin}/network.html`,{waitUntil:'networkidle'});
+      await page.waitForFunction(()=>document.getElementById('network-availability').dataset.state==='ready');
+      assert.equal(await page.evaluate(()=>typeof globalThis.midnight),'undefined');
+      const button=page.locator('#network-connect'),input=page.locator('#network-password'),status=page.locator('#network-connection-status');
+      assert.equal(await button.isDisabled(),false);
+      if(kind==='short')await input.fill('x'.repeat(15));
+      if(kind==='long-weak')await input.fill('x'.repeat(20));
+      if(['valid-shape','enter-valid-shape','missing-service'].includes(kind))await input.fill(`Q!7m-${randomBytes(18).toString('base64url')}`);
+      if(kind==='missing-service')await page.locator('#network-id').selectOption('preprod');
+      if(kind==='enter-valid-shape')await input.press('Enter');else await button.click();
+      await page.waitForFunction(()=>!document.getElementById('network-connection-status').textContent.startsWith('Not connected.'));
+      const message=await status.textContent();
+      if(['empty','short'].includes(kind))assert.match(message,/Enter a password of at least 16 characters/);
+      else if(kind==='missing-service')assert.match(message,/Complete the highlighted connection setting/);
+      else assert.match(message,/No compatible wallet is available/);
+      assert.equal(await status.isVisible(),true);assert.equal(await button.isDisabled(),false);
+      // Native nearest scrolling can stop within a fractional CSS pixel of the edge.
+      const geometry=await status.evaluate(el=>{const b=el.getBoundingClientRect();return{top:b.top,bottom:b.bottom,viewport:innerHeight,toleranceCssPx:1,visibleFully:b.top>=-1&&b.bottom<=innerHeight+1};});
+      assert.equal(geometry.visibleFully,true,'Connection feedback must be visible after pointer or keyboard submission');
+      await input.fill('');
+      report.cases.push({width,kind,passed:true,message,buttonEnabledAfter:true,feedbackGeometry:geometry});
+    }
+    assert.equal(errors,0);await context.close();
+  }
+  assert.equal(report.externalRequests,0);report.passed=true;console.log(JSON.stringify({passed:true,cases:report.cases.length,feedbackOutsideViewport:report.cases.filter(c=>!c.feedbackGeometry.visibleFully).map(c=>({width:c.width,kind:c.kind}))}));
+}catch{report.passed=false;report.failedStage=stage;process.exitCode=1;console.log(JSON.stringify({passed:false,stage}));}
+finally{await browser?.close();if(server)await new Promise(done=>server.close(done));await writeFile(join(root,'artifacts/connect-feedback-diagnostic.json'),JSON.stringify(report,null,2)+'\n');}

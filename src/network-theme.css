@@ -104,3 +104,9 @@
 .network-page .election-schedule dd { margin: 4px 0 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
 .network-page .election-timing .field-note { margin: 12px 0; font-size: 12px; line-height: 1.6; }
 .network-page .election-timing .text-button { font-size: 13px; line-height: 1.5; }
+.network-page .election-backup,
+.network-page .voting-readiness { margin-top: 24px; padding: 20px; border: 1px solid var(--line-light); border-left: 3px solid var(--blue); background: var(--surface); }
+.network-page .election-backup h3,
+.network-page .voting-readiness h3 { margin: 0 0 12px; font-size: 20px; }
+.network-page .voting-readiness { margin: 0 0 28px; }
+.network-page .voting-readiness p { line-height: 1.6; }

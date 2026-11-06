@@ -1,0 +1,299 @@
+/** Real empty Lace Preview connection, voting-readiness guidance and session controls.
+ * No funding, proof, transaction, private download, screenshot or user profile. */
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { createHash, randomBytes } from 'node:crypto';
+import { readFile, writeFile, mkdir, mkdtemp, access } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve, sep, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { nativeConnectionFailure, nativeConnectionErrorMessage } from '../../contracts/native/connection-errors.mjs';
+import { validateNativeStoragePassword as validatePassword } from '../../contracts/native/browser-providers.mjs';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const outputRoot = join(root, 'evidence/2026-11-06/voting-readiness/real-lace');
+const args = process.argv.slice(2);
+const attempt = args[1] === '--attempt' && /^[a-z][a-z0-9-]{0,30}$/.test(args[2] || '') ? args[2] : null;
+const output = attempt ? join(outputRoot, attempt) : outputRoot;
+const official = join(root, 'artifacts/lace-wallet');
+const requireContracts = createRequire(join(root, 'contracts/package.json'));
+const { chromium } = requireContracts('playwright');
+
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const extensionId = 'gafhhkghbfjjkeiendhlofajokpaflmk';
+const report = {
+  schema: 'midnight-ballot-lab/real-lace-preview-voting-readiness/v1',
+  startedAt: new Date().toISOString(), status: 'preparing', networkId: 'preview',
+  origin: 'fresh-local-http-test-server', walletCreated: false, walletConnected: false,
+  publicNetwork: true, publicHostedOriginTested: false, walletFunded: false,
+  proofGenerated: false, transactionSigned: false, transactionSubmitted: false,
+  ledgerInclusionIndependentlyVerified: false, privateDataLogged: false,
+  privateFilesDownloaded: false, privateScreenshotsTaken: false,
+};
+let context, server, app, wallet, stage = 'prerequisites', walletPassword, appPassword, canSave = false;
+const delay = ms => new Promise(done => setTimeout(done, ms));
+const save = async () => { if (canSave) await writeFile(join(output, 'lace-connection.json'), JSON.stringify(report, null, 2) + '\n'); };
+const setStage = async value => { stage = value; report.stage = value; await save(); process.stdout.write(JSON.stringify({ stage }) + '\n'); };
+async function poll(check, timeout = 90_000) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) { if (await check()) return; await delay(250); }
+  throw new Error('Bounded stage expired');
+}
+function safeUri(value, purpose) {
+  const uri = new URL(value);
+  assert.ok(!uri.username && !uri.password && !uri.search && !uri.hash, 'Expected credential-free service URI');
+  if (purpose === 'prover') {
+    assert.ok(['localhost', '127.0.0.1', '[::1]'].includes(uri.hostname) && uri.port === '6300', 'Expected local prover');
+  } else {
+    assert.ok(['https:', 'wss:'].includes(uri.protocol), 'Expected secure Preview service');
+    assert.ok(['indexer.preview.midnight.network', 'rpc.preview.midnight.network'].includes(uri.hostname)
+      || (uri.hostname === 'blockfrost.lw.iog.io' && uri.pathname.startsWith('/midnight-preview')),
+    'Expected known Preview endpoint');
+  }
+  return uri.href;
+}
+try {
+  assert.ok(args[0] === '--connection-only-preview' && (args.length === 1 || (args.length === 3 && attempt)), 'Explicit connection-only Preview mode required');
+  let exists = false; try { await access(join(output, 'lace-connection.json')); exists = true; } catch { /* New evidence only. */ }
+  assert.ok(!exists, 'Existing connection evidence must not be overwritten');
+  await mkdir(output, { recursive: true }); canSave = true; await save();
+  await writeFile(join(output, 'connect-real-lace-readiness.mjs.txt'), await readFile(fileURLToPath(import.meta.url)));
+  const acquisition = JSON.parse(await readFile(join(official, 'acquisition.json'), 'utf8'));
+  assert.ok(acquisition.developerSignatureVerified === true && acquisition.webStorePublisherSignatureVerified === true, 'Official package verification required');
+  assert.ok(hash(await readFile(join(official, 'lace-official.zip'))) === acquisition.archiveSha256, 'Official archive integrity mismatch');
+  const shortRoot = await mkdtemp(join(tmpdir(), 'mbl-preview-'));
+  const extension = join(shortRoot, 'e');
+  await promisify(execFile)('python', ['-c',
+    'import sys,zipfile,pathlib; z=zipfile.ZipFile(sys.argv[1]); r=pathlib.Path(sys.argv[2]).resolve(); assert all((r/n).resolve().is_relative_to(r) for n in z.namelist()); z.extractall(r)',
+    join(official, 'lace-official.zip'), extension], { windowsHide: true });
+  const manifest = JSON.parse(await readFile(join(extension, 'manifest.json'), 'utf8'));
+  const computedId = createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32)
+    .replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
+  assert.ok(manifest.version === '2.5.0' && computedId === extensionId, 'Verified extension identity mismatch');
+  report.walletVersion = manifest.version; report.extensionId = extensionId;
+  report.extensionArchiveSha256 = acquisition.archiveSha256;
+  report.harnessSha256 = hash(await readFile(fileURLToPath(import.meta.url)));
+  const build = JSON.parse(await readFile(join(root, 'dist/network-build.json'), 'utf8'));
+  assert.ok(build.enabled === true && build.bundle === 'network-bundle.mjs', 'Real browser build required');
+  report.networkBundleSha256 = hash(await readFile(join(root, 'dist', build.bundle)));
+  report.networkAppSourceSha256 = hash(await readFile(join(root, 'src/network-app.mjs')));
+  report.votingModelSourceSha256 = hash(await readFile(join(root, 'src/network-voting.mjs')));
+  report.playwright = requireContracts('playwright/package.json').version;
+  await setStage('start-genuine-extension');
+  context = await chromium.launchPersistentContext(join(shortRoot, 'p'), {
+    executablePath: join(root, '.browser-cache/chromium-1248/chrome-win64/chrome.exe'),
+    channel: 'chromium', headless: true, viewport: { width: 1280, height: 960 }, acceptDownloads: false,
+    args: ['--disable-extensions-except=' + extension, '--load-extension=' + extension,
+      '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1, EXCLUDE indexer.preview.midnight.network, EXCLUDE rpc.preview.midnight.network, EXCLUDE blockfrost.lw.iog.io'],
+  });
+  context.setDefaultTimeout(30_000); report.chromium = context.browser().version();
+  wallet = await context.newPage(); await wallet.goto('chrome-extension://' + extensionId + '/expo/index.html');
+  await wallet.getByTestId('onboarding-start-create-wallet-button').waitFor({ timeout: 60_000 });
+  await setStage('create-empty-disposable-wallet');
+  walletPassword = 'Temporary-' + randomBytes(24).toString('base64url') + '!9a';
+  do {
+    appPassword = 'App-' + randomBytes(24).toString('base64url') + '!9a';
+    try { validatePassword(appPassword); break; } catch { appPassword = undefined; }
+  } while (!appPassword);
+  await wallet.getByTestId('onboarding-start-create-wallet-button').click();
+  await wallet.getByTestId('new-password-input-value').fill(walletPassword);
+  await wallet.getByTestId('confirm-password-input-value').fill(walletPassword);
+  await wallet.getByTestId('next-btn').click();
+  await wallet.getByTestId('onboarding-create-wallet-toggle-cardano').click(); await delay(250);
+  await wallet.getByTestId('onboarding-create-wallet-toggle-midnight').click(); await delay(250);
+  await wallet.getByTestId('onboarding-create-wallet-finish-button').click();
+  await wallet.getByTestId('settings-tab-btn').waitFor({ timeout: 60_000 });
+  report.walletCreated = true;
+  await setStage('select-preview-and-local-prover');
+  await wallet.getByTestId('settings-tab-btn').click();
+  await wallet.getByTestId('option-list-item-network').click();
+  await wallet.getByTestId('radio-button-testnet').click();
+  await wallet.getByTestId('radio-button-midnight-preview').click();
+  await wallet.getByTestId('network-selection-sheet-confirm-button').click();
+  await wallet.getByTestId('network-selection-sheet').waitFor({ state: 'hidden' });
+  await wallet.getByTestId('option-list-item-midnight').click();
+  await wallet.getByTestId('proof-server-local-host-radio').click();
+  await wallet.getByTestId('save-configuration-button').click();
+  await wallet.getByText('Confirm and save', { exact: true }).waitFor();
+  await wallet.getByTestId('save-configuration-button').click();
+  await wallet.getByTestId('midnight-settings-sheet-header').waitFor({ state: 'hidden' });
+  const dist = join(root, 'dist');
+  server = createServer(async (request, response) => {
+    try {
+      if (!['GET', 'HEAD'].includes(request.method)) return response.writeHead(405).end();
+      const uri = new URL(request.url, 'http://127.0.0.1');
+      if (uri.pathname === '/favicon.ico') return response.writeHead(204).end();
+      const target = resolve(dist, '.' + decodeURIComponent(uri.pathname === '/' ? '/index.html' : uri.pathname));
+      if (!target.startsWith(dist + sep)) return response.writeHead(403).end();
+      const data = await readFile(target);
+      const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
+        '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+      response.writeHead(200, { 'Content-Type': types[extname(target)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+      response.end(request.method === 'HEAD' ? undefined : data);
+    } catch { response.writeHead(404).end(); }
+  });
+  await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
+  const origin = 'http://127.0.0.1:' + server.address().port;
+  app = await context.newPage(); await setStage('connect-actual-application');
+  await app.goto(origin + '/network.html');
+  await app.waitForFunction(() => document.getElementById('network-availability').dataset.state === 'ready');
+  assert.ok(await app.locator('#network-id').inputValue() === 'preview', 'Expected app Preview default');
+  await app.locator('#network-password').fill(appPassword);
+  await app.locator('#network-connect').click();
+  let authorize;
+  await poll(async () => {
+    const candidates = context.pages().filter(page => page.url().includes('#/midnight-authorize-dapp'));
+    assert.ok(candidates.length <= 1, 'Unexpected number of connection popups');
+    if (candidates[0] && await candidates[0].getByTestId('dapp-connector-primary-button').isVisible().catch(() => false)) { authorize = candidates[0]; return true; }
+    const value = await app.locator('#network-status').textContent();
+    if (value.includes('could not finish')) throw new Error('Application connection failed');
+    return false;
+  });
+  assert.ok((await authorize.getByTestId('dapp-info-url').textContent()).trim() === origin, 'Unexpected authorization origin');
+  await authorize.getByTestId('dropdown-button').click();
+  await authorize.getByTestId('dropdown-menu-item-0').click();
+  await authorize.getByTestId('dapp-connector-primary-button').click();
+  await app.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('Connected to preview.'), null, { timeout: 60_000 });
+  const metadata = await app.evaluate(async () => {
+    const wallet = Object.values(window.midnight || {}).find(item => item.rdns === 'io.lace.wallet');
+    if (!wallet) throw new Error('Wallet unavailable');
+    const api = await wallet.connect('preview');
+    const [config, connection] = await Promise.all([api.getConfiguration(), api.getConnectionStatus()]);
+    return { apiVersion: wallet.apiVersion, networkId: connection.networkId, status: connection.status,
+      configuration: { networkId: config.networkId, indexerUri: config.indexerUri, indexerWsUri: config.indexerWsUri,
+        substrateNodeUri: config.substrateNodeUri, proverServerUri: config.proverServerUri } };
+  });
+  assert.ok(metadata.apiVersion === '4.0.1' && metadata.status === 'connected' && metadata.networkId === 'preview'
+    && metadata.configuration.networkId === 'preview', 'Unexpected genuine wallet connection metadata');
+  report.apiVersion = metadata.apiVersion;
+  report.walletServices = Object.fromEntries(Object.entries(metadata.configuration).filter(([key]) => key !== 'networkId')
+    .map(([key, value]) => [key, safeUri(value, key === 'proverServerUri' ? 'prover' : 'network')]));
+  report.walletConnected = true; report.publicPreflightPassed = true;
+  await setStage('verify-session-controls-and-disconnect');
+  const controls = await app.evaluate(() => {
+    const get = id => document.getElementById(id);
+    return { sessionSelectorsLocked: ['network-id', 'network-wallet', 'network-refresh-wallets', 'network-connect'].every(id => get(id).disabled),
+      sessionFieldsLocked: ['network-password', 'network-indexer', 'network-indexer-ws'].every(id => get(id).readOnly),
+      createSelected: get('network-mode-create').getAttribute('aria-pressed') === 'true'
+        && get('network-mode-join').getAttribute('aria-pressed') === 'false',
+      onlyCreateActionEnabled: !get('network-deploy').disabled && get('network-join').disabled && get('network-join').hidden,
+      createPanelVisible: !get('network-create-panel').hidden && get('network-join-panel').hidden,
+      setupModeControlsEnabled: !get('network-mode-create').disabled && !get('network-mode-join').disabled,
+      disconnectedActionEnabled: !get('network-disconnect').disabled,
+      ballotDisabledWithoutContract: get('network-cast').disabled };
+  });
+  assert.ok(Object.values(controls).every(value => value === true), 'Connected control boundaries failed');
+  report.connectedControls = controls;
+  report.connectedVotingReadiness = await app.evaluate(() => ({
+    requiresElection: document.getElementById('network-voting-readiness').textContent.startsWith('Create or join an election first.'),
+    nextStepIsElection: document.getElementById('network-voting-next').getAttribute('href') === '#contract-heading',
+    choicesDisabled: document.getElementById('network-selection').disabled,
+    castDisabled: document.getElementById('network-cast').disabled,
+    backupVisible: document.getElementById('network-download-election').getClientRects().length > 0,
+    backupDisabled: document.getElementById('network-download-election').disabled
+  }));
+  assert.ok(Object.values(report.connectedVotingReadiness).every(value => value === true), 'Connected readiness must require a real election and keep backup visible but disabled');
+  await setStage('verify-create-join-mode-switching');
+  await app.locator('#network-title').fill('Connection-only mode check');
+  await app.locator('#network-choices').fill('First choice\nSecond choice');
+  await app.locator('#network-opens').fill('2030-01-01T12:00');
+  await app.locator('#network-closes').fill('2030-01-01T13:00');
+  await app.locator('#network-mode-join').click();
+  const joinedMode = await app.evaluate(() => {
+    const get = id => document.getElementById(id);
+    return { joinSelected: get('network-mode-join').getAttribute('aria-pressed') === 'true'
+        && get('network-mode-create').getAttribute('aria-pressed') === 'false',
+      onlyJoinActionEnabled: !get('network-join').disabled && !get('network-join').hidden && get('network-deploy').disabled,
+      onlyJoinPanelVisible: !get('network-join-panel').hidden && get('network-create-panel').hidden,
+      publicIdentityEditable: !get('network-address').readOnly && !get('network-digest').readOnly };
+  });
+  assert.ok(Object.values(joinedMode).every(value => value === true), 'Join-mode control boundaries failed');
+  report.joinMode = joinedMode;
+  // These are inert public field fixtures. Neither transaction button is clicked.
+  await app.locator('#network-address').fill('a1'.repeat(32));
+  await app.locator('#network-digest').fill('b2'.repeat(32));
+  await app.locator('#network-mode-create').click();
+  const returnedMode = await app.evaluate(() => {
+    const get = id => document.getElementById(id);
+    return { createModeRestored: !get('network-create-panel').hidden && get('network-join-panel').hidden
+        && !get('network-deploy').disabled && get('network-join').disabled,
+      creationFieldsPreserved: get('network-title').value === 'Connection-only mode check'
+        && get('network-choices').value === 'First choice\nSecond choice'
+        && get('network-opens').value === '2030-01-01T12:00' && get('network-closes').value === '2030-01-01T13:00',
+      joinFieldsPreserved: get('network-address').value === 'a1'.repeat(32) && get('network-digest').value === 'b2'.repeat(32),
+      noElectionAttached: get('network-public-state').textContent === 'No contract connected' };
+  });
+  assert.ok(Object.values(returnedMode).every(value => value === true), 'Mode-switch field preservation failed');
+  report.returnedCreateMode = returnedMode;
+  report.typedIdentityDoesNotUnlockBackup = await app.locator('#network-download-election').isVisible()
+    && await app.locator('#network-download-election').isDisabled();
+  assert.ok(report.typedIdentityDoesNotUnlockBackup, 'Typed public fields must not unlock a configured-election export');
+  await setStage('verify-timer-placeholder-and-disconnect');
+  report.emptyElectionTiming = await app.evaluate(() => document.getElementById('network-election-phase').textContent === 'No election connected'
+    && document.getElementById('network-election-countdown').textContent === '—'
+    && document.getElementById('network-election-updated').textContent === 'Election record not loaded yet.');
+  assert.ok(report.emptyElectionTiming, 'A wallet connection must not invent an election schedule');
+  await app.locator('#network-disconnect').click();
+  await app.waitForFunction(() => document.getElementById('network-status').textContent.startsWith('Disconnected and cleared'));
+  const disconnected = await app.evaluate(() => {
+    const get = id => document.getElementById(id);
+    return { selectorsUnlocked: ['network-id', 'network-wallet', 'network-refresh-wallets', 'network-connect'].every(id => !get(id).disabled),
+      passwordCleared: get('network-password').value === '' && !get('network-password').readOnly,
+      contractActionsDisabled: get('network-deploy').disabled && get('network-join').disabled && get('network-cast').disabled,
+      disconnectDisabled: get('network-disconnect').disabled,
+      previewEndpointsRemainLocked: get('network-indexer').readOnly && get('network-indexer-ws').readOnly,
+      keyFieldsClearedAndMasked: ['admin', 'voter'].every(role => get('network-' + role).value === '' && get('network-' + role).type === 'password'),
+      keyVisibilityControlsReset: ['admin', 'voter'].every(role => get('network-show-' + role).disabled
+        && get('network-show-' + role).getAttribute('aria-pressed') === 'false'),
+      keyDownloadsDisabled: ['admin', 'voter'].every(role => get('network-download-' + role).disabled),
+      fileInputsCleared: ['admin', 'voter'].every(role => get('network-import-' + role).value === ''
+        && get('network-import-' + role).files.length === 0),
+      privateFieldsCleared: ['network-password', 'network-admin', 'network-voter', 'network-setup-secret', 'network-setup-slope', 'network-share']
+        .every(id => get(id).value === '') };
+  });
+  assert.ok(Object.values(disconnected).every(value => value === true), 'Disconnected control boundaries failed');
+  report.disconnectedControls = disconnected; report.localSessionDisconnected = true;
+  report.disconnectedVotingReadiness = await app.evaluate(() => ({
+    requiresWallet: document.getElementById('network-voting-readiness').textContent.startsWith('Connect your wallet first.'),
+    nextStepIsConnection: document.getElementById('network-voting-next').getAttribute('href') === '#connect-heading',
+    choicesDisabled: document.getElementById('network-selection').disabled,
+    castDisabled: document.getElementById('network-cast').disabled,
+    backupVisible: document.getElementById('network-download-election').getClientRects().length > 0,
+    backupDisabled: document.getElementById('network-download-election').disabled
+  }));
+  assert.ok(Object.values(report.disconnectedVotingReadiness).every(value => value === true), 'Disconnection must restore wallet-required readiness and safe export gates');
+  assert.ok(hash(await readFile(join(root, 'dist/network-bundle.mjs'))) === report.networkBundleSha256, 'Bundle changed during connection check');
+  report.status = 'passed'; report.completedAt = new Date().toISOString();
+  await save(); process.stdout.write(JSON.stringify({ status: 'passed', networkId: 'preview', walletConnected: true, transactionSubmitted: false }) + '\n');
+} catch (error) {
+  report.status = 'failed'; report.failedStage = stage; report.completedAt = new Date().toISOString();
+  report.errorCategory = error?.name === 'TimeoutError' ? 'ui-timeout' : error?.code === 'EPERM' ? 'sandbox-launch-denied' : 'connection-check-failed';
+  if (app && !app.isClosed()) {
+    const safeMessages = ['connection-settings', 'connection-permission', 'connection-account', 'connection-network', 'connection-local-prover',
+      'connection-local-prover-unreported', 'connection-proving-provider', 'connection-storage', 'connection-providers'].map(name => ({
+        stage: name, message: nativeConnectionErrorMessage(nativeConnectionFailure(name)) }));
+    for (const code of ['Rejected', 'PermissionRejected', 'Disconnected']) safeMessages.push({ stage: code,
+      message: nativeConnectionErrorMessage(nativeConnectionFailure('connection-permission', { type: 'DAppConnectorAPIError', code })) });
+    const feedback = await app.locator('#network-connection-status').textContent().catch(() => '');
+    const known = safeMessages.find(item => item.message === feedback);
+    if (known) report.failureDiagnostic = known;
+    report.connectionControls = await app.evaluate(() => ({
+      connectEnabled: !document.getElementById('network-connect').disabled,
+      disconnectEnabled: !document.getElementById('network-disconnect').disabled,
+      applicationReady: document.getElementById('network-availability').dataset.state === 'ready'
+    })).catch(() => null);
+  }
+  if (wallet && !wallet.isClosed()) {
+    report.visibleNetworkControlIds = await wallet.locator('[data-testid]').evaluateAll(elements => elements
+      .filter(element => element.getClientRects().length > 0).map(element => element.getAttribute('data-testid'))
+      .filter(id => /^(?:radio-button-(?:testnet|midnight-[a-z]+)|network-selection-[a-z-]+|settings-tab-btn|option-list-item-network|midnight-settings-sheet-header)$/.test(id))).catch(() => []);
+  }
+  await save(); process.stdout.write(JSON.stringify({ status: 'failed', stage, category: report.errorCategory }) + '\n'); process.exitCode = 1;
+} finally {
+  walletPassword = undefined; appPassword = undefined;
+  await context?.close().catch(() => {});
+  if (server) await new Promise(done => server.close(done));
+}

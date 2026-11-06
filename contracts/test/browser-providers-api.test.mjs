@@ -2,7 +2,7 @@
 // boundaries. They neither execute an election nor stand in for a real wallet.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { connectNativeBrowserProviders, nativeStoragePasswordMessage } from '../native/browser-providers.mjs';
+import { connectNativeBrowserProviders, nativeStoragePasswordMessage, nativeConnectionErrorMessage } from '../native/browser-providers.mjs';
 
 const settings = {
   networkId: 'preview', indexerUri: 'https://indexer.example/graphql',
@@ -51,4 +51,77 @@ test('official SDK provider bootstrap rejects incompatible connector APIs before
   await assert.rejects(connectNativeBrowserProviders({ wallet, configuration: settings,
     pageUrl, passwordProvider: () => 'NotUsed-AtAll-Q7#' }), /API 4/);
   assert.equal(connections, 0);
+});
+
+// These deliberately incomplete connector doubles can only fail. No test
+// returns a working provider/session or claims genuine wallet compatibility.
+const syntheticPassword = 'Synthetic-Q7#pL9!vR6';
+const syntheticMarker = 'SYNTHETIC-PRIVATE-CONNECTOR-PAYLOAD';
+const incompleteApi = overrides => ({
+  getConnectionStatus: async () => ({ status: 'connected', networkId: 'preview' }),
+  getConfiguration: async () => ({ networkId: 'preview', proverServerUri: 'http://localhost:6300' }),
+  getShieldedAddresses: async () => ({ shieldedCoinPublicKey: 'synthetic-public-coin', shieldedEncryptionPublicKey: 'synthetic-public-encryption' }),
+  getUnshieldedAddress: async () => ({ unshieldedAddress: 'synthetic-public-address' }),
+  getProvingProvider: async () => { throw new Error(syntheticMarker); },
+  ...overrides,
+});
+async function expectConnectionFailure(wallet, expectedStage, expectedText, onStage = () => {}) {
+  await assert.rejects(connectNativeBrowserProviders({ wallet, configuration: settings, pageUrl,
+    passwordProvider: () => syntheticPassword, onStage }), error => {
+    assert.equal(error.stage, expectedStage);
+    const message = nativeConnectionErrorMessage(error);
+    assert.ok(typeof message === 'string' && message.includes(expectedText));
+    assert.ok(!message.includes(syntheticMarker)); assert.equal(error.cause, undefined);
+    return true;
+  });
+}
+
+test('failed permission requests expose the failed stage and preserve rejection handling', async () => {
+  for (const code of [null, 'Rejected', 'PermissionRejected', 'Disconnected']) {
+    const observed = [];
+    const wallet = { apiVersion: '4.0.1', async connect() {
+      if (code) throw { type: 'DAppConnectorAPIError', code, reason: syntheticMarker, message: syntheticMarker };
+      throw new Error(syntheticMarker);
+    } };
+    await expectConnectionFailure(wallet, 'connection-permission', code === 'Rejected' ? 'No automatic retry'
+      : code === 'PermissionRejected' ? 'denied permission' : code === 'Disconnected' ? 'disconnected' : 'Wallet access',
+    stage => { observed.push(stage); });
+    assert.deepEqual(observed, ['connection-settings', 'connection-permission']);
+  }
+});
+
+test('failed or incomplete account reads never proceed to network/prover initialization', async () => {
+  for (const overrides of [
+    { getConfiguration: async () => { throw new Error(syntheticMarker); } },
+    { getShieldedAddresses: async () => ({}) },
+  ]) {
+    const observed = [];
+    await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => incompleteApi(overrides) },
+      'connection-account', 'required Midnight account information', stage => { observed.push(stage); });
+    assert.deepEqual(observed, ['connection-settings', 'connection-permission', 'connection-account']);
+  }
+});
+
+test('network and local-prover guards fail closed with distinct safe connection diagnostics', async () => {
+  const cases = [
+    [{ networkId: 'preprod', proverServerUri: 'http://localhost:6300' }, 'connection-network', 'matching test-network settings'],
+    [{ networkId: 'preview' }, 'connection-local-prover-unreported', 'through the wallet API'],
+    [{ networkId: 'preview', proverServerUri: 'https://remote.example.test/' }, 'connection-local-prover', 'supported local prover address'],
+    [{ networkId: 'preview', proverServerUri: 'http://localhost:6300?token=SYNTHETIC' }, 'connection-local-prover', 'supported local prover address'],
+  ];
+  for (const [configuration, stage, text] of cases) {
+    let provingCalls = 0;
+    const api = incompleteApi({ getConfiguration: async () => configuration,
+      getProvingProvider: async () => { provingCalls++; throw new Error(syntheticMarker); } });
+    await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => api }, stage, text);
+    assert.equal(provingCalls, 0);
+  }
+});
+
+test('installed proof-provider initialization failures are identified before any session exists', async () => {
+  const observed = [];
+  await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => incompleteApi() },
+    'connection-proving-provider', 'could not initialize its proving provider', stage => { observed.push(stage); });
+  assert.deepEqual(observed, ['connection-settings', 'connection-permission', 'connection-account', 'connection-network',
+    'connection-local-prover', 'connection-providers', 'connection-proving-provider']);
 });

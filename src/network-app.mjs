@@ -1,4 +1,4 @@
-import { connectNativeBrowserProviders, nativeStoragePasswordMessage, validateNativeStoragePassword } from '../contracts/native/browser-providers.mjs';
+import { connectNativeBrowserProviders, nativeConnectionErrorMessage, nativeStoragePasswordMessage, validateNativeStoragePassword } from '../contracts/native/browser-providers.mjs';
 import { findNativeWallets, nativeNetworkErrorMessage } from '../contracts/native/browser-config.mjs';
 import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices, formatPreviewServiceError } from '../contracts/native/public-testnet.mjs';
 import { createNativeSdkClient } from '../contracts/native/sdk-client.mjs';
@@ -11,6 +11,7 @@ import { normalizePrivateKey, privateKeyText, readPrivateKeyFile } from './priva
 import { encodeElectionJoinFile, readElectionJoinFile } from './election-join.mjs';
 import { encodeTrusteeKeyFile, readTrusteeKeyFile, assertTrusteeKeyMatches } from './trustee-key.mjs';
 import { describeNetworkElectionTiming, formatNetworkTimingDate } from './network-timing.mjs';
+import { describeNetworkVoting } from './network-voting.mjs';
 
 const hex = bytes => [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 const bytes = value => {
@@ -21,6 +22,7 @@ const scalar = value => {
   if (!/^[1-9][0-9]{0,76}$/.test(value)) throw new TypeError('Expected canonical decimal scalar');
   return requireScalar(BigInt(value));
 };
+const privateKeyBytes = value => bytes(normalizePrivateKey(value));
 const stages = Object.freeze({
   'wallet-connected': 'Wallet connected. No transaction submitted.',
   'proving-provider-started': 'Preparing the transaction and any required proofs…',
@@ -28,6 +30,16 @@ const stages = Object.freeze({
   'wallet-approval-requested': 'Check your wallet to approve the transaction and its fee.',
   'wallet-balanced': 'Your wallet signed the transaction.',
   'submission-returned': 'Transaction submitted. Waiting for confirmation from your indexer…',
+});
+const connectionStages = Object.freeze({
+  'connection-settings': 'Checking this app’s connection settings…',
+  'connection-permission': 'Waiting for Lace permission. Open Lace and approve this site’s connection request.',
+  'connection-account': 'Reading the Midnight account selected in Lace…',
+  'connection-network': 'Checking that Lace and this app use the same test network…',
+  'connection-local-prover': 'Checking the local proof-server setting reported by Lace…',
+  'connection-proving-provider': 'Asking Lace to initialize its proving connection…',
+  'connection-storage': 'Preparing encrypted storage for this app…',
+  'connection-providers': 'Preparing the network tools for this connection…',
 });
 
 function saveJsonText(filename, text) {
@@ -160,7 +172,10 @@ export async function initNetworkApplication() {
   };
   const status = message => {
     $('network-status').textContent = message; $('network-status').hidden = false;
-    if (connectionFeedback) $('network-connection-status').textContent = message;
+    if (connectionFeedback) {
+      $('network-connection-status').textContent = message;
+      $('network-connection-status').scrollIntoView({ block: 'nearest' });
+    }
   };
   const hasConfiguredElection = () => Boolean(session && client?.contractAddress && client.configurationDigest
     && state?.keysConfigured === true && hex(state.configurationDigest) === hex(client.configurationDigest));
@@ -170,17 +185,44 @@ export async function initNetworkApplication() {
     return { networkId: session.networkId, contractAddress: client.contractAddress,
       configurationDigest: hex(client.configurationDigest) };
   };
+  const refreshVotingControls = () => {
+    const voterKeyValid = hasValidKey('voter');
+    let voterRegistered = null, voterSpent = null;
+    if (!busy && voterKeyValid && hasConfiguredElection()) {
+      try {
+        // These identities stay private to the current UI. Only booleans reach
+        // the readiness display; no key, identity or nullifier is logged/exported.
+        const secret = privateKeyBytes($('network-voter').value);
+        const member = Native.pureCircuits.memberIdentity(state.electionId, secret);
+        const nullifier = Native.pureCircuits.voterNullifier(state.electionId, secret);
+        voterRegistered = state.enrolled.member(member);
+        voterSpent = state.spent.member(nullifier);
+      } catch { voterRegistered = null; voterSpent = null; }
+    }
+    const readiness = describeNetworkVoting({
+      walletConnected: Boolean(session), contractConnected: Boolean(client?.contractAddress),
+      configurationVerified: hasConfiguredElection(), state, busy,
+      pendingReceipt: Boolean(client?.pendingBallotReceipt), voterKeyValid, voterRegistered, voterSpent,
+      selectedChoice: selectedValue('network-choice'), nowMilliseconds: Date.now(),
+    });
+    $('network-selection').disabled = !readiness.canChoose;
+    $('network-cast').disabled = !readiness.canCast;
+    setTimingText('network-voting-readiness', readiness.message);
+    $('network-voting-next').hidden = !readiness.actionHref;
+    if (readiness.actionHref) {
+      $('network-voting-next').setAttribute('href', readiness.actionHref);
+      setTimingText('network-voting-next', readiness.actionLabel);
+    }
+  };
   const refreshControls = () => {
     controls.forEach(control => { control.disabled = busy; });
     const requireClient = ['network-join', 'network-deploy'];
-    const requireContract = ['network-read', 'network-configure', 'network-export'];
+    const requireContract = ['network-read', 'network-refresh-voting', 'network-configure', 'network-export'];
     const requireConfigured = ['network-enroll', 'network-open', 'network-cast', 'network-close', 'network-submit-share', 'network-finalize', 'network-check-receipt', 'network-check-receipt-id'];
     for (const id of requireClient) $(id).disabled = busy || !client || Boolean(client.contractAddress);
     for (const id of requireContract) $(id).disabled = busy || !client?.contractAddress;
     for (const id of requireConfigured) $(id).disabled = busy || !client?.configurationDigest;
-    const canChooseBallot = !busy && Boolean(client?.configurationDigest) && state?.phase === 1n && !client.pendingBallotReceipt;
-    $('network-selection').disabled = !canChooseBallot;
-    $('network-cast').disabled = !canChooseBallot || !/^[0-4]$/.test(selectedValue('network-choice')) || Number(selectedValue('network-choice')) >= Number(state?.candidateCount);
+    refreshVotingControls();
     $('network-trustee').disabled = busy || !client?.configurationDigest;
     $('network-pair').disabled = busy || !client?.configurationDigest;
     $('network-submit-share').disabled = busy || !client?.configurationDigest || !/^[123]$/.test(selectedValue('network-trustee'));
@@ -196,7 +238,9 @@ export async function initNetworkApplication() {
     }
     $('network-election-download-note').textContent = hasConfiguredElection()
       ? 'Save this public file to join again later, or share it with voters and trustees. It contains the network, address and fingerprint, without private keys.'
-      : 'Create the election and register its trustee keys first. Registration gives the election its fingerprint. If it is already configured, join it or refresh the election record.';
+      : client?.contractAddress
+        ? 'Register the trustee keys to complete the election fingerprint, then download this file before leaving the setup session. If registration already finished, refresh the election record.'
+        : 'Connect a wallet, then create or join an election. The download becomes available once its trustee keys are registered.';
     $('network-save-receipt').disabled = busy || !latestReceipt;
     $('network-copy-receipt-id').disabled = busy || !latestReceipt;
     $('network-recover-receipt').disabled = busy || !client?.pendingBallotReceipt;
@@ -244,8 +288,8 @@ export async function initNetworkApplication() {
     busy = true; refreshControls(); status('Working… Keep this page open until the action finishes.');
     try { await operation(); }
     catch (error) { status(client?.pendingBallotReceipt
-      ? 'Your vote was sent, but its status is uncertain. Use “Check pending vote” and check your wallet before trying again or closing this page.'
-      : formatPreviewServiceError(error) ?? nativeStoragePasswordMessage(error) ?? nativeNetworkErrorMessage(error)); }
+      ? 'A vote attempt has an unresolved outcome. Use “Check pending vote” and check your wallet before trying again or closing this page. This message does not confirm that a transaction was submitted.'
+      : formatPreviewServiceError(error) ?? nativeStoragePasswordMessage(error) ?? nativeConnectionErrorMessage(error) ?? nativeNetworkErrorMessage(error)); }
     finally { busy = false; connectionFeedback = false; refreshControls(); }
   };
   const click = (id, operation) => $(id).addEventListener('click', () => void run(operation));
@@ -337,6 +381,7 @@ export async function initNetworkApplication() {
     $('network-connection-status').textContent = eventObject.target.id === 'network-password'
       ? 'Enter a password of at least 16 characters for this app before connecting. Use three character types and avoid sequences or repeated characters. This is separate from your Lace password.'
       : 'Complete the highlighted connection setting before connecting. No wallet request has been sent.';
+    $('network-connection-status').scrollIntoView({ block: 'nearest' });
   }, true);
   $('network-connect-form').addEventListener('submit', eventObject => {
     eventObject.preventDefault();
@@ -362,7 +407,10 @@ export async function initNetworkApplication() {
       const connected = await connectNativeBrowserProviders({ wallet: selected.wallet,
         configuration,
         passwordProvider: () => $('network-password').value,
-        onStage: stage => { if (stages[stage]) event(stages[stage]); },
+        onStage: stage => {
+          if (connectionStages[stage]) status(connectionStages[stage]);
+          else if (stages[stage]) event(stages[stage]);
+        },
       });
       try {
         const connectedClient = createNativeSdkClient(connected.providers, connected);
@@ -507,22 +555,22 @@ export async function initNetworkApplication() {
     const deploymentManifest = { schema: 'midnight-ballot-lab/election-manifest/v1', title: $('network-title').value.trim(), choices };
     const manifestDigest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(deploymentManifest))));
     const result = await client.deploy({ electionId: randomSecret32(), manifestDigest, candidateCount: choices.length,
-      administratorIdentity: Native.pureCircuits.administratorIdentity(bytes($('network-admin').value)),
+      administratorIdentity: Native.pureCircuits.administratorIdentity(privateKeyBytes($('network-admin').value)),
       opensAt: BigInt(Math.floor(opens / 1000)), closesAt: BigInt(Math.floor(closes / 1000)) });
     manifest = deploymentManifest;
     confirmed('Deployment', result); await refreshState();
     choices.forEach((choice, index) => { $(`network-choice-label-${index}`).textContent = choice; });
   });
   click('network-configure', async () => {
-    const result = await client.configureKeys({ administratorSecret: bytes($('network-admin').value),
+    const result = await client.configureKeys({ administratorSecret: privateKeyBytes($('network-admin').value),
       setupSecret: scalar($('network-setup-secret').value), setupSlope: scalar($('network-setup-slope').value) });
     $('network-setup-secret').value = ''; $('network-setup-slope').value = '';
     confirmed('Key configuration', result); await refreshState();
   });
   click('network-enroll', async () => {
     const ledger = await client.readPublicLedger();
-    const member = Native.pureCircuits.memberIdentity(ledger.electionId, bytes($('network-voter').value));
-    confirmed('Enrollment', await client.enroll(member, bytes($('network-admin').value))); await refreshState();
+    const member = Native.pureCircuits.memberIdentity(ledger.electionId, privateKeyBytes($('network-voter').value));
+    confirmed('Enrollment', await client.enroll(member, privateKeyBytes($('network-admin').value))); await refreshState();
   });
   click('network-open', async () => { confirmed('Voting opened', await client.openVoting()); await refreshState(); });
   click('network-cast', async () => {
@@ -531,7 +579,7 @@ export async function initNetworkApplication() {
     latestReceipt = null;
     clearReceiptDisplay();
     try {
-      latestReceipt = await client.castBallot({ voterSecret: bytes($('network-voter').value), selection: BigInt(selection) });
+      latestReceipt = await client.castBallot({ voterSecret: privateKeyBytes($('network-voter').value), selection: BigInt(selection) });
       confirmed('Ballot', latestReceipt); showReceipt(); await refreshState();
     } finally { clearSelection('network-choice'); }
   });
@@ -568,6 +616,10 @@ export async function initNetworkApplication() {
     confirmed('Tally finalized', await client.finalize(first, second, totals)); await refreshState();
   });
   click('network-read', async () => { await refreshState(); status('Updated the election record from your indexer. The blockchain has not been independently verified.'); });
+  click('network-refresh-voting', async () => {
+    await refreshState();
+    status('Voting status refreshed from the election record. Read Ready to vote? for the next step. No transaction was submitted.');
+  });
   click('network-export', async () => {
     const ledger = client.configurationDigest ? await client.refreshConfiguration() : await client.readPublicLedger();
     let boundManifest = null;
@@ -607,5 +659,5 @@ export async function initNetworkApplication() {
   renderElectionTiming();
   // Paint the last read public state only. No provider call or transaction is
   // triggered by this timer; the user refreshes the election record explicitly.
-  setInterval(renderElectionTiming, 1000);
+  setInterval(() => { renderElectionTiming(); refreshVotingControls(); }, 1000);
 }

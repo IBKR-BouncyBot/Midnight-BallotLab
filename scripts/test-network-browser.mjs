@@ -85,6 +85,16 @@ async function downloadPrivateKey(page, role, expectedKey, expectedFilename) {
   } finally { await download.delete(); }
 }
 
+async function assertUnconfiguredElectionBackup(page) {
+  assert.equal(await page.locator('#network-backup-heading').isVisible(), true);
+  assert.equal(await page.locator('#network-download-election').isVisible(), true,
+    'The public election backup must remain discoverable in either setup mode');
+  assert.equal(await page.locator('#network-election-download-note').isVisible(), true);
+  assert.match(await page.locator('#network-election-download-note').textContent(), /trustee keys are registered/);
+  assert.equal(await page.locator('#network-download-election').isDisabled(), true,
+    'A visible backup button cannot export an election without an actual configured client');
+}
+
 try {
   await mkdir(evidenceDirectory, { recursive: true });
   const manifest = JSON.parse(await readFile(join(dist, 'network-build.json'), 'utf8'));
@@ -241,6 +251,21 @@ try {
         '#network-download-election', '#network-download-trustee-1', '#network-download-trustee-2', '#network-download-trustee-3', '#network-import-trustee']) {
         assert.equal(await page.locator(selector).isDisabled(), true, 'Network actions need an actual connected wallet');
       }
+      stage = `${prefix}:unjoined-voting-readiness-and-backup`;
+      await assertUnconfiguredElectionBackup(page);
+      stage = `${prefix}:unjoined-voting-readiness-message`;
+      const readiness = page.locator('#network-voting-readiness');
+      assert.equal(await readiness.isVisible(), true);
+      assert.match(await readiness.textContent(), /Connect your wallet first.*create or join the election/);
+      assert.equal(await readiness.getAttribute('role'), 'status');
+      assert.equal(await page.locator('#network-refresh-voting').isDisabled(), true);
+      assert.equal(await page.locator('#network-voting-next').getAttribute('href'), '#connect-heading');
+      stage = `${prefix}:unjoined-voting-readiness-navigation`;
+      await page.locator('#network-voting-next').click();
+      assert.equal(new URL(page.url()).hash, '#connect-heading');
+      assert.equal(await page.locator('#connect-heading').evaluate(el => document.activeElement === el), true);
+      assert.equal(await page.locator('#network-id').inputValue(), 'preview');
+      assert.equal(await page.locator('#network-events').textContent(), '');
       stage = `${prefix}:receipt-id-guidance`;
       assert.equal(await page.locator('#network-receipt-panel').isVisible(), false, 'No receipt or next-step success may be shown before a confirmed or recovered vote');
       assert.equal(await page.locator('#network-next-steps').isVisible(), false);
@@ -266,6 +291,10 @@ try {
           content: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) }));
         assert.equal(width.viewport, viewport);
         assert.ok(width.content <= width.viewport + 1, 'Network UI must fit the mobile viewport');
+        if (prefix === '/' && viewport === 390) {
+          await page.locator('.election-backup').screenshot({ path: join(evidenceDirectory, 'election-backup-unconfigured-390.png') });
+          await page.locator('.voting-readiness').screenshot({ path: join(evidenceDirectory, 'voting-readiness-no-wallet-390.png') });
+        }
       }
       await page.setViewportSize({ width: 1365, height: 1000 });
 
@@ -300,6 +329,8 @@ try {
         previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
         helpLinksChecked: true, laceSetupGuideChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
         receiptIdLookupRequiresConfiguredElection: true, receiptSuccessHiddenBeforeVote: true,
+        visibleUnconfiguredElectionBackup: true, votingReadinessExplainsMissingWallet: true,
+        votingNextLinkNavigatesToConnection: true, votingRefreshRequiresContract: true,
         receiptIdNetworkLookupExecuted: false,
         pageErrors, consoleErrors, remoteRequests: 0 });
     } finally { await context.close(); }
@@ -324,6 +355,7 @@ try {
       assert.equal(await joinButton.getAttribute('aria-controls'), 'network-join-panel');
       assert.equal(await page.locator('#network-create-panel').isVisible(), true);
       assert.equal(await page.locator('#network-join-panel').isVisible(), false);
+      await assertUnconfiguredElectionBackup(page);
       assert.equal(await page.locator('#network-admin').isVisible(), true);
       assert.equal(await page.locator('#network-admin').inputValue(), '');
       assert.equal(await page.locator('#network-admin').evaluate(input => input.readOnly), true);
@@ -335,6 +367,7 @@ try {
       assert.equal(await joinButton.getAttribute('aria-pressed'), 'true');
       assert.equal(await page.locator('#network-create-panel').isVisible(), false);
       assert.equal(await page.locator('#network-join-panel').isVisible(), true);
+      await assertUnconfiguredElectionBackup(page);
       assert.equal(await page.locator('#network-admin').isVisible(), true);
       for (const id of ['network-address', 'network-digest']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), false);
       // Public, inert join-field fixtures; no contract operation is requested.
@@ -344,12 +377,14 @@ try {
       assert.equal(await create.getAttribute('aria-pressed'), 'true');
       assert.equal(await page.locator('#network-create-panel').isVisible(), true);
       assert.equal(await page.locator('#network-join-panel').isVisible(), false);
+      await assertUnconfiguredElectionBackup(page);
       assert.equal(await page.locator('#network-title').inputValue(), 'Chooser browser check');
       assert.equal(await page.locator('#network-choices').inputValue(), 'Test A\nTest B');
       await joinButton.click();
       assert.equal(await page.locator('#network-address').inputValue(), 'd'.repeat(64));
       assert.equal(await page.locator('#network-digest').inputValue(), 'e'.repeat(64));
       assert.equal(await page.locator('#network-download-election').isDisabled(), true, 'Typed fields must not enable authoritative election-details export');
+      await assertUnconfiguredElectionBackup(page);
       stage = 'election-setup-chooser:public-details-import';
       const detailsInput = page.locator('#network-import-election');
       const detailsStatus = page.locator('#network-election-file-status');
@@ -364,6 +399,7 @@ try {
       assert.equal(await page.locator('#network-id').inputValue(), 'preview');
       assert.equal(await joinButton.getAttribute('aria-pressed'), 'true');
       assert.match(await detailsStatus.textContent(), /^Election details loaded\./);
+      await assertUnconfiguredElectionBackup(page);
       assert.equal(await page.locator('#network-title').inputValue(), 'Chooser browser check');
       assert.equal(await page.locator('#network-choices').inputValue(), 'Test A\nTest B');
       const rejectedDetails = [
@@ -433,6 +469,7 @@ try {
         publicDetailsImportPrefillsOnly: true, publicImportCanonicalizesHex: true, publicDetailsRejectedFiles: rejectedDetails.length,
         wrongSelectedNetworkPreserved: true, rejectedImportsPreserveFieldsAndMode: true, noAutomaticJoin: true,
         manualOrImportedFieldsCannotEnableElectionExport: true, configuredElectionExportExecuted: false,
+        publicBackupVisibleInBothModes: true,
         trusteePrivateFileControlsRequireConfiguredElection: true,
         connectedModeLocksTested: false, externalRequests, pageErrors, consoleErrors });
     } finally { await context.close(); }

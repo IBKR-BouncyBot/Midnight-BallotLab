@@ -10,8 +10,10 @@ import { getNetworkId, setNetworkId } from '@midnight-ntwrk/midnight-js-network-
 import { CostModel, Transaction } from '@midnight-ntwrk/midnight-js-protocol/ledger';
 import { fromHex, toHex, validatePassword, PasswordValidationError } from '@midnight-ntwrk/midnight-js-utils';
 import { resolveNativeBrowserConfig, requireConnectedNetwork, requireLocalWalletProver } from './browser-config.mjs';
+import { nativeConnectionFailure } from './connection-errors.mjs';
 
 export { validatePassword as validateNativeStoragePassword };
+export { nativeConnectionErrorMessage } from './connection-errors.mjs';
 
 export function nativeStoragePasswordMessage(error) {
   // Use the installed SDK's error type, never its message or private payload.
@@ -23,32 +25,49 @@ export async function connectNativeBrowserProviders({
   wallet, configuration, passwordProvider, onStage = () => {},
   pageUrl = globalThis.location?.href,
 }) {
-  const config = resolveNativeBrowserConfig(configuration, pageUrl);
   if (typeof passwordProvider !== 'function' || typeof onStage !== 'function') throw new TypeError('Password and stage providers must be functions');
+  const stage = value => {
+    // Only finite stage names leave this module; never configurations, public
+    // account identifiers, private data, transactions or error payloads.
+    try { onStage(value); } catch { /* Observers cannot change the outcome. */ }
+  };
+  const connectionStep = async (name, operation) => {
+    stage(name);
+    try { return await operation(); }
+    catch (error) {
+      if (error instanceof PasswordValidationError) throw error;
+      throw nativeConnectionFailure(name, error);
+    }
+  };
+  const config = await connectionStep('connection-settings', () => resolveNativeBrowserConfig(configuration, pageUrl));
   if (!wallet || typeof wallet.connect !== 'function' || !/^4\.\d+\.\d+(?:[-+].*)?$/.test(wallet.apiVersion)) {
     throw new TypeError('Select a DApp Connector API 4 wallet');
   }
   // Fail before connecting or transacting if storage cannot encrypt its key.
   validatePassword(await passwordProvider());
-  const api = await wallet.connect(config.networkId);
-  const [status, services, shielded, unshielded] = await Promise.all([
-    api.getConnectionStatus(), api.getConfiguration(), api.getShieldedAddresses(), api.getUnshieldedAddress(),
-  ]);
-  requireConnectedNetwork(status, services, config.networkId);
-  const proverUri = requireLocalWalletProver(services);
-  if (!unshielded?.unshieldedAddress || !shielded?.shieldedCoinPublicKey || !shielded?.shieldedEncryptionPublicKey) {
-    throw new Error('The selected wallet did not supply its required public account identifiers');
+  const api = await connectionStep('connection-permission', () => wallet.connect(config.networkId));
+  const [status, services, shielded, unshielded] = await connectionStep('connection-account', async () => {
+    const values = await Promise.all([
+      api.getConnectionStatus(), api.getConfiguration(), api.getShieldedAddresses(), api.getUnshieldedAddress(),
+    ]);
+    if (!values[3]?.unshieldedAddress || !values[2]?.shieldedCoinPublicKey || !values[2]?.shieldedEncryptionPublicKey) {
+      throw new Error('Missing required public account identifiers');
+    }
+    return values;
+  });
+  await connectionStep('connection-network', () => requireConnectedNetwork(status, services, config.networkId));
+  stage('connection-local-prover');
+  let proverUri;
+  try { proverUri = requireLocalWalletProver(services); }
+  catch (error) {
+    const unreported = services?.proverServerUri === undefined || services?.proverServerUri === null || services?.proverServerUri === '';
+    throw nativeConnectionFailure(unreported ? 'connection-local-prover-unreported' : 'connection-local-prover', error);
   }
   const accountId = unshielded.unshieldedAddress;
   const coinKey = shielded.shieldedCoinPublicKey;
   const encryptionKey = shielded.shieldedEncryptionPublicKey;
   setNetworkId(config.networkId);
   let closed = false;
-  const stage = value => {
-    // The callback receives only this finite set of stage names. Never pass a
-    // transaction, a witness, an error object, or provider configuration to it.
-    try { onStage(value); } catch { /* UI observers cannot change a transaction outcome. */ }
-  };
   const assertSession = async () => {
     if (closed) throw new Error('This native wallet session is closed');
     if (getNetworkId() !== config.networkId) throw new Error('Midnight.js network changed');
@@ -70,8 +89,9 @@ export async function connectNativeBrowserProviders({
     }
     return globalThis.fetch(target.href, { ...init, redirect: 'error', credentials: 'same-origin' });
   };
-  const zkConfigProvider = new FetchZkConfigProvider(config.compiledAssetsUrl, artifactFetch);
-  const underlyingProof = await dappConnectorProofProvider(api, zkConfigProvider, CostModel.initialCostModel());
+  const zkConfigProvider = await connectionStep('connection-providers', () => new FetchZkConfigProvider(config.compiledAssetsUrl, artifactFetch));
+  const underlyingProof = await connectionStep('connection-proving-provider',
+    () => dappConnectorProofProvider(api, zkConfigProvider, CostModel.initialCostModel()));
   const walletProvider = {
     getCoinPublicKey: () => coinKey,
     getEncryptionPublicKey: () => encryptionKey,
@@ -84,14 +104,17 @@ export async function connectNativeBrowserProviders({
       return result;
     },
   };
-  const providers = {
-    privateStateProvider: levelPrivateStateProvider({
+  const privateStateProvider = await connectionStep('connection-storage', () => levelPrivateStateProvider({
       accountId: `${config.networkId}:${accountId}`,
       privateStateStoreName: 'midnight-ballot-private-state',
       signingKeyStoreName: 'midnight-ballot-signing-keys',
       privateStoragePasswordProvider: passwordProvider,
-    }),
-    publicDataProvider: indexerPublicDataProvider(config.indexerUri, config.indexerWsUri, globalThis.WebSocket),
+    }));
+  const publicDataProvider = await connectionStep('connection-providers',
+    () => indexerPublicDataProvider(config.indexerUri, config.indexerWsUri, globalThis.WebSocket));
+  const providers = {
+    privateStateProvider,
+    publicDataProvider,
     zkConfigProvider,
     proofProvider: {
       async proveTx(transaction, options) {

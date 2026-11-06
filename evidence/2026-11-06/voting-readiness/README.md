@@ -1,0 +1,19 @@
+# Voting readiness and public election backup — 2026-11-06
+
+Fresh checks passed on network bundle SHA-256 `0e3686398926d54048aee486d245aaad09848d9890861db0d8dbb25bb655934d`:
+
+- [Network browser suite](network-browser.json): **8/8 cases**. The actual SDK and two WASM assets loaded at root and project-prefix paths. The election backup card stays visible in Create and Join, but cannot export without a configured election. Manual/imported identity fields cannot unlock it. The no-wallet readiness message explains the missing connection, its next-step link focuses Connect, and Refresh voting status stays disabled. Existing key/file, failure and disabled-build checks also passed.
+- [Connection feedback](connection-feedback.json): **12/12 cases** at 1440px and 390px. Pointer and Enter submissions expose their feedback within the viewport and restore the button. These are no-wallet validation checks, not successful wallet authentication. No external requests occurred in either browser suite.
+- [Local tests](local-tests.json): **95/95 boundary, 52/52 generated-native, 10/10 installed-API tests**. The generated suite includes readiness checks using real contract lifecycle states, registered/unregistered keys and spent nullifiers; the helper does not mutate the ledger. Display readiness remains separate from actual contract validation. No proof or network submission occurred in these suites. The exact [runner](run-final-checks.mjs.txt), source hashes and output hashes are retained.
+- [Real Lace connection](real-lace/lace-connection.json): a separate fresh empty **Lace 2.5.0 / API 4.0.1** wallet connected through the genuine extension UI to Preview. The app correctly required an election after connection, kept voting disabled, preserved the visible disabled backup in Create/Join and after typed identity fields, and restored wallet-required guidance on disconnect. No funds, proof, signature or transaction were requested. The exact [runner](real-lace/connect-real-lace-readiness.mjs.txt) is retained in that folder.
+
+The browser runs did not create or join a deployed election, cast a ballot, or download a configured election file. Real contract eligibility and deadline behavior was exercised separately in the generated-native tests. Public-network transaction acceptance and the user's own browser profile were not tested. No wallet object, successful client, ledger or proof was injected into the browser.
+
+Reviewed mobile screenshots contain only public interface text: [election backup](election-backup-unconfigured-390.png) and [voting readiness](voting-readiness-no-wallet-390.png). No clipping or horizontal overflow was observed. Private fields were empty in captures; generated test keys and private download bodies were not retained. Earlier connection evidence remains unchanged in its own folder. An initial assertion still expected the preceding backup-help wording; that failed diagnostic remains in local artifacts, and the corrected final run is recorded here.
+
+Versions: Node **24.18.0**, Playwright **1.64.1**, Chromium **156.0.8078.4**, Compact compiler **0.31.1**, Compact runtime **0.16.0**, Midnight.js **4.1.1**. All app pages were served from fresh loopback origins; no hosted origin was requested.
+
+Exact browser harnesses:
+
+- [Full suite snapshot](test-network-browser.mjs.txt), SHA-256 `488194bd0038756a5e9a8860a530b0ef50fd3815d8e4d42361278d993d2639a8`. Run the matching `scripts/test-network-browser.mjs` from the built repository root with `PLAYWRIGHT_BROWSERS_PATH` set to its `.browser-cache`.
+- [Feedback snapshot](check-connect-feedback.mjs.txt), SHA-256 `ce976e7f79db665c1573fa00e2072f56e60cc02c416421fe8c89c4d9d2e6151f`. Copy to `artifacts/check-connect-feedback.mjs` and run `node artifacts/check-connect-feedback.mjs`. Viewport checks allow one CSS pixel for fractional native scrolling.
