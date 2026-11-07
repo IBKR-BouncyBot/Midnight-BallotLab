@@ -244,7 +244,9 @@ try {
           assert.equal(await page.locator('#network-id').inputValue(), 'preview');
           assert.equal(await page.locator('#network-deploy').isDisabled(), true);
           assert.equal(await page.locator('#network-events').textContent(), '');
-          assert.equal(loadedWasm.size, 4, 'An unconnected landing visit must not load the proof worker WASM');
+          stage = `landing:${prefix}:${destination.demo}:initial-wasm-assets`;
+          assert.deepEqual([...loadedWasm].sort(), initialNetworkWasm.map(asset => `${prefix}${asset}`).sort(),
+            'An unconnected landing visit must load only the pinned v9 and runtime WASMs');
           assert.ok([...requested].every(url => !url.endsWith('/native-prover-worker.mjs') && !url.includes('/native-contract/params/')),
             'Choosing testnet does not start proof computation or download proving parameters');
         }
