@@ -1,0 +1,46 @@
+{
+  "schema": "midnight-ballot-lab/lace-gui-service-settings-review/v1",
+  "reviewedAt": "2026-11-07T09:49:07.032636Z",
+  "scope": "read-only-signed-package-source-review",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionVersion": "2.5.1",
+  "archiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "source": {
+    "path": "expo/_expo/static/js/web/sheetPages-51643c46b267dc3b47c4339a5850cd04.js",
+    "bytes": 25094,
+    "sha256": "07ef1d828bdb37c9096f232758807c433ed7aa3cacf3a4d0f13f689c90ab9530",
+    "modules": [
+      5684,
+      5685
+    ]
+  },
+  "settingsComponent": "MidnightSettingsSheet",
+  "serviceControls": [
+    {
+      "testId": "midnight-node-radio",
+      "display": "plain-text-configured-node-address",
+      "checked": true,
+      "disabled": true,
+      "changeHandler": "no-op"
+    },
+    {
+      "testId": "midnight-indexer-radio",
+      "display": "plain-text-configured-indexer-address",
+      "checked": true,
+      "disabled": true,
+      "changeHandler": "no-op"
+    }
+  ],
+  "mutableSetting": "proofServer",
+  "saveBehavior": "copies-the-current-network-configuration-and-replaces-only-proofServer",
+  "normalGuiPreviewServiceOverrideAvailable": false,
+  "qualification": "The signed Midnight settings screen does not expose a node or indexer URL editor. Internal reducers accepting configuration fields are not a supported GUI option. This finding does not assert the capabilities of a future Lace version.",
+  "browserExecuted": false,
+  "walletAccessed": false,
+  "configurationChanged": false,
+  "fundingAttempted": false,
+  "privateInputsRead": false,
+  "bundledTokenExported": false,
+  "serviceQueryValuesExported": false,
+  "acquisitionReportSha256": "4eb6c4635657008f210535984827dba2ba2d17c0717d47350ae58897ce07fc81"
+}

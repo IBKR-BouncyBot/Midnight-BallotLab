@@ -1,0 +1,27 @@
+{
+  "schema": "midnight-ballot-lab/public-service-retention/v1",
+  "files": [
+    {
+      "path": "public-services-1794044798273.json",
+      "sha256": "3feca0e010c3cadc9655c7b127cda8e34f854805e65ccf1ca3e535317a6f14b8"
+    },
+    {
+      "path": "public-services-1794044863278.json",
+      "sha256": "b83259016d4c9a47dd09a277b1af11879d4d19aca674bd66c9917bee2ce4eb7b"
+    },
+    {
+      "path": "transport-source-review.json",
+      "sha256": "3a6bd39009b8779e92e0c1add67dd7cb38b12a65737163f7d3e1352102919746"
+    },
+    {
+      "path": "public-services-1794045112036.json",
+      "sha256": "716be29c7be08bda3bd4ce4148b537a6d4949f872cbd484c3ea2ad7dfaaeb034"
+    }
+  ],
+  "source": "later-read-only-local-service-probes-and-signed-public-source-review",
+  "notOriginalCiResponse": true,
+  "originalReportsModified": false,
+  "privateQueryValuesRetained": false,
+  "walletOpened": false,
+  "transactionsSubmitted": 0
+}

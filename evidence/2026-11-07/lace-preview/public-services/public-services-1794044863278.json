@@ -1,0 +1,98 @@
+{
+  "schema": "midnight-ballot-lab/public-lace-service-diagnostic/v1",
+  "networkId": "preview",
+  "laceVersion": "2.5.1",
+  "startedAt": "2026-11-07T09:47:43.028Z",
+  "sourceSha256": "467ac73b2f001678c81f6cda5ab9982a8fe5b98811ca403a483e8f01fdcde809",
+  "runnerSha256": "ce33f63d621742cb301012490218374b9379587fc0ece41daea5c77daddb30e4",
+  "freshSignedArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "sourceMatchesFreshSignedArchive": true,
+  "probes": [
+    {
+      "label": "lace-published-indexer",
+      "service": {
+        "origin": "https://midnight-preview.blockfrost.io",
+        "pathname": "/api/v0",
+        "queryKeys": [
+          "project_id"
+        ]
+      },
+      "status": "failed",
+      "httpStatus": 500,
+      "category": "server-error",
+      "publicErrorCategory": "other-public-error"
+    },
+    {
+      "label": "lace-published-node",
+      "service": {
+        "origin": "https://rpc.midnight-preview.blockfrost.io",
+        "pathname": "/",
+        "queryKeys": [
+          "project_id"
+        ]
+      },
+      "status": "passed",
+      "httpStatus": 200,
+      "expectedPreviewChain": true,
+      "category": "public-service-responsive"
+    },
+    {
+      "label": "canonical-preview-indexer",
+      "service": {
+        "origin": "https://indexer.preview.midnight.network",
+        "pathname": "/api/v4/graphql",
+        "queryKeys": []
+      },
+      "status": "passed",
+      "httpStatus": 200,
+      "blockHeight": 5238,
+      "category": "public-service-responsive"
+    },
+    {
+      "label": "canonical-preview-node",
+      "service": {
+        "origin": "https://rpc.preview.midnight.network",
+        "pathname": "/",
+        "queryKeys": []
+      },
+      "status": "passed",
+      "httpStatus": 200,
+      "expectedPreviewChain": true,
+      "category": "public-service-responsive"
+    },
+    {
+      "label": "lace-indexer-signed-transport-headers",
+      "service": {
+        "origin": "https://midnight-preview.blockfrost.io",
+        "pathname": "/api/v0",
+        "queryKeys": [
+          "project_id"
+        ]
+      },
+      "status": "failed",
+      "httpStatus": 500,
+      "category": "server-error",
+      "publicErrorCategory": "other-public-error"
+    },
+    {
+      "label": "canonical-indexer-signed-transport-headers",
+      "service": {
+        "origin": "https://indexer.preview.midnight.network",
+        "pathname": "/api/v4/graphql",
+        "queryKeys": []
+      },
+      "status": "passed",
+      "httpStatus": 200,
+      "blockHeight": 5238,
+      "category": "public-service-responsive"
+    }
+  ],
+  "walletOpened": false,
+  "privateWalletInputsSent": false,
+  "transactionsSubmitted": 0,
+  "queryValuesExported": false,
+  "responseBodiesExported": false,
+  "configurationHttpStatus": 200,
+  "configurationStatus": "observed",
+  "finishedAt": "2026-11-07T09:47:43.278Z"
+}

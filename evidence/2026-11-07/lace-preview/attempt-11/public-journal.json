@@ -1,0 +1,13 @@
+{
+  "schema": "midnight-ballot-lab/ci-public-transaction-journal/v1",
+  "networkId": "preview",
+  "operations": [],
+  "runId": "42360729265",
+  "headSha": "f6355f3c6a0894bee96a734090735ea8ca078c7a",
+  "chainIdentity": {
+    "networkId": "preview",
+    "genesisHash": "0x3c096de209e06a1a8c52be7bda109ee8c891a42288c0a9db5495f9616dd13796",
+    "ledgerEra": "v9",
+    "protocolVersion": 2001100
+  }
+}

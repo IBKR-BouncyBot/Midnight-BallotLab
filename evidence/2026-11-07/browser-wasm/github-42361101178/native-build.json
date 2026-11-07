@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "bundle": "native-bundle.mjs",
+  "assets": [
+    "native-assets/midnight_onchain_runtime_wasm_bg-a10579365a8bf303abdcedef906f4bdf4a159f189f19c86c654bd75d0a0c870d.wasm"
+  ],
+  "compiler": "0.36.0",
+  "runtime": "0.21.0",
+  "mode": "local-native-emulator",
+  "proofGeneration": false,
+  "networkSubmission": false
+}

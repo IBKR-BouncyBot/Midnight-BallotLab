@@ -1,0 +1,45 @@
+{
+  "schema": "midnight-ballot-lab/retained-lace-attempt/v1",
+  "headSha": "f6355f3c6a0894bee96a734090735ea8ca078c7a",
+  "runId": "42360729265",
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42360729265",
+  "artifact": {
+    "id": 13569432421,
+    "name": "lace-preview-evidence-42360729265",
+    "bytes": 4746,
+    "sha256": "47231c5bf01962454d249f9a927a14749a77c64979d772d7304e5a61ae0e57de"
+  },
+  "retainedOriginalFiles": [
+    {
+      "archivePath": "midnight-lace-zhw2w2/lace-acquisition.json",
+      "retainedPath": "lace-acquisition.json",
+      "bytes": 2060,
+      "sha256": "76f72696b29241dd6230900e4bb395d004bd45ed0cea5730f81eb47dc4fb2198"
+    },
+    {
+      "archivePath": "midnight-lace-ci.cH7zYD6Z/public/browser-report.json",
+      "retainedPath": "browser-report.json",
+      "bytes": 10447,
+      "sha256": "1f3eecdd47eb854db94e6ee2f6591e9ec597f0e34d48a3d296bd7b6a5a73a9e4"
+    },
+    {
+      "archivePath": "midnight-lace-ci.cH7zYD6Z/public/public-journal.json",
+      "retainedPath": "public-journal.json",
+      "bytes": 397,
+      "sha256": "fb6579acb340fa15bf3e2b4414371a4e594f9a499e1e56226f181188d60f5935"
+    }
+  ],
+  "executedSources": [
+    {
+      "path": "scripts/test-lace-preview-browser.mjs",
+      "sha256": "0cd52a837a15dafa81b647bbb2c1738d2a75c39aee1895f7fb76f5a6cc23d5aa"
+    },
+    {
+      "path": "scripts/lace-proof-coverage.mjs",
+      "sha256": "2b527378de87e14c938bcf19762912e0034489fbf8fb155d1199c9b6ee5c3eb1"
+    }
+  ],
+  "originalReportsModified": false,
+  "fundingRequestPresent": false,
+  "operationsPresent": 0
+}

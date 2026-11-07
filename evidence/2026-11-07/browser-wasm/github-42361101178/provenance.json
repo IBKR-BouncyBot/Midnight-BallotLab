@@ -1,0 +1,45 @@
+{
+  "schema": "midnight-ballot-lab/retained-pages-failure/v1",
+  "headSha": "55fa7f074e91885c9cd3587c7b33091f1c1ae529",
+  "runId": "42361101178",
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361101178",
+  "artifact": {
+    "id": 13570066858,
+    "name": "pages-build-evidence",
+    "bytes": 4168328,
+    "sha256": "369446cbed3633de664e6b2e5ecd3c6517fbd4b8dedcf50d9dfaf11842bc4ae0"
+  },
+  "retainedFiles": [
+    {
+      "path": "failed-build-audit.json",
+      "sha256": "fbd95da6a36a4beb3da4caffc731860c50787efeb1cc8704fa31f60da1ea674d"
+    },
+    {
+      "path": "workflow-run.json",
+      "sha256": "e3f493407e5f0939dcfa9f6f527d3bb309a02bf28a76d1cad325fb878bca7763"
+    },
+    {
+      "path": "workflow-progress.json",
+      "sha256": "1345336f9e93539e358daeb26e9e5f6607d6585656eea54b9cf808e82d2ca87e"
+    },
+    {
+      "path": "native-browser-result.json",
+      "sha256": "9027391066f1e0c51c81817970ab550f717be35751b203cf7210b10250c6ef16"
+    },
+    {
+      "path": "network-browser-evidence.json",
+      "sha256": "013fba24c2a1f5d373f75b889612b0f103b2485ffa8df2e01b121040cbfad0fb"
+    },
+    {
+      "path": "native-build.json",
+      "sha256": "58e839378921a8717799f34bdc357e167bb8efa031438e1dec8bdedf2f802722"
+    },
+    {
+      "path": "network-build.json",
+      "sha256": "2e4c2f73efa586ef3af628469e03ea137db0f7920009e9c16760caf1d0f7c755"
+    }
+  ],
+  "originalReportsModified": false,
+  "hostedOriginRequested": false,
+  "workflowRetried": false
+}

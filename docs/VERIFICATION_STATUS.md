@@ -18,7 +18,17 @@ The local native browser election completed casting, two-trustee tallying and pu
 
 ## Current browser-wallet attempt
 
-The results in this section used the earlier ledger-8 graph and are historical. They do not establish wallet/DUST compatibility with the reset Preview chain. The current signed Lace parser's custom-IR3 diagnostic limitation and its separate successful parsing of official generation-10 DUST material are recorded in the [CI runbook](CI_LACE_PREVIEW.md#separate-fundless-wallet-prover-diagnostic); neither parsing result is a wallet proof test.
+[Attempt 11, run 42360729265](../evidence/2026-11-07/lace-preview/attempt-11/README.md), tested source `f6355f3c6a0894bee96a734090735ea8ca078c7a` on the reset ledger-9 Preview chain. Genuine signed Lace 2.5.1 connected to the local CI application and its saved **Run in this app (WASM)** setting was observed. The run **failed before funding** at `check-wallet-indexer-before-funding` with the generic `public-service-request-failed` category. No funding request, DUST registration, proof-entry window, signing or application transaction was reached; the journal has zero operations. This is a connection result, not complete wallet-backend verification.
+
+Separate [read-only probes at 09:46, 09:47 and 09:51 UTC](../evidence/2026-11-07/lace-preview/public-services/README.md) returned HTTP **500** from Lace's published indexer and **200** from the canonical Preview indexer, including the signed wallet's transport-header variant. These later local probes do not establish the original CI HTTP status or a global outage. They opened no wallet and submitted nothing. Fresh test funding may come from the public faucet or a separately authorized transfer; an SDK sponsor is not required.
+
+The [signed Lace 2.5.1 settings-source review](../evidence/2026-11-07/lace-preview/gui-service-settings/README.md) found no normal GUI node/indexer URL override: those controls are disabled, and Save changes only the prover setting. This is a source finding for that version, not a browser configuration change or a claim that every future wallet version has the same limitation.
+
+The [first migration Pages run](../evidence/2026-11-07/browser-wasm/github-42360703236/README.md) passed its compiler, unit/native/provider and build checks but failed the landing-to-testnet browser assertion, before any native browser case completed. Deployment was skipped. Its source correction and subsequent run remain separate from that retained failure.
+
+### Historical ledger-8 wallet results
+
+The results below used the earlier ledger-8 graph and do not establish compatibility with the reset Preview chain. The current signed Lace parser's custom-IR3 diagnostic limitation and its separate successful parsing of official generation-10 DUST material are recorded in the [CI runbook](CI_LACE_PREVIEW.md#separate-fundless-wallet-prover-diagnostic); neither parsing result is a wallet proof test.
 
 The [fourth fundless diagnostic](../evidence/2026-11-07/lace-preview/fundless-diagnostic-4/README.md) **passed** on **7 November 2026**, testing commit `8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8`. Genuine Lace returned a **2,933-byte `openVoting` contract proof** after a successful constraint check (26,780 ms for preparation/check/proving). The passive worker observer also captured and verified the exact signed prover-WASM response: **3,413,037 decoded bytes**, SHA-256 `f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb`, with no observer failure. Both conditions were required by the executed diagnostic; the extension was unmodified.
 

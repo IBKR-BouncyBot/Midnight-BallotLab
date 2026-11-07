@@ -4,7 +4,7 @@
 
 **Cast your vote. Keep a receipt. Check the results.**
 
-**Preview network update:** Preview has reset to a new chain. The updated browser proof checks passed locally; a fresh wallet election and publication of this update are still unverified. Earlier testnet elections and balances belong to the previous chain. Check the [current verification status](docs/VERIFICATION_STATUS.md) before funding or using the testnet client.
+**Preview network update:** the updated browser proof checks passed locally, and genuine Lace 2.5.1 connected on the reset chain with its on-device setting saved. The wallet test stopped before funding at an indexer-service check. Later probes found that wallet indexer returning HTTP 500 while the canonical Preview indexer returned 200. A complete wallet/DUST election and publication of this update remain unverified. Check the [current verification status](docs/VERIFICATION_STATUS.md) before funding; earlier elections and balances belong to the previous chain.
 
 ## About this project
 

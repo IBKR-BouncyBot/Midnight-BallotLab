@@ -1,0 +1,501 @@
+{
+  "executedAt": "2026-11-07T09:50:47.779Z",
+  "node": "v24.22.2",
+  "execution": "real-sdk-and-wasm-browser-loading",
+  "walletConnected": false,
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "independentChainVerification": false,
+  "cases": [
+    {
+      "case": "five-network-screens",
+      "status": "passed",
+      "widths": [
+        {
+          "width": 1440,
+          "passed": true,
+          "oneVisiblePanel": true,
+          "selectedAria": true,
+          "keyboardAndPointer": true,
+          "backNext": true,
+          "publicInputsPreserved": true,
+          "privateInputAndMaskPreserved": true,
+          "privateValuesRetained": false,
+          "importedRecordPreserved": true,
+          "sidebarAndReadinessLinksRevealPanel": true,
+          "initialDeepLink": true,
+          "bareUrlHistoryRestoresConnect": true,
+          "browserBackForward": true,
+          "nestedTargetDeepLink": true,
+          "disabledTargetFocusesVisibleHeading": true,
+          "hiddenReceiptRemainsHidden": true,
+          "invalidHashRecoverable": true,
+          "walletGatesPreserved": true,
+          "pageErrors": 0,
+          "consoleErrors": 0,
+          "externalRequests": 0
+        },
+        {
+          "width": 1100,
+          "passed": true,
+          "oneVisiblePanel": true,
+          "selectedAria": true,
+          "keyboardAndPointer": true,
+          "backNext": true,
+          "publicInputsPreserved": true,
+          "privateInputAndMaskPreserved": true,
+          "privateValuesRetained": false,
+          "importedRecordPreserved": true,
+          "sidebarAndReadinessLinksRevealPanel": true,
+          "initialDeepLink": true,
+          "bareUrlHistoryRestoresConnect": true,
+          "browserBackForward": true,
+          "nestedTargetDeepLink": true,
+          "disabledTargetFocusesVisibleHeading": true,
+          "hiddenReceiptRemainsHidden": true,
+          "invalidHashRecoverable": true,
+          "walletGatesPreserved": true,
+          "pageErrors": 0,
+          "consoleErrors": 0,
+          "externalRequests": 0
+        },
+        {
+          "width": 390,
+          "passed": true,
+          "oneVisiblePanel": true,
+          "selectedAria": true,
+          "keyboardAndPointer": true,
+          "backNext": true,
+          "publicInputsPreserved": true,
+          "privateInputAndMaskPreserved": true,
+          "privateValuesRetained": false,
+          "importedRecordPreserved": true,
+          "sidebarAndReadinessLinksRevealPanel": true,
+          "initialDeepLink": true,
+          "bareUrlHistoryRestoresConnect": true,
+          "browserBackForward": true,
+          "nestedTargetDeepLink": true,
+          "disabledTargetFocusesVisibleHeading": true,
+          "hiddenReceiptRemainsHidden": true,
+          "invalidHashRecoverable": true,
+          "walletGatesPreserved": true,
+          "pageErrors": 0,
+          "consoleErrors": 0,
+          "externalRequests": 0
+        },
+        {
+          "width": 320,
+          "passed": true,
+          "oneVisiblePanel": true,
+          "selectedAria": true,
+          "keyboardAndPointer": true,
+          "backNext": true,
+          "publicInputsPreserved": true,
+          "privateInputAndMaskPreserved": true,
+          "privateValuesRetained": false,
+          "importedRecordPreserved": true,
+          "sidebarAndReadinessLinksRevealPanel": true,
+          "initialDeepLink": true,
+          "bareUrlHistoryRestoresConnect": true,
+          "browserBackForward": true,
+          "nestedTargetDeepLink": true,
+          "disabledTargetFocusesVisibleHeading": true,
+          "hiddenReceiptRemainsHidden": true,
+          "invalidHashRecoverable": true,
+          "walletGatesPreserved": true,
+          "pageErrors": 0,
+          "consoleErrors": 0,
+          "externalRequests": 0
+        }
+      ]
+    },
+    {
+      "case": "actual-sdk-load-and-no-wallet-failure",
+      "path": "/",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "circuitAssetsServed": 21,
+      "browserProverAssetsServed": true,
+      "browserProverInitialized": false,
+      "walletProvingModeAttested": false,
+      "ballotAndTrusteeCardsPresent": true,
+      "cardControlsDisabled": true,
+      "previewDefaultAndPinnedEndpoints": true,
+      "editableLocalPreset": true,
+      "unsupportedPreprodAbsent": true,
+      "requiredServiceAndPasswordFields": true,
+      "helpLinksChecked": true,
+      "laceSetupGuideChecked": true,
+      "inlineRequiredFieldAndWalletFeedback": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "connectedSessionUiTested": false,
+      "receiptIdLookupRequiresConfiguredElection": true,
+      "receiptSuccessHiddenBeforeVote": true,
+      "visibleUnconfiguredElectionBackup": true,
+      "votingReadinessExplainsMissingWallet": true,
+      "votingNextLinkNavigatesToConnection": true,
+      "votingRefreshRequiresContract": true,
+      "receiptIdNetworkLookupExecuted": false,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "remoteRequests": 0
+    },
+    {
+      "case": "actual-sdk-load-and-no-wallet-failure",
+      "path": "/project-prefix/",
+      "status": "passed",
+      "wasmLoaded": 2,
+      "circuitAssetsServed": 21,
+      "browserProverAssetsServed": true,
+      "browserProverInitialized": false,
+      "walletProvingModeAttested": false,
+      "ballotAndTrusteeCardsPresent": true,
+      "cardControlsDisabled": true,
+      "previewDefaultAndPinnedEndpoints": true,
+      "editableLocalPreset": true,
+      "unsupportedPreprodAbsent": true,
+      "requiredServiceAndPasswordFields": true,
+      "helpLinksChecked": true,
+      "laceSetupGuideChecked": true,
+      "inlineRequiredFieldAndWalletFeedback": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "connectedSessionUiTested": false,
+      "receiptIdLookupRequiresConfiguredElection": true,
+      "receiptSuccessHiddenBeforeVote": true,
+      "visibleUnconfiguredElectionBackup": true,
+      "votingReadinessExplainsMissingWallet": true,
+      "votingNextLinkNavigatesToConnection": true,
+      "votingRefreshRequiresContract": true,
+      "receiptIdNetworkLookupExecuted": false,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "remoteRequests": 0
+    },
+    {
+      "case": "election-setup-chooser",
+      "status": "passed",
+      "defaultMode": "create",
+      "keyboardActivation": [
+        "Enter",
+        "Space"
+      ],
+      "panelVisibility": true,
+      "publicFieldPreservation": true,
+      "administratorControlsShared": true,
+      "actionsDisabledWithoutWallet": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "publicDetailsImportPrefillsOnly": true,
+      "publicImportCanonicalizesHex": true,
+      "publicDetailsRejectedFiles": 13,
+      "wrongSelectedNetworkPreserved": true,
+      "rejectedImportsPreserveFieldsAndMode": true,
+      "noAutomaticJoin": true,
+      "manualOrImportedFieldsCannotEnableElectionExport": true,
+      "configuredElectionExportExecuted": false,
+      "publicBackupVisibleInBothModes": true,
+      "trusteePrivateFileControlsRequireConfiguredElection": true,
+      "connectedModeLocksTested": false,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    {
+      "case": "saved-indexed-record-import",
+      "status": "passed",
+      "historicalFixture": "evidence/2026-11-03/lace-wallet/attempt-2/public-indexed-observation.json",
+      "historicalFixtureSha256": "ef8884fe08065779eecab158bccb94c5dd159ee92aa5788d08846b885719a25f",
+      "freshOfflineVerification": true,
+      "newNetworkTransaction": false,
+      "walletRequired": false,
+      "unchangedNetworkAndJoinFields": true,
+      "noAutomaticConnectionOrEnabledActions": true,
+      "invalidFilesRejected": 10,
+      "rejectedImportClearsPriorResult": true,
+      "publicScopeLimitsVisible": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "case": "private-key-file-utilities",
+      "status": "passed",
+      "roles": [
+        {
+          "role": "admin",
+          "generated": true,
+          "revealAndHide": true,
+          "privateDownloadRoundTrip": true,
+          "rejectedFiles": 8,
+          "invalidImportPreservesKey": true,
+          "maskedAfterRestore": true,
+          "initiallyEmptyAndReadonly": true,
+          "explicitManualUnlock": true,
+          "manualAndImportedKeysSurviveModeChanges": true,
+          "invalidImportPreservesEditingState": true
+        },
+        {
+          "role": "voter",
+          "generated": true,
+          "revealAndHide": true,
+          "privateDownloadRoundTrip": true,
+          "rejectedFiles": 8,
+          "invalidImportPreservesKey": true,
+          "maskedAfterRestore": true,
+          "sequentialDistinctKeyLabels": true,
+          "repeatedKeyKeepsFilename": true,
+          "renamedImportKeepsKnownLabel": true
+        }
+      ],
+      "generatedKeysRetained": false,
+      "downloadBodiesRetained": false,
+      "screenshotsOnlyAfterReloadWithEmptyPrivateInputs": true,
+      "actualDealerGeneration": true,
+      "canonicalNonzeroDealerScalars": true,
+      "generatedDealerValuesPreservedAcrossModes": true,
+      "localGenerationDoesNotRegisterKeys": true,
+      "numberedVoterDownloads": [
+        1,
+        2,
+        3
+      ],
+      "counterPersistsAcrossReload": true,
+      "storageContainsOnlyNonsecretCounter": true,
+      "autofillFromPersonalPasswordManagerTested": false,
+      "originalFilenameRestoresLabelInFreshContext": true,
+      "importedCounterFloorAvoidsNewKeyCollision": true,
+      "noPersistedKeyLabelMapping": true,
+      "fallbackLabelsStableForRepeatedKey": true,
+      "invalidCounterFallback": true,
+      "storageWriteDenialFallback": true,
+      "fallbackNamesIncrementWithinSession": true,
+      "storageFailureInjectionOnly": true,
+      "mobileWidths": [
+        390,
+        320
+      ],
+      "publicExportExecutionTested": false,
+      "externalRequests": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0
+    }
+  ],
+  "browserProverPackaging": {
+    "version": "3.2.0",
+    "execution": "dedicated-worker",
+    "worker": {
+      "path": "native-prover-worker.mjs",
+      "bytes": 52073,
+      "sha256": "b4b6d081524631529593aa693c8dae9b4085970bfdecc8588d1b206a41574d8f"
+    },
+    "parameters": [
+      {
+        "k": 7,
+        "path": "native-contract/params/bls_midnight_2p7",
+        "bytes": 24964,
+        "sha256": "e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d"
+      },
+      {
+        "k": 8,
+        "path": "native-contract/params/bls_midnight_2p8",
+        "bytes": 49540,
+        "sha256": "909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933"
+      },
+      {
+        "k": 12,
+        "path": "native-contract/params/bls_midnight_2p12",
+        "bytes": 786820,
+        "sha256": "ef08eb3fcf62df8f72c515cffa027e681808b530cb016eea104115545ef6d5c8"
+      },
+      {
+        "k": 13,
+        "path": "native-contract/params/bls_midnight_2p13",
+        "bytes": 1573252,
+        "sha256": "d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803"
+      },
+      {
+        "k": 15,
+        "path": "native-contract/params/bls_midnight_2p15",
+        "bytes": 6291844,
+        "sha256": "724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de"
+      },
+      {
+        "k": 16,
+        "path": "native-contract/params/bls_midnight_2p16",
+        "bytes": 12583300,
+        "sha256": "09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6"
+      }
+    ],
+    "proofGeneration": false,
+    "initializedWithoutWallet": false
+  },
+  "networkModuleAssets": [
+    {
+      "path": "network-chunk-U62TJRRQ.mjs",
+      "bytes": 16136,
+      "sha256": "07bfe76374319bed3b235f395027fb80a61d6704d8bbb428da77e3be5117b8f8"
+    },
+    {
+      "path": "network-chunk-QZL2ECK6.mjs",
+      "bytes": 139627,
+      "sha256": "a15ee11c2296bd7a88914f96aa93f7cfb317152e983d4aa877de6b68d33a5a32"
+    },
+    {
+      "path": "network-chunk-MKPCCQ7S.mjs",
+      "bytes": 1367427,
+      "sha256": "ff0d10216fdc87107eeaa81f379e0e59a9c92585ae49023a6f12b8131cdc06b3"
+    },
+    {
+      "path": "network-chunk-5YZEYY2H.mjs",
+      "bytes": 404336,
+      "sha256": "f5b191ae97f5fb1894a75ed535b3d7d599ae1a9450be3dcab2363aabe179209b"
+    },
+    {
+      "path": "network-chunk-HTXBNCLM.mjs",
+      "bytes": 70353,
+      "sha256": "d2a92833ff7bd16528c3ac2f8822898814f76bee70963e23e829d3759b6bdac5"
+    }
+  ],
+  "bundleSha256": "69722f8325ca1f65bc5f1915a2a3b873f06c7765829aef7c84008b2c28002a32",
+  "compiler": "0.36.0",
+  "runtime": "0.21.0",
+  "sdk": "5.0.0",
+  "circuitAssets": [
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "bytes": 49307276,
+      "sha256": "8176702a22497494fedca6e5070abf5520e3234d8b3970987ebf043501fe3ae8"
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "bytes": 2313,
+      "sha256": "028e574673a22ceb125709afcae53b0204b3f2a2af659690304345cde0003759"
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "bytes": 19434,
+      "sha256": "b0514e2a76f8ae2abd62ed62e08e53e9382d3c725b7db27425c092113d29d0eb"
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "bytes": 11278470,
+      "sha256": "eaf1e431a88f47372b8c98e2c1321ec5965ba85d25dc9de482ef78e4fbee468a"
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "bytes": 2121,
+      "sha256": "3192e62a3454a88196bdaba008a895851ac6b662e40aea1dedaf4fc67ba287b0"
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "bytes": 1910,
+      "sha256": "09279c39dc93a79dae3d6dd737749021c3a03ef4ae5850967b2fbd9666491d29"
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "bytes": 225105,
+      "sha256": "1be0de3df54681551f5f0e3d3d58fa15f48ecece9a09aca65f2ecf4988d3dfe6"
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "bytes": 1353,
+      "sha256": "380c99d4adfb58318cb676f492abf469ad4e345f6c0d10818d585461a835f59f"
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "bytes": 1153,
+      "sha256": "3fa40cf92cefe5478ac95f44e29a112a0587950d7e6707ba5097eb4481702f6b"
+    },
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "bytes": 98601101,
+      "sha256": "5a9f418fc3d208848a411b909f1b72a6ed32b9a364abc8162372be897a526a36"
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "bytes": 2313,
+      "sha256": "20ad51cdb280c8eec00419a93e4bcb59173449d49459b52e1fb41d3f30bb3640"
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "bytes": 30187,
+      "sha256": "ee71831b30b67298466d536f50d4401d76b3a2764e65ba4b04357f5601470541"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "bytes": 114230,
+      "sha256": "187a0545534b4b16fb48b1535c4f6565e7ee23a103a1e3bf58beff4fb9a361ab"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "bytes": 1353,
+      "sha256": "432240973c8833e200ff3b8816a38390f1fb318e78b088718a84cf4099189064"
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "bytes": 870,
+      "sha256": "9161d8833c81644fcb7f3baa455ece4861e323e5078569efe0bcda94f69a8d73"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "bytes": 4207202,
+      "sha256": "93941beec170429d0686945a624563dd1c45ae1c7f8437eada7e400cc47603cf"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "bytes": 1593,
+      "sha256": "c5d56965cd3e31aae8e87a553ec59d9cfa45b5fdea7feb8476cb9a2f91751aa9"
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "bytes": 9630,
+      "sha256": "7a9c77109d23a67a1999fd61373411e1453aba7b230566f1d0a2dee9aedc8cc7"
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "bytes": 33579941,
+      "sha256": "5d4c8538423ace87eefdc48a19468335c770a99d9bda557fca33fbbe84d1b5e9"
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "bytes": 1593,
+      "sha256": "ddc4152e3d0c18fb71e0c8de285ebf1a95e025a452002a8d8254be738a92ac41"
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "bytes": 22239,
+      "sha256": "876bc4a6fd6c673161d866fb565cd7c40e07160f5f104429699cf74031104f74"
+    }
+  ],
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "lastBrowserCounters": {
+    "path": "/project-prefix/",
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleCategories": [],
+    "remoteRequests": 0
+  },
+  "lastTransportFailureCounters": {
+    "failedService": "node",
+    "blockedRequests": 4,
+    "targetedRequests": 3,
+    "unexpectedRequests": 0,
+    "pageErrors": 0,
+    "unexpectedConsoleErrors": 0
+  },
+  "status": "failed",
+  "failedStage": "preview-node-transport-failure:request-cleanup"
+}

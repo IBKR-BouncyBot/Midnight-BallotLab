@@ -1043,6 +1043,10 @@ try {
     let releaseSibling, releaseTarget;
     const siblingReleased = new Promise(resolveSibling => { releaseSibling = resolveSibling; });
     const targetReleased = new Promise(resolveTarget => { releaseTarget = resolveTarget; });
+    let initialRequestsReady;
+    const initialRequestsObserved = new Promise(resolveReady => { initialRequestsReady = resolveReady; });
+    const initialRequests = new Set();
+    const expectedInitialRequests = ['genesis-hash', 'indexer-block-metadata', 'network-name', 'runtime-protocol'];
     const routeTasks = [];
     try {
       const page = await context.newPage(); page.setDefaultTimeout(30_000);
@@ -1063,6 +1067,24 @@ try {
             blockedRequests++;
             if (endpoint === targetedEndpoint) targetedRequests++;
             assert.equal(route.request().method(), 'POST');
+            const payload = route.request().postDataJSON();
+            let label;
+            if (endpoint === previewIndexer) {
+              assert.deepEqual(payload, { query: '{ block { height hash protocolVersion } }' });
+              label = 'indexer-block-metadata';
+            } else {
+              const expected = {
+                1: { label: 'network-name', method: 'system_chain', params: [] },
+                2: { label: 'genesis-hash', method: 'chain_getBlockHash', params: [0] },
+                3: { label: 'runtime-protocol', method: 'state_getRuntimeVersion', params: [] },
+              }[payload?.id];
+              assert.ok(expected, 'An aborted initial check must not perform a later block query');
+              assert.deepEqual(payload, { jsonrpc: '2.0', id: payload.id, method: expected.method, params: expected.params });
+              label = expected.label;
+            }
+            assert.equal(initialRequests.has(label), false, 'The initial public check must not duplicate a request');
+            initialRequests.add(label);
+            if (initialRequests.size === expectedInitialRequests.length) initialRequestsReady();
           }
           if (endpoint !== targetedEndpoint && [previewNode, previewIndexer].includes(endpoint)) await siblingReleased;
           if (endpoint === targetedEndpoint) await targetReleased;
@@ -1091,6 +1113,15 @@ try {
       for (const id of ['network-operation-elapsed', 'network-activity-elapsed']) {
         assert.equal(await page.locator(`#${id}`).getAttribute('aria-live'), 'off');
       }
+      // Observe the actual four concurrent identity queries before releasing
+      // a failure. This prevents cancellation timing from hiding a missing or
+      // duplicate request; every intercepted request is still aborted.
+      let initialRequestTimer;
+      try {
+        await Promise.race([initialRequestsObserved, new Promise((_, reject) => {
+          initialRequestTimer = setTimeout(() => reject(new Error('Initial public requests were not observed')), 5000);
+        })]);
+      } finally { clearTimeout(initialRequestTimer); }
       await page.waitForFunction(() => /^Elapsed: 0:0[1-9]$/.test(document.getElementById('network-operation-elapsed').textContent));
       assert.equal(await page.locator('#network-operation-elapsed').textContent(), await page.locator('#network-activity-elapsed').textContent());
       assert.equal(await page.locator('#network-check-services').textContent(), originalActionLabel,
@@ -1126,10 +1157,11 @@ try {
       assert.equal(await page.locator('#network-availability').getAttribute('data-state'), 'ready');
       stage = `preview-${failedService}-transport-failure:request-cleanup`;
       releaseSibling(); await Promise.all(routeTasks);
-      evidence.lastTransportFailureCounters = { failedService, blockedRequests, targetedRequests, unexpectedRequests, pageErrors, unexpectedConsoleErrors };
-      // The app aborts the sibling on failure; Chromium may cancel it before
-      // its route handler is dispatched. The targeted failure is mandatory.
-      assert.equal(targetedRequests, 1); assert.ok(blockedRequests >= 1 && blockedRequests <= 2);
+      evidence.lastTransportFailureCounters = { failedService, blockedRequests, targetedRequests, unexpectedRequests,
+        initialRequests: [...initialRequests].sort(), pageErrors, unexpectedConsoleErrors };
+      assert.deepEqual([...initialRequests].sort(), expectedInitialRequests);
+      assert.equal(targetedRequests, failedService === 'node' ? 3 : 1);
+      assert.equal(blockedRequests, 4);
       assert.equal(unexpectedRequests, 0);
       assert.equal(pageErrors, 0); assert.equal(unexpectedConsoleErrors, 0);
       evidence.cases.push({ case: `preview-${failedService}-transport-failure`, status: 'passed',

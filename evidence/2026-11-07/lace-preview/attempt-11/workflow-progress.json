@@ -1,0 +1,216 @@
+{
+  "observedAt": "2026-11-07T09:44:09.568Z",
+  "result": [
+    {
+      "id": 128368366091,
+      "name": "Prove and submit with genuine Lace on public Preview",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-11-07T09:40:38Z",
+      "completedAt": "2026-11-07T09:43:57Z",
+      "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42360729265/job/128368366091",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:39Z",
+          "completedAt": "2026-11-07T09:40:40Z"
+        },
+        {
+          "number": 2,
+          "name": "Check out trusted source",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:40Z",
+          "completedAt": "2026-11-07T09:40:41Z"
+        },
+        {
+          "number": 3,
+          "name": "Reject workflow reruns",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:41Z",
+          "completedAt": "2026-11-07T09:40:42Z"
+        },
+        {
+          "number": 4,
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:42Z",
+          "completedAt": "2026-11-07T09:40:42Z"
+        },
+        {
+          "number": 5,
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:42Z",
+          "completedAt": "2026-11-07T09:40:42Z"
+        },
+        {
+          "number": 6,
+          "name": "Install the pinned toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:42Z",
+          "completedAt": "2026-11-07T09:40:45Z"
+        },
+        {
+          "number": 7,
+          "name": "Install reviewed application dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:45Z",
+          "completedAt": "2026-11-07T09:40:50Z"
+        },
+        {
+          "number": 8,
+          "name": "Compile and test actual native code",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:50Z",
+          "completedAt": "2026-11-07T09:42:22Z"
+        },
+        {
+          "number": 9,
+          "name": "Build the actual browser application and proving assets",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:22Z",
+          "completedAt": "2026-11-07T09:42:53Z"
+        },
+        {
+          "number": 10,
+          "name": "Install full Chromium without the unused headless shell",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:53Z",
+          "completedAt": "2026-11-07T09:42:59Z"
+        },
+        {
+          "number": 11,
+          "name": "Test the existing headed browser environment",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:59Z",
+          "completedAt": "2026-11-07T09:43:00Z"
+        },
+        {
+          "number": 12,
+          "name": "Repair missing browser dependencies only after a failed launch check",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:43:00Z",
+          "completedAt": "2026-11-07T09:43:00Z"
+        },
+        {
+          "number": 13,
+          "name": "Require a real headed launch after dependency repair",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:43:00Z",
+          "completedAt": "2026-11-07T09:43:00Z"
+        },
+        {
+          "number": 14,
+          "name": "Preserve only public browser-environment checks",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:00Z",
+          "completedAt": "2026-11-07T09:43:01Z"
+        },
+        {
+          "number": 15,
+          "name": "Acquire and verify official Lace",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:01Z",
+          "completedAt": "2026-11-07T09:43:03Z"
+        },
+        {
+          "number": 16,
+          "name": "Start one isolated wallet browser",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:03Z",
+          "completedAt": "2026-11-07T09:43:03Z"
+        },
+        {
+          "number": 17,
+          "name": "Wait for the public funding request",
+          "status": "completed",
+          "conclusion": "failure",
+          "startedAt": "2026-11-07T09:43:03Z",
+          "completedAt": "2026-11-07T09:43:53Z"
+        },
+        {
+          "number": 18,
+          "name": "Publish only the public funding request",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:43:53Z",
+          "completedAt": "2026-11-07T09:43:53Z"
+        },
+        {
+          "number": 19,
+          "name": "Await funding and the same browser's complete election",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:43:53Z",
+          "completedAt": "2026-11-07T09:43:53Z"
+        },
+        {
+          "number": 20,
+          "name": "Stop only this runner's process group",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:53Z",
+          "completedAt": "2026-11-07T09:43:53Z"
+        },
+        {
+          "number": 21,
+          "name": "Preserve explicit public evidence only",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:53Z",
+          "completedAt": "2026-11-07T09:43:54Z"
+        },
+        {
+          "number": 40,
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:43:54Z",
+          "completedAt": "2026-11-07T09:43:55Z"
+        },
+        {
+          "number": 41,
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:43:55Z",
+          "completedAt": "2026-11-07T09:43:55Z"
+        },
+        {
+          "number": 42,
+          "name": "Post Check out trusted source",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:55Z",
+          "completedAt": "2026-11-07T09:43:55Z"
+        },
+        {
+          "number": 43,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:43:55Z",
+          "completedAt": "2026-11-07T09:43:55Z"
+        }
+      ]
+    }
+  ]
+}

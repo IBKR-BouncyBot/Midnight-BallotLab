@@ -1,0 +1,155 @@
+{
+  "schema": "midnight-ballot-lab/pages-failed-build-audit/v1",
+  "run": {
+    "id": 42360703236,
+    "headSha": "f6355f3c6a0894bee96a734090735ea8ca078c7a",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42360703236",
+    "attempt": 1,
+    "createdAt": "2026-11-07T09:40:14Z",
+    "updatedAt": "2026-11-07T09:42:59Z"
+  },
+  "artifact": {
+    "id": 13569148145,
+    "name": "pages-build-evidence",
+    "bytes": 811807,
+    "expired": false,
+    "digest": "sha256:6d0285fcb89d5040893f1f6195c3d7f8790e2e75954f9cdb8eff8f80b29e7bcd",
+    "headSha": "f6355f3c6a0894bee96a734090735ea8ca078c7a"
+  },
+  "artifactDigestVerified": true,
+  "checks": {
+    "root": {
+      "tests": 116,
+      "pass": 116,
+      "fail": 0
+    },
+    "generatedNative": {
+      "tests": 63,
+      "pass": 63,
+      "fail": 0
+    },
+    "providerModuleInspector": {
+      "tests": 23,
+      "pass": 23,
+      "fail": 0
+    },
+    "ledgerCallbackFailure": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    }
+  },
+  "packaging": {
+    "status": "passed",
+    "localReferences": 147,
+    "sourceFiles": 1045,
+    "nativeMode": "included",
+    "networkClient": "included",
+    "urlShapes": [
+      "https://example.github.io/",
+      "https://example.github.io/arbitrary-repository-name/"
+    ],
+    "scope": "Static packaging and path checks; no browser or GitHub deployment execution"
+  },
+  "versions": {
+    "node": "24.22.2",
+    "npm": "11.19.1",
+    "python": "3.12.16",
+    "compiler": "0.36.0",
+    "runtime": "0.21.0",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4"
+  },
+  "nativeBrowser": {
+    "passed": false,
+    "completedCases": 0,
+    "failure": {
+      "stage": "landing:/:testnet:actual-destination",
+      "kind": "AssertionError"
+    }
+  },
+  "runtimeComparison": {
+    "nativeBundle": {
+      "sha256": "0b34695726e2c26303e34089e1cbcb46c0691ae7f07bd1874e4d12c87cbfe1b2",
+      "matchesLocalBytes": true
+    },
+    "networkBundle": {
+      "sha256": "69722f8325ca1f65bc5f1915a2a3b873f06c7765829aef7c84008b2c28002a32",
+      "matchesLocalBytes": true
+    }
+  },
+  "networkModuleAssets": [
+    {
+      "path": "network-chunk-U62TJRRQ.mjs",
+      "bytes": 16136,
+      "sha256": "07bfe76374319bed3b235f395027fb80a61d6704d8bbb428da77e3be5117b8f8"
+    },
+    {
+      "path": "network-chunk-QZL2ECK6.mjs",
+      "bytes": 139627,
+      "sha256": "a15ee11c2296bd7a88914f96aa93f7cfb317152e983d4aa877de6b68d33a5a32"
+    },
+    {
+      "path": "network-chunk-MKPCCQ7S.mjs",
+      "bytes": 1367427,
+      "sha256": "ff0d10216fdc87107eeaa81f379e0e59a9c92585ae49023a6f12b8131cdc06b3"
+    },
+    {
+      "path": "network-chunk-5YZEYY2H.mjs",
+      "bytes": 404336,
+      "sha256": "f5b191ae97f5fb1894a75ed535b3d7d599ae1a9450be3dcab2363aabe179209b"
+    },
+    {
+      "path": "network-chunk-HTXBNCLM.mjs",
+      "bytes": 70353,
+      "sha256": "d2a92833ff7bd16528c3ac2f8822898814f76bee70963e23e829d3759b6bdac5"
+    }
+  ],
+  "networkWasmAssetCount": 5,
+  "circuitAssetCount": 21,
+  "networkBrowserExecuted": false,
+  "browserProofGateExecuted": false,
+  "deployment": "skipped",
+  "hostedOriginRequested": false,
+  "workflowRetried": false,
+  "retainedFiles": [
+    {
+      "path": "_temp/toolchain.log",
+      "sha256": "0f50493446ba6a5a1f18563c43a46e95ba46d3102c2f62879b766d89a721b7a4"
+    },
+    {
+      "path": "_temp/native-boundary-tests.log",
+      "sha256": "93b6daedded2209292c82ae7db8bd1818caaebc37d9adb6019827d44d7f721c5"
+    },
+    {
+      "path": "_temp/native-election-tests.log",
+      "sha256": "119c3452d8862251bab0186b46c8c27f6eef7e723fd63ceafdc0d8ae0ff5ed23"
+    },
+    {
+      "path": "_temp/provider-api-tests.log",
+      "sha256": "a66023896291daeae5c6614c9cab8f84f58ba0e66d64d84a2c21640cee82afef"
+    },
+    {
+      "path": "_temp/browser-prover-failure-tests.log",
+      "sha256": "df354cf981df9d73f7ec38c970f16e1347a221c1ceac8eefab869198602c2e1f"
+    },
+    {
+      "path": "_temp/native-browser-tests.log",
+      "sha256": "6a0d3f259f0008f8625baef2b1f6e72a37bb7284650d8ca84a6dc64ded03adcf"
+    },
+    {
+      "path": "_temp/pages-packaging.log",
+      "sha256": "6c0796c79567d323ec356453ebabcf5dcbaba0ca1094eb586bb644dae6b1bdb6"
+    },
+    {
+      "path": "Midnight-BallotLab/Midnight-BallotLab/artifacts/native-browser/result.json",
+      "sha256": "a7bd9370352d295ad9bc796e23e45388c363ecd641544cc043533ed79fdfbed6"
+    },
+    {
+      "path": "Midnight-BallotLab/Midnight-BallotLab/dist/network-build.json",
+      "sha256": "2e4c2f73efa586ef3af628469e03ea137db0f7920009e9c16760caf1d0f7c755"
+    }
+  ]
+}

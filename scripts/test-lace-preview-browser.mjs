@@ -2,7 +2,7 @@ import { verifyBrowserModuleAssets } from './browser-module-assets.mjs';
 /** CI ONLY: genuine disposable Lace + Preview, through the normal wallet/app UI.
  * No personal profile, wallet API substitute, HTTP prover, transaction retry,
  * private checkpoint, console dump, screenshot, trace or video is produced.
- * The same browser stays alive while a separately authorized sponsor funds its
+ * The same browser stays alive while separately authorized test funds reach its
  * public address. A failure is evidence of failure, never an acceptance flag.
  */
 import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
@@ -42,7 +42,7 @@ const report = {
   execution: diagnosticMode ? 'genuine-disposable-Lace-fundless-contract-proof' : 'genuine-disposable-Lace-and-application-UI', operations: [],
   ...(diagnosticMode ? { fundingAttempted: false, walletDustProofsTested: false, networkSubmissionAttempted: false, independentProofVerification: false } : {}),
   transactionsRetried: 0, independentChainVerification: false,
-  fundingSource: 'separately-authorized-isolated-SDK-sponsor-not-browser-proof-evidence',
+  fundingSource: 'separately-authorized-external-test-funding-not-browser-proof-evidence',
   privateArtifactsExported: false, hostedOriginTested: false,
   walletModeApiAttestation: false, httpProofProviderConfigured: false,
 };
@@ -442,6 +442,15 @@ async function checkWalletIndexerBeforeFunding(uri, wsUri) {
   requireThat(walletVendorServiceUrls.has(new URL(uri).href), 'wallet-public-service-override-required');
   const response = await fetch(uri, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(30_000),
     headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: 'query CiPublicHead { block { height } }' }) });
+  // Preserve only the HTTP status before parsing. Never export service query
+  // values, headers or an upstream error body from this readiness check.
+  report.walletIndexerHealth = { checkedBeforeFunding: true, source: 'configured-wallet-indexer-public-read',
+    status: response.status, independentChainVerification: false, walletSyncAttested: false };
+  await save();
+  if (!response.ok) {
+    await response.body?.cancel().catch(() => {});
+    fail('wallet-indexer-http-unavailable');
+  }
   const body = JSON.parse(decodeJsonUtf8(await readPublicResponse(response), { maxBytes: 1024 * 1024 }));
   requireThat(!body.errors && Number.isSafeInteger(body?.data?.block?.height) && body.data.block.height >= 0,
     'wallet-indexer-head-unavailable');

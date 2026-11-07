@@ -1,0 +1,13 @@
+{
+  "observedAt": "2026-11-07T09:43:36.272Z",
+  "result": {
+    "id": 42360703236,
+    "headSha": "f6355f3c6a0894bee96a734090735ea8ca078c7a",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42360703236",
+    "attempt": 1,
+    "createdAt": "2026-11-07T09:40:14Z",
+    "updatedAt": "2026-11-07T09:42:59Z"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "schema": "midnight-ballot-lab/lace-gui-source-retention/v1",
+  "sourceReport": "artifacts/lace-ledger9-review/gui-service-settings-review.json",
+  "retainedFile": "source-review.json",
+  "sha256": "5abaaf917c87901dc1be12595c42a3080f2d62d16219e33d30c57cc9fd9fc649",
+  "originalReportModified": false,
+  "scope": "signed-source-review-only"
+}

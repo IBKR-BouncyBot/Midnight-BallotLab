@@ -1,0 +1,234 @@
+{
+  "observedAt": "2026-11-07T09:43:22.831Z",
+  "result": [
+    {
+      "id": 128368287588,
+      "name": "Test native election and build static site",
+      "status": "completed",
+      "conclusion": "failure",
+      "startedAt": "2026-11-07T09:40:16Z",
+      "completedAt": "2026-11-07T09:42:58Z",
+      "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42360703236/job/128368287588",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:17Z",
+          "completedAt": "2026-11-07T09:40:18Z"
+        },
+        {
+          "number": 2,
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:18Z",
+          "completedAt": "2026-11-07T09:40:19Z"
+        },
+        {
+          "number": 3,
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:19Z",
+          "completedAt": "2026-11-07T09:40:20Z"
+        },
+        {
+          "number": 4,
+          "name": "Set up Python packaging checks",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:20Z",
+          "completedAt": "2026-11-07T09:40:20Z"
+        },
+        {
+          "number": 5,
+          "name": "Install and verify the pinned native toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:20Z",
+          "completedAt": "2026-11-07T09:40:22Z"
+        },
+        {
+          "number": 6,
+          "name": "Install the reviewed dependency lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:22Z",
+          "completedAt": "2026-11-07T09:40:28Z"
+        },
+        {
+          "number": 7,
+          "name": "Test native adapters, receipts and input boundaries",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:28Z",
+          "completedAt": "2026-11-07T09:40:29Z"
+        },
+        {
+          "number": 8,
+          "name": "Compile the actual native election and generate its keys",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:40:29Z",
+          "completedAt": "2026-11-07T09:41:28Z"
+        },
+        {
+          "number": 9,
+          "name": "Check installed wallet and provider APIs",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:41:28Z",
+          "completedAt": "2026-11-07T09:41:31Z"
+        },
+        {
+          "number": 10,
+          "name": "Run generated native election tests",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:41:31Z",
+          "completedAt": "2026-11-07T09:41:59Z"
+        },
+        {
+          "number": 11,
+          "name": "Check actual Ledger callback failure diagnostics",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:41:59Z",
+          "completedAt": "2026-11-07T09:42:00Z"
+        },
+        {
+          "number": 12,
+          "name": "Run generated native election example",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:00Z",
+          "completedAt": "2026-11-07T09:42:01Z"
+        },
+        {
+          "number": 13,
+          "name": "Build browser site and source download",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:01Z",
+          "completedAt": "2026-11-07T09:42:02Z"
+        },
+        {
+          "number": 14,
+          "name": "Bundle the actual Midnight native browser mode",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:02Z",
+          "completedAt": "2026-11-07T09:42:02Z"
+        },
+        {
+          "number": 15,
+          "name": "Bundle the Midnight.js network client",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:02Z",
+          "completedAt": "2026-11-07T09:42:32Z"
+        },
+        {
+          "number": 16,
+          "name": "Require native output and check project-path assets",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:32Z",
+          "completedAt": "2026-11-07T09:42:33Z"
+        },
+        {
+          "number": 17,
+          "name": "Install real Chromium for browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:33Z",
+          "completedAt": "2026-11-07T09:42:53Z"
+        },
+        {
+          "number": 18,
+          "name": "Exercise native WASM election in real Chromium",
+          "status": "completed",
+          "conclusion": "failure",
+          "startedAt": "2026-11-07T09:42:53Z",
+          "completedAt": "2026-11-07T09:42:56Z"
+        },
+        {
+          "number": 19,
+          "name": "Exercise network client initialization and fail-closed controls",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:42:56Z",
+          "completedAt": "2026-11-07T09:42:56Z"
+        },
+        {
+          "number": 20,
+          "name": "Prove native circuits and a bound SDK transaction in a real browser worker",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:42:56Z",
+          "completedAt": "2026-11-07T09:42:56Z"
+        },
+        {
+          "number": 21,
+          "name": "Preserve build evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:56Z",
+          "completedAt": "2026-11-07T09:42:57Z"
+        },
+        {
+          "number": 22,
+          "name": "Upload Pages artifact",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:42:57Z",
+          "completedAt": "2026-11-07T09:42:57Z"
+        },
+        {
+          "number": 42,
+          "name": "Post Set up Python packaging checks",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:42:57Z",
+          "completedAt": "2026-11-07T09:42:57Z"
+        },
+        {
+          "number": 43,
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-07T09:42:57Z",
+          "completedAt": "2026-11-07T09:42:57Z"
+        },
+        {
+          "number": 44,
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:57Z",
+          "completedAt": "2026-11-07T09:42:57Z"
+        },
+        {
+          "number": 45,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-07T09:42:57Z",
+          "completedAt": "2026-11-07T09:42:57Z"
+        }
+      ]
+    },
+    {
+      "id": 128368860926,
+      "name": "Deploy GitHub Pages frontend",
+      "status": "completed",
+      "conclusion": "skipped",
+      "startedAt": "2026-11-07T09:42:59Z",
+      "completedAt": "2026-11-07T09:42:58Z",
+      "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42360703236/job/128368860926",
+      "steps": []
+    }
+  ]
+}
