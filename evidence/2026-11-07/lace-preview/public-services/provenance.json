@@ -16,6 +16,10 @@
     {
       "path": "public-services-1794045112036.json",
       "sha256": "716be29c7be08bda3bd4ce4148b537a6d4949f872cbd484c3ea2ad7dfaaeb034"
+    },
+    {
+      "path": "public-services-1794046135795.json",
+      "sha256": "f9fe0f32a8a25655425120f9a8513946501a8649338596f080cd37ba6bd0108d"
     }
   ],
   "source": "later-read-only-local-service-probes-and-signed-public-source-review",

@@ -1,0 +1,13 @@
+# Ledger-9 CI and Pages publication — 7 November 2026
+
+[Run 42361716385](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385) **passed** for `4e02105e13f83a0183b6bdb130ad77b52187f18b`. GitHub deployment **7619699203** succeeded at **10:05:05 UTC**; its deploy job completed at 10:05:04. The published URL is [Midnight Ballot Lab](https://ibkr-bouncybot.github.io/Midnight-BallotLab/). This conclusion comes from GitHub's API/artifact evidence; no hosted-origin request was made.
+
+The [original proof report](browser-proof-evidence.json) records **eight standalone proofs across seven circuits**, plus **one genuine bound SDK `configureKeys` transaction proof**, from **09:59:08.968 to 10:04:39.956 UTC**. Both invalid cases were rejected. Ordered real `check`/`prove` callbacks and the binding override were required for the transaction proof, which returned 5,765 proof bytes. Forbidden requests, rejected static requests, browser errors and sockets were all zero. The run used fresh synthetic browser-memory inputs, not a wallet or submitted election.
+
+Passed checks: **116 root**, **63 generated-native**, **23 provider/module/inspector**, **one Ledger callback regression**, **nine native-browser cases** and **ten network-browser cases**. Packaging checked **1,082 source files and 147 references**. The native and network [browser reports](native-browser-result.json) and [network checks](network-browser-evidence.json) remain unmodified. The two earlier failed migration runs keep their original outcomes.
+
+Exact versions: Compact **0.36.0**, compact-runtime **0.21.0**, Midnight.js **5.0.0**, ledger-v9 **1.0.0**, ZKIR **3.2.0**, Node **24.22.2**, npm **11.19.1**, Python **3.12.16**, Playwright **1.64.1**, Chromium **156.0.8078.4**. The [audit](deployment-ci-evidence-audit.json) verified the small public evidence archive digest and matched local bytes for native/network bundles, worker, manifest and all five split module files. The build contains 21 circuit assets, six public parameter files and five network WASM assets. The large Pages archive was not downloaded; its ID/digest are GitHub metadata, separately labelled.
+
+No Lace/DUST proof, signing, network submission, independent proof verification, consensus authentication or full wallet-backend attestation is established by this Pages gate. The separate reset-chain Lace attempt stopped before funding; publication does not repair its configured indexer service.
+
+[Provenance](provenance.json) and [file digests](SHA256SUMS.json) bind retained originals. A later documentation/evidence-only commit does not replace this exact tested and deployed source revision.

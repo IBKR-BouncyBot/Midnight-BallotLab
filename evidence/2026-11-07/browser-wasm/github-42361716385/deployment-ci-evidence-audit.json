@@ -1,0 +1,194 @@
+{
+  "schema": "midnight-ballot-lab/pages-deployment-ci-evidence-audit/v2",
+  "run": {
+    "id": 42361716385,
+    "headSha": "4e02105e13f83a0183b6bdb130ad77b52187f18b",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385",
+    "attempt": 1,
+    "createdAt": "2026-11-07T09:55:01Z",
+    "updatedAt": "2026-11-07T10:05:05Z"
+  },
+  "deployment": {
+    "id": 7619699203,
+    "headSha": "4e02105e13f83a0183b6bdb130ad77b52187f18b",
+    "environment": "github-pages",
+    "createdAt": "2026-11-07T10:04:50Z",
+    "statuses": [
+      {
+        "state": "success",
+        "createdAt": "2026-11-07T10:05:05Z",
+        "environmentUrl": "https://ibkr-bouncybot.github.io/Midnight-BallotLab/",
+        "logUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385/job/128373347383"
+      },
+      {
+        "state": "in_progress",
+        "createdAt": "2026-11-07T10:04:54Z",
+        "environmentUrl": "",
+        "logUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385/job/128373347383"
+      },
+      {
+        "state": "queued",
+        "createdAt": "2026-11-07T10:04:52Z",
+        "environmentUrl": "",
+        "logUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385/job/128373347383"
+      },
+      {
+        "state": "queued",
+        "createdAt": "2026-11-07T10:04:52Z",
+        "environmentUrl": "",
+        "logUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385/job/128373347383"
+      },
+      {
+        "state": "waiting",
+        "createdAt": "2026-11-07T10:04:51Z",
+        "environmentUrl": "",
+        "logUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385/job/128373347383"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": 13569548649,
+      "name": "github-pages",
+      "bytes": 97142139,
+      "expired": false,
+      "digest": "sha256:6d9b1ae5d3ae6d289c0ee1bfe5ea35a77db348025ab4fe6f0ce267e2be09e8ee",
+      "headSha": "4e02105e13f83a0183b6bdb130ad77b52187f18b"
+    },
+    {
+      "id": 13569209869,
+      "name": "pages-build-evidence",
+      "bytes": 4386571,
+      "expired": false,
+      "digest": "sha256:a325fbea35307644b9989d36330805576fa43dedb1f96580515f4b37fbedbb1a",
+      "headSha": "4e02105e13f83a0183b6bdb130ad77b52187f18b"
+    }
+  ],
+  "downloadedArtifact": {
+    "id": 13569209869,
+    "bytes": 4386571,
+    "sha256": "a325fbea35307644b9989d36330805576fa43dedb1f96580515f4b37fbedbb1a",
+    "verified": true
+  },
+  "pagesArchiveDownloaded": false,
+  "pagesArchiveDigestSource": "GitHub artifact metadata only",
+  "checks": {
+    "root": {
+      "tests": 116,
+      "pass": 116,
+      "fail": 0
+    },
+    "generatedNative": {
+      "tests": 63,
+      "pass": 63,
+      "fail": 0
+    },
+    "providerModuleInspector": {
+      "tests": 23,
+      "pass": 23,
+      "fail": 0
+    },
+    "ledgerCallbackFailure": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    }
+  },
+  "nativeBrowserCases": 9,
+  "networkBrowserCases": 10,
+  "standaloneProofs": 8,
+  "distinctCircuits": 7,
+  "boundSdkTransactionProofs": 1,
+  "negativeCases": 2,
+  "proofStartedAt": "2026-11-07T09:59:08.968Z",
+  "proofFinishedAt": "2026-11-07T10:04:39.956Z",
+  "versions": {
+    "node": "24.22.2",
+    "npm": "11.19.1",
+    "python": "3.12.16",
+    "compiler": "0.36.0",
+    "runtime": "0.21.0",
+    "midnightJs": "5.0.0",
+    "ledger": "9 / 1.0.0",
+    "zkir": "3.2.0",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4"
+  },
+  "runtimeComparison": {
+    "nativeBundle": {
+      "path": "native-bundle.mjs",
+      "sha256": "0b34695726e2c26303e34089e1cbcb46c0691ae7f07bd1874e4d12c87cbfe1b2",
+      "bytes": 716505,
+      "matchesLocalBytes": true
+    },
+    "networkBundle": {
+      "path": "network-bundle.mjs",
+      "sha256": "69722f8325ca1f65bc5f1915a2a3b873f06c7765829aef7c84008b2c28002a32",
+      "bytes": 1878652,
+      "matchesLocalBytes": true
+    },
+    "worker": {
+      "path": "native-prover-worker.mjs",
+      "sha256": "b4b6d081524631529593aa693c8dae9b4085970bfdecc8588d1b206a41574d8f",
+      "bytes": 52073,
+      "matchesLocalBytes": true
+    },
+    "manifest": {
+      "path": "native-contract/prover-manifest.json",
+      "sha256": "3a758c37625d9ae2b842ad2b71d2ce6452a20f4217b2b3a3751142bfcd08e06b",
+      "bytes": 5317,
+      "matchesLocalBytes": true
+    }
+  },
+  "networkModuleAssets": [
+    {
+      "path": "network-chunk-U62TJRRQ.mjs",
+      "bytes": 16136,
+      "sha256": "07bfe76374319bed3b235f395027fb80a61d6704d8bbb428da77e3be5117b8f8"
+    },
+    {
+      "path": "network-chunk-QZL2ECK6.mjs",
+      "bytes": 139627,
+      "sha256": "a15ee11c2296bd7a88914f96aa93f7cfb317152e983d4aa877de6b68d33a5a32"
+    },
+    {
+      "path": "network-chunk-MKPCCQ7S.mjs",
+      "bytes": 1367427,
+      "sha256": "ff0d10216fdc87107eeaa81f379e0e59a9c92585ae49023a6f12b8131cdc06b3"
+    },
+    {
+      "path": "network-chunk-5YZEYY2H.mjs",
+      "bytes": 404336,
+      "sha256": "f5b191ae97f5fb1894a75ed535b3d7d599ae1a9450be3dcab2363aabe179209b"
+    },
+    {
+      "path": "network-chunk-HTXBNCLM.mjs",
+      "bytes": 70353,
+      "sha256": "d2a92833ff7bd16528c3ac2f8822898814f76bee70963e23e829d3759b6bdac5"
+    }
+  ],
+  "networkWasmAssetCount": 5,
+  "circuitAssetCount": 21,
+  "publicParameterCount": 6,
+  "packaging": {
+    "status": "passed",
+    "localReferences": 147,
+    "sourceFiles": 1082,
+    "nativeMode": "included",
+    "networkClient": "included",
+    "urlShapes": [
+      "https://example.github.io/",
+      "https://example.github.io/arbitrary-repository-name/"
+    ],
+    "scope": "Static packaging and path checks; no browser or GitHub deployment execution"
+  },
+  "hostedOriginRequested": false,
+  "walletConnected": false,
+  "walletDustProofTested": false,
+  "networkSubmission": false,
+  "independentProofVerification": false,
+  "independentConsensusVerification": false,
+  "workflowRetried": false
+}

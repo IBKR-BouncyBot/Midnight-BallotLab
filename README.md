@@ -4,7 +4,7 @@
 
 **Cast your vote. Keep a receipt. Check the results.**
 
-**Preview network update:** the updated browser proof checks passed locally, and genuine Lace 2.5.1 connected on the reset chain with its on-device setting saved. The wallet test stopped before funding at an indexer-service check. Later probes found that wallet indexer returning HTTP 500 while the canonical Preview indexer returned 200. A complete wallet/DUST election and publication of this update remain unverified. Check the [current verification status](docs/VERIFICATION_STATUS.md) before funding; earlier elections and balances belong to the previous chain.
+**Current status:** the updated browser demo and proof checks pass, and the site is published. Lace connects with its on-device setting saved, but the wallet test stopped before funding because a service it relies on failed. The five project test addresses checked after the reset had no public test NIGHT. The complete wallet/DUST flow is still unfinished; see the [verification status](docs/VERIFICATION_STATUS.md) for the evidence and remaining steps.
 
 ## About this project
 
@@ -66,6 +66,8 @@ Under **Verify election**, choose **Upload a saved election record** to check a 
 
 To try the public testnet, choose Midnight Preview in Lace, then select **Settings → Midnight → On this device → Run in this app (WASM)** and save the configuration. Get free test NIGHT from the [Preview faucet](https://midnight-tmnight-preview.nethermind.dev/), use **Generate tDUST** in Lace and wait for usable DUST. Keep the WASM setting selected for DUST generation and election transactions. The [network guide](docs/NATIVE_NETWORK.md#public-preview-setup) walks through setup and troubleshooting.
 
+The [five project test addresses checked after the reset](evidence/2026-11-07/wallet-inventory/README.md) had no public unspent NIGHT. Earlier test balances cannot be reused as evidence of current funding; this check says nothing about other wallets or shielded balances.
+
 Ballot Lab proves contract calls in its own browser worker. Lace approves transactions and handles the separate wallet/DUST work. On the previous Preview chain, an isolated Lace 2.5.1 test completed all nine election transactions, including voting and the final tally. Eight contract proofs completed in the browser, and the saved record passed the app's checks. That full election test failed its final check for observing Lace's internal prover WASM. A [later isolated test](evidence/2026-11-07/lace-preview/fundless-diagnostic-4/README.md) passed: it captured and hash-verified the exact WASM loaded by Lace's worker and obtained a real contract proof. It used no funds and did not repeat DUST proving or network transactions. These results do not validate the reset chain or the new version graph. The [verification status](docs/VERIFICATION_STATUS.md) explains the evidence and remaining limits. Running cryptography, creating a proof and receiving network confirmation are separate milestones.
 
 The test runs use a local application origin. Wallet connection and transactions from the hosted GitHub Pages origin remain untested, as do Preprod transactions. Other API-4 wallets are conditional candidates; Cardano-only wallets are unsupported. Mainnet is blocked in the election client.
@@ -84,7 +86,7 @@ A successful check means **the supplied record agrees with its receipts and tota
 
 ## Build, test and explore the source
 
-The current source targets Compact compiler **0.36.0**, compact-runtime **0.21.0**, Midnight.js **5.0.0** and the official **zkir-v3 3.2.0** browser prover for ledger 9. On 7 November, [fresh local browser checks](evidence/2026-11-07/browser-wasm/ledger9-local/README.md) passed eight standalone proofs across seven circuits and one genuine SDK transaction proof. The browser demo flow and public-service check also passed locally. These checks used no wallet and submitted no transaction; the updated CI, deployment and reset-chain wallet election remain unverified. Exact dependency graphs are pinned in npm-generated lockfiles. Follow the [native setup guide](docs/NATIVE_MIDNIGHT.md), [Windows instructions](docs/WINDOWS_NATIVE.md), [network guide](docs/NATIVE_NETWORK.md) or [GitHub Pages guide](docs/GITHUB_PAGES.md), and read the [current verification status](docs/VERIFICATION_STATUS.md) for each stage's limits.
+The current source uses Compact compiler **0.36.0**, compact-runtime **0.21.0**, Midnight.js **5.0.0** and the official **zkir-v3 3.2.0** browser prover for ledger 9. The [7 November CI run and deployment](evidence/2026-11-07/browser-wasm/github-42361716385/README.md) passed eight standalone proofs across seven circuits, one genuine SDK transaction proof, nine native-browser and ten network-browser cases. These proof checks used no wallet and submitted no transaction; the reset-chain wallet/DUST election remains incomplete. Exact dependency graphs are pinned in npm-generated lockfiles. Follow the [native setup guide](docs/NATIVE_MIDNIGHT.md), [Windows instructions](docs/WINDOWS_NATIVE.md), [network guide](docs/NATIVE_NETWORK.md) or [GitHub Pages guide](docs/GITHUB_PAGES.md), and read the [current verification status](docs/VERIFICATION_STATUS.md) for each stage's limits.
 
 With the pinned Compact toolchain, Node 24 and Python installed:
 

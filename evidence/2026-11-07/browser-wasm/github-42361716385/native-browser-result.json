@@ -1,0 +1,272 @@
+{
+  "executedAt": "2026-11-07T09:56:49.869Z",
+  "node": "v24.22.2",
+  "execution": "generated-contract-browser-emulator",
+  "proofGeneration": false,
+  "networkSubmission": false,
+  "chainInclusionVerified": false,
+  "cases": [
+    {
+      "case": "landing-navigation",
+      "prefix": "/",
+      "passed": true,
+      "destinations": [
+        {
+          "demo": "browser",
+          "path": "/native.html",
+          "actualReady": true,
+          "wasmLoaded": 1,
+          "walletConnected": false,
+          "publicRequests": 0
+        },
+        {
+          "demo": "testnet",
+          "path": "/network.html",
+          "actualReady": true,
+          "wasmLoaded": 2,
+          "walletConnected": false,
+          "publicRequests": 0
+        }
+      ],
+      "runtimeLoadedBeforeChoice": false,
+      "walletConnected": false,
+      "publicRequests": 0,
+      "responsiveWidths": [
+        1440,
+        390,
+        320
+      ],
+      "screenshotsWithEmptyStateOnly": true
+    },
+    {
+      "case": "landing-navigation",
+      "prefix": "/arbitrary-repository-name/",
+      "passed": true,
+      "destinations": [
+        {
+          "demo": "browser",
+          "path": "/arbitrary-repository-name/native.html",
+          "actualReady": true,
+          "wasmLoaded": 1,
+          "walletConnected": false,
+          "publicRequests": 0
+        },
+        {
+          "demo": "testnet",
+          "path": "/arbitrary-repository-name/network.html",
+          "actualReady": true,
+          "wasmLoaded": 2,
+          "walletConnected": false,
+          "publicRequests": 0
+        }
+      ],
+      "runtimeLoadedBeforeChoice": false,
+      "walletConnected": false,
+      "publicRequests": 0
+    },
+    {
+      "trustees": [
+        1,
+        2
+      ],
+      "prefix": "/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 5,
+      "candidateCount": 3,
+      "receiptFilenameBoundToCastingVoter": true,
+      "selectingNextVoterPreservesReceiptAndFilename": true,
+      "voterNumberExcludedFromReceiptBodyAndQr": true,
+      "receiptJsonAndTextUploads": true,
+      "invalidOversizedAndPrivateFilesRejected": true,
+      "uploadedReceiptContextChecked": true,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false,
+      "receiptIdLookup": {
+        "currentRecord": true,
+        "verifiedImport": true,
+        "caseInsensitiveTrimmed": true,
+        "invalidAndMissingRejected": true,
+        "wrongElectionRejected": true,
+        "changedContextClearsResult": true,
+        "fullReceiptValidationPreserved": true,
+        "clipboardCopiedExactId": true,
+        "postVoteGuidance": true
+      }
+    },
+    {
+      "trustees": [
+        1,
+        3
+      ],
+      "prefix": "/arbitrary-repository-name/",
+      "entry": "index.html",
+      "passed": true,
+      "accepted": 3,
+      "candidateCount": 2,
+      "receiptFilenameBoundToCastingVoter": true,
+      "selectingNextVoterPreservesReceiptAndFilename": true,
+      "voterNumberExcludedFromReceiptBodyAndQr": true,
+      "receiptJsonAndTextUploads": true,
+      "invalidOversizedAndPrivateFilesRejected": true,
+      "uploadedReceiptContextChecked": true,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": true,
+      "receiptIdLookup": {
+        "currentRecord": true,
+        "verifiedImport": true,
+        "caseInsensitiveTrimmed": true,
+        "invalidAndMissingRejected": true,
+        "wrongElectionRejected": true,
+        "changedContextClearsResult": true,
+        "fullReceiptValidationPreserved": true,
+        "clipboardCopiedExactId": false,
+        "postVoteGuidance": true
+      }
+    },
+    {
+      "trustees": [
+        2,
+        3
+      ],
+      "prefix": "/arbitrary-repository-name/",
+      "entry": "native.html",
+      "passed": true,
+      "accepted": 7,
+      "candidateCount": 5,
+      "receiptFilenameBoundToCastingVoter": true,
+      "selectingNextVoterPreservesReceiptAndFilename": true,
+      "voterNumberExcludedFromReceiptBodyAndQr": true,
+      "receiptJsonAndTextUploads": true,
+      "invalidOversizedAndPrivateFilesRejected": true,
+      "uploadedReceiptContextChecked": true,
+      "freshTabPublicVerification": true,
+      "everyReceiptChecked": true,
+      "tamperedSnapshotRejected": true,
+      "clickableCardsChecked": true,
+      "keyboardSelectionChecked": true,
+      "exactTwoTrusteesChecked": true,
+      "renderedQrDecoded": true,
+      "receiptContextRejections": true,
+      "reset": true,
+      "wasmLoaded": 1,
+      "mobileViewportChecked": false,
+      "receiptIdLookup": {
+        "currentRecord": true,
+        "verifiedImport": true,
+        "caseInsensitiveTrimmed": true,
+        "invalidAndMissingRejected": true,
+        "wrongElectionRejected": true,
+        "changedContextClearsResult": true,
+        "fullReceiptValidationPreserved": true,
+        "clipboardCopiedExactId": false,
+        "postVoteGuidance": true
+      }
+    },
+    {
+      "case": "scheduled-local-preview",
+      "passed": true,
+      "realWallClock": true,
+      "durationSeconds": 15,
+      "configuredVoters": 5,
+      "setupCpuSlowdown": 12,
+      "accepted": 1,
+      "candidateCount": 3,
+      "trustees": [
+        1,
+        3
+      ],
+      "automaticCloseAndFinalize": true,
+      "proofGeneration": false,
+      "networkSubmission": false
+    },
+    {
+      "case": "scheduled-preview-resumed-after-deadline",
+      "passed": true,
+      "realChromiumLifecycleFrozen": true,
+      "realWallClock": true,
+      "durationSeconds": 15,
+      "accepted": 0,
+      "frozenElapsedMs": 26633,
+      "trustees": [
+        1,
+        3
+      ],
+      "automaticCloseAndFinalize": true,
+      "proofGeneration": false,
+      "networkSubmission": false
+    },
+    {
+      "failure": "disabled-build",
+      "passed": true,
+      "controlsDisabled": true
+    },
+    {
+      "failure": "missing-wasm",
+      "passed": true,
+      "controlsDisabled": true
+    }
+  ],
+  "generatedContractSha256": "17a6ca819e6d170eaf74d1ed1f7c931a4867efe5e1583b6d4bb89e147c09dd07",
+  "bundleSha256": "0b34695726e2c26303e34089e1cbcb46c0691ae7f07bd1874e4d12c87cbfe1b2",
+  "compiler": "0.36.0",
+  "runtime": "0.21.0",
+  "wasmAssets": [
+    {
+      "asset": "native-assets/midnight_onchain_runtime_wasm_bg-a10579365a8bf303abdcedef906f4bdf4a159f189f19c86c654bd75d0a0c870d.wasm",
+      "sha256": "a10579365a8bf303abdcedef906f4bdf4a159f189f19c86c654bd75d0a0c870d",
+      "bytes": 1557706
+    }
+  ],
+  "networkModuleAssets": [
+    {
+      "path": "network-chunk-U62TJRRQ.mjs",
+      "bytes": 16136,
+      "sha256": "07bfe76374319bed3b235f395027fb80a61d6704d8bbb428da77e3be5117b8f8"
+    },
+    {
+      "path": "network-chunk-QZL2ECK6.mjs",
+      "bytes": 139627,
+      "sha256": "a15ee11c2296bd7a88914f96aa93f7cfb317152e983d4aa877de6b68d33a5a32"
+    },
+    {
+      "path": "network-chunk-MKPCCQ7S.mjs",
+      "bytes": 1367427,
+      "sha256": "ff0d10216fdc87107eeaa81f379e0e59a9c92585ae49023a6f12b8131cdc06b3"
+    },
+    {
+      "path": "network-chunk-5YZEYY2H.mjs",
+      "bytes": 404336,
+      "sha256": "f5b191ae97f5fb1894a75ed535b3d7d599ae1a9450be3dcab2363aabe179209b"
+    },
+    {
+      "path": "network-chunk-HTXBNCLM.mjs",
+      "bytes": 70353,
+      "sha256": "d2a92833ff7bd16528c3ac2f8822898814f76bee70963e23e829d3759b6bdac5"
+    }
+  ],
+  "networkBundleSha256": "69722f8325ca1f65bc5f1915a2a3b873f06c7765829aef7c84008b2c28002a32",
+  "landingHtmlSha256": "df4faed618d507e6d12ce2264451db429b53fa44297218bda14cad9f9ee778b7",
+  "landingCssSha256": "1593018e2d631aa1e3653d1ca09dcf491817ab0965ba5a6d3e475ce026a6122d",
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}

@@ -1,0 +1,108 @@
+{
+  "schema": "midnight-ballot-lab/current-public-test-wallet-inventory/v1",
+  "startedAt": "2026-11-07T09:58:04.685Z",
+  "networkId": "preview",
+  "status": "observed",
+  "runnerSha256": "6510c31eeb9c11451fe0614782cfd31c6e25c7ed250260bf1f660b74a293d860",
+  "querySha256": "8b3e7485a67a91ce17b961444e114e59a66ff6c4f1fff1379f5773754a2395cc",
+  "walletOpened": false,
+  "privateFilesRead": false,
+  "checkpointsRead": false,
+  "checkpointsWritten": false,
+  "transactionsSubmitted": 0,
+  "balancesSource": "bounded-canonical-indexer-address-replay-from-zero",
+  "independentConsensusVerification": false,
+  "spendableWalletBalanceAttested": false,
+  "scope": "Unspent public NIGHT only; no shielded balance, DUST balance, signing access or pending wallet reservation claim.",
+  "wallets": [
+    {
+      "label": "ballot-sdk",
+      "recoveryCategory": "project-encrypted-test-wallet",
+      "address": "mn_addr_preview1rpmjpupd48utfq3kz6zzpqe8t2nvjrm9t8nlj809mkhhsww0p64qvy6zw2",
+      "publicSource": ".local/ballot-preview-acceptance/public/wallet.json",
+      "publicSourceSha256": "359f2480ceb31c57b7a782e334a9c19640ce9cdc710e91a54fd753892bcc261f",
+      "status": "observed",
+      "signerAccessVerified": false,
+      "unspentNightAtomic": "0",
+      "unspentNight": "0.000000",
+      "unspentNightOutputs": 0,
+      "addressTransactionCursor": 0,
+      "replayedTransactions": 0
+    },
+    {
+      "label": "confidential-payment-owner",
+      "recoveryCategory": "project-encrypted-test-wallet",
+      "address": "mn_addr_preview1362nnhm94y3jtdmn0sdhrl6hh770t2u657drsemzrf9weg65uyrs63g26c",
+      "publicSource": ".local/demo-preview/identity-public.json",
+      "publicSourceSha256": "285904d36e2acc8ac7983b5efba418e1e8b76e0d231f300f49af4e2fd0c1fc3e",
+      "status": "observed",
+      "signerAccessVerified": false,
+      "unspentNightAtomic": "0",
+      "unspentNight": "0.000000",
+      "unspentNightOutputs": 0,
+      "addressTransactionCursor": 0,
+      "replayedTransactions": 0
+    },
+    {
+      "label": "confidential-payment-merchant",
+      "recoveryCategory": "project-encrypted-test-wallet",
+      "address": "mn_addr_preview1qjjnvxr92rh3uprec7nuka9lx40qwk7zlna5vn5u3rf7g5w0k59qfe2xzv",
+      "publicSource": ".local/demo-preview/identity-public.json",
+      "publicSourceSha256": "285904d36e2acc8ac7983b5efba418e1e8b76e0d231f300f49af4e2fd0c1fc3e",
+      "status": "observed",
+      "signerAccessVerified": false,
+      "unspentNightAtomic": "0",
+      "unspentNight": "0.000000",
+      "unspentNightOutputs": 0,
+      "addressTransactionCursor": 0,
+      "replayedTransactions": 0
+    },
+    {
+      "label": "confidential-payment-lace",
+      "recoveryCategory": "historical-isolated-ci-wallet-local-signer-not-verified",
+      "address": "mn_addr_preview1r8f5pda8pge38m2g0z2t96kn9kg5a2y533m7my24llekjf4j779qfyu46w",
+      "publicSource": ".local/lace-ci-runs/42284877368/funding.json",
+      "publicSourceSha256": "811e8c67b08c793397d70abd446a99b21176df2cc134cc61efa9b4a9f0656aa7",
+      "status": "observed",
+      "signerAccessVerified": false,
+      "unspentNightAtomic": "0",
+      "unspentNight": "0.000000",
+      "unspentNightOutputs": 0,
+      "addressTransactionCursor": 0,
+      "replayedTransactions": 0
+    },
+    {
+      "label": "reviewlab-sdk",
+      "recoveryCategory": "project-encrypted-test-wallet",
+      "address": "mn_addr_preview1p35fx287danunuhw7ezctf5n0hkr5cc4ctxv00nhsf7wmvyjxx8sqc3n0f",
+      "publicSource": ".local/ballot-browser-proving/evidence/2026-11-07/reviewlab-sdk2-readonly/address.json",
+      "publicSourceSha256": "89f72cfad025875f3cf7b7896edf3c70900d7b568442e14392b7dcd18176fb4f",
+      "status": "observed",
+      "signerAccessVerified": false,
+      "unspentNightAtomic": "0",
+      "unspentNight": "0.000000",
+      "unspentNightOutputs": 0,
+      "addressTransactionCursor": 0,
+      "replayedTransactions": 0
+    }
+  ],
+  "chainIdentity": {
+    "networkId": "preview",
+    "genesisHash": "0x3c096de209e06a1a8c52be7bda109ee8c891a42288c0a9db5495f9616dd13796",
+    "ledgerEra": "v9",
+    "protocolVersion": 2001100
+  },
+  "indexerGenesisVerified": true,
+  "headBefore": {
+    "height": 5340,
+    "hash": "31b711c35d92c508eb5836554f506d1ccf48e8366b73debfe6f47011b943c69c",
+    "protocolVersion": 2001100
+  },
+  "headAfter": {
+    "height": 5340,
+    "hash": "31b711c35d92c508eb5836554f506d1ccf48e8366b73debfe6f47011b943c69c",
+    "protocolVersion": 2001100
+  },
+  "observedHeadAnchorUnchanged": true,
+  "finishedAt": "2026-11-07T09:58:05.136Z"
+}

@@ -2,7 +2,15 @@
 
 See [current verification status](VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
-## Latest Pages deployment — 6 November 2026
+## Current ledger-9 deployment — 7 November 2026
+
+[Run 42361716385](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42361716385) **passed** for exact source `4e02105e13f83a0183b6bdb130ad77b52187f18b`. Deployment job **128373347383** completed at **10:05:04 UTC**; GitHub deployment **7619699203** recorded success at **10:05:05**. The [original reports and audit](../evidence/2026-11-07/browser-wasm/github-42361716385/README.md) establish 116 root tests, 63 generated-native tests, 23 provider/module/inspector tests, one callback regression, nine native-browser and ten network-browser cases. Eight standalone proofs across seven circuits and one genuine bound SDK `configureKeys` transaction proof completed, with both invalid cases rejected. Packaging checked **1,082 source files and 147 references**.
+
+The graph used Compact **0.36.0**, compact-runtime **0.21.0**, Midnight.js **5.0.0**, ledger-v9 **1.0.0**, ZKIR **3.2.0**, Node **24.22.2**, npm **11.19.1**, Python **3.12.16**, Playwright **1.64.1** and Chromium **156.0.8078.4**. The public CI evidence archive digest was verified; native/network bundles, worker, manifest and all five split module hashes match local bytes. The large Pages archive was not downloaded: its artifact ID/digest are explicitly API metadata. No hosted-origin request, wallet/DUST proof, signing, network submission or independent proof/consensus verification is claimed.
+
+Earlier migration runs [42360703236](../evidence/2026-11-07/browser-wasm/github-42360703236/README.md) and [42361101178](../evidence/2026-11-07/browser-wasm/github-42361101178/README.md) retain their failed browser-test outcomes and skipped deployments. The completed corrected run does not rewrite either failure. Later documentation/evidence-only commits are distinct from this tested/deployed application source.
+
+## Historical Pages deployment — 6 November 2026
 
 [Run 42311868015](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42311868015) passed for commit `3251fcc364114ac2c806a421df9910ad8303d6f8`. GitHub deployment **7613382685** succeeded at **23:42:44 UTC**. Its [original proof report and compact audit](../evidence/2026-11-06/browser-wasm/github-42311868015/README.md) verify eight standalone proofs across seven circuits, one genuine bound SDK `configureKeys` proof, both negatives, 111 boundary tests, 62 generated tests, 13 provider/worker tests, one Ledger-failure regression, nine native-browser and ten network-browser cases. Packaging checked **943 source files and 130 references**. Runtime/worker/asset hashes match the audited application; only the small CI artifact was downloaded this time. This is exact-commit API/artifact publication evidence, with no hosted-origin request, wallet/DUST test or network transaction in the Pages gate.
 
@@ -10,7 +18,7 @@ See [current verification status](VERIFICATION_STATUS.md) for completed runs, th
 
 [Run 42314102280](../evidence/2026-11-07/browser-wasm/github-42314102280/README.md) passed all 26 build steps for `5cf2e019f82721318da85aa9bda114c0b5f1cc34`, including the eight standalone proofs, one bound SDK proof, both negatives and the same compiler/runtime/browser gates. Packaging checked **956 source files and 130 references**. Deployment **7613668397** was cancelled at **00:15:25 UTC** after **116 `syncing_files` polls** at the ten-minute limit. No retry or backend-cause claim was made.
 
-The latest confirmed deployment therefore remains **3251fcc** above. Native/network bundles, worker and manifest hashes match the passed 5cf build exactly. The separate [fundless Lace diagnostic](../evidence/2026-11-07/lace-preview/fundless-diagnostic-4/README.md) passed at source commit **8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8** through its explicitly dispatched workflow; that diagnostic-only revision is not another Pages deployment. Later test-harness or documentation/evidence commits likewise do not create new runtime test or publication claims; the future funded-observer wiring has boundary-test coverage but no new funded execution.
+At that point, the latest confirmed deployment remained **3251fcc** above. Native/network bundles, worker and manifest hashes match the passed 5cf build exactly. The separate [fundless Lace diagnostic](../evidence/2026-11-07/lace-preview/fundless-diagnostic-4/README.md) passed at source commit **8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8** through its explicitly dispatched workflow; that diagnostic-only revision is not another Pages deployment. Later test-harness or documentation/evidence commits likewise do not create new runtime test or publication claims; the future funded-observer wiring has boundary-test coverage but no new funded execution.
 
 ## Pages publication outcomes before 3251fcc — 6 November 2026
 

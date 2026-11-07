@@ -1,0 +1,80 @@
+{
+  "schema": "midnight-ballot-lab/retained-pages-success/v1",
+  "headSha": "4e02105e13f83a0183b6bdb130ad77b52187f18b",
+  "runId": "42361716385",
+  "artifact": {
+    "id": 13569209869,
+    "name": "pages-build-evidence",
+    "bytes": 4386571,
+    "expired": false,
+    "digest": "sha256:a325fbea35307644b9989d36330805576fa43dedb1f96580515f4b37fbedbb1a",
+    "headSha": "4e02105e13f83a0183b6bdb130ad77b52187f18b"
+  },
+  "retainedOriginals": [
+    {
+      "path": "deployment-ci-evidence-audit.json",
+      "sha256": "1838dc15933459f8aae70f5d78c5976ed026d7603d4466f6df27c2d86e4df24e"
+    },
+    {
+      "path": "workflow-run.json",
+      "sha256": "643b33f1a3633638bc36f328bcbdc18b3ae0de5eb71b66cf22f0e68c1ad225f0"
+    },
+    {
+      "path": "workflow-progress.json",
+      "sha256": "69d7cab2f5bb87dd3681f099a669aa84d8fac3be0c0305c2cbe1c53d30eedd3b"
+    },
+    {
+      "path": "deployment.json",
+      "sha256": "bd3f97ff9b1e72e295846eccec01e20b22dd3a1796c00410916c4fb2fcf83558"
+    },
+    {
+      "path": "browser-proof-evidence.json",
+      "sha256": "1ab9c8793e8b50137ced23604ee751dd50c5d02090267bd7dc83a219c0c376a5"
+    },
+    {
+      "path": "native-browser-result.json",
+      "sha256": "8b8656cc37ac6f2406e6b6a76010248a8604cc28fe77ff81a091d7b1f54ecc05"
+    },
+    {
+      "path": "network-browser-evidence.json",
+      "sha256": "c11086b61932e83d6e2e2b194adcf0ace5de90c99f42a2554fb5e7a98abcef2a"
+    },
+    {
+      "path": "native-build.json",
+      "sha256": "58e839378921a8717799f34bdc357e167bb8efa031438e1dec8bdedf2f802722"
+    },
+    {
+      "path": "network-build.json",
+      "sha256": "2e4c2f73efa586ef3af628469e03ea137db0f7920009e9c16760caf1d0f7c755"
+    }
+  ],
+  "testLogHashes": [
+    {
+      "path": "toolchain.log",
+      "sha256": "0f50493446ba6a5a1f18563c43a46e95ba46d3102c2f62879b766d89a721b7a4"
+    },
+    {
+      "path": "native-boundary-tests.log",
+      "sha256": "97696c1e9054d93e7e90e6bf4c583cbb5fcae0a31e9425428ed99f44505c450d"
+    },
+    {
+      "path": "native-election-tests.log",
+      "sha256": "aaf4ed9740e1b0638a067f4ae45dd147eee3597ca39f1f767451c57ddd09e569"
+    },
+    {
+      "path": "provider-api-tests.log",
+      "sha256": "83a1338e2482f0f5c4d94b59378802acc8a7a6db523674d12d5d38d63e932469"
+    },
+    {
+      "path": "browser-prover-failure-tests.log",
+      "sha256": "6df8e7c5d6569fa01c7434deaee3e5c91d689b0b30412bdee1357c8db3be106c"
+    },
+    {
+      "path": "pages-packaging.log",
+      "sha256": "de2dd4f459d73b473e3b97734c564db33b05b47f4f1f619d2d915bef8190fcc6"
+    }
+  ],
+  "originalReportsModified": false,
+  "hostedOriginRequested": false,
+  "pagesArchiveDownloaded": false
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "midnight-ballot-lab/public-wallet-inventory-provenance/v1",
+  "originalReport": "artifacts/wallet-inventory-2026-11-07/public-wallet-balances-1794045485136.json",
+  "originalReportsModified": false,
+  "reportSha256": "ff0e11bb6d4c01b8297721e135692d0dad1d4f1f8bcd3ca94c590b62f2da9be9",
+  "executedHelperSha256": "6510c31eeb9c11451fe0614782cfd31c6e25c7ed250260bf1f660b74a293d860",
+  "querySha256": "8b3e7485a67a91ce17b961444e114e59a66ff6c4f1fff1379f5773754a2395cc",
+  "sourcePublicRecords": [
+    {
+      "path": ".local/ballot-preview-acceptance/public/wallet.json",
+      "sha256": "359f2480ceb31c57b7a782e334a9c19640ce9cdc710e91a54fd753892bcc261f"
+    },
+    {
+      "path": ".local/demo-preview/identity-public.json",
+      "sha256": "285904d36e2acc8ac7983b5efba418e1e8b76e0d231f300f49af4e2fd0c1fc3e"
+    },
+    {
+      "path": ".local/demo-preview/identity-public.json",
+      "sha256": "285904d36e2acc8ac7983b5efba418e1e8b76e0d231f300f49af4e2fd0c1fc3e"
+    },
+    {
+      "path": ".local/lace-ci-runs/42284877368/funding.json",
+      "sha256": "811e8c67b08c793397d70abd446a99b21176df2cc134cc61efa9b4a9f0656aa7"
+    },
+    {
+      "path": ".local/ballot-browser-proving/evidence/2026-11-07/reviewlab-sdk2-readonly/address.json",
+      "sha256": "89f72cfad025875f3cf7b7896edf3c70900d7b568442e14392b7dcd18176fb4f"
+    }
+  ],
+  "sourceWalletFilesCopied": false,
+  "privateFilesRead": false,
+  "transactionsSubmitted": 0
+}
