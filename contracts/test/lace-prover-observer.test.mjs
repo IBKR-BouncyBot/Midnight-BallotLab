@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
 import { laceProverTargetKind, verifyLaceProverResource, observeLaceProverWasm } from '../../scripts/lace-prover-observer.mjs';
 
 const origin = 'chrome-extension://gafhhkghbfjjkeiendhlofajokpaflmk';
@@ -24,6 +26,36 @@ test('resource gate rejects wrong encodings, lengths and same-size substituted b
 test('unsupported CDP rejects with fixed text without leaking transport details', async () => {
   await assert.rejects(observeLaceProverWasm({ newBrowserCDPSession: async () => { throw new Error('private transport detail'); } }),
     error => error.message === 'Passive Lace prover observation did not complete');
+});
+
+test('observation windows reject invalid/unbounded durations before opening CDP', async () => {
+  let opened = false;
+  const browser = { newBrowserCDPSession: async () => { opened = true; throw Error('Must not open'); } };
+  for (const windowMilliseconds of [0, -1, NaN, Infinity, 0.5, 180 * 60_000 + 1, null, '1800000']) {
+    await assert.rejects(observeLaceProverWasm(browser, { windowMilliseconds }),
+      error => error.message === 'Passive Lace prover observation did not complete');
+  }
+  assert.equal(opened, false);
+});
+
+test('discovery expiry cannot invalidate a previously verified observation', async () => {
+  // A lifecycle-only check of the exact source guard. No verifier, WASM body,
+  // proof or successful observation report is substituted or produced here.
+  const source = await readFile(new URL('../../scripts/lace-prover-observer.mjs', import.meta.url), 'utf8');
+  const from = source.indexOf('  async function refreshTargets()'), to = source.indexOf('  function scheduleRefresh()', from);
+  assert.ok(from >= 0 && to > from);
+  for (const observed of [false, true]) {
+    const failures = []; let sent = false;
+    const context = vm.createContext({ closed: false, closing: false, observation: observed ? {} : null,
+      discovery: { snapshots: 3600, refreshLimit: 3600 }, started: 0, windowMilliseconds: 1_800_000,
+      Date: { now: () => 10_800_000 }, fail: category => failures.push(category),
+      send: async () => { sent = true; throw Error('No refresh may run'); } });
+    vm.runInContext(source.slice(from, to) + '\nthis.refresh = refreshTargets;', context);
+    await context.refresh();
+    assert.equal(sent, false);
+    assert.equal(failures.length, observed ? 0 : 1);
+    if (!observed) assert.equal(failures[0], 'observer-discovery-window-ended');
+  }
 });
 
 // Transport-boundary fixtures only: no wallet, proof, WASM response or observed
@@ -80,9 +112,21 @@ test('bounded refresh reconsiders a worker whose URL was initially empty', async
     assert.equal(result.targetCounts.worker, 1);
     assert.equal(result.discovery.classifiedTargets.workerUrlEmpty, 1);
     assert.equal(result.discovery.classifiedTargets.workerExact, 1);
+    assert.equal(result.discovery.windowMilliseconds, 1_800_000);
     assert.equal(result.observed, false);
     assert.equal(result.failureCategory, null);
     assert.ok(!JSON.stringify(result).includes('synthetic-worker'), 'Target IDs must not be exported');
+  } finally { await observer.close(); }
+});
+
+test('funded observation budget remains capped at the explicit three-hour runner bound', async () => {
+  const fixture = transport({ lateWorker: true });
+  const observer = await observeLaceProverWasm(fixture.browser, { windowMilliseconds: 10_800_000 });
+  try {
+    const result = observer.snapshot();
+    assert.equal(result.discovery.windowMilliseconds, 10_800_000);
+    assert.equal(result.discovery.refreshLimit, 21_600);
+    assert.equal(result.observed, false);
   } finally { await observer.close(); }
 });
 

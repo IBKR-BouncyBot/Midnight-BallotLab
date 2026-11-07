@@ -1,0 +1,22 @@
+{
+  "schema": "midnight-ballot-lab/ci-environment-artifact-provenance/v1",
+  "runId": "42315234751",
+  "headSha": "8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8",
+  "artifactId": "13550054574",
+  "archiveBytes": 641,
+  "archiveSha256": "8b63caa4956cc6b6b40c4a3c93689b03e02c534df021cc32448d1599ad0b6615",
+  "archiveDigestMatchedGitHubApi": true,
+  "retainedReportUnmodified": true,
+  "files": [
+    {
+      "path": "environment-initial.json",
+      "bytes": 815,
+      "sha256": "f8b353afdc15649228fbf99e30f59f13443e5bbd0376fe2b7cbdb2ed520daeca"
+    }
+  ],
+  "initialCheckPassed": true,
+  "repairPathExercised": false,
+  "extensionLoaded": false,
+  "proofsRequested": false,
+  "transactionsSubmitted": false
+}

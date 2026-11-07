@@ -11,6 +11,7 @@ import { createRequire } from 'node:module';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { decodeJsonUtf8, parseStrictJson } from '../src/json.mjs';
+import { validateProverObservation } from './ci-lace-prover-diagnostic-check.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requireContracts = createRequire(join(root, 'contracts/package.json'));
@@ -45,7 +46,6 @@ const journal = { schema: 'midnight-ballot-lab/ci-public-transaction-journal/v1'
 let output, browserContext, app, wallet, server, origin, profileRoot, siteDirectory, proverObserver;
 let stage = 'ci-prerequisites', currentOperation, canSave = false, shuttingDown = false;
 let walletPassword, appPassword, publicIdentity, detachWalletResponseObserver;
-const walletWasmObservations = [];
 const walletVendorServiceUrls = new Set(), configurationResponses = [];
 let configurationFailure = false;
 const settingsControlIds = Object.freeze(['settings-tab-btn', 'option-list-item-network', 'radio-button-testnet',
@@ -100,6 +100,7 @@ function save() {
   if (!canSave) return Promise.resolve();
   // Serialize writes, including progress callbacks, without capturing secrets.
   const persist = async () => {
+    if (proverObserver) report.walletProverObservation = proverObserver.snapshot();
     if (diagnosticMode) {
       const publicReport = Object.fromEntries(DIAGNOSTIC_PUBLIC_FIELDS.filter(key => report[key] !== undefined).map(key => [key, report[key]]));
       await atomic('prover-diagnostic-report.json', { ...publicReport, currentStage: stage, traffic });
@@ -759,6 +760,14 @@ async function runFundlessDiagnostic(addressCodec) {
     bytes: proof.bytes, sha256: proof.sha256, elapsedMs: proof.elapsedMs };
   await save();
   await setStage('verify-fundless-wallet-prover-observation');
+  await requireWalletProverObservation();
+  requireThat(report.operations.length === 0 && !report.fundingRequestSha256 && !report.dustRegistration,
+    'fundless-diagnostic-exit-boundary');
+  await setStage('fundless-proof-completed');
+  report.status = 'passed'; report.finishedAt = new Date().toISOString(); await save();
+}
+async function requireWalletProverObservation() {
+  requireThat(proverObserver, 'wallet-prover-observer-required');
   try {
     await poll(() => {
       const value = proverObserver.snapshot(); report.walletProverObservation = value;
@@ -770,14 +779,13 @@ async function runFundlessDiagnostic(addressCodec) {
     if (safeFailures.get(error) === 'bounded-stage-timeout') fail('wallet-prover-WASM-resource-not-observed');
     throw error;
   }
-  const observed = report.walletProverObservation;
-  requireThat(observed.status === 'observed' && observed.failureCategory === null
-    && observed.path === WALLET_PROVER_WASM && observed.bytes === WALLET_PROVER_WASM_BYTES
-    && observed.sha256 === WALLET_PROVER_WASM_SHA, 'wallet-prover-observation-mismatch');
-  requireThat(report.operations.length === 0 && !report.fundingRequestSha256 && !report.dustRegistration,
-    'fundless-diagnostic-exit-boundary');
-  await setStage('fundless-proof-completed');
-  report.status = 'passed'; report.finishedAt = new Date().toISOString(); await save();
+  await proverObserver.close();
+  report.walletProverObservation = proverObserver.snapshot();
+  try { validateProverObservation(report.walletProverObservation, { completed: true,
+    maxWindowMilliseconds: (diagnosticMode ? 30 : 180) * 60_000 }); }
+  catch { fail('wallet-prover-observation-mismatch'); }
+  requireThat(hash(await readFile(new URL('./lace-prover-observer.mjs', import.meta.url))) === report.proverObserverSha256,
+    'wallet-prover-observer-changed-during-test');
 }
 async function shutdown() {
   if (shuttingDown) return; shuttingDown = true;
@@ -790,7 +798,7 @@ async function shutdown() {
 }
 async function emergencyFailure(category) {
   report.status = 'failed'; report.failureCategory = category; report.failedStage = stage;
-  if (diagnosticMode && proverObserver) report.walletProverObservation = proverObserver.snapshot();
+  if (proverObserver) report.walletProverObservation = proverObserver.snapshot();
   if (currentOperation?.status === 'requested') currentOperation.status = 'uncertain';
   if (['approval-requested', 'awaiting-wallet-sync'].includes(report.dustRegistration?.status)) report.dustRegistration.status = 'uncertain';
   await save().catch(() => {});
@@ -908,14 +916,6 @@ try {
         applyPublicVendorFlags(await response.body()); traffic.publicConfigurationResponses++;
       })().catch(() => { configurationFailure = true; }));
     }
-    if (response.ok() && url === `${extensionOrigin}/${WALLET_PROVER_WASM}`) {
-      walletWasmObservations.push((async () => {
-        const bytes = await response.body();
-        requireThat(bytes.length === WALLET_PROVER_WASM_BYTES && hash(bytes) === WALLET_PROVER_WASM_SHA,
-          'loaded-wallet-prover-WASM-mismatch');
-        report.walletProverWasm = { observed: true, bytes: bytes.length, sha256: hash(bytes), evidence: 'actual-browser-resource-response' };
-      })());
-    }
     if (response.ok() && url.endsWith('.wasm')) {
       if (url.startsWith(extensionOrigin + '/')) traffic.walletWasmResources++;
       else if (url.startsWith(origin + '/')) traffic.appWasmResources++;
@@ -943,11 +943,12 @@ try {
     await poll(normalConfigurationReady, 30_000, 250);
   }
   await restartNormalWalletContextBeforeCreation(launchWalletContext);
-  if (diagnosticMode) {
-    await setStage('arm-fundless-wallet-prover-observer');
+  {
+    await setStage(diagnosticMode ? 'arm-fundless-wallet-prover-observer' : 'arm-wallet-prover-observer');
     const { observeLaceProverWasm } = await import('./lace-prover-observer.mjs');
     report.proverObserverSha256 = hash(await readFile(new URL('./lace-prover-observer.mjs', import.meta.url)));
-    proverObserver = await observeLaceProverWasm(browserContext.browser());
+    const windowMilliseconds = diagnosticMode ? 30 * 60_000 : Math.min(180 * 60_000, overallDeadline - Date.now());
+    proverObserver = await observeLaceProverWasm(browserContext.browser(), { windowMilliseconds });
     report.walletProverObservation = proverObserver.snapshot(); await save();
   }
   await setStage('create-fresh-test-wallet');
@@ -1165,8 +1166,8 @@ try {
   requireThat(report.operations.length === 9 && report.operations.every(op => op.status === 'indexer-accepted')
     && new Set(report.operations.map(op => op.txId)).size === 9, 'incomplete-accepted-flow');
   requireThat(report.operations.filter(op => op.phases.includes('contract-proof-completed')).length === 8, 'incomplete-contract-proof-evidence');
-  await bounded(Promise.all(walletWasmObservations), 30_000);
-  requireThat(report.walletProverWasm?.observed === true, 'wallet-prover-WASM-resource-not-observed');
+  await setStage('verify-wallet-prover-observation');
+  await requireWalletProverObservation();
   requireThat(hash(await readFile(join(root, 'dist/network-bundle.mjs'))) === report.networkBundleSha256, 'bundle-changed-during-test');
   report.finalizedTotals = record.finalizedTotals; report.publicRecordConsistent = true;
   report.acceptedApplicationTransactions = 9; report.observedContractProofCompletions = 8;
@@ -1179,7 +1180,7 @@ try {
     ?? (error?.name === 'TimeoutError' ? 'ui-stage-timeout' : 'sanitized-boundary-or-runtime-failure');
   if (currentOperation?.status === 'requested') currentOperation.status = 'uncertain';
   if (['approval-requested', 'awaiting-wallet-sync'].includes(report.dustRegistration?.status)) report.dustRegistration.status = 'uncertain';
-  if (diagnosticMode && proverObserver) report.walletProverObservation = proverObserver.snapshot();
+  if (proverObserver) report.walletProverObservation = proverObserver.snapshot();
   report.settingsControls = await bounded(settingsControlSnapshot(), 15_000).catch(() => []);
   if (wallet && !wallet.isClosed()) await bounded(settingsModeSnapshot('failure'), 10_000).catch(() => {});
   report.finishedAt = new Date().toISOString();

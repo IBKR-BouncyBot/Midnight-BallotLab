@@ -15,6 +15,7 @@ export const LACE_PROGRESS_STAGES = Object.freeze([
   'wait-normal-wallet-replacement-after-view', 'wait-wallet-onboarding-after-configuration-activation',
   'restart-browser-context-before-wallet-creation', 'relaunch-browser-context-with-same-profile',
   'open-wallet-after-normal-browser-restart', 'wait-onboarding-after-normal-browser-restart',
+  'arm-wallet-prover-observer', 'verify-wallet-prover-observation',
   'arm-fundless-wallet-prover-observer', 'open-fundless-prover-diagnostic',
   'connect-fundless-prover-diagnostic', 'run-fundless-lace-proof',
   'verify-fundless-wallet-prover-observation', 'fundless-proof-completed',

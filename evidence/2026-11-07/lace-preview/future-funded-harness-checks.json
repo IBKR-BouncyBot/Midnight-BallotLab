@@ -1,0 +1,63 @@
+{
+  "schema": "midnight-ballot-lab/local-harness-checks/v1",
+  "recordedAt": "2026-11-07T00:25:49.292Z",
+  "baseCommit": "8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8",
+  "scope": "Future funded observer integration: local source and boundary checks only",
+  "node": "v24.18.0",
+  "platform": "win32",
+  "command": "node --test contracts/test/lace-ci-public-files.test.mjs contracts/test/lace-ci-progress.test.mjs contracts/test/lace-ci-diagnostic.test.mjs contracts/test/lace-prover-diagnostic-check.test.mjs contracts/test/lace-prover-observer.test.mjs",
+  "result": {
+    "tests": 25,
+    "passed": 25,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "newWalletCreated": false,
+  "newProofGenerated": false,
+  "newFunding": false,
+  "newNetworkTransaction": false,
+  "newHostedOriginTest": false,
+  "sourceFiles": [
+    {
+      "path": "scripts/ci-lace-preview-progress.mjs",
+      "sha256": "ef938272b4ab486a25eeb0fd3b56b367b6b6132de744568f4176914db2328bbe"
+    },
+    {
+      "path": "scripts/ci-lace-preview-public-check.mjs",
+      "sha256": "26b58b23617554bf39f0f62fbac8a52946a7b04c93849c155e45ac6508eeed4a"
+    },
+    {
+      "path": "scripts/ci-lace-prover-diagnostic-check.mjs",
+      "sha256": "0e6a720f1c38d5952d8a488bf9c1bb3107af683192b7a72ffec73805917e5361"
+    },
+    {
+      "path": "scripts/lace-prover-observer.mjs",
+      "sha256": "a3b03e1dd4fe111aec47c684370caeb4857b7ab574c3b64b011bbfe3146b0056"
+    },
+    {
+      "path": "scripts/test-lace-preview-browser.mjs",
+      "sha256": "485deec46ec59dad5c4d0208cb1871916fd2c983b237b4af1ba37fe7986eec56"
+    },
+    {
+      "path": "contracts/test/lace-ci-diagnostic.test.mjs",
+      "sha256": "0b7481eda183bd99eb37c8828ef5da10614e2159d82baa2761a6ca226dcad84a"
+    },
+    {
+      "path": "contracts/test/lace-ci-public-files.test.mjs",
+      "sha256": "766b07a0077732f8d606510be2e15e051385bfac9ccb512c323490b748bafe75"
+    },
+    {
+      "path": "contracts/test/lace-ci-progress.test.mjs",
+      "sha256": "3f74e476179806330b2db4d6af13ed3c6ef1ea67d314aadb119a9a1fd512d8e9"
+    },
+    {
+      "path": "contracts/test/lace-prover-diagnostic-check.test.mjs",
+      "sha256": "3c4e4ddca973306cbff77623da40c0fe14673ee0803cdf7ab28822f8ca64832e"
+    },
+    {
+      "path": "contracts/test/lace-prover-observer.test.mjs",
+      "sha256": "f7a48408ec15a13caab04c7b9b1133ae0a18ae5697eaf22191ababa44e50ec6c"
+    }
+  ]
+}

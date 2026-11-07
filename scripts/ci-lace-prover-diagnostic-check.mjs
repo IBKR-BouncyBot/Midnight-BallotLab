@@ -53,7 +53,9 @@ function publicTree(value, depth = 0) {
     publicTree(own(value, key), depth + 1);
   }
 }
-function observation(value) {
+export function validateProverObservation(value, { completed = false, maxWindowMilliseconds = 1_800_000 } = {}) {
+  requireValue(Number.isSafeInteger(maxWindowMilliseconds) && maxWindowMilliseconds > 0
+    && maxWindowMilliseconds <= 10_800_000 && typeof completed === 'boolean');
   plain(value);
   const required = ['observed', 'status', 'failureCategory', 'targetCounts', 'requestPayloadsInspected',
     'unrelatedEventsRetained', 'completeNetworkCoverage', 'runtimeEvaluationUsed', 'executionPaused', 'discovery'];
@@ -68,8 +70,11 @@ function observation(value) {
   requireValue(Object.keys(value.targetCounts).length === 2
     && ['offscreen', 'worker'].every(key => boundedInteger(value.targetCounts[key], 8)));
   plain(value.discovery);
-  requireValue(Object.keys(value.discovery).length === 3
-    && boundedInteger(value.discovery.snapshots, 3600) && value.discovery.refreshLimit === 3600);
+  requireValue(Object.keys(value.discovery).length === 4
+    && Number.isSafeInteger(value.discovery.windowMilliseconds) && value.discovery.windowMilliseconds > 0
+    && value.discovery.windowMilliseconds <= maxWindowMilliseconds
+    && value.discovery.refreshLimit === Math.ceil(value.discovery.windowMilliseconds / 500)
+    && boundedInteger(value.discovery.snapshots, value.discovery.refreshLimit));
   const classifications = ['offscreenExact', 'offscreenOtherType', 'workerExact', 'workerOtherType',
     'workerUrlEmpty', 'extensionBlobWorker', 'extensionOther', 'other'];
   plain(value.discovery.classifiedTargets);
@@ -82,6 +87,7 @@ function observation(value) {
     && ['offscreen', 'worker'].includes(value.targetKind) && value.evidence === 'passive-cdp-resource-response');
   requireValue(value.status !== 'observed' || value.observed && value.failureCategory === null);
   requireValue(value.status !== 'failed' || value.failureCategory !== null);
+  if (completed) requireValue(value.observed === true && value.status === 'observed' && value.failureCategory === null);
 }
 
 export function validateDiagnosticReport(value, expected, completed = false) {
@@ -116,7 +122,7 @@ export function validateDiagnosticReport(value, expected, completed = false) {
       && boundedInteger(proof.bytes, 16 * 1024 * 1024) && proof.bytes > 0
       && hash(proof.sha256) && boundedInteger(proof.elapsedMs, 20 * 60_000));
   }
-  if (Object.hasOwn(value, 'walletProverObservation')) observation(value.walletProverObservation);
+  if (Object.hasOwn(value, 'walletProverObservation')) validateProverObservation(value.walletProverObservation, { completed });
   if (Object.hasOwn(value, 'fundlessFixtureState')) {
     const fixture = value.fundlessFixtureState;
     plain(fixture);

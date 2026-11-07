@@ -1,0 +1,278 @@
+{
+  "schema": "midnight-ballot-lab/ci-lace-prover-diagnostic/v1",
+  "status": "passed",
+  "startedAt": "2026-11-07T00:01:19.878Z",
+  "finishedAt": "2026-11-07T00:02:43.316Z",
+  "networkId": "preview",
+  "execution": "genuine-disposable-Lace-fundless-contract-proof",
+  "runId": "42315234751",
+  "headSha": "8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8",
+  "fundingAttempted": false,
+  "walletDustProofsTested": false,
+  "networkSubmissionAttempted": false,
+  "independentProofVerification": false,
+  "privateArtifactsExported": false,
+  "hostedOriginTested": false,
+  "walletModeApiAttestation": false,
+  "httpProofProviderConfigured": false,
+  "laceVersion": "2.5.1",
+  "apiVersion": "4.1.0-canary.20260819082604-3b622cb",
+  "extensionId": "gafhhkghbfjjkeiendhlofajokpaflmk",
+  "extensionArchiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "runnerSha256": "80b4cc711b97113dfea7d226c858bf745907d0ac16bd04d29696e2b52dc46f48",
+  "networkBundleSha256": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+  "workerSha256": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+  "diagnosticBuildSha256": "49ecddf69faa99aa3b19c2c9a469e288ca1ed0c39028d928f5ae9d5e7501c722",
+  "proverObserverSha256": "46c2ebbb2c68b978f446be4ec3124eb26abe39e9fbd2c8955bc75565266c7d74",
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "vendorServiceConfiguration": {
+    "source": "signed-wallet-normal-public-feature-service",
+    "indexer": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWs": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "node": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "nodeWs": {
+      "origin": "wss://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "queryValuesExported": false
+  },
+  "publicConfigurationPreflight": true,
+  "normalBrowserContextRestart": {
+    "beforeWalletCreation": true,
+    "sameIsolatedProfile": true,
+    "closedExtensionViews": 1,
+    "previousWorkerClosed": true,
+    "previousContextClosed": true,
+    "contextReopened": true,
+    "serviceWorkerObserved": true,
+    "onboardingReady": true,
+    "effectiveConfigurationStillRequired": true,
+    "scope": "ordinary-same-profile-browser-restart-not-configuration-attestation"
+  },
+  "midnightOnlyAccountSelectionVerified": true,
+  "freshWalletCreated": true,
+  "lastSettingsControl": "portfolio-tab-btn",
+  "visibleWalletServicesBeforeSave": {
+    "node": "current",
+    "indexer": "current"
+  },
+  "settingsModeObservations": [
+    {
+      "point": "before-save",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    },
+    {
+      "point": "before-keyboard-save",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    },
+    {
+      "point": "after-reopen",
+      "modes": [
+        {
+          "mode": "in-process",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": true,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        },
+        {
+          "mode": "local-host",
+          "present": true,
+          "visible": true,
+          "enabled": true,
+          "markerPresent": false,
+          "hovered": false,
+          "active": false,
+          "focused": false,
+          "ariaDisabled": null
+        }
+      ]
+    }
+  ],
+  "walletSettingsSaveActivations": [
+    "mouse",
+    "keyboard-enter"
+  ],
+  "walletSettingsClose": "automatic-after-keyboard-save",
+  "walletOnDeviceWasmSelectedThroughUi": true,
+  "walletConnected": true,
+  "walletServices": {
+    "networkId": "preview",
+    "indexerUri": {
+      "origin": "https://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "indexerWsUri": {
+      "origin": "wss://midnight-preview.blockfrost.io",
+      "pathname": "/api/v0/ws",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "substrateNodeUri": {
+      "origin": "https://rpc.midnight-preview.blockfrost.io",
+      "pathname": "/",
+      "queryKeys": [
+        "project_id"
+      ]
+    },
+    "externalProverReported": false,
+    "queryValuesExported": false
+  },
+  "contractProof": {
+    "circuit": "openVoting",
+    "constraintCheck": "passed",
+    "bytes": 2933,
+    "sha256": "3e4b79f887df38d36b5448d17f170833d95507ae34e43ba3393ed08c5285b919",
+    "elapsedMs": 26780
+  },
+  "walletProverObservation": {
+    "observed": true,
+    "status": "observed",
+    "failureCategory": null,
+    "targetCounts": {
+      "offscreen": 1,
+      "worker": 1
+    },
+    "path": "js/bb7c1f073eb0bc071ea5.module.wasm",
+    "bytes": 3413037,
+    "sha256": "f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb",
+    "targetKind": "worker",
+    "evidence": "passive-cdp-resource-response",
+    "discovery": {
+      "snapshots": 144,
+      "refreshLimit": 3600,
+      "classifiedTargets": {
+        "offscreenExact": 1,
+        "offscreenOtherType": 0,
+        "workerExact": 1,
+        "workerOtherType": 0,
+        "workerUrlEmpty": 2,
+        "extensionBlobWorker": 2,
+        "extensionOther": 3,
+        "other": 3
+      }
+    },
+    "requestPayloadsInspected": false,
+    "unrelatedEventsRetained": false,
+    "completeNetworkCoverage": false,
+    "runtimeEvaluationUsed": false,
+    "executionPaused": false
+  },
+  "fundlessFixtureState": {
+    "status": "passed",
+    "stage": "complete"
+  },
+  "fundlessWalletAvailability": {
+    "matchingWalletCount": 1,
+    "expectedApi": true
+  },
+  "currentStage": "fundless-proof-completed",
+  "traffic": {
+    "blockedRequests": 68,
+    "blockedWebSockets": 0,
+    "walletWasmResources": 0,
+    "appWasmResources": 1,
+    "publicConfigurationRequests": 3,
+    "publicConfigurationResponses": 2,
+    "pageErrors": 0,
+    "consoleErrors": 3,
+    "consoleWarnings": 0,
+    "blockedRequestCategories": {
+      "unknownHost": 30,
+      "unexpectedKnownPathOrMethod": 24,
+      "queryOrCredentials": 14,
+      "unexpectedPort": 0,
+      "invalidUrl": 0
+    },
+    "blockedKnownPaths": {
+      "wallet-public-flags": 0,
+      "wallet-telemetry": 22,
+      "wallet-config-other-path": 0,
+      "wallet-indexer-current": 0,
+      "wallet-indexer-current-other-path": 0,
+      "wallet-node-current": 0,
+      "wallet-node-current-other-path": 0,
+      "wallet-indexer-retired": 0,
+      "wallet-node-retired": 0,
+      "public-proving-assets": 0,
+      "loopback-prover": 0,
+      "other": 46
+    }
+  }
+}

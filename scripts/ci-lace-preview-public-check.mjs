@@ -3,6 +3,7 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseStrictJson } from '../src/json.mjs';
+import { validateProverObservation } from './ci-lace-prover-diagnostic-check.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const extensionId = 'gafhhkghbfjjkeiendhlofajokpaflmk';
@@ -44,7 +45,8 @@ export function validateCompletedReport(value, expected) {
     && value.httpProofProviderConfigured === false && value.hostedOriginTested === false
     && value.independentChainVerification === false && value.walletModeApiAttestation === false
     && value.walletConnected === true && value.positiveDustObserved === true
-    && value.publicRecordConsistent === true && value.walletProverWasm?.observed === true
+    && value.publicRecordConsistent === true
+    && typeof value.proverObserverSha256 === 'string' && /^[0-9a-f]{64}$/.test(value.proverObserverSha256)
     && value.acceptedApplicationTransactions === 9 && value.observedContractProofCompletions === 8
     && Array.isArray(value.operations) && value.operations.length === 9
     && value.operations.every((operation, index) => operation.status === 'indexer-accepted'
@@ -52,6 +54,7 @@ export function validateCompletedReport(value, expected) {
       && typeof operation.txId === 'string' && /^[0-9a-f]{64,128}$/.test(operation.txId))
     && new Set(value.operations.map(operation => operation.txId)).size === 9
     && value.operations[6].trusteeIndex === 1 && value.operations[7].trusteeIndex === 3);
+  validateProverObservation(value.walletProverObservation, { completed: true, maxWindowMilliseconds: 10_800_000 });
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -1,0 +1,11 @@
+# Passed proof gates; Pages publication cancelled — 7 November 2026
+
+[Run 42314102280](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42314102280) built commit `5cf2e019f82721318da85aa9bda114c0b5f1cc34` successfully, but deployment **7613668397** did not complete. The publish job ran from **00:05:24 to 00:15:25 UTC** on 7 November and was cancelled at its ten-minute limit. Its log recorded **116 `syncing_files` polls**, followed by `The operation was canceled.` The [unchanged excerpt](publish-log-excerpt.txt) and [provenance](provenance.json) retain the exact outcome. No specific backend cause is established; no retry or timeout change was made.
+
+The [original proof report](browser-proof-evidence.json) passed **eight standalone proofs across seven circuits**, **one genuine bound SDK transaction proof**, both negatives and zero forbidden requests or browser errors. The bound `configureKeys` call returned 4,853 proof bytes in **146,124 ms**. Compilation and the example passed, along with **111 boundary**, **62 generated**, **13 provider/worker**, **one Ledger-failure**, **nine native-browser** and **ten network-browser** checks. Packaging checked **956 source files and 130 references**.
+
+The [audit](incomplete-publication-audit.json) verifies the small CI archive digest and actual runtime/worker/asset hashes, including 21 circuit assets, five parameter files and three network WASM files. It records `build-passed-deployment-cancelled`, not a successful deployment. The large Pages archive was not downloaded again.
+
+The last confirmed successful deployment remains [commit `3251fcc`, run 42311868015](../../../2026-11-06/browser-wasm/github-42311868015/README.md). Its native bundle, network bundle, prover worker and manifest hashes match this run exactly. The subsequent [fundless Lace diagnostic](../../lace-preview/fundless-diagnostic-4/README.md) separately passed at `8310552`; that source revision changed only diagnostic tooling, tests, documentation and evidence. Neither diagnostic success nor a later documentation-only commit implies a new Pages deployment.
+
+No hosted-origin request, Lace/wallet/DUST proof, network submission or browser-wallet acceptance is established by this Pages gate. The separate diagnostic and election reports keep their own scopes.

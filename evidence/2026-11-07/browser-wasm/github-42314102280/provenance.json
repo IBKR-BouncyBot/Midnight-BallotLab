@@ -1,0 +1,58 @@
+{
+  "schema": "midnight-ballot-lab/github-evidence-provenance/v1",
+  "headSha": "5cf2e019f82721318da85aa9bda114c0b5f1cc34",
+  "runId": 42314102280,
+  "runUrl": "https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42314102280",
+  "runAttempt": 1,
+  "runConclusion": "cancelled",
+  "buildConclusion": "success",
+  "deploymentId": 7613668397,
+  "deploymentConclusion": "error",
+  "deploymentCompletedAt": "2026-11-07T00:15:26Z",
+  "artifactDigests": {
+    "github-pages": {
+      "id": 13551065935,
+      "name": "github-pages",
+      "bytes": 143594782,
+      "expired": false,
+      "digest": "sha256:3206669d42f787d5f384e68b99a349d2ad369ee84fbdea737e732880f0d7354f",
+      "headSha": "5cf2e019f82721318da85aa9bda114c0b5f1cc34"
+    },
+    "pages-build-evidence": {
+      "id": 13549489831,
+      "name": "pages-build-evidence",
+      "bytes": 4377813,
+      "expired": false,
+      "digest": "sha256:63c8b665b10be0c1499cbbf303226787c67603b83c09f8275fe18f094aa9f435",
+      "headSha": "5cf2e019f82721318da85aa9bda114c0b5f1cc34"
+    }
+  },
+  "downloadedArtifacts": [
+    "pages-build-evidence"
+  ],
+  "pagesArchiveDownloadedThisRun": false,
+  "proofReportBytePreserved": true,
+  "lastSuccessfulDeploymentComparison": {
+    "headSha": "3251fcc364114ac2c806a421df9910ad8303d6f8",
+    "runId": 42311868015,
+    "deploymentId": 7613382685,
+    "runtimeHashesEqual": true,
+    "runtimeHashes": {
+      "native": "dde3b295e04a4058113bfa55d3b7c49b0104e122c775568f37622dda4f3ca5a9",
+      "network": "847dddfd856a45a7fa56dfc8b34af55f0d55c0f1ef1c24cf0e92650d7fb7546f",
+      "worker": "3ceca3126accb579a0c4428a63e5e526a7999aa273c75f930bf1f76a62d6a6d4",
+      "manifest": "68fc0ab6b050b471fee124eb44926abeb0e35eb4baa4b2ccc635ca7df9d051a9"
+    }
+  },
+  "publishLog": {
+    "jobId": 128228758261,
+    "bytes": 18767,
+    "sha256": "79676305eb536e0f349ca65967c5cbb73baba454195e9771e8630cf022764e96",
+    "syncingFilesPolls": 116,
+    "retainedExcerpt": "First and last syncing_files lines and the three cancellation/error lines; all excerpt text unchanged.",
+    "causeClaim": "Publication remained syncing_files until the configured ten-minute job limit; precise backend cause not established."
+  },
+  "hostedOriginRequested": false,
+  "walletActionsPerformed": false,
+  "networkTransactionsPerformed": false
+}

@@ -42,7 +42,7 @@ test('fundless mode cannot emit funding, transaction journal or election reports
 
 test('diagnostic public projection excludes credentials, operations and arbitrary fields', async () => {
   const emitted = [];
-  const context = vm.createContext({ diagnosticMode: true, canSave: true, stage: 'fundless-proof-completed', traffic: {},
+  const context = vm.createContext({ diagnosticMode: true, canSave: true, proverObserver: undefined, stage: 'fundless-proof-completed', traffic: {},
     report: { schema: 'midnight-ballot-lab/ci-lace-prover-diagnostic/v1', status: 'passed',
       fundingAttempted: false, networkSubmissionAttempted: false, walletDustProofsTested: false,
       password: 'SYNTHETIC-PRIVATE-MARKER', operations: [{ secret: 'SYNTHETIC-PRIVATE-MARKER' }],

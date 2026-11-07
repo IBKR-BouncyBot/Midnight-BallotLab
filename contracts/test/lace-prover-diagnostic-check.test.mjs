@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeDiagnosticReport, validateDiagnosticReport } from '../../scripts/ci-lace-prover-diagnostic-check.mjs';
+import { decodeDiagnosticReport, validateDiagnosticReport, validateProverObservation } from '../../scripts/ci-lace-prover-diagnostic-check.mjs';
 
 const expected = { runId: '123', headSha: 'a'.repeat(40) };
 function report() {
@@ -26,7 +26,7 @@ function report() {
       sha256: 'f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb',
       targetKind: 'worker', evidence: 'passive-cdp-resource-response', requestPayloadsInspected: false,
       unrelatedEventsRetained: false, completeNetworkCoverage: false, runtimeEvaluationUsed: false, executionPaused: false,
-      discovery: { snapshots: 3, refreshLimit: 3600, classifiedTargets: {
+      discovery: { snapshots: 3, refreshLimit: 3600, windowMilliseconds: 1_800_000, classifiedTargets: {
         offscreenExact: 1, offscreenOtherType: 0, workerExact: 1, workerOtherType: 0,
         workerUrlEmpty: 1, extensionBlobWorker: 0, extensionOther: 0, other: 1,
       } },
@@ -78,6 +78,8 @@ test('observer discovery accepts only bounded counts and fixed classifications, 
   for (const invalid of [
     { ...discovery, snapshots: -1 }, { ...discovery, snapshots: 3601 },
     { ...discovery, refreshLimit: 7200 }, { ...discovery, targetId: 'not-public' },
+    { ...discovery, windowMilliseconds: 0 }, { ...discovery, windowMilliseconds: 1_800_001 },
+    { ...discovery, windowMilliseconds: '1800000' },
     { ...discovery, classifiedTargets: { ...discovery.classifiedTargets, workerUrlEmpty: 257 } },
     { ...discovery, classifiedTargets: { ...discovery.classifiedTargets, workerExact: '1' } },
     { ...discovery, classifiedTargets: { ...discovery.classifiedTargets, url: 'not-public' } },
@@ -88,6 +90,15 @@ test('observer discovery accepts only bounded counts and fixed classifications, 
   const missing = report();
   delete missing.walletProverObservation.discovery;
   assert.throws(() => validateDiagnosticReport(missing, expected, true));
+  const fullWindow = { ...report().walletProverObservation, discovery: {
+    ...discovery, windowMilliseconds: 10_800_000, refreshLimit: 21_600, snapshots: 21_600,
+  } };
+  assert.throws(() => validateProverObservation(fullWindow, { completed: true }));
+  validateProverObservation(fullWindow, { completed: true, maxWindowMilliseconds: 10_800_000 });
+  assert.throws(() => validateProverObservation(fullWindow, { completed: true, maxWindowMilliseconds: 10_800_001 }));
+  assert.throws(() => validateProverObservation({ ...fullWindow, discovery: {
+    ...fullWindow.discovery, snapshots: 21_601,
+  } }, { completed: true, maxWindowMilliseconds: 10_800_000 }));
 });
 
 test('transport rejects duplicate JSON, oversized files and invalid UTF-8 without printing values', () => {

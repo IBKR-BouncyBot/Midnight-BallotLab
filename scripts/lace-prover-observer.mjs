@@ -14,7 +14,6 @@ const encodedBodyLength = Math.ceil(LACE_PROVER_RESOURCE.bytes / 3) * 4;
 // Chromium accounts the encoded content's character storage, not just the
 // original WASM bytes. Include its possible two-byte string representation.
 const resourceBufferBytes = encodedBodyLength * 2 + 64 * 1024;
-const DISCOVERY_LIMIT = 3600;
 const DISCOVERY_INTERVAL_MS = 500;
 const targetFilter = [{ type: 'background_page' }, { type: 'worker' }, { type: 'page' },
   { type: 'other' }, { type: 'service_worker' }, { exclude: true }];
@@ -50,19 +49,20 @@ export function verifyLaceProverResource(value) {
   } finally { bytes.fill(0); }
 }
 
-export async function observeLaceProverWasm(browser) {
+export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 * 60_000 } = {}) {
+  if (!Number.isSafeInteger(windowMilliseconds) || windowMilliseconds <= 0 || windowMilliseconds > 180 * 60_000) throw fixedError();
   let root;
   try { root = await browser.newBrowserCDPSession(); } catch { throw fixedError(); }
   let closed = false, closing = false, nextId = 0, failureCategory = null, observation = null;
   const targets = new Set(), sessions = new Map(), pending = new Map(), work = new Set();
   const targetCounts = { offscreen: 0, worker: 0 };
   const classified = new Map();
-  const discovery = { snapshots: 0, refreshLimit: DISCOVERY_LIMIT, classifiedTargets: {
+  const discovery = { snapshots: 0, windowMilliseconds, refreshLimit: Math.ceil(windowMilliseconds / DISCOVERY_INTERVAL_MS), classifiedTargets: {
     offscreenExact: 0, offscreenOtherType: 0, workerExact: 0, workerOtherType: 0,
     workerUrlEmpty: 0, extensionBlobWorker: 0, extensionOther: 0, other: 0,
   } };
   const started = Date.now();
-  let discoveryTimer;
+  let discoveryTimer, closeTask;
   const fail = category => { failureCategory ??= category; };
   const track = promise => {
     work.add(promise);
@@ -145,6 +145,10 @@ export async function observeLaceProverWasm(browser) {
           body = await child(sessionId, 'Network.getResponseBody', { requestId: value.requestId });
           const verified = verifyLaceProverResource(body);
           observation = { ...verified, targetKind: session.kind, evidence: 'passive-cdp-resource-response' };
+          // A verified resource is sufficient for this observer's narrow task.
+          // Stop only our passive sessions; wallet proof execution continues.
+          // Keep the completed snapshot and any sticky failure for final gates.
+          queueMicrotask(() => { void close().catch(() => fail('observer-cleanup-failed')); });
         } catch (error) {
           const reason = failureReasons.get(error);
           fail(reason?.startsWith('prover-resource-') ? reason
@@ -207,8 +211,8 @@ export async function observeLaceProverWasm(browser) {
   }
   const onTarget = ({ targetInfo }) => { classify(targetInfo); track(consider(targetInfo)); };
   async function refreshTargets() {
-    if (closed || closing) return;
-    if (discovery.snapshots >= DISCOVERY_LIMIT || Date.now() - started >= 30 * 60_000) {
+    if (closed || closing || observation) return;
+    if (discovery.snapshots >= discovery.refreshLimit || Date.now() - started >= windowMilliseconds) {
       fail('observer-discovery-window-ended'); return;
     }
     discovery.snapshots++;
@@ -218,7 +222,7 @@ export async function observeLaceProverWasm(browser) {
     await Promise.all(targetInfos.map(consider));
   }
   function scheduleRefresh() {
-    if (closed || closing || failureCategory) return;
+    if (closed || closing || observation || failureCategory) return;
     discoveryTimer = setTimeout(() => {
       // Chromium creates dedicated-worker targets with an empty URL and later
       // assigns the URL without a navigation notification. Re-read public
@@ -231,31 +235,34 @@ export async function observeLaceProverWasm(browser) {
   root.on('Target.receivedMessageFromTarget', receive);
   root.on('Target.targetCreated', onTarget);
   root.on('Target.targetInfoChanged', onTarget);
-  async function close() {
-    if (closed || closing) return;
-    closing = true;
-    clearTimeout(discoveryTimer);
-    // Stop discovery before detaching only the sessions created by this observer.
-    root.off('Target.targetCreated', onTarget); root.off('Target.targetInfoChanged', onTarget);
-    await Promise.allSettled([...work]);
-    // Disable only our offscreen auto-attacher after child Network sessions
-    // have drained. Children must detach through their owning parent session.
-    await Promise.allSettled([...sessions.entries()].filter(([, s]) => s.parentSessionId).map(async ([sessionId, session]) => {
-      await child(sessionId, 'Network.disable').catch(() => {});
-      await child(session.parentSessionId, 'Target.detachFromTarget', { sessionId }).catch(() => {});
-    }));
-    await Promise.allSettled([...sessions.entries()].filter(([, s]) => !s.parentSessionId).map(async ([sessionId, session]) => {
-      if (session.kind === 'offscreen') await child(sessionId, 'Target.setAutoAttach', {
-        autoAttach: false, waitForDebuggerOnStart: false, flatten: false,
-      }).catch(() => {});
-      await child(sessionId, 'Network.disable').catch(() => {});
-      await send('Target.detachFromTarget', { sessionId }).catch(() => {});
-    }));
-    closed = true;
-    root.off('Target.receivedMessageFromTarget', receive);
-    for (const item of pending.values()) { clearTimeout(item.timer); item.reject(fixedError()); }
-    pending.clear(); sessions.clear(); classified.clear();
-    await root.detach().catch(() => {});
+  function close() {
+    if (closeTask) return closeTask;
+    closeTask = (async () => {
+      closing = true;
+      clearTimeout(discoveryTimer);
+      // Stop discovery before detaching only the sessions created by this observer.
+      root.off('Target.targetCreated', onTarget); root.off('Target.targetInfoChanged', onTarget);
+      await Promise.allSettled([...work]);
+      // Disable only our offscreen auto-attacher after child Network sessions
+      // have drained. Children must detach through their owning parent session.
+      await Promise.allSettled([...sessions.entries()].filter(([, s]) => s.parentSessionId).map(async ([sessionId, session]) => {
+        await child(sessionId, 'Network.disable').catch(() => {});
+        await child(session.parentSessionId, 'Target.detachFromTarget', { sessionId }).catch(() => {});
+      }));
+      await Promise.allSettled([...sessions.entries()].filter(([, s]) => !s.parentSessionId).map(async ([sessionId, session]) => {
+        if (session.kind === 'offscreen') await child(sessionId, 'Target.setAutoAttach', {
+          autoAttach: false, waitForDebuggerOnStart: false, flatten: false,
+        }).catch(() => {});
+        await child(sessionId, 'Network.disable').catch(() => {});
+        await send('Target.detachFromTarget', { sessionId }).catch(() => {});
+      }));
+      closed = true;
+      root.off('Target.receivedMessageFromTarget', receive);
+      for (const item of pending.values()) { clearTimeout(item.timer); item.reject(fixedError()); }
+      pending.clear(); sessions.clear(); classified.clear();
+      await root.detach().catch(() => {});
+    })();
+    return closeTask;
   }
   try {
     await send('Target.setDiscoverTargets', { discover: true, filter: targetFilter });
