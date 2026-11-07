@@ -1,0 +1,248 @@
+{
+  "schema": "midnight-ballot-lab/local-ledger9-browser-proof-provenance/v1",
+  "recordedAt": "2026-11-07T09:31:41.196Z",
+  "baseCommit": "2d0b3f14bd0200a59694208eeb5036a5b9175062",
+  "sourceState": "uncommitted-ledger9-migration",
+  "execution": "real-browser-via-cua",
+  "origin": "local-static-files",
+  "hostedOriginRequested": false,
+  "reportSha256": "484c956619cd4016715c5c8a652b71584efc40d50eece72f55c4de71379970ee",
+  "harnessModules": [
+    {
+      "path": "proof-check-bundle.mjs",
+      "bytes": 784518,
+      "sha256": "0c007aca6e970e8c6e0e36917a8ea83ae4bc4238818efd800e6686342f6b2253"
+    },
+    {
+      "path": "proof-check-chunk-22TYESSJ.mjs",
+      "bytes": 70353,
+      "sha256": "d2a92833ff7bd16528c3ac2f8822898814f76bee70963e23e829d3759b6bdac5"
+    },
+    {
+      "path": "proof-check-chunk-5ANRRCDT.mjs",
+      "bytes": 16144,
+      "sha256": "27f49a0f8d807e97e80fdb2c044f220b1beeb712d98febaffe7daa3c61862ae4"
+    },
+    {
+      "path": "proof-check-chunk-BT5PYBGY.mjs",
+      "bytes": 139643,
+      "sha256": "dabf02f54e8c0a7d4deef8a1ed63add786c17cdbc5e46b67af141abbdf67f132"
+    },
+    {
+      "path": "proof-check-chunk-H4ZEOKS3.mjs",
+      "bytes": 1367457,
+      "sha256": "02879809d82d07fea3321a7fad0f9e2985b082505b803b7bf48e62816c48fe4b"
+    },
+    {
+      "path": "proof-check-chunk-WXEHKIK4.mjs",
+      "bytes": 404344,
+      "sha256": "0ae919ac8e51c6ed3b68b0c6d038d97e9491f754a274b2530acd5dd6b8234f3d"
+    }
+  ],
+  "worker": {
+    "path": "native-prover-worker.mjs",
+    "bytes": 52073,
+    "sha256": "b4b6d081524631529593aa693c8dae9b4085970bfdecc8588d1b206a41574d8f"
+  },
+  "manifest": {
+    "path": "native-contract/prover-manifest.json",
+    "bytes": 5317,
+    "sha256": "3a758c37625d9ae2b842ad2b71d2ce6452a20f4217b2b3a3751142bfcd08e06b"
+  },
+  "compilerMetadata": [
+    {
+      "path": "native-contract/compiler/contract-manifest.json",
+      "bytes": 5409,
+      "sha256": "9413d3acea1b4eb125aec664743a482eea8fc82551bc420cc66c86b3ca71d91b"
+    },
+    {
+      "path": "native-contract/compiler/contract-info.json",
+      "bytes": 19010,
+      "sha256": "8d3db39c54595a6dd61049c0b94894b8b4bb302d4d3c7a859ed47abb0b796088"
+    }
+  ],
+  "wasm": [
+    {
+      "path": "proof-check-assets/midnight_ledger_wasm_bg-681a39be5d292bd755fccdd724057b932d799ada607c491bb755b9a9dd59f27f.wasm",
+      "bytes": 10391440,
+      "sha256": "681a39be5d292bd755fccdd724057b932d799ada607c491bb755b9a9dd59f27f"
+    },
+    {
+      "path": "proof-check-assets/midnight_ledger_wasm_v9_bg-78a1446356f3c100ddede1d6a58019ef8152eb90da85aab55736a85cca5aece4.wasm",
+      "bytes": 10641803,
+      "sha256": "78a1446356f3c100ddede1d6a58019ef8152eb90da85aab55736a85cca5aece4"
+    },
+    {
+      "path": "proof-check-assets/midnight_onchain_runtime_wasm_bg-a10579365a8bf303abdcedef906f4bdf4a159f189f19c86c654bd75d0a0c870d.wasm",
+      "bytes": 1557706,
+      "sha256": "a10579365a8bf303abdcedef906f4bdf4a159f189f19c86c654bd75d0a0c870d"
+    },
+    {
+      "path": "proof-check-assets/midnight_onchain_runtime_wasm_bg-edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e.wasm",
+      "bytes": 1398935,
+      "sha256": "edeea319fe8b1dca486a3aeaa051e64d4b7fb96d83b5d2bb15e68fc1ce23369e"
+    }
+  ],
+  "circuitAssets": [
+    {
+      "path": "native-contract/keys/configureKeys.prover",
+      "bytes": 49307276,
+      "sha256": "8176702a22497494fedca6e5070abf5520e3234d8b3970987ebf043501fe3ae8"
+    },
+    {
+      "path": "native-contract/keys/configureKeys.verifier",
+      "bytes": 2313,
+      "sha256": "028e574673a22ceb125709afcae53b0204b3f2a2af659690304345cde0003759"
+    },
+    {
+      "path": "native-contract/zkir/configureKeys.bzkir",
+      "bytes": 19434,
+      "sha256": "b0514e2a76f8ae2abd62ed62e08e53e9382d3c725b7db27425c092113d29d0eb"
+    },
+    {
+      "path": "native-contract/keys/enroll.prover",
+      "bytes": 11278470,
+      "sha256": "eaf1e431a88f47372b8c98e2c1321ec5965ba85d25dc9de482ef78e4fbee468a"
+    },
+    {
+      "path": "native-contract/keys/enroll.verifier",
+      "bytes": 2121,
+      "sha256": "3192e62a3454a88196bdaba008a895851ac6b662e40aea1dedaf4fc67ba287b0"
+    },
+    {
+      "path": "native-contract/zkir/enroll.bzkir",
+      "bytes": 1910,
+      "sha256": "09279c39dc93a79dae3d6dd737749021c3a03ef4ae5850967b2fbd9666491d29"
+    },
+    {
+      "path": "native-contract/keys/openVoting.prover",
+      "bytes": 225105,
+      "sha256": "1be0de3df54681551f5f0e3d3d58fa15f48ecece9a09aca65f2ecf4988d3dfe6"
+    },
+    {
+      "path": "native-contract/keys/openVoting.verifier",
+      "bytes": 1353,
+      "sha256": "380c99d4adfb58318cb676f492abf469ad4e345f6c0d10818d585461a835f59f"
+    },
+    {
+      "path": "native-contract/zkir/openVoting.bzkir",
+      "bytes": 1153,
+      "sha256": "3fa40cf92cefe5478ac95f44e29a112a0587950d7e6707ba5097eb4481702f6b"
+    },
+    {
+      "path": "native-contract/keys/castBallot.prover",
+      "bytes": 98601101,
+      "sha256": "5a9f418fc3d208848a411b909f1b72a6ed32b9a364abc8162372be897a526a36"
+    },
+    {
+      "path": "native-contract/keys/castBallot.verifier",
+      "bytes": 2313,
+      "sha256": "20ad51cdb280c8eec00419a93e4bcb59173449d49459b52e1fb41d3f30bb3640"
+    },
+    {
+      "path": "native-contract/zkir/castBallot.bzkir",
+      "bytes": 30187,
+      "sha256": "ee71831b30b67298466d536f50d4401d76b3a2764e65ba4b04357f5601470541"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.prover",
+      "bytes": 114230,
+      "sha256": "187a0545534b4b16fb48b1535c4f6565e7ee23a103a1e3bf58beff4fb9a361ab"
+    },
+    {
+      "path": "native-contract/keys/closeVoting.verifier",
+      "bytes": 1353,
+      "sha256": "432240973c8833e200ff3b8816a38390f1fb318e78b088718a84cf4099189064"
+    },
+    {
+      "path": "native-contract/zkir/closeVoting.bzkir",
+      "bytes": 870,
+      "sha256": "9161d8833c81644fcb7f3baa455ece4861e323e5078569efe0bcda94f69a8d73"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.prover",
+      "bytes": 4207202,
+      "sha256": "93941beec170429d0686945a624563dd1c45ae1c7f8437eada7e400cc47603cf"
+    },
+    {
+      "path": "native-contract/keys/submitDecryption.verifier",
+      "bytes": 1593,
+      "sha256": "c5d56965cd3e31aae8e87a553ec59d9cfa45b5fdea7feb8476cb9a2f91751aa9"
+    },
+    {
+      "path": "native-contract/zkir/submitDecryption.bzkir",
+      "bytes": 9630,
+      "sha256": "7a9c77109d23a67a1999fd61373411e1453aba7b230566f1d0a2dee9aedc8cc7"
+    },
+    {
+      "path": "native-contract/keys/finalize.prover",
+      "bytes": 33579941,
+      "sha256": "5d4c8538423ace87eefdc48a19468335c770a99d9bda557fca33fbbe84d1b5e9"
+    },
+    {
+      "path": "native-contract/keys/finalize.verifier",
+      "bytes": 1593,
+      "sha256": "ddc4152e3d0c18fb71e0c8de285ebf1a95e025a452002a8d8254be738a92ac41"
+    },
+    {
+      "path": "native-contract/zkir/finalize.bzkir",
+      "bytes": 22239,
+      "sha256": "876bc4a6fd6c673161d866fb565cd7c40e07160f5f104429699cf74031104f74"
+    }
+  ],
+  "publicParameters": [
+    {
+      "k": 7,
+      "path": "native-contract/params/bls_midnight_2p7",
+      "bytes": 24964,
+      "sha256": "e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d"
+    },
+    {
+      "k": 8,
+      "path": "native-contract/params/bls_midnight_2p8",
+      "bytes": 49540,
+      "sha256": "909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933"
+    },
+    {
+      "k": 12,
+      "path": "native-contract/params/bls_midnight_2p12",
+      "bytes": 786820,
+      "sha256": "ef08eb3fcf62df8f72c515cffa027e681808b530cb016eea104115545ef6d5c8"
+    },
+    {
+      "k": 13,
+      "path": "native-contract/params/bls_midnight_2p13",
+      "bytes": 1573252,
+      "sha256": "d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803"
+    },
+    {
+      "k": 15,
+      "path": "native-contract/params/bls_midnight_2p15",
+      "bytes": 6291844,
+      "sha256": "724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de"
+    },
+    {
+      "k": 16,
+      "path": "native-contract/params/bls_midnight_2p16",
+      "bytes": 12583300,
+      "sha256": "09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6"
+    }
+  ],
+  "sources": {
+    "proofEntry": "98c331656645abf87d70900dc9cb4945673e95c1202d9346126c6b7e3c2049c0",
+    "transactionEntry": "1b56938491a32759273c0afc156198be5bfe540d1c01d21fe7f57903825874fb",
+    "variantBuilder": "84fe85717bd5e979342af842f0e93f34512dc4f8903e6c5add78bde0f41d35ef",
+    "contract": "dc7dbe61d72672c5dd0788fbc8b758837ae262958ee83aa015b050c6423d5a37",
+    "generated": "17a6ca819e6d170eaf74d1ed1f7c931a4867efe5e1583b6d4bb89e147c09dd07"
+  },
+  "privateWitnessesExported": false,
+  "workerUsesOfficialUnmodifiedWasm": true,
+  "httpProofServiceConfigured": false,
+  "fullNetworkCapture": false,
+  "walletExecution": false,
+  "dustProofExecution": false,
+  "networkSubmission": false,
+  "independentProofVerification": false,
+  "independentConsensusVerification": false,
+  "scope": "Eight standalone circuit proofs and one bound SDK transaction proof; no wallet, fees or accepted network transaction."
+}

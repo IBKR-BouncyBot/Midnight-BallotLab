@@ -1,0 +1,61 @@
+{
+  "schema": "midnight-ballot-lab/lace-ledger9-source-review/v1",
+  "reviewedAt": "2026-11-07T08:57:38.596244+00:00",
+  "scope": "signed-package-and-official-package-source-only",
+  "extensionVersion": "2.5.1",
+  "apiVersion": "4.1.0-canary.20260819082604-3b622cb",
+  "archiveSha256": "aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708",
+  "sourceSha256": {
+    "js/sw/119.js": "4386d430d72b1f64a55387c3dd3137a6ad708bbf7a63caa8c877a5aa5bff8dc4",
+    "js/3956.js": "abf9f51d0da3e81a71d285387cc037d6c990b17b307bd94b166055a758618852",
+    "js/6895.js": "a2d5ff9444b6fdcf3d0ca7c98b4ba68acd128cf4f9613197d0debd17e7158642",
+    "js/3267.js": "f021b27a0b98661b49b261b32fa3933dc4a50c58ac5825fdf93fe26182102b56",
+    "js/injected-script.js": "467ac73b2f001678c81f6cda5ab9982a8fe5b98811ca403a483e8f01fdcde809",
+    "js/offscreen.js": "166a15cd5e223c7f56fcef8542d085432e333ce49abfbcab9cf59856c3fa83da",
+    "js/4352.js": "c98589bc838dba24ca5dc26c217af8a3ce869708c109bb8bf03dc95ed8d789e9",
+    "js/bb7c1f073eb0bc071ea5.module.wasm": "f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb"
+  },
+  "walletProverWasm": {
+    "path": "js/bb7c1f073eb0bc071ea5.module.wasm",
+    "bytes": 3413037,
+    "sha256": "f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb"
+  },
+  "ledgerSelection": "activeProtocolVersion compared with V9NativeForkVersion in the genuine wallet backend",
+  "v9KeyGeneration": 10,
+  "v9DustKeySha256": {
+    "dust/spend.prover": "3dff9f54add761350ad02621a425d67fe3d656c8145fef8ef147870489ffdc81",
+    "dust/spend.verifier": "d15a1295780549f534287a39c938005e1faa3232be21861573bd0cdb148949cb",
+    "dust/spend.bzkir": "d211cacb22391b9db60f945787d98c16d344cbb4790246132117084c080399c1"
+  },
+  "officialFinalSdkDescriptor": {
+    "package": "@midnightntwrk/wallet-sdk-prover-client",
+    "version": "2.0.0",
+    "sourceSha256": "38a81a6ae12afb128fc96703fd76ad0d9c68773c1c18bc4923d8a5327e14e82d",
+    "dustHashesMatchSignedLace": true
+  },
+  "feeSelection": {
+    "signedV2Default": "smallest positive generated-DUST coin first",
+    "stoppingCondition": "selected inputs cover the recomputed fee",
+    "minimumTwoInputsGuardFound": false,
+    "connectorApiPackage": "@midnightntwrk/dapp-connector-api",
+    "connectorApiVersion": "4.1.0",
+    "connectorApiSourceSha256": "922ca2a7c9d522a05edde6eea8660b96d43fa9ba28ec03607ec518e6f0fdf62b",
+    "balanceOptions": [
+      "payFees"
+    ],
+    "appMinimumInputControlExposed": false,
+    "runtimeResult": "not-tested-on-reset-Preview",
+    "qualification": "No new single-DUST rejection has been observed. Multiple backing coins alone do not require Lace to consume multiple inputs."
+  },
+  "extensionLoaded": false,
+  "walletCreated": false,
+  "fundingAttempted": false,
+  "proofGenerated": false,
+  "transactionSubmitted": false,
+  "sources": [
+    "https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk",
+    "https://docs.midnight.network/relnotes/ledger-9",
+    "https://github.com/midnightntwrk/midnight-wallet",
+    "https://github.com/midnightntwrk/midnight-dapp-connector-api"
+  ]
+}

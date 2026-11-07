@@ -31,28 +31,28 @@ async function main() {
   const emulator = await createNativeEmulator({ electionId, manifestDigest, administratorSecret,
     setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope, opensAt, closesAt, candidateCount: manifest.candidates.length });
   const voters = Array.from({ length: 5 }, () => randomSecret32());
-  for (const secret of voters) emulator.call('enroll', emulator.pureCircuits.memberIdentity(electionId, secret));
+  for (const secret of voters) await emulator.call('enroll', emulator.pureCircuits.memberIdentity(electionId, secret));
   emulator.setTime(opensAt + 1);
-  emulator.call('openVoting');
+  await emulator.call('openVoting');
   const choices = [0n, 1n, 2n, 0n, 2n]; // Public synthetic test scenario, never real voter input.
   for (const [index, voterSecret] of voters.entries()) {
     const leaf = emulator.pureCircuits.memberIdentity(electionId, voterSecret);
     const eligibilityPath = emulator.readLedger().members.findPathForLeaf(leaf);
     emulator.setPrivateState({ voterSecret, eligibilityPath, selection: choices[index], ballotRandomness: freshBallotRandomness() });
-    emulator.call('castBallot');
+    await emulator.call('castBallot');
   }
   emulator.setPrivateState({});
   emulator.setTime(closesAt);
-  emulator.call('closeVoting');
+  await emulator.call('closeVoting');
   // The less trivial 1+3 pair uses the contract's scaled equation (factor two).
   for (const trustee of [dealer.trustees[0], dealer.trustees[2]]) {
     emulator.setPrivateState({ trusteeSecretShare: trustee.secretShare });
-    emulator.call('submitDecryption', trustee.index);
+    await emulator.call('submitDecryption', trustee.index);
   }
   emulator.setPrivateState({});
   const totals = recoverNativeTally(emulator, 1n, 3n);
   if (totals.map(String).join(',') !== '2,1,2,0,0') throw new Error('Native emulator produced an unexpected synthetic tally');
-  emulator.call('finalize', 1n, 3n, totals);
+  await emulator.call('finalize', 1n, 3n, totals);
   const snapshot = { ...nativePublicSnapshot(emulator), manifest };
   const defaultOutput = fileURLToPath(new URL('../../artifacts/native-emulator-public.json', import.meta.url));
   const output = process.argv[2] ? resolve(process.argv[2]) : defaultOutput;

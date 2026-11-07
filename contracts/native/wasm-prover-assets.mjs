@@ -1,21 +1,23 @@
 /** Public proving assets only. Private preimages never enter an HTTP request. */
 import { decodeJsonUtf8, parseStrictJson } from '../../src/json.mjs';
+import { parseContractKeyLocation } from '@midnight-ntwrk/compact-js/effect/ContractKeyLocation';
 
 export const NATIVE_PROVER_CIRCUITS = Object.freeze({
-  configureKeys: 16, enroll: 13, openVoting: 7, castBallot: 17,
-  closeVoting: 7, submitDecryption: 13, finalize: 15,
+  configureKeys: 15, enroll: 13, openVoting: 8, castBallot: 16,
+  closeVoting: 7, submitDecryption: 12, finalize: 15,
 });
-// Official ledger-8.1.2/base-crypto/src/data_provider.rs. These are public
-// structured-reference parameters, not user witnesses or wallet information.
+// Official wallet-sdk-prover-client 2.0.0 publicParameters pins. These base-
+// crypto structured-reference parameters are unchanged across ledger eras.
 export const NATIVE_PROVER_PARAMETERS = Object.freeze({
   7: 'e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d',
+  8: '909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933',
+  12: 'ef08eb3fcf62df8f72c515cffa027e681808b530cb016eea104115545ef6d5c8',
   13: 'd3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803',
   15: '724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de',
   16: '09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6',
-  17: '4a9ef6c7c0619aab74eede44b13e753e3ba54508a02dd3b7106a949aabb73b74',
 });
 export const NATIVE_PROVER_PARAMETER_BYTES = Object.freeze({
-  7: 24964, 13: 1573252, 15: 6291844, 16: 12583300, 17: 25166212,
+  7: 24964, 8: 49540, 12: 786820, 13: 1573252, 15: 6291844, 16: 12583300,
 });
 export const NATIVE_PROVER_ASSET_SCHEMA = 'midnight-ballot-lab/browser-prover-assets/v1';
 const MAX_ASSET_BYTES = 128 * 1024 * 1024;
@@ -28,6 +30,16 @@ function fail(code) {
   throw error;
 }
 export function proverAssetFailureCode(error) { return failures.get(error) ?? null; }
+// SDK 5 binds a circuit lookup to the deployed verifier key. Bare names are
+// accepted only for standalone generated-circuit checks; malformed locations
+// and protocol/wallet keys never enter this contract-only prover.
+export function nativeProverKeyLocation(value) {
+  if (typeof value !== 'string') fail('INVALID_REQUEST');
+  if (Object.hasOwn(NATIVE_PROVER_CIRCUITS, value)) return Object.freeze({ circuitId: value });
+  const parsed = parseContractKeyLocation(value);
+  if (!parsed || !Object.hasOwn(NATIVE_PROVER_CIRCUITS, parsed.circuitId)) fail('INVALID_REQUEST');
+  return Object.freeze(parsed);
+}
 function exact(value, fields) {
   if (!value || typeof value !== 'object' || Array.isArray(value)
       || Object.keys(value).length !== fields.length || fields.some(key => !Object.hasOwn(value, key))) fail('ASSET_INTEGRITY');
@@ -40,7 +52,7 @@ function record(value, path) {
 }
 export function validateNativeProverManifest(value) {
   exact(value, ['schema', 'proverVersion', 'circuits', 'params']);
-  if (value.schema !== NATIVE_PROVER_ASSET_SCHEMA || value.proverVersion !== '2.1.1'
+  if (value.schema !== NATIVE_PROVER_ASSET_SCHEMA || value.proverVersion !== '3.2.0'
       || !Array.isArray(value.circuits) || value.circuits.length !== Object.keys(NATIVE_PROVER_CIRCUITS).length
       || !Array.isArray(value.params) || value.params.length !== Object.keys(NATIVE_PROVER_PARAMETERS).length) fail('ASSET_INTEGRITY');
   const circuits = new Map();
@@ -128,8 +140,10 @@ export async function loadNativeProvingAssets(compiledAssetsUrl, workerUrl, expe
   }
   return Object.freeze({
     async lookupKey(keyLocation) {
-      const circuit = manifest.circuits.get(keyLocation);
+      const location = nativeProverKeyLocation(keyLocation);
+      const circuit = manifest.circuits.get(location.circuitId);
       if (!circuit) fail('INVALID_REQUEST');
+      if (location.verifierKeyHash && location.verifierKeyHash !== circuit.verifier.sha256) fail('ASSET_INTEGRITY');
       const [proverKey, verifierKey, ir] = await Promise.all([asset(circuit.prover), asset(circuit.verifier), asset(circuit.ir)]);
       return { proverKey, verifierKey, ir };
     },

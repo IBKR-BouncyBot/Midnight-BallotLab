@@ -17,7 +17,7 @@ const ZERO = pureCircuits.nativePublicKey(0n);
 
 // The fixture intentionally bypasses client scalar/choice preflight so negative
 // tests exercise constraints inside generated circuits, not a JavaScript guard.
-function fixture({ configured = true, setupSecret = 11n, setupSlope = 7n, candidateCount = 3n } = {}) {
+async function fixture({ configured = true, setupSecret = 11n, setupSlope = 7n, candidateCount = 3n } = {}) {
   const witnessCalls = {};
   const witness = name => w => {
     witnessCalls[name] = (witnessCalls[name] ?? 0) + 1;
@@ -31,105 +31,109 @@ function fixture({ configured = true, setupSecret = 11n, setupSlope = 7n, candid
     administratorSecret: ADMIN, setupSecret, setupSlope, voterSecret: ALICE,
     selection: 0n, ballotRandomness: [101n, 103n, 107n, 109n, 113n], trusteeSecretShare: SHARES[1],
   };
-  const ctor = contract.initialState(
+  const ctor = await contract.initialState(
     RT.createConstructorContext(privateState, COIN),
     ID, MANIFEST, pureCircuits.administratorIdentity(ADMIN), BigInt(OPEN), BigInt(CLOSE), candidateCount,
   );
   const constructorWitnessCalls = { ...witnessCalls };
   const address = RT.sampleContractAddress();
-  let context = RT.createCircuitContext(address, COIN, ctor.currentContractState,
-    privateState, undefined, undefined, OPEN - 100);
-  const state = () => ledger(context.currentQueryContext.state);
-  const invoke = (name, ...args) => {
-    const result = contract.impureCircuits[name](context, ...args);
+  let context = RT.createCircuitContext({ circuitId: 'configureKeys', contractAddress: address,
+    coinPublicKeyOrZswapState: COIN, contractState: ctor.currentContractState, privateState, time: OPEN - 100 });
+  const state = () => ledger(context.callContext.currentQueryContext.state);
+  const invoke = async (name, ...args) => {
+    const next = RT.createCircuitContext({ circuitId: name, contractAddress: address, coinPublicKeyOrZswapState: COIN,
+      contractState: context.callContext.currentQueryContext.state, privateState: context.callContext.currentPrivateState,
+      time: Number(context.callContext.currentQueryContext.block.secondsSinceEpoch) });
+    const result = await contract.impureCircuits[name](next, ...args);
     context = result.context;
     return result.result; // Do not serialize private context or proofData.
   };
   const at = time => {
-    context = RT.createCircuitContext(address, COIN, context.currentQueryContext.state,
-      context.currentPrivateState, undefined, undefined, time);
+    context = RT.createCircuitContext({ circuitId: context.callContext.circuitId, contractAddress: address,
+      coinPublicKeyOrZswapState: COIN, contractState: context.callContext.currentQueryContext.state,
+      privateState: context.callContext.currentPrivateState, time });
   };
-  const as = patch => { context = { ...context, currentPrivateState: { ...context.currentPrivateState, ...patch } }; };
+  const as = patch => { context = { ...context, callContext: { ...context.callContext, currentPrivateState: { ...context.callContext.currentPrivateState, ...patch } } }; };
   const member = secret => pureCircuits.memberIdentity(ID, secret);
   const pathFor = secret => state().members.findPathForLeaf(member(secret));
-  if (configured) invoke('configureKeys');
+  if (configured) await invoke('configureKeys');
   return { contract, state, invoke, at, as, member, pathFor, constructorWitnessCalls };
 }
 
-function opened(voters = [ALICE, BOB, CAROL], candidateCount = 3n) {
-  const f = fixture({ candidateCount });
-  for (const voter of voters) f.invoke('enroll', f.member(voter));
+async function opened(voters = [ALICE, BOB, CAROL], candidateCount = 3n) {
+  const f = await fixture({ candidateCount });
+  for (const voter of voters) await f.invoke('enroll', f.member(voter));
   f.as({ eligibilityPath: f.pathFor(ALICE) });
   f.at(OPEN + 1);
-  f.invoke('openVoting');
+  await f.invoke('openVoting');
   return f;
 }
 
-function cast(f, voter, choice, randomness) {
+async function cast(f, voter, choice, randomness) {
   f.as({ voterSecret: voter, eligibilityPath: f.pathFor(voter), selection: choice,
     ballotRandomness: randomness });
-  return f.invoke('castBallot');
+  return await f.invoke('castBallot');
 }
 
-function castThree(f) {
-  cast(f, ALICE, 0n, [101n, 103n, 107n, 109n, 113n]);
-  cast(f, BOB, 1n, [109n, 113n, 127n, 131n, 137n]);
-  cast(f, CAROL, 2n, [131n, 137n, 139n, 149n, 151n]);
+async function castThree(f) {
+  await cast(f, ALICE, 0n, [101n, 103n, 107n, 109n, 113n]);
+  await cast(f, BOB, 1n, [109n, 113n, 127n, 131n, 137n]);
+  await cast(f, CAROL, 2n, [131n, 137n, 139n, 149n, 151n]);
 }
 
-function close(f) {
+async function close(f) {
   f.at(CLOSE);
-  f.invoke('closeVoting');
+  await f.invoke('closeVoting');
 }
 
-function submit(f, index) {
+async function submit(f, index) {
   f.as({ trusteeSecretShare: SHARES[index] });
-  f.invoke('submitDecryption', BigInt(index));
+  await f.invoke('submitDecryption', BigInt(index));
 }
 
-test('constructor has no private setup; proved configureKeys is required and single use', () => {
-  const f = fixture({ configured: false });
+test('constructor has no private setup; proved configureKeys is required and single use', async () => {
+  const f = await fixture({ configured: false });
   assert.deepEqual(f.constructorWitnessCalls, {});
   assert.equal(f.state().keysConfigured, false);
   assert.deepEqual(f.state().publicKey, ZERO);
-  assert.throws(() => f.invoke('enroll', f.member(ALICE)), /keys not configured/);
-  assert.throws(() => f.invoke('openVoting'), /keys not configured/);
-  assert.throws(() => f.invoke('closeVoting'), /keys not configured/);
+  await assert.rejects(async () => await f.invoke('enroll', f.member(ALICE)), /keys not configured/);
+  await assert.rejects(async () => await f.invoke('openVoting'), /keys not configured/);
+  await assert.rejects(async () => await f.invoke('closeVoting'), /keys not configured/);
   f.as({ administratorSecret: MALLORY });
-  assert.throws(() => f.invoke('configureKeys'), /administrator required/);
+  await assert.rejects(async () => await f.invoke('configureKeys'), /administrator required/);
   f.as({ administratorSecret: ADMIN });
-  f.invoke('configureKeys');
+  await f.invoke('configureKeys');
   assert.equal(f.state().keysConfigured, true);
   assert.deepEqual(f.state().publicKey, pureCircuits.nativePublicKey(11n));
   for (let i = 1; i <= 3; i++) {
     assert.deepEqual(f.state().trusteeKeys[i - 1], pureCircuits.nativePublicKey(SHARES[i]));
   }
-  assert.throws(() => f.invoke('configureKeys'), /already configured/);
-  f.invoke('enroll', f.member(ALICE));
-  assert.throws(() => f.invoke('configureKeys'), /already configured/);
+  await assert.rejects(async () => await f.invoke('configureKeys'), /already configured/);
+  await f.invoke('enroll', f.member(ALICE));
+  await assert.rejects(async () => await f.invoke('configureKeys'), /already configured/);
 });
 
-test('setup enforces its deadline and nonzero canonical keys and shares', () => {
-  const late = fixture({ configured: false });
+test('setup enforces its deadline and nonzero canonical keys and shares', async () => {
+  const late = await fixture({ configured: false });
   late.at(OPEN);
-  assert.throws(() => late.invoke('configureKeys'), /deadline passed/);
+  await assert.rejects(async () => await late.invoke('configureKeys'), /deadline passed/);
   for (const setupSecret of [0n, Q, 1n << 252n]) {
-    const f = fixture({ configured: false, setupSecret });
-    assert.throws(() => f.invoke('configureKeys'), /zero private scalar|noncanonical Jubjub scalar/);
+    const f = await fixture({ configured: false, setupSecret });
+    await assert.rejects(async () => await f.invoke('configureKeys'), /zero private scalar|noncanonical Jubjub scalar|expected value of type JubjubScalar|expected value of type Vector<5, JubjubScalar>/);
     assert.equal(f.state().keysConfigured, false);
   }
   for (const setupSlope of [0n, Q]) {
-    const f = fixture({ configured: false, setupSlope });
-    assert.throws(() => f.invoke('configureKeys'), /zero private scalar|noncanonical Jubjub scalar/);
+    const f = await fixture({ configured: false, setupSlope });
+    await assert.rejects(async () => await f.invoke('configureKeys'), /zero private scalar|noncanonical Jubjub scalar|expected value of type JubjubScalar|expected value of type Vector<5, JubjubScalar>/);
   }
   // x+i*slope=0 modulo q makes one trustee's share public; reject all three cases.
   for (const index of [1n, 2n, 3n]) {
-    const zeroShare = fixture({ configured: false, setupSecret: 7n * index, setupSlope: Q - 7n });
-    assert.throws(() => zeroShare.invoke('configureKeys'), /identity trustee key/);
+    const zeroShare = await fixture({ configured: false, setupSecret: 7n * index, setupSlope: Q - 7n });
+    await assert.rejects(async () => await zeroShare.invoke('configureKeys'), /identity trustee key/);
   }
 });
 
-test('canonical native scalar boundaries use q, not the Compact Field modulus', () => {
+test('canonical native scalar boundaries use q, not the Compact Field modulus', async () => {
   assert.deepEqual(pureCircuits.addPoints(pureCircuits.nativePublicKey(Q - 1n),
     pureCircuits.nativePublicKey(1n)), ZERO);
   assert.deepEqual(pureCircuits.nativePublicKey(0n), ZERO);
@@ -138,8 +142,8 @@ test('canonical native scalar boundaries use q, not the Compact Field modulus', 
   assert.throws(() => pureCircuits.nativePublicKey(1n << 252n), /noncanonical Jubjub scalar/);
 });
 
-test('configuration digest binds actual key commitments, administrator, metadata and schedule', () => {
-  const f = fixture();
+test('configuration digest binds actual key commitments, administrator, metadata and schedule', async () => {
+  const f = await fixture();
   const s = f.state();
   const args = [s.electionId, s.manifestDigest, s.administrator, s.opensAt,
     s.closesAt, s.candidateCount, s.publicKey, s.coefficientKey, s.trusteeKeys];
@@ -152,24 +156,24 @@ test('configuration digest binds actual key commitments, administrator, metadata
   }
 });
 
-test('only the administrator enrolls and the frozen electorate cannot change', () => {
-  const f = fixture();
+test('only the administrator enrolls and the frozen electorate cannot change', async () => {
+  const f = await fixture();
   f.as({ administratorSecret: MALLORY });
-  assert.throws(() => f.invoke('enroll', f.member(ALICE)), /administrator required/);
+  await assert.rejects(async () => await f.invoke('enroll', f.member(ALICE)), /administrator required/);
   f.as({ administratorSecret: ADMIN });
-  f.invoke('enroll', f.member(ALICE));
-  assert.throws(() => f.invoke('enroll', f.member(ALICE)), /already enrolled/);
-  assert.throws(() => f.invoke('openVoting'), /not started/);
+  await f.invoke('enroll', f.member(ALICE));
+  await assert.rejects(async () => await f.invoke('enroll', f.member(ALICE)), /already enrolled/);
+  await assert.rejects(async () => await f.invoke('openVoting'), /not started/);
   f.at(OPEN);
-  assert.throws(() => f.invoke('enroll', f.member(BOB)), /deadline passed/);
-  f.invoke('openVoting');
-  assert.throws(() => f.invoke('enroll', f.member(BOB)), /frozen/);
-  assert.throws(() => f.invoke('configureKeys'), /already configured/);
+  await assert.rejects(async () => await f.invoke('enroll', f.member(BOB)), /deadline passed/);
+  await f.invoke('openVoting');
+  await assert.rejects(async () => await f.invoke('enroll', f.member(BOB)), /frozen/);
+  await assert.rejects(async () => await f.invoke('configureKeys'), /already configured/);
 });
 
-test('a ballot stores all native ciphertext coordinates and its configuration-bound receipt', () => {
-  const f = opened();
-  const receipt = cast(f, ALICE, 1n, [101n, 103n, 107n, 109n, 113n]);
+test('a ballot stores all native ciphertext coordinates and its configuration-bound receipt', async () => {
+  const f = await opened();
+  const receipt = await cast(f, ALICE, 1n, [101n, 103n, 107n, 109n, 113n]);
   const s = f.state();
   const a = s.ballotA.lookup(0n), b = s.ballotB.lookup(0n);
   const nul = pureCircuits.voterNullifier(ID, ALICE);
@@ -189,152 +193,157 @@ test('a ballot stores all native ciphertext coordinates and its configuration-bo
   }
 });
 
-test('native circuit rejects invalid selection and zero, noncanonical or repeated masks', () => {
-  const f = opened();
+test('native circuit rejects invalid selection and zero, noncanonical or repeated masks', async () => {
+  const f = await opened();
   f.as({ selection: 3n });
-  assert.throws(() => f.invoke('castBallot'), /invalid choice/);
+  await assert.rejects(async () => await f.invoke('castBallot'), /invalid choice/);
   f.as({ selection: 0n });
   const valid = [101n, 103n, 107n, 109n, 113n];
   for (let index = 0; index < 5; index++) {
     for (const invalid of [0n, Q, 1n << 252n]) {
       const ballotRandomness = [...valid]; ballotRandomness[index] = invalid;
       f.as({ ballotRandomness });
-      assert.throws(() => f.invoke('castBallot'), /zero private scalar|noncanonical Jubjub scalar/);
+      await assert.rejects(async () => await f.invoke('castBallot'), /zero private scalar|noncanonical Jubjub scalar|expected value of type JubjubScalar|expected value of type Vector<5, JubjubScalar>/);
     }
     for (let other = index + 1; other < 5; other++) {
       const ballotRandomness = [...valid]; ballotRandomness[other] = ballotRandomness[index];
       f.as({ ballotRandomness });
-      assert.throws(() => f.invoke('castBallot'), /reused candidate randomness/);
+      await assert.rejects(async () => await f.invoke('castBallot'), /reused candidate randomness/);
     }
   }
   assert.equal(f.state().accepted, 0n);
 });
 
-test('a new ciphertext cannot bypass a previously spent voter nullifier', () => {
-  const f = opened();
-  cast(f, ALICE, 0n, [101n, 103n, 107n, 109n, 113n]);
-  assert.throws(() => cast(f, ALICE, 2n, [211n, 223n, 227n, 229n, 233n]), /already voted/);
+test('a new ciphertext cannot bypass a previously spent voter nullifier', async () => {
+  const f = await opened();
+  await cast(f, ALICE, 0n, [101n, 103n, 107n, 109n, 113n]);
+  await assert.rejects(async () => await cast(f, ALICE, 2n, [211n, 223n, 227n, 229n, 233n]), /already voted/);
   assert.equal(f.state().accepted, 1n);
 });
 
-test('membership path must be bound to the private voter secret', () => {
-  const f = opened();
+test('membership path must be bound to the private voter secret', async () => {
+  const f = await opened();
   f.as({ voterSecret: MALLORY });
-  assert.throws(() => f.invoke('castBallot'), /not bound to voter secret/);
+  await assert.rejects(async () => await f.invoke('castBallot'), /not bound to voter secret/);
 });
 
-test('an earlier subset electorate root cannot be used after enrollment is frozen', () => {
-  const f = fixture();
-  f.invoke('enroll', f.member(ALICE));
+test('an earlier subset electorate root cannot be used after enrollment is frozen', async () => {
+  const f = await fixture();
+  await f.invoke('enroll', f.member(ALICE));
   const oldPath = structuredClone(f.pathFor(ALICE));
-  f.invoke('enroll', f.member(BOB));
+  await f.invoke('enroll', f.member(BOB));
   f.as({ eligibilityPath: oldPath });
   f.at(OPEN);
-  f.invoke('openVoting');
-  assert.throws(() => f.invoke('castBallot'), /unknown electorate root/);
+  await f.invoke('openVoting');
+  await assert.rejects(async () => await f.invoke('castBallot'), /unknown electorate root/);
 });
 
-test('mutating a Merkle sibling invalidates voter eligibility', () => {
-  const f = opened();
+test('mutating a Merkle sibling invalidates voter eligibility', async () => {
+  const f = await opened();
   const path = structuredClone(f.pathFor(ALICE));
   path.path[0].sibling.field += 1n;
   f.as({ eligibilityPath: path });
-  assert.throws(() => f.invoke('castBallot'), /unknown electorate root/);
+  await assert.rejects(async () => await f.invoke('castBallot'), /unknown electorate root/);
 });
 
-test('the deadline rejects ballots even before the closing transaction', () => {
-  const f = opened();
-  assert.throws(() => f.invoke('closeVoting'), /not ended/);
+test('the deadline rejects ballots even before the closing transaction', async () => {
+  const f = await opened();
+  await assert.rejects(async () => await f.invoke('closeVoting'), /not ended/);
   f.at(CLOSE);
-  assert.throws(() => f.invoke('castBallot'), /deadline passed/);
-  f.invoke('closeVoting');
+  await assert.rejects(async () => await f.invoke('castBallot'), /deadline passed/);
+  await f.invoke('closeVoting');
   assert.equal(f.state().phase, 2n);
-  assert.throws(() => f.invoke('openVoting'), /already opened or closed/);
-  assert.throws(() => f.invoke('castBallot'), /not open/);
+  await assert.rejects(async () => await f.invoke('openVoting'), /already opened or closed/);
+  await assert.rejects(async () => await f.invoke('castBallot'), /not open/);
 });
 
-test('decryption requires a frozen aggregate and knowledge of the registered share', () => {
-  const f = opened();
-  castThree(f);
-  assert.throws(() => f.invoke('submitDecryption', 1n), /not frozen/);
-  close(f);
-  for (const index of [0n, 4n]) assert.throws(() => f.invoke('submitDecryption', index), /invalid trustee index/);
+test('decryption requires a frozen aggregate and knowledge of the registered share', async () => {
+  const f = await opened();
+  await castThree(f);
+  await assert.rejects(async () => await f.invoke('submitDecryption', 1n), /not frozen/);
+  await close(f);
+  for (const index of [0n, 4n]) await assert.rejects(async () => await f.invoke('submitDecryption', index), /invalid trustee index/);
   f.as({ trusteeSecretShare: 19n });
-  assert.throws(() => f.invoke('submitDecryption', 1n), /wrong trustee secret share/);
+  await assert.rejects(async () => await f.invoke('submitDecryption', 1n), /wrong trustee secret share/);
   for (const trusteeSecretShare of [0n, Q]) {
     f.as({ trusteeSecretShare });
-    assert.throws(() => f.invoke('submitDecryption', 1n), /zero private scalar|noncanonical Jubjub scalar/);
+    await assert.rejects(async () => await f.invoke('submitDecryption', 1n), /zero private scalar|noncanonical Jubjub scalar|expected value of type JubjubScalar|expected value of type Vector<5, JubjubScalar>/);
   }
-  submit(f, 1);
+  await submit(f, 1);
   assert.deepEqual(f.state().decryptionShares.lookup(1n),
     f.state().aggregateA.map(point => pureCircuits.scalePoint(point, SHARES[1])));
-  assert.throws(() => f.invoke('submitDecryption', 1n), /already submitted/);
+  await assert.rejects(async () => await f.invoke('submitDecryption', 1n), /already submitted/);
 });
 
 for (const [first, second] of [[1, 2], [1, 3], [2, 3]]) {
-  test(`trustees ${first}+${second} finalize the complete three-ballot aggregate`, () => {
-    const f = opened();
-    castThree(f);
-    close(f);
+  test(`trustees ${first}+${second} finalize the complete three-ballot aggregate`, async () => {
+    const f = await opened();
+    await castThree(f);
+    await close(f);
     const frozen = structuredClone([f.state().aggregateA, f.state().aggregateB]);
-    submit(f, first);
-    assert.throws(() => f.invoke('finalize', BigInt(first), BigInt(second), [1n, 1n, 1n, 0n, 0n]), /two verified trustees/);
-    submit(f, second);
-    assert.throws(() => f.invoke('finalize', BigInt(first), BigInt(second), [2n, 0n, 1n, 0n, 0n]), /incorrect tally/);
-    f.invoke('finalize', BigInt(first), BigInt(second), [1n, 1n, 1n, 0n, 0n]);
+    await submit(f, first);
+    await assert.rejects(async () => await f.invoke('finalize', BigInt(first), BigInt(second), [1n, 1n, 1n, 0n, 0n]), /two verified trustees/);
+    await submit(f, second);
+    await assert.rejects(async () => await f.invoke('finalize', BigInt(first), BigInt(second), [2n, 0n, 1n, 0n, 0n]), /incorrect tally/);
+    await f.invoke('finalize', BigInt(first), BigInt(second), [1n, 1n, 1n, 0n, 0n]);
     assert.equal(f.state().phase, 3n);
     assert.deepEqual(f.state().finalizedTotals, [1n, 1n, 1n, 0n, 0n]);
     assert.deepEqual([f.state().aggregateA, f.state().aggregateB], frozen);
-    assert.throws(() => f.invoke('finalize', BigInt(first), BigInt(second), [1n, 1n, 1n, 0n, 0n]), /not frozen/);
+    await assert.rejects(async () => await f.invoke('finalize', BigInt(first), BigInt(second), [1n, 1n, 1n, 0n, 0n]), /not frozen/);
   });
 }
 
-test('finalization rejects invalid pairs, excess counts and wrong count sums', () => {
-  const f = opened();
-  castThree(f);
-  close(f);
-  submit(f, 1);
-  submit(f, 2);
+test('finalization rejects invalid pairs, excess counts and wrong count sums', async () => {
+  const f = await opened();
+  await castThree(f);
+  await close(f);
+  await submit(f, 1);
+  await submit(f, 2);
   for (const [first, second] of [[0n, 2n], [1n, 4n], [2n, 1n], [1n, 1n]]) {
-    assert.throws(() => f.invoke('finalize', first, second, [1n, 1n, 1n, 0n, 0n]), /invalid trustee pair/);
+    await assert.rejects(async () => await f.invoke('finalize', first, second, [1n, 1n, 1n, 0n, 0n]), /invalid trustee pair/);
   }
-  assert.throws(() => f.invoke('finalize', 1n, 2n, [4n, 0n, 0n, 0n, 0n]), /exceeds ballot count/);
-  assert.throws(() => f.invoke('finalize', 1n, 2n, [1n, 0n, 0n, 0n, 0n]), /do not sum/);
+  await assert.rejects(async () => await f.invoke('finalize', 1n, 2n, [4n, 0n, 0n, 0n, 0n]), /exceeds ballot count/);
+  // Native scalar arguments must not wrap into a small public Uint32 tally.
+  for (const invalid of [1n << 32n, Q - 1n, Q]) {
+    await assert.rejects(async () => await f.invoke('finalize', 1n, 2n, [invalid, 0n, 0n, 0n, 0n]));
+    assert.equal(f.state().phase, 2n);
+  }
+  await assert.rejects(async () => await f.invoke('finalize', 1n, 2n, [1n, 0n, 0n, 0n, 0n]), /do not sum/);
   assert.equal(f.state().phase, 2n);
 });
 
-test('empty configured elections have valid identity aggregates and zero totals', () => {
-  const f = fixture();
-  close(f);
-  submit(f, 1);
-  submit(f, 3);
+test('empty configured elections have valid identity aggregates and zero totals', async () => {
+  const f = await fixture();
+  await close(f);
+  await submit(f, 1);
+  await submit(f, 3);
   assert.deepEqual(f.state().decryptionShares.lookup(1n), [ZERO, ZERO, ZERO, ZERO, ZERO]);
-  f.invoke('finalize', 1n, 3n, [0n, 0n, 0n, 0n, 0n]);
+  await f.invoke('finalize', 1n, 3n, [0n, 0n, 0n, 0n, 0n]);
   assert.deepEqual(f.state().finalizedTotals, [0n, 0n, 0n, 0n, 0n]);
 });
 
-test('valid nonzero ballot randomness may cancel to an identity aggregate', () => {
-  const f = opened([ALICE, BOB]);
-  cast(f, ALICE, 0n, [101n, 103n, 107n, 109n, 113n]);
-  cast(f, BOB, 1n, [Q - 101n, Q - 103n, Q - 107n, Q - 109n, Q - 113n]);
+test('valid nonzero ballot randomness may cancel to an identity aggregate', async () => {
+  const f = await opened([ALICE, BOB]);
+  await cast(f, ALICE, 0n, [101n, 103n, 107n, 109n, 113n]);
+  await cast(f, BOB, 1n, [Q - 101n, Q - 103n, Q - 107n, Q - 109n, Q - 113n]);
   assert.deepEqual(f.state().aggregateA, [ZERO, ZERO, ZERO, ZERO, ZERO]);
-  close(f);
-  submit(f, 2);
-  submit(f, 3);
-  f.invoke('finalize', 2n, 3n, [1n, 1n, 0n, 0n, 0n]);
+  await close(f);
+  await submit(f, 2);
+  await submit(f, 3);
+  await f.invoke('finalize', 2n, 3n, [1n, 1n, 0n, 0n, 0n]);
   assert.deepEqual(f.state().finalizedTotals, [1n, 1n, 0n, 0n, 0n]);
 });
 
-test('native membership and nullifier hashes are domain and election separated', () => {
+test('native membership and nullifier hashes are domain and election separated', async () => {
   assert.notDeepEqual(pureCircuits.memberIdentity(ID, ALICE), pureCircuits.voterNullifier(ID, ALICE));
   assert.notDeepEqual(pureCircuits.voterNullifier(ID, ALICE), pureCircuits.voterNullifier(key(20), ALICE));
 });
 
-test('candidate count is constructor-bounded and changes the sealed configuration', () => {
+test('candidate count is constructor-bounded and changes the sealed configuration', async () => {
   for (const candidateCount of [0n, 1n, 6n, 255n]) {
-    assert.throws(() => fixture({ candidateCount }), /candidate count must be two to five/);
+    await assert.rejects(async () => await fixture({ candidateCount }), /candidate count must be two to five/);
   }
-  const two = fixture({ candidateCount: 2n }), five = fixture({ candidateCount: 5n });
+  const two = await fixture({ candidateCount: 2n }), five = await fixture({ candidateCount: 5n });
   assert.equal(two.state().candidateCount, 2n); assert.equal(five.state().candidateCount, 5n);
   assert.notDeepEqual(two.state().configurationDigest, five.state().configurationDigest);
   assert.equal(two.state().trusteeKeys.length, 3);
@@ -350,15 +359,33 @@ test('explicit emulator initial time is enforced by the real key-setup deadline'
   emulator.setPrivateState({});
 });
 
+test('asynchronous native calls cannot overlap or change their private inputs and clock', async () => {
+  const emulator = await createNativeEmulator({ electionId: ID, manifestDigest: MANIFEST, administratorSecret: ADMIN,
+    setupSecret: 11n, setupSlope: 7n, opensAt: OPEN, closesAt: CLOSE, candidateCount: 3 });
+  const alice = pureCircuits.memberIdentity(ID, ALICE), bob = pureCircuits.memberIdentity(ID, BOB);
+  const enrolling = emulator.call('enroll', alice);
+  assert.throws(() => emulator.setPrivateState({}), /native circuit is still executing/);
+  assert.throws(() => emulator.setTime(OPEN), /native circuit is still executing/);
+  await assert.rejects(emulator.call('enroll', bob), /native circuit is still executing/);
+  await enrolling;
+  assert.equal(emulator.readLedger().enrolled.member(alice), true);
+  assert.equal(emulator.readLedger().enrolled.member(bob), false);
+  await emulator.call('enroll', bob);
+  await assert.rejects(emulator.call('enroll', bob), /already enrolled/);
+  emulator.setTime(OPEN);
+  await emulator.call('openVoting');
+  assert.equal(emulator.readLedger().phase, 1n);
+});
+
 for (const candidateCount of [2n, 3n, 4n, 5n]) {
-  test(`${candidateCount} active choices preserve five encrypted lanes and zero inactive totals`, () => {
-    const f = opened([ALICE, BOB, CAROL], candidateCount);
+  test(`${candidateCount} active choices preserve five encrypted lanes and zero inactive totals`, async () => {
+    const f = await opened([ALICE, BOB, CAROL], candidateCount);
     f.as({ selection: candidateCount });
-    assert.throws(() => f.invoke('castBallot'), /invalid choice/);
+    await assert.rejects(async () => await f.invoke('castBallot'), /invalid choice/);
     const choices = [0n, candidateCount - 1n, 1n];
     const totals = [0n, 0n, 0n, 0n, 0n];
     for (const [index, voter] of [ALICE, BOB, CAROL].entries()) {
-      cast(f, voter, choices[index], [101n, 103n, 107n, 109n, 113n].map(value => value + BigInt(index * 1000)));
+      await cast(f, voter, choices[index], [101n, 103n, 107n, 109n, 113n].map(value => value + BigInt(index * 1000)));
       totals[Number(choices[index])]++;
     }
     const state = f.state(), receipt = state.ballotReceipts.lookup(0n);
@@ -366,12 +393,12 @@ for (const candidateCount of [2n, 3n, 4n, 5n]) {
     changed[4] = pureCircuits.addPoints(changed[4], pureCircuits.nativePublicKey(1n));
     assert.notDeepEqual(receipt, pureCircuits.receiptDigest(ID, state.configurationDigest,
       state.nullifiers.lookup(0n), state.ballotA.lookup(0n), changed));
-    close(f); submit(f, 1); submit(f, 3);
+    await close(f); await submit(f, 1); await submit(f, 3);
     if (candidateCount < 5n) {
       const changedTotals = [...totals]; changedTotals[0]--; changedTotals[Number(candidateCount)]++;
-      assert.throws(() => f.invoke('finalize', 1n, 3n, changedTotals), /inactive candidate total must be zero/);
+      await assert.rejects(async () => await f.invoke('finalize', 1n, 3n, changedTotals), /inactive candidate total must be zero/);
     }
-    f.invoke('finalize', 1n, 3n, totals);
+    await f.invoke('finalize', 1n, 3n, totals);
     assert.deepEqual(f.state().finalizedTotals, totals);
     assert.equal(f.state().phase, 3n);
     for (let index = Number(candidateCount); index < 5; index++) assert.equal(totals[index], 0n);

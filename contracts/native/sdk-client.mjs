@@ -1,11 +1,11 @@
-/** Provider-injected Midnight.js 4.1.1 client.
+/** Provider-injected Midnight.js 5 client for the ledger-9 contract.
  * Requires real generated bindings, runtime, SDK providers, prover and wallet.
  * The network browser entry imports this client. No network activity occurs on import.
  * Native compilation is separate from proving and accepted network transactions.
  */
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
-import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
-import { getNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/v9/compact-js';
+import { ContractState } from '@midnight-ntwrk/compact-runtime';
 import * as Native from '../managed/native-election/contract/index.js';
 import { nativeWitnesses, requireBytes32, requireScalar, requireCandidateCount, freshBallotRandomness, pairCoefficients, NATIVE_CAPACITY, NATIVE_CANDIDATES } from './adapter.mjs';
 import { recoverNativeTally } from './harness.mjs';
@@ -64,7 +64,7 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
   requireDevelopmentNetwork(networkId);
   if (typeof assertSession !== 'function') throw new TypeError('assertSession must be a function');
   const requireNetwork = () => {
-    if (getNetworkId() !== networkId) throw new Error('Midnight.js network changed; reconnect before operating this client');
+    if (providers?.config?.networkId !== networkId) throw new Error('Midnight.js network changed; reconnect before operating this client');
   };
   requireNetwork();
   for (const name of ['privateStateProvider', 'publicDataProvider', 'zkConfigProvider', 'proofProvider', 'walletProvider', 'midnightProvider']) {
@@ -80,7 +80,7 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
     if (!activeInputs) throw new Error('No active native witness input scope');
     const [, value] = read({ ...context, privateState: activeInputs });
     // The SDK's stored private state never receives vote choices or randomness.
-    // The actual prover STILL receives these witnesses; use a trusted local prover.
+    // The on-device proving worker receives these witnesses in memory.
     return [context.privateState, value];
   }]));
   const compiled = CompiledContract.make('native-election', Native.Contract).pipe(
@@ -97,7 +97,8 @@ export function createNativeSdkClient(providers, { compiledAssetsPath, networkId
     if (!contractAddress) throw new Error('Deploy or join a native contract first');
     const state = await providers.publicDataProvider.queryContractState(contractAddress);
     if (state === null) throw new Error('The indexer did not return the native contract state');
-    return Native.ledger(state.data);
+    if (state.contractState?.era !== 'v9') throw new Error('This build requires a ledger-9 election');
+    return Native.ledger(state.contractState.deserialize({ v9: ContractState }).data);
   }
   async function requireConfiguration() {
     if (!handle || !expectedConfiguration) throw new Error('The native contract configuration has not been pinned');

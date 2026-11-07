@@ -1,0 +1,18 @@
+import { readFile, writeFile } from 'node:fs/promises';
+const source = await readFile('scripts/build-browser-proof-check.mjs', 'utf8');
+const replacements = [
+ ["const output = join(root, 'artifacts/browser-proof-check');", "const output = join(root, 'artifacts/split-browser-proof-check');"],
+ ["entryPoints: [join(contracts, 'native/browser-proof-check.mjs')],", "entryPoints: [{ in: join(contracts, 'native/browser-proof-check.mjs'), out: 'proof-check-bundle' }],"],
+ ["outfile: join(output, 'proof-check-bundle.mjs'),", "outdir: output, splitting: true, chunkNames: 'proof-check-chunk-[hash]', outExtension: { '.js': '.mjs' },"],
+ ["result.warnings.length || result.outputFiles.length !== 1", "result.warnings.length || result.outputFiles.length < 1"],
+ ["await writeFile(join(output, 'proof-check-bundle.mjs'), result.outputFiles[0].contents);", "for (const file of result.outputFiles) await writeFile(file.path, file.contents);"],
+];
+let changed = source;
+for (const [before, after] of replacements) {
+ if (changed.split(before).length !== 2) throw new Error('Unexpected builder source');
+ changed = changed.replace(before, after);
+}
+const location = 'scripts/.local-split-proof-builder.mjs';
+await writeFile(location, changed);
+try { await import(new URL('../../' + location, import.meta.url)); }
+finally { const { unlink } = await import('node:fs/promises'); await unlink(location); }

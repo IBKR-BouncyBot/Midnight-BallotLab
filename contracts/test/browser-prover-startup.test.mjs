@@ -26,7 +26,7 @@ test('production provider waits for the actual WASM worker listener before initi
   const assets = new Map();
   const fixtureAsset = path => ({ path, bytes: 1, sha256: 'a'.repeat(64) });
   // Only the manifest boundary is exercised; no fixture key is fetched or used.
-  const manifest = Buffer.from(JSON.stringify({ schema: NATIVE_PROVER_ASSET_SCHEMA, proverVersion: '2.1.1',
+  const manifest = Buffer.from(JSON.stringify({ schema: NATIVE_PROVER_ASSET_SCHEMA, proverVersion: '3.2.0',
     circuits: Object.entries(NATIVE_PROVER_CIRCUITS).map(([name, k]) => ({ name, k,
       prover: fixtureAsset(`keys/${name}.prover`), verifier: fixtureAsset(`keys/${name}.verifier`), ir: fixtureAsset(`zkir/${name}.bzkir`) })),
     params: Object.entries(NATIVE_PROVER_PARAMETERS).map(([k, sha256]) => ({ k: Number(k),
@@ -64,7 +64,7 @@ test('production provider waits for the actual WASM worker listener before initi
     });
     await writeFile(join(folder, 'worker.mjs'), workerBuild.outputFiles[0].contents);
     const parentBuild = await esbuild.build({ ...common,
-      stdin: { contents: 'export * from "./native/browser-wasm-proof.mjs"; export { CostModel as StartupCostModel } from "@midnight-ntwrk/ledger-v8";',
+      stdin: { contents: 'export * from "./native/browser-wasm-proof.mjs"; export { CostModel as StartupCostModel } from "@midnightntwrk/ledger-v9";',
         sourcefile: 'worker-startup-test-entry.mjs', resolveDir: join(root, 'contracts') }, outfile: join(folder, 'parent.mjs'),
       define: { 'import.meta.url': JSON.stringify(`${base}/network-bundle.mjs`) },
       inject: [join(root, 'scripts/network-browser-globals.mjs')], metafile: true,

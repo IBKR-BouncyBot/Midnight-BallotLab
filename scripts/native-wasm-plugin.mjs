@@ -23,6 +23,45 @@ async function nativeAsset(path) {
     name: 'actual-native-wasm',
     setup(build) {
       const root = resolve(projectRoot ?? build.initialOptions.absWorkingDir ?? process.cwd());
+      const ledgerGlue = new Map();
+      build.onResolve({ filter: /^#self$/ }, async args => {
+        const importer = args.importer.replaceAll('\\', '/');
+        const match = /^(.*)\/node_modules\/(@midnightntwrk\/ledger-v([89]))\/snippets\/midnight-ledger-wasm(?:-v9)?-[a-f0-9]+\/inline\d+\.js$/.exec(importer);
+        if (!match) return;
+        const packageName = match[2], era = match[3];
+        const entryName = era === '9' ? 'midnight_ledger_wasm_v9' : 'midnight_ledger_wasm';
+        const packageRoot = resolve(match[1], 'node_modules', packageName);
+        const local = relative(root, packageRoot);
+        if (isAbsolute(local) || local === '..' || local.startsWith(`..${sep}`)) throw new Error('Ledger glue must stay inside the project root');
+        const snippet = await readFile(args.importer, 'utf8');
+        const getter = /^import \* as wasm from '#self'; export function ([A-Za-z][A-Za-z0-9]*)_\(\) \{ return wasm\.\1; \}\s*$/.exec(snippet);
+        if (!getter) throw new Error('Unreviewed ledger snippet cannot be rebound');
+        if (!ledgerGlue.has(packageRoot)) ledgerGlue.set(packageRoot, (async () => {
+          const [metadata, entry, glue] = await Promise.all([
+            readFile(resolve(packageRoot, 'package.json'), 'utf8').then(JSON.parse),
+            readFile(resolve(packageRoot, `${entryName}.js`), 'utf8'),
+            readFile(resolve(packageRoot, `${entryName}_bg.js`), 'utf8'),
+          ]);
+          if (metadata.name !== packageName || metadata.version !== (era === '9' ? '1.0.0' : '8.1.3')
+              || metadata.exports?.browser !== `./${entryName}.js`
+              || !entry.includes('__wbg_set_wasm(wasm);') || !entry.includes('wasm.__wbindgen_start();')) {
+            throw new Error('Unreviewed ledger browser initialization');
+          }
+          const exported = new RegExp(`export\\s*\\{([^}]+)\\}\\s*from\\s*"\\.\\/${entryName}_bg\\.js";`).exec(entry);
+          const exportAll = era === '8' && entry.includes(`export * from "./${entryName}_bg.js";`);
+          if (!exported && !exportAll) throw new Error('Ledger browser exports no longer match its owning glue');
+          return { exports: exported ? new Set(exported[1].split(',').map(value => value.trim())) : null, glue };
+        })());
+        const reviewed = await ledgerGlue.get(packageRoot);
+        if (reviewed.exports && !reviewed.exports.has(getter[1]) || !reviewed.glue.includes(`export class ${getter[1]} `)) {
+          throw new Error('Ledger snippet does not name its original public class');
+        }
+        // These lazy getters return the same live classes re-exported by #self.
+        // Resolving directly to their owner avoids the async loader's
+        // snippet -> entry -> WASM cycle. The actual entry still initializes
+        // the unmodified WASM; no package file or cryptographic code is edited.
+        return { path: resolve(packageRoot, `${entryName}_bg.js`), sideEffects: true };
+      });
       build.onResolve({ filter: /.*/ }, args => {
         if (Object.hasOwn(browserPackages, args.path)) return { path: browserPackages[args.path] };
         if (args.path.startsWith('node:') || builtins.has(args.path)) {

@@ -3,6 +3,7 @@
  * before parsing and are never logged or retained. This is not an egress gate.
  */
 import { createHash } from 'node:crypto';
+import { LACE_PROOF_COVERAGE_SOURCE, projectLaceProofCoverage } from './lace-proof-coverage.mjs';
 
 const origin = 'chrome-extension://gafhhkghbfjjkeiendhlofajokpaflmk';
 export const LACE_PROVER_RESOURCE = Object.freeze({
@@ -49,8 +50,9 @@ export function verifyLaceProverResource(value) {
   } finally { bytes.fill(0); }
 }
 
-export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 * 60_000 } = {}) {
+export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 * 60_000, captureProofEntries = false } = {}) {
   if (!Number.isSafeInteger(windowMilliseconds) || windowMilliseconds <= 0 || windowMilliseconds > 180 * 60_000) throw fixedError();
+  if (typeof captureProofEntries !== 'boolean') throw fixedError();
   let root;
   try { root = await browser.newBrowserCDPSession(); } catch { throw fixedError(); }
   let closed = false, closing = false, nextId = 0, failureCategory = null, observation = null;
@@ -62,6 +64,9 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
     workerUrlEmpty: 0, extensionBlobWorker: 0, extensionOther: 0, other: 0,
   } };
   const started = Date.now();
+  let coverageFailure = null, activeOrdinal = null, takingCoverage = false;
+  const proofOperations = [];
+  const coverageFail = category => { coverageFailure ??= category; };
   let discoveryTimer, closeTask;
   const fail = category => { failureCategory ??= category; };
   const track = promise => {
@@ -148,7 +153,7 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
           // A verified resource is sufficient for this observer's narrow task.
           // Stop only our passive sessions; wallet proof execution continues.
           // Keep the completed snapshot and any sticky failure for final gates.
-          queueMicrotask(() => { void close().catch(() => fail('observer-cleanup-failed')); });
+          if (!captureProofEntries) queueMicrotask(() => { void close().catch(() => fail('observer-cleanup-failed')); });
         } catch (error) {
           const reason = failureReasons.get(error);
           fail(reason?.startsWith('prover-resource-') ? reason
@@ -169,9 +174,19 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
     await enableSession(sessionId, kind, null);
   }
   async function enableSession(sessionId, kind, parentSessionId) {
-    sessions.set(sessionId, { kind, parentSessionId, requests: new Set() }); targetCounts[kind]++;
+    const session = { kind, parentSessionId, requests: new Set(), profilerReady: false };
+    sessions.set(sessionId, session); targetCounts[kind]++;
     await child(sessionId, 'Network.enable', { maxPostDataSize: 0, maxResourceBufferSize: resourceBufferBytes,
       maxTotalBufferSize: resourceBufferBytes * 2, enableDurableMessages: false, reportDirectSocketTraffic: false });
+    if (captureProofEntries && kind === 'worker') {
+      try {
+        // Our exact signed worker only. No source evaluation, debugger pause,
+        // argument capture or replacement of Lace's real proving function.
+        await child(sessionId, 'Profiler.enable');
+        await child(sessionId, 'Profiler.startPreciseCoverage', { callCount: true, detailed: false });
+        session.profilerReady = true;
+      } catch { coverageFail('proof-coverage-command-failed'); }
+    }
     if (kind === 'offscreen') {
       // This setting belongs only to our session on the exact signed offscreen
       // page. It neither replaces Playwright's browser policy nor pauses a
@@ -211,7 +226,7 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
   }
   const onTarget = ({ targetInfo }) => { classify(targetInfo); track(consider(targetInfo)); };
   async function refreshTargets() {
-    if (closed || closing || observation) return;
+    if (closed || closing || (observation && !captureProofEntries)) return;
     if (discovery.snapshots >= discovery.refreshLimit || Date.now() - started >= windowMilliseconds) {
       fail('observer-discovery-window-ended'); return;
     }
@@ -222,7 +237,7 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
     await Promise.all(targetInfos.map(consider));
   }
   function scheduleRefresh() {
-    if (closed || closing || observation || failureCategory) return;
+    if (closed || closing || (observation && !captureProofEntries) || failureCategory) return;
     discoveryTimer = setTimeout(() => {
       // Chromium creates dedicated-worker targets with an empty URL and later
       // assigns the URL without a navigation notification. Re-read public
@@ -235,6 +250,58 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
   root.on('Target.receivedMessageFromTarget', receive);
   root.on('Target.targetCreated', onTarget);
   root.on('Target.targetInfoChanged', onTarget);
+  async function takeProofCoverage() {
+    if (!captureProofEntries || closed || closing || takingCoverage || coverageFailure) {
+      coverageFail('proof-coverage-window-invalid'); throw fixedError();
+    }
+    takingCoverage = true;
+    try {
+      // Finish an in-flight attachment before taking the boundary snapshot.
+      // Newly created workers during a window start with zero counters.
+      await Promise.allSettled([...work]);
+      if (coverageFailure) throw fixedError();
+      let entryCalls = 0, matchedFunctions = 0, workerSessions = 0;
+      for (const [sessionId, session] of sessions) {
+        if (session.kind !== 'worker' || !session.profilerReady) continue;
+        let value;
+        try { value = await child(sessionId, 'Profiler.takePreciseCoverage'); }
+        catch { coverageFail('proof-coverage-command-failed'); throw fixedError(); }
+        try {
+          const projected = projectLaceProofCoverage(value);
+          entryCalls += projected.invocations; matchedFunctions += projected.matchedFunctions; workerSessions++;
+          if (entryCalls > 1_000_000 || matchedFunctions > 8 || workerSessions > 8) throw fixedError();
+        } catch { coverageFail('proof-coverage-projection-invalid'); throw fixedError(); }
+        finally { value = undefined; }
+      }
+      return { entryCalls, matchedFunctions, workerSessions };
+    } finally { takingCoverage = false; }
+  }
+  async function beginProofWindow(ordinal) {
+    if (!Number.isSafeInteger(ordinal) || ordinal !== proofOperations.length + 1 || ordinal > 9 || activeOrdinal !== null) {
+      coverageFail('proof-coverage-window-invalid'); throw fixedError();
+    }
+    // takePreciseCoverage resets invocation counters. Discard earlier activity,
+    // including designation; it is outside this paid application operation.
+    await takeProofCoverage(); activeOrdinal = ordinal;
+  }
+  async function endProofWindow(ordinal) {
+    if (activeOrdinal !== ordinal || ordinal !== proofOperations.length + 1) {
+      coverageFail('proof-coverage-window-invalid'); throw fixedError();
+    }
+    const counts = await takeProofCoverage();
+    proofOperations.push({ ordinal, ...counts }); activeOrdinal = null;
+    if (counts.entryCalls < 1 || counts.matchedFunctions < 1 || counts.workerSessions < 1) {
+      coverageFail('proof-coverage-entry-unobserved'); throw fixedError();
+    }
+  }
+  const proofExecutionSnapshot = () => {
+    const observed = captureProofEntries && !coverageFailure && activeOrdinal === null && proofOperations.length === 9;
+    return { schema: 'midnight-ballot-lab/lace-proof-entry-observation/v1', source: { ...LACE_PROOF_COVERAGE_SOURCE },
+      observed, status: coverageFailure ? 'failed' : observed ? 'observed' : closed ? 'closed' : 'armed',
+      failureCategory: coverageFailure, activeOrdinal, operations: proofOperations.map(value => ({ ...value })),
+      functionEntryOnly: true, proofCompletionAttested: false, privateInputsInspected: false,
+      runtimeEvaluationUsed: false, executionPaused: false };
+  };
   function close() {
     if (closeTask) return closeTask;
     closeTask = (async () => {
@@ -243,6 +310,10 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
       // Stop discovery before detaching only the sessions created by this observer.
       root.off('Target.targetCreated', onTarget); root.off('Target.targetInfoChanged', onTarget);
       await Promise.allSettled([...work]);
+      await Promise.allSettled([...sessions.entries()].filter(([, s]) => s.profilerReady).map(async ([sessionId]) => {
+        try { await child(sessionId, 'Profiler.stopPreciseCoverage'); await child(sessionId, 'Profiler.disable'); }
+        catch { coverageFail('proof-coverage-cleanup-failed'); }
+      }));
       // Disable only our offscreen auto-attacher after child Network sessions
       // have drained. Children must detach through their owning parent session.
       await Promise.allSettled([...sessions.entries()].filter(([, s]) => s.parentSessionId).map(async ([sessionId, session]) => {
@@ -275,6 +346,6 @@ export async function observeLaceProverWasm(browser, { windowMilliseconds = 30 *
       discovery: { ...discovery, classifiedTargets: { ...discovery.classifiedTargets } },
       requestPayloadsInspected: false, unrelatedEventsRetained: false, completeNetworkCoverage: false,
       runtimeEvaluationUsed: false, executionPaused: false }),
-    close,
+    close, beginProofWindow, endProofWindow, proofExecutionSnapshot,
   });
 }

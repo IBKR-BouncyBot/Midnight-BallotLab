@@ -1,3 +1,4 @@
+import { verifyBrowserModuleAssets, initialNetworkWasmAssets } from './browser-module-assets.mjs';
 /** Real SDK/WASM loading and no-wallet fail-closed checks in Chromium.
  * No injected wallet, fake proof provider, mock arithmetic or network submission.
  * Raw console messages/errors and Playwright traces are never retained.
@@ -115,20 +116,27 @@ try {
   assert.equal(manifest.bundle, 'network-bundle.mjs');
   assert.equal(manifest.mode, 'development-network-client');
   assert.equal(manifest.circuitAssets.length, 21);
-  assert.equal(manifest.wasmAssets.length, 3);
+  assert.equal(manifest.wasmAssets.length, 5);
   const proverWasm = manifest.wasmAssets.filter(path => /midnight_zkir_wasm_bg-/.test(path));
-  const initialWasm = manifest.wasmAssets.filter(path => !proverWasm.includes(path));
+  const initialWasm = initialNetworkWasmAssets(manifest.wasmAssets);
   assert.equal(proverWasm.length, 1); assert.equal(initialWasm.length, 2);
-  assert.equal(manifest.browserProver.version, '2.1.1');
+  assert.equal(manifest.browserProver.version, '3.2.0');
   assert.equal(manifest.browserProver.execution, 'dedicated-worker');
-  assert.equal(manifest.browserProver.parameters.length, 5);
+  assert.equal(manifest.browserProver.parameters.length, 6);
   for (const asset of [manifest.browserProver.worker, manifest.browserProver.manifest, ...manifest.browserProver.parameters]) {
     const bytes = await readFile(join(dist, asset.path));
     assert.equal(bytes.length, asset.bytes); assert.equal(hash(bytes), asset.sha256);
   }
-  evidence.browserProverPackaging = { version: '2.1.1', execution: 'dedicated-worker',
+  assert.deepEqual(manifest.compilerMetadata.map(item => item.path).sort(),
+    ['native-contract/compiler/contract-info.json', 'native-contract/compiler/contract-manifest.json']);
+  for (const asset of manifest.compilerMetadata) {
+    const bytes = await readFile(join(dist, asset.path));
+    assert.equal(bytes.length, asset.bytes); assert.equal(hash(bytes), asset.sha256);
+  }
+  evidence.browserProverPackaging = { version: '3.2.0', execution: 'dedicated-worker',
     worker: manifest.browserProver.worker, parameters: manifest.browserProver.parameters,
     proofGeneration: false, initializedWithoutWallet: false };
+  evidence.networkModuleAssets = await verifyBrowserModuleAssets(dist, manifest.moduleAssets);
   evidence.bundleSha256 = hash(await readFile(join(dist, manifest.bundle)));
   evidence.compiler = manifest.compiler; evidence.runtime = manifest.runtime; evidence.sdk = manifest.sdk;
   evidence.circuitAssets = [];
@@ -313,7 +321,7 @@ try {
       stage = `${prefix}:public-preview-default`;
       assert.equal(await page.locator('#network-id').inputValue(), 'preview', 'The public Preview preset must be selected');
       assert.deepEqual(await page.locator('#network-id option').evaluateAll(options => options.map(option => option.value)),
-        ['preview', 'undeployed', 'preprod']);
+        ['preview', 'undeployed']);
       assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
       assert.equal(await page.locator('#network-indexer').inputValue(), previewIndexer);
       assert.equal(await page.locator('#network-indexer-ws').inputValue(), previewWebSocket);
@@ -374,12 +382,10 @@ try {
       await page.locator('#network-indexer').fill('http://localhost:8088/api/v4/graphql');
       await page.locator('#network-indexer-ws').fill('ws://localhost:8088/api/v4/graphql/ws');
       assert.equal(await page.locator('#network-indexer').inputValue(), 'http://localhost:8088/api/v4/graphql');
-      await page.locator('#network-id').selectOption('preprod');
-      assert.equal(await page.locator('#network-check-services').isDisabled(), true);
-      assert.match(await page.locator('#network-environment-note').textContent(), /own working service access/);
-      assert.match(await page.locator('#network-environment-note').textContent(), /Do not use the retired/);
+      assert.equal(await page.locator('#network-id option[value="preprod"]').count(), 0,
+        'The ledger-9 client must not offer the unsupported Preprod ledger era');
       for (const id of ['network-indexer', 'network-indexer-ws']) {
-        assert.equal(await page.locator(`#${id}`).inputValue(), '', 'Preprod must not inherit another network’s endpoints');
+        await page.locator(`#${id}`).fill('');
         assert.equal(await page.locator(`#${id}`).evaluate(input => !input.readOnly && input.required && input.validity.valueMissing), true);
       }
       // This is an inert password fixture, never a wallet seed or real credential.
@@ -502,7 +508,7 @@ try {
         wasmLoaded: wasmResponses.size, circuitAssetsServed: manifest.circuitAssets.length,
         browserProverAssetsServed: true, browserProverInitialized: false, walletProvingModeAttested: false,
         ballotAndTrusteeCardsPresent: true, cardControlsDisabled: true,
-        previewDefaultAndPinnedEndpoints: true, localAndPreprodPresets: true, requiredServiceAndPasswordFields: true,
+        previewDefaultAndPinnedEndpoints: true, editableLocalPreset: true, unsupportedPreprodAbsent: true, requiredServiceAndPasswordFields: true,
         helpLinksChecked: true, laceSetupGuideChecked: true, inlineRequiredFieldAndWalletFeedback: true, mobileWidths: [390, 320], connectedSessionUiTested: false,
         receiptIdLookupRequiresConfiguredElection: true, receiptSuccessHiddenBeforeVote: true,
         visibleUnconfiguredElectionBackup: true, votingReadinessExplainsMissingWallet: true,
@@ -1152,6 +1158,7 @@ try {
       evidence.cases.push({ case: failure, status: 'passed', controls: 'all-disabled' });
     } finally { await context.close(); }
   }
+  await verifyBrowserModuleAssets(dist, evidence.networkModuleAssets);
   evidence.status = 'passed';
   await writeFile(join(evidenceDirectory, 'evidence.json'), JSON.stringify(evidence, null, 2) + '\n');
   console.log(JSON.stringify({ status: 'passed', cases: evidence.cases.length, evidence: 'artifacts/network-browser/evidence.json',

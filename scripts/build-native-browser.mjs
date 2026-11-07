@@ -1,6 +1,6 @@
 // Optional REAL native browser build. Requires generated Compact output and the
 // pinned npm packages; never replaces unavailable Midnight code with a mock.
-// esbuild 0.25.12: https://github.com/evanw/esbuild/blob/main/CHANGELOG-2025.md
+// esbuild 0.28.2 fixes async module-wrapper propagation in dependency cycles.
 import { readFile, writeFile, mkdir, rm, stat } from 'node:fs/promises';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -39,7 +39,7 @@ try {
   } catch (cause) {
     throw new Error('Native browser build requires the pinned esbuild package. Install contracts dependencies, including devDependencies.', { cause });
   }
-  if (esbuild.version !== '0.25.12') throw new Error(`Expected esbuild 0.25.12; found ${esbuild.version}`);
+  if (esbuild.version !== '0.28.2') throw new Error(`Expected esbuild 0.28.2; found ${esbuild.version}`);
   const pins = JSON.parse(await readFile(join(contracts, 'toolchain.json'), 'utf8'));
   const result = await esbuild.build({
     absWorkingDir: root, entryPoints: [source], outfile: bundlePath,
@@ -56,7 +56,7 @@ try {
   const inputs = Object.keys(result.metafile.inputs).map(path => path.replaceAll('\\', '/'));
   if (!inputs.some(path => path.endsWith('managed/native-election/contract/index.js'))
       || !inputs.some(path => path.includes('/@midnight-ntwrk/compact-runtime/'))
-      || !inputs.some(path => path.includes('/@midnight-ntwrk/onchain-runtime-v3/'))) {
+      || !inputs.some(path => path.includes('/@midnightntwrk/onchain-runtime-v4/'))) {
     throw new Error('Browser bundle must contain generated native election code and the actual pinned Midnight runtimes');
   }
   if (!assets.size) throw new Error('No actual native WASM was packaged; inspect the installed runtime export format');

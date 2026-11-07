@@ -3,6 +3,7 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import { basename, dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodeJsonUtf8, parseStrictJson } from '../src/json.mjs';
+import { validateChainCheckpoints } from './ci-preview-chain-evidence.mjs';
 
 const FIELDS = new Set([
   'schema', 'status', 'startedAt', 'finishedAt', 'networkId', 'execution', 'runId', 'headSha',
@@ -16,7 +17,7 @@ const FIELDS = new Set([
   'walletSettingsClose', 'walletOnDeviceWasmSelectedThroughUi', 'walletConnected', 'walletServices',
   'walletPublicConfigurationReloaded', 'contractProof', 'walletProverObservation',
   'failureCategory', 'failedStage', 'settingsControls', 'currentStage', 'traffic',
-  'fundlessFixtureState', 'fundlessWalletAvailability',
+  'fundlessFixtureState', 'fundlessWalletAvailability', 'chainIdentity', 'chainCheckpoints', 'networkModuleAssets',
 ]);
 const FALSE_FIELDS = ['fundingAttempted', 'walletDustProofsTested', 'networkSubmissionAttempted',
   'independentProofVerification', 'privateArtifactsExported', 'hostedOriginTested',
@@ -36,6 +37,19 @@ function plain(value) {
 }
 function hash(value) { return typeof value === 'string' && /^[0-9a-f]{64}$/.test(value); }
 function boundedInteger(value, maximum) { return Number.isSafeInteger(value) && value >= 0 && value <= maximum; }
+/** Public build records only. Runtime byte checking belongs to the browser runner. */
+export function validateNetworkModuleAssets(value) {
+  requireValue(Array.isArray(value) && value.length > 0 && value.length <= 128);
+  const paths = new Set(); let total = 0;
+  for (const item of value) {
+    plain(item);
+    requireValue(Object.keys(item).length === 3 && ['path', 'bytes', 'sha256'].every(key => Object.hasOwn(item, key))
+      && typeof item.path === 'string' && /^network-chunk-[A-Z0-9]{8}\.mjs$/.test(item.path)
+      && !paths.has(item.path) && boundedInteger(item.bytes, 16 * 1024 * 1024) && item.bytes > 0 && hash(item.sha256));
+    paths.add(item.path); total += item.bytes;
+  }
+  requireValue(total <= 128 * 1024 * 1024);
+}
 function publicTree(value, depth = 0) {
   requireValue(depth <= 12);
   if (value === null || typeof value === 'boolean') return;
@@ -93,6 +107,7 @@ export function validateProverObservation(value, { completed = false, maxWindowM
 export function validateDiagnosticReport(value, expected, completed = false) {
   plain(value);
   publicTree(value);
+  validateChainCheckpoints(value, { mode: 'diagnostic', completed });
   requireValue(Object.keys(value).every(key => FIELDS.has(key))
     && /^[1-9][0-9]{0,24}$/.test(expected?.runId ?? '') && /^[0-9a-f]{40}$/.test(expected?.headSha ?? '')
     && own(value, 'schema') === 'midnight-ballot-lab/ci-lace-prover-diagnostic/v1'
@@ -113,6 +128,7 @@ export function validateDiagnosticReport(value, expected, completed = false) {
     'workerSha256', 'diagnosticBuildSha256', 'proverObserverSha256']) {
     if (Object.hasOwn(value, key)) requireValue(hash(value[key]));
   }
+  if (Object.hasOwn(value, 'networkModuleAssets')) validateNetworkModuleAssets(value.networkModuleAssets);
   if (Object.hasOwn(value, 'contractProof')) {
     const proof = value.contractProof;
     plain(proof);
@@ -140,6 +156,7 @@ export function validateDiagnosticReport(value, expected, completed = false) {
       && boundedInteger(availability.matchingWalletCount, 99) && typeof availability.expectedApi === 'boolean');
   }
   if (completed) {
+    validateNetworkModuleAssets(value.networkModuleAssets);
     requireValue(value.status === 'passed' && value.finishedAt && value.contractProof
       && value.laceVersion === '2.5.1' && value.extensionId === 'gafhhkghbfjjkeiendhlofajokpaflmk'
       && value.apiVersion === '4.1.0-canary.20260819082604-3b622cb'

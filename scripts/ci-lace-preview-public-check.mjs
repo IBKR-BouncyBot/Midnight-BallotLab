@@ -3,30 +3,33 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseStrictJson } from '../src/json.mjs';
-import { validateProverObservation } from './ci-lace-prover-diagnostic-check.mjs';
+import { validateProverObservation, validateNetworkModuleAssets } from './ci-lace-prover-diagnostic-check.mjs';
+import { validateChainIdentity, validateChainCheckpoints } from './ci-preview-chain-evidence.mjs';
+import { validateWalletProofExecution } from './ci-lace-proof-execution.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const extensionId = 'gafhhkghbfjjkeiendhlofajokpaflmk';
 function requireValue(value) { if (!value) throw new Error('Public CI evidence validation failed'); }
 
 export async function loadOfficialAddressCodec() {
-  const folder = join(root, 'contracts/node_modules/@midnight-ntwrk/wallet-sdk-address-format');
+  const folder = join(root, 'contracts/node_modules/@midnightntwrk/wallet-sdk-address-format');
   const pkg = JSON.parse(await readFile(join(folder, 'package.json'), 'utf8'));
-  requireValue(pkg.name === '@midnight-ntwrk/wallet-sdk-address-format'
-    && pkg.version === '3.1.2' && pkg.exports?.['.']?.import === './dist/index.js');
+  requireValue(pkg.name === '@midnightntwrk/wallet-sdk-address-format'
+    && pkg.version === '4.0.0' && pkg.exports?.['.']?.import === './dist/index.js');
   return import(pathToFileURL(join(folder, 'dist/index.js')).href);
 }
 
 export function validateFundingRequest(value, expected, codec) {
   requireValue(value && typeof value === 'object' && !Array.isArray(value));
   const fields = ['schema', 'networkId', 'runId', 'headSha', 'nonce', 'unshieldedAddress',
-    'laceVersion', 'extensionId', 'maximumFundingAtomic'];
+    'laceVersion', 'extensionId', 'maximumFundingAtomic', 'chainIdentity'];
   requireValue(Object.keys(value).length === fields.length && fields.every(key => Object.hasOwn(value, key)));
-  requireValue(value.schema === 'midnight-ballot-lab/lace-preview-funding-request/v1'
+  requireValue(value.schema === 'midnight-ballot-lab/lace-preview-funding-request/v2'
     && value.networkId === 'preview' && value.runId === expected.runId && value.headSha === expected.headSha
     && /^[1-9][0-9]{0,24}$/.test(value.runId) && /^[0-9a-f]{40}$/.test(value.headSha)
     && /^[0-9a-f]{64}$/.test(value.nonce) && value.laceVersion === '2.5.1'
     && value.extensionId === extensionId && value.maximumFundingAtomic === '5000000000');
+  validateChainIdentity(value.chainIdentity, expected.chainIdentity);
   requireValue(typeof value.unshieldedAddress === 'string' && value.unshieldedAddress.length <= 512
     && value.unshieldedAddress.startsWith('mn_addr_preview1'));
   const parsed = codec.MidnightBech32m.parse(value.unshieldedAddress);
@@ -47,6 +50,7 @@ export function validateCompletedReport(value, expected) {
     && value.walletConnected === true && value.positiveDustObserved === true
     && value.publicRecordConsistent === true
     && typeof value.proverObserverSha256 === 'string' && /^[0-9a-f]{64}$/.test(value.proverObserverSha256)
+    && typeof value.walletProofCoverageHelperSha256 === 'string' && /^[0-9a-f]{64}$/.test(value.walletProofCoverageHelperSha256)
     && value.acceptedApplicationTransactions === 9 && value.observedContractProofCompletions === 8
     && Array.isArray(value.operations) && value.operations.length === 9
     && value.operations.every((operation, index) => operation.status === 'indexer-accepted'
@@ -55,6 +59,9 @@ export function validateCompletedReport(value, expected) {
     && new Set(value.operations.map(operation => operation.txId)).size === 9
     && value.operations[6].trusteeIndex === 1 && value.operations[7].trusteeIndex === 3);
   validateProverObservation(value.walletProverObservation, { completed: true, maxWindowMilliseconds: 10_800_000 });
+  validateWalletProofExecution(value.walletProofExecution, { completed: true });
+  validateNetworkModuleAssets(value.networkModuleAssets);
+  validateChainCheckpoints(value, { mode: 'funded', completed: true });
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

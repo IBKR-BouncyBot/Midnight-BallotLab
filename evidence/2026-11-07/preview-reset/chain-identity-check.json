@@ -1,0 +1,20 @@
+{
+  "schema": "midnight-ballot-lab/preview-chain-identity-check/v1",
+  "startedAt": "2026-11-07T08:59:30.369Z",
+  "status": "passed",
+  "chainIdentity": {
+    "networkId": "preview",
+    "genesisHash": "0x3c096de209e06a1a8c52be7bda109ee8c891a42288c0a9db5495f9616dd13796",
+    "ledgerEra": "v9",
+    "protocolVersion": 2001100
+  },
+  "readOnly": true,
+  "walletAccessed": false,
+  "fundingAttempted": false,
+  "proofGenerated": false,
+  "transactionSubmitted": false,
+  "independentlyVerified": false,
+  "source": "contracts/native/public-testnet.mjs",
+  "sourceSha256": "6b3143bdcce834bd0a02b225d691c21c74927fddd35759bc9b718a7788783e1b",
+  "finishedAt": "2026-11-07T08:59:30.576Z"
+}

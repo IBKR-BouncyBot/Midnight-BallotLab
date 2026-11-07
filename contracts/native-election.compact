@@ -3,7 +3,7 @@
 // It uses Compact's Jubjub operations and proves encryption/decryption relations
 // in the native circuits. Key configuration uses a centralized private dealer;
 // independent distributed key generation and production operations remain work.
-pragma language_version 0.23.0;
+pragma language_version 0.28.0;
 
 import CompactStandardLibrary;
 
@@ -42,17 +42,17 @@ export ledger submittedTrustees: Set<Uint<8>>;
 export ledger decryptionShares: Map<Uint<8>, CandidatePoints>;
 export ledger finalizedTotals: Vector<5, Uint<32>>;
 
-witness setupSecret(): Field;
-witness setupSlope(): Field;
+witness setupSecret(): JubjubScalar;
+witness setupSlope(): JubjubScalar;
 witness administratorSecret(): Bytes<32>;
 witness voterSecret(): Bytes<32>;
 witness eligibilityPath(): MerkleTreePath<10, Bytes<32>>;
 witness selection(): Uint<8>;
-witness ballotRandomness(): Vector<5, Field>;
-witness trusteeSecretShare(): Field;
+witness ballotRandomness(): Vector<5, JubjubScalar>;
+witness trusteeSecretShare(): JubjubScalar;
 
-// Scalar values are carried in Field by the pinned 0.31.x API, but MUST be
-// bounded to the Jubjub subgroup order. Arithmetic modulo Field is NOT scalar
+// Native scalar witnesses and public Field helper inputs retain explicit
+// bounds to the Jubjub subgroup order. Arithmetic modulo Field is NOT scalar
 // arithmetic modulo q. No secret-share polynomial arithmetic occurs in Field.
 pure circuit canonicalScalar(s: Field): [] {
   // Compact's widest Uint is 248 bits. Split canonical little-endian Field
@@ -68,7 +68,7 @@ pure circuit canonicalScalar(s: Field): [] {
 
 pure circuit nonzeroScalar(s: Field): [] {
   canonicalScalar(s);
-  assert(s != 0, "zero private scalar");
+  assert(s != (0 as Field), "zero private scalar");
 }
 
 pure circuit coordinates(p: JubjubPoint): PointCoordinates {
@@ -84,7 +84,7 @@ pure circuit point(p: PointCoordinates): JubjubPoint {
 
 export pure circuit nativePublicKey(s: Field): PointCoordinates {
   canonicalScalar(s);
-  return coordinates(ecMulGenerator(s));
+  return coordinates(ecMulGenerator(s as JubjubScalar));
 }
 
 export pure circuit addPoints(a: PointCoordinates, b: PointCoordinates): PointCoordinates {
@@ -93,7 +93,7 @@ export pure circuit addPoints(a: PointCoordinates, b: PointCoordinates): PointCo
 
 export pure circuit scalePoint(a: PointCoordinates, s: Field): PointCoordinates {
   canonicalScalar(s);
-  return coordinates(ecMul(point(a), s));
+  return coordinates(ecMul(point(a), s as JubjubScalar));
 }
 
 export pure circuit negatePoint(a: PointCoordinates): PointCoordinates {
@@ -148,7 +148,7 @@ constructor(
   assert(id != default<Bytes<32>>, "empty election id");
   assert(manifest != default<Bytes<32>>, "empty manifest digest");
   assert(adminIdentity != default<Bytes<32>>, "empty administrator identity");
-  const identity = nativePublicKey(0);
+  const identity = nativePublicKey(0 as Field);
   electionId = disclose(id);
   manifestDigest = disclose(manifest);
   candidateCount = disclose(choices);
@@ -182,11 +182,11 @@ export circuit configureKeys(): [] {
   assert(blockTimeLt(opensAt), "key setup deadline passed");
   assert(enrolled.isEmpty() && spent.isEmpty() && accepted == 0, "setup requires empty election");
   assert(submittedTrustees.isEmpty(), "setup requires no trustee submissions");
-  const x = setupSecret();
-  const slope = setupSlope();
+  const x = setupSecret() as Field;
+  const slope = setupSlope() as Field;
   nonzeroScalar(x);
   nonzeroScalar(slope);
-  const identity = nativePublicKey(0);
+  const identity = nativePublicKey(0 as Field);
   assert(samePoint(aggregateA[0], identity) && samePoint(aggregateA[1], identity) && samePoint(aggregateA[2], identity)
     && samePoint(aggregateA[3], identity) && samePoint(aggregateA[4], identity), "setup requires empty aggregate");
   assert(samePoint(aggregateB[0], identity) && samePoint(aggregateB[1], identity) && samePoint(aggregateB[2], identity)
@@ -248,7 +248,8 @@ export circuit castBallot(): Bytes<32> {
   assert(!spent.member(nul), "voter already voted");
   const choice = selection();
   assert(choice < candidateCount, "invalid choice");
-  const r = ballotRandomness();
+  const rawR = ballotRandomness();
+  const r = [rawR[0] as Field, rawR[1] as Field, rawR[2] as Field, rawR[3] as Field, rawR[4] as Field];
   nonzeroScalar(r[0]);
   nonzeroScalar(r[1]);
   nonzeroScalar(r[2]);
@@ -260,11 +261,11 @@ export circuit castBallot(): Bytes<32> {
     && r[2] != r[3] && r[2] != r[4] && r[3] != r[4], "reused candidate randomness");
   const a = disclose([nativePublicKey(r[0]), nativePublicKey(r[1]), nativePublicKey(r[2]), nativePublicKey(r[3]), nativePublicKey(r[4])]);
   const b = disclose([
-    addPoints(scalePoint(publicKey, r[0]), nativePublicKey(choice == 0 ? 1 : 0)),
-    addPoints(scalePoint(publicKey, r[1]), nativePublicKey(choice == 1 ? 1 : 0)),
-    addPoints(scalePoint(publicKey, r[2]), nativePublicKey(choice == 2 ? 1 : 0)),
-    addPoints(scalePoint(publicKey, r[3]), nativePublicKey(choice == 3 ? 1 : 0)),
-    addPoints(scalePoint(publicKey, r[4]), nativePublicKey(choice == 4 ? 1 : 0))
+    addPoints(scalePoint(publicKey, r[0]), nativePublicKey((choice == 0 ? 1 : 0) as Field)),
+    addPoints(scalePoint(publicKey, r[1]), nativePublicKey((choice == 1 ? 1 : 0) as Field)),
+    addPoints(scalePoint(publicKey, r[2]), nativePublicKey((choice == 2 ? 1 : 0) as Field)),
+    addPoints(scalePoint(publicKey, r[3]), nativePublicKey((choice == 3 ? 1 : 0) as Field)),
+    addPoints(scalePoint(publicKey, r[4]), nativePublicKey((choice == 4 ? 1 : 0) as Field))
   ]);
   const receipt = disclose(receiptDigest(electionId, configurationDigest, nul, a, b));
   ballotA.insert(accepted, a);
@@ -294,7 +295,7 @@ export circuit submitDecryption(index: Uint<8>): [] {
   assert(index >= 1 && index <= 3, "invalid trustee index");
   const trustee = disclose(index);
   assert(!submittedTrustees.member(trustee), "trustee already submitted");
-  const share = trusteeSecretShare();
+  const share = trusteeSecretShare() as Field;
   nonzeroScalar(share);
   const expected = trustee == 1 ? trusteeKeys[0] : (trustee == 2 ? trusteeKeys[1] : trusteeKeys[2]);
   assert(samePoint(nativePublicKey(share), expected), "wrong trustee secret share");
@@ -316,23 +317,23 @@ pure circuit checkTotal(
 ): [] {
   const message = nativePublicKey(total as Field);
   if (first == 1 && second == 2) {
-    assert(samePoint(addPoints(b, dSecond), addPoints(message, scalePoint(dFirst, 2))), "incorrect tally");
+    assert(samePoint(addPoints(b, dSecond), addPoints(message, scalePoint(dFirst, 2 as Field))), "incorrect tally");
   } else if (first == 1 && second == 3) {
-    assert(samePoint(addPoints(scalePoint(b, 2), dSecond), addPoints(scalePoint(message, 2), scalePoint(dFirst, 3))), "incorrect tally");
+    assert(samePoint(addPoints(scalePoint(b, 2 as Field), dSecond), addPoints(scalePoint(message, 2 as Field), scalePoint(dFirst, 3 as Field))), "incorrect tally");
   } else {
     assert(first == 2 && second == 3, "invalid trustee pair");
-    assert(samePoint(addPoints(b, scalePoint(dSecond, 2)), addPoints(message, scalePoint(dFirst, 3))), "incorrect tally");
+    assert(samePoint(addPoints(b, scalePoint(dSecond, 2 as Field)), addPoints(message, scalePoint(dFirst, 3 as Field))), "incorrect tally");
   }
 }
 
-export circuit finalize(first: Uint<8>, second: Uint<8>, totals: Vector<5, Uint<32>>): [] {
+export circuit finalize(first: Uint<8>, second: Uint<8>, totals: Vector<5, JubjubScalar>): [] {
   assert(phase == 2, "election is not frozen for finalization");
   assert(first >= 1 && second <= 3 && first < second, "invalid trustee pair");
   const i = disclose(first);
   const j = disclose(second);
   // Totals are public output. Declare that before short-circuit checks that
   // read the ledger, as required by the compiler's disclosure analysis.
-  const publicTotals = disclose(totals);
+  const publicTotals = disclose([totals[0] as Uint<32>, totals[1] as Uint<32>, totals[2] as Uint<32>, totals[3] as Uint<32>, totals[4] as Uint<32>]);
   assert(submittedTrustees.member(i) && submittedTrustees.member(j), "two verified trustees required");
   assert(publicTotals[0] <= accepted && publicTotals[1] <= accepted && publicTotals[2] <= accepted
     && publicTotals[3] <= accepted && publicTotals[4] <= accepted, "total exceeds ballot count");

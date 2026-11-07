@@ -2,6 +2,16 @@
  * These requests contain no wallet/account data, witnesses or transactions.
  * A successful check is connectivity evidence, not authenticated chain state.
  */
+import { protocolVersionToLedger } from '@midnight-ntwrk/midnight-js-protocol/version';
+
+// Observed through the official Preview RPC on 7 November 2026 after its
+// ledger-9 reset. A network name/URL alone does not identify a chain. Review
+// this pin explicitly after any later reset; never learn it from a wallet.
+export const PREVIEW_CHAIN_IDENTITY = Object.freeze({
+  networkId: 'preview',
+  genesisHash: '0x3c096de209e06a1a8c52be7bda109ee8c891a42288c0a9db5495f9616dd13796',
+  ledgerEra: 'v9',
+});
 export const PREVIEW_PUBLIC_SERVICES = Object.freeze({
   networkId: 'preview',
   nodeRpc: 'https://rpc.preview.midnight.network',
@@ -41,6 +51,53 @@ export function formatPreviewServiceError(error) {
   return safeErrorMessages.get(error) ?? null;
 }
 const unavailable = () => new PreviewServiceCheckError('service-unavailable', 'services', 'The public Preview service check could not start. Try reloading this page.');
+
+function rpcResult(value, id) {
+  if (value?.jsonrpc !== '2.0' || value.id !== id || value.error !== undefined) {
+    throw new PreviewServiceCheckError('network-identity', 'node', 'The public node returned an invalid chain-identity response. Do not submit a transaction.');
+  }
+  return value.result;
+}
+function requireLedger9(version, service) {
+  try {
+    if (Number.isSafeInteger(version) && protocolVersionToLedger(version, 'construct') === PREVIEW_CHAIN_IDENTITY.ledgerEra) return version;
+  } catch { /* Never expose SDK errors or upstream values. */ }
+  throw new PreviewServiceCheckError('protocol-version', service, 'The public Preview service did not report the supported ledger-9 protocol. Do not submit a transaction.');
+}
+function validateExpectedIdentity(value) {
+  try {
+    const fields = ['networkId', 'genesisHash', 'ledgerEra', 'protocolVersion'];
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    if (Object.getPrototypeOf(value) !== Object.prototype || Reflect.ownKeys(descriptors).length !== fields.length ||
+        fields.some(field => !Object.hasOwn(descriptors[field] ?? {}, 'value')) ||
+        descriptors.networkId.value !== PREVIEW_CHAIN_IDENTITY.networkId ||
+        descriptors.genesisHash.value !== PREVIEW_CHAIN_IDENTITY.genesisHash ||
+        descriptors.ledgerEra.value !== PREVIEW_CHAIN_IDENTITY.ledgerEra) throw new Error();
+    requireLedger9(descriptors.protocolVersion.value, 'services');
+    return descriptors.protocolVersion.value;
+  } catch {
+    throw new PreviewServiceCheckError('chain-session-changed', 'services', 'The saved session does not identify this Preview chain. Reconnect before continuing; do not retry an uncertain transaction.');
+  }
+}
+
+/** Validate a public saved identity without a network call. Not a freshness check. */
+export function validatePreviewChainIdentity(value) {
+  const protocolVersion = validateExpectedIdentity(value);
+  return Object.freeze({ ...PREVIEW_CHAIN_IDENTITY, protocolVersion });
+}
+
+/** Fresh read-only check, suitable before wallet access and each sensitive step.
+ * A previous result may be supplied to reject a changed protocol/session.
+ * RPC/indexer agreement is not independently authenticated consensus.
+ */
+export async function requirePreviewChainIdentity(options = {}, expectedIdentity) {
+  const expectedProtocol = expectedIdentity === undefined ? undefined : validateExpectedIdentity(expectedIdentity);
+  const { chainIdentity } = await checkPreviewPublicServices(options);
+  if (expectedProtocol !== undefined && chainIdentity.protocolVersion !== expectedProtocol) {
+    throw new PreviewServiceCheckError('chain-session-changed', 'services', 'The Preview protocol changed during this session. Reconnect before continuing; do not retry an uncertain transaction.');
+  }
+  return chainIdentity;
+}
 
 export async function checkPreviewPublicServices({ fetchImpl = globalThis.fetch, signal } = {}) {
   if (typeof fetchImpl !== 'function') throw unavailable();
@@ -88,26 +145,47 @@ export async function checkPreviewPublicServices({ fetchImpl = globalThis.fetch,
     }
   }
   try {
+    const rpc = (id, method, params = []) => request('node', PREVIEW_PUBLIC_SERVICES.nodeRpc,
+      { jsonrpc: '2.0', id, method, params }).then(value => rpcResult(value, id));
     const checks = Promise.all([
-      request('node', PREVIEW_PUBLIC_SERVICES.nodeRpc, { jsonrpc: '2.0', id: 1, method: 'system_chain', params: [] }).then(value => {
-        if (value?.jsonrpc !== '2.0' || value.id !== 1 || value.error !== undefined || value.result !== 'Midnight Preview') {
+      Promise.all([rpc(1, 'system_chain'), rpc(2, 'chain_getBlockHash', [0]), rpc(3, 'state_getRuntimeVersion')]).then(([chainName, genesisHash, runtime]) => {
+        if (chainName !== 'Midnight Preview') {
           throw new PreviewServiceCheckError('network-identity', 'node', 'The public node did not identify itself as Midnight Preview. Do not submit a transaction.');
         }
-        pending.delete('node');
-        return value.result;
-      }),
-      request('indexer', PREVIEW_PUBLIC_SERVICES.indexerUri, { query: '{ block { height } }' }).then(value => {
-        const height = value?.data?.block?.height;
-        if ((value?.errors != null && (!Array.isArray(value.errors) || value.errors.length !== 0))
-            || !Number.isSafeInteger(height) || height < 0) {
-          throw new PreviewServiceCheckError('indexer-response', 'indexer', 'The public Preview indexer did not return a valid block height. Try again shortly.');
+        if (genesisHash !== PREVIEW_CHAIN_IDENTITY.genesisHash) {
+          throw new PreviewServiceCheckError('chain-reset', 'node', 'The public Preview genesis does not match this application. The network may have reset. Do not submit or retry a transaction.');
         }
+        if (runtime?.specName !== 'midnight') {
+          throw new PreviewServiceCheckError('network-identity', 'node', 'The public node did not identify the expected Midnight runtime. Do not submit a transaction.');
+        }
+        const protocolVersion = requireLedger9(runtime.specVersion, 'node');
+        pending.delete('node');
+        return { chainName, genesisHash, protocolVersion };
+      }),
+      request('indexer', PREVIEW_PUBLIC_SERVICES.indexerUri, { query: '{ block { height hash protocolVersion } }' }).then(value => {
+        const block = value?.data?.block;
+        const height = block?.height;
+        if ((value?.errors != null && (!Array.isArray(value.errors) || value.errors.length !== 0))
+            || !Number.isSafeInteger(height) || height < 0 || typeof block.hash !== 'string' || !/^[a-f0-9]{64}$/.test(block.hash)) {
+          throw new PreviewServiceCheckError('indexer-response', 'indexer', 'The public Preview indexer did not return valid block metadata. Try again shortly.');
+        }
+        const protocolVersion = requireLedger9(block.protocolVersion, 'indexer');
         pending.delete('indexer');
-        return height;
+        return { height, hash: block.hash, protocolVersion };
       }),
     ]);
-    const [chainName, blockHeight] = await Promise.race([checks, stopped]);
-    return Object.freeze({ networkId: 'preview', chainName, blockHeight, source: 'fixed-public-preview-services',
+    const [node, block] = await Promise.race([checks, stopped]);
+    if (node.protocolVersion !== block.protocolVersion) {
+      throw new PreviewServiceCheckError('protocol-disagreement', 'services', 'The public Preview node and indexer disagree on the current protocol. Wait for them to agree before continuing.');
+    }
+    pending.add('node');
+    const nodeBlockHash = await Promise.race([rpc(4, 'chain_getBlockHash', [block.height]), stopped]);
+    if (nodeBlockHash !== `0x${block.hash}`) {
+      throw new PreviewServiceCheckError('indexer-chain-mismatch', 'services', 'The public Preview indexer block does not match the pinned node chain. Do not submit a transaction.');
+    }
+    const chainIdentity = Object.freeze({ ...PREVIEW_CHAIN_IDENTITY, protocolVersion: node.protocolVersion });
+    return Object.freeze({ networkId: 'preview', chainName: node.chainName, blockHeight: block.height, blockHash: block.hash,
+      chainIdentity, source: 'fixed-public-preview-services', independentlyVerified: false,
       walletConnected: false, proofGenerated: false, transactionSubmitted: false });
   } catch (error) {
     // Transport/JSON/SDK exceptions can include URLs, request bodies or secrets.

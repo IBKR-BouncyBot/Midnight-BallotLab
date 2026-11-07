@@ -8,7 +8,7 @@ const receipt = { schema: 'midnight-ballot-lab/native-receipt/v1', networkId: 'p
   contractAddress: 'ab'.repeat(32), configurationDigest: '12'.repeat(32), receipt: 'cd'.repeat(32), index: 1023 };
 
 test('network receipt QR round trips all supported network contexts within QR capacity', () => {
-  for (const networkId of ['undeployed', 'preview', 'preprod']) {
+  for (const networkId of ['undeployed', 'preview']) {
     const value = { ...receipt, networkId };
     const text = encodeNetworkReceipt(value);
     assert.deepEqual(decodeNetworkReceipt(text), value);
@@ -20,6 +20,8 @@ test('network receipt context cannot be confused with local emulator receipts', 
   assert.throws(() => encodeNetworkReceipt({ ...receipt, schema: 'midnight-ballot-lab/native-emulator-receipt/v1' }));
   assert.throws(() => decodeNetworkReceipt('mbne1:0:invalid'));
   assert.throws(() => decodeNetworkReceipt(encodeNetworkReceipt(receipt).replace(':preview:', ':mainnet:')));
+  assert.throws(() => encodeNetworkReceipt({ ...receipt, networkId: 'preprod' }), /ledger-9 build cannot use Preprod/);
+  assert.throws(() => decodeNetworkReceipt(encodeNetworkReceipt(receipt).replace(':preview:', ':preprod:')), /ledger-9 build cannot use Preprod/);
 });
 
 test('network receipt rejects malformed digest, index and noncanonical text', () => {

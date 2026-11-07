@@ -1,0 +1,31 @@
+{
+  "schema": "midnight-ballot-lab/signed-lace-ir-parser-check/v1",
+  "checkedAt": "2026-11-07T09:16:00.174Z",
+  "execution": "signed-public-js-glue-and-wasm-in-node",
+  "extensionVersion": "2.5.1",
+  "wasmSha256": "f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb",
+  "glueChunkSha256": "f021b27a0b98661b49b261b32fa3933dc4a50c58ac5825fdf93fe26182102b56",
+  "walletCreated": false,
+  "proofGenerated": false,
+  "networkRequest": false,
+  "cases": [
+    {
+      "circuit": "openVoting",
+      "format": "historical-IR2-positive-control",
+      "irSha256": "3b4c383c8e35afa0df8001600ebc9258d5029234e6511cba426c45a38de32deb",
+      "deserialized": true
+    },
+    {
+      "circuit": "openVoting",
+      "format": "current-IR3",
+      "irSha256": "3fa40cf92cefe5478ac95f44e29a112a0587950d7e6707ba5097eb4481702f6b",
+      "deserialized": false
+    },
+    {
+      "circuit": "configureKeys",
+      "format": "current-IR3",
+      "irSha256": "b0514e2a76f8ae2abd62ed62e08e53e9382d3c725b7db27425c092113d29d0eb",
+      "deserialized": false
+    }
+  ]
+}

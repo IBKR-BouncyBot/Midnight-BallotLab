@@ -1,12 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeDiagnosticReport, validateDiagnosticReport, validateProverObservation } from '../../scripts/ci-lace-prover-diagnostic-check.mjs';
+import { decodeDiagnosticReport, validateDiagnosticReport, validateProverObservation, validateNetworkModuleAssets } from '../../scripts/ci-lace-prover-diagnostic-check.mjs';
+import { PREVIEW_CHAIN_IDENTITY } from '../native/public-testnet.mjs';
 
 const expected = { runId: '123', headSha: 'a'.repeat(40) };
 function report() {
   return {
     schema: 'midnight-ballot-lab/ci-lace-prover-diagnostic/v1', status: 'passed',
     execution: 'genuine-disposable-Lace-fundless-contract-proof', networkId: 'preview', ...expected,
+    chainIdentity: { ...PREVIEW_CHAIN_IDENTITY, protocolVersion: 2001100 },
+    chainCheckpoints: ['before-wallet-creation', 'before-fundless-proof'].map(checkpoint => ({
+      checkpoint, checkedAt: '2026-11-07T00:00:00.000Z',
+    })),
     startedAt: '2026-11-06T00:00:00.000Z', finishedAt: '2026-11-06T00:01:00.000Z',
     fundingAttempted: false, walletDustProofsTested: false, networkSubmissionAttempted: false,
     independentProofVerification: false, privateArtifactsExported: false, hostedOriginTested: false,
@@ -16,6 +21,7 @@ function report() {
     extensionArchiveSha256: 'aa6d59550362a3bbcbef343dffd783621150a7971307116bb11fe0d94b754708',
     runnerSha256: 'd'.repeat(64), networkBundleSha256: 'e'.repeat(64), workerSha256: 'f'.repeat(64),
     diagnosticBuildSha256: '1'.repeat(64), proverObserverSha256: '2'.repeat(64),
+    networkModuleAssets: [{ path: 'network-chunk-AB12CD34.mjs', bytes: 100, sha256: 'e'.repeat(64) }],
     walletConnected: true, walletOnDeviceWasmSelectedThroughUi: true,
     fundlessWalletAvailability: { matchingWalletCount: 1, expectedApi: true },
     fundlessFixtureState: { status: 'passed', stage: 'complete' },
@@ -54,6 +60,10 @@ test('fundless boundary rejects funding/submission, wrong identity, private fiel
     { fundingAttempted: true }, { walletDustProofsTested: true }, { networkSubmissionAttempted: true },
     { httpProofProviderConfigured: true }, { networkId: 'mainnet' }, { headSha: 'c'.repeat(40) },
     { runId: '124' }, { operations: [] }, { password: 'never-publish' },
+    { networkModuleAssets: undefined }, { networkModuleAssets: [] },
+    { chainIdentity: undefined }, { chainCheckpoints: [] },
+    { chainIdentity: { ...report().chainIdentity, genesisHash: '0x' + 'c'.repeat(64) } },
+    { chainCheckpoints: [{ checkpoint: 'before-wallet-creation', checkedAt: '2026-11-07T00:00:00.000Z', secret: 'never-publish' }] },
     { walletProverObservation: { observed: true, witness: 'never-publish' } },
     { walletProverObservation: { ...report().walletProverObservation, sha256: 'c'.repeat(64) } },
     { walletProverObservation: { ...report().walletProverObservation, bytes: 1 } },
@@ -70,6 +80,17 @@ test('fundless boundary rejects funding/submission, wrong identity, private fiel
   const getter = report();
   Object.defineProperty(getter, 'status', { get() { throw new Error('Accessor must not run'); } });
   assert.throws(() => validateDiagnosticReport(getter, expected), /Public diagnostic evidence validation failed/);
+});
+
+test('split-module evidence permits only unique bounded public chunk records', () => {
+  const item = { path: 'network-chunk-AB12CD34.mjs', bytes: 100, sha256: 'e'.repeat(64) };
+  validateNetworkModuleAssets([item]);
+  for (const items of [[], [item, item], [{ ...item, path: '../private.txt' }],
+    [{ ...item, path: 'https://unreviewed.invalid/chunk.mjs' }], [{ ...item, bytes: 0 }],
+    [{ ...item, bytes: 16 * 1024 * 1024 + 1 }], [{ ...item, sha256: 'not-a-hash' }],
+    [{ ...item, secret: 'must-not-be-published' }]]) assert.throws(() => validateNetworkModuleAssets(items));
+  const getter = { ...item }; Object.defineProperty(getter, 'path', { get() { throw new Error('Accessor must not run'); } });
+  assert.throws(() => validateNetworkModuleAssets([getter]), /Public diagnostic evidence validation failed/);
 });
 test('observer discovery accepts only bounded counts and fixed classifications, never target details', () => {
   const valid = report();

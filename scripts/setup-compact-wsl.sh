@@ -12,5 +12,5 @@ sh "$installer"
 export PATH="$HOME/.local/bin:$PATH"
 compact --version
 artifact_directory="${COMPACT_DIRECTORY:-$HOME/.compact-ballot-lab}"
-compact --directory "$artifact_directory" update 0.31.1
-compact --directory "$artifact_directory" compile +0.31.1 --version
+compact --directory "$artifact_directory" update 0.36.0
+compact --directory "$artifact_directory" compile +0.36.0 --version

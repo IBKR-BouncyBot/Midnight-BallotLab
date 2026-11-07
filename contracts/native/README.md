@@ -8,7 +8,7 @@ Version 0.6.1 includes candidate-count binding and independent public-record ver
 
 ## Run with the actual toolchain
 
-Use Node 22.12 or later, Compact compiler 0.31.1, and the exact dependencies in `contracts/package.json` (Compact runtime 0.16.0, Midnight.js 4.1.1). From the repository root:
+Use Node 22.12 or later, Compact compiler 0.36.0, and the exact dependencies in `contracts/package.json` (Compact runtime 0.21.0, Midnight.js 5.0.0, ledger-v9 1.0.0, onchain-runtime-v4 4.0.0 and browser prover zkir-v3 3.2.0). These target reset Preview's ledger 9; the version-specific results above are historical. From the repository root:
 
 ```sh
 cd contracts
@@ -39,14 +39,14 @@ The public snapshot is explicitly marked `native-emulator-public/v2`, with `proo
 | `browser-wasm-proof.mjs` | Bounded dedicated-worker contract proof jobs, safe progress/errors and termination. |
 | `wasm-prover-worker.mjs` | Official ZKIR WASM checks and proofs; witnesses stay in worker memory. |
 | `wasm-prover-assets.mjs` | Build-pinned manifest and public key/IR/SRS integrity checks; fixed same-origin GETs only. |
-| `prove-local.mjs` | Real standalone circuit proving against loopback proof-server 8.1.3; saves public proof digests/counts/timings only. |
+| `prove-local.mjs` | Preserved historical ledger-8 proof-server 8.1.3 smoke; incompatible with current ledger-9 generated assets. |
 | `verify-public.mjs` | Fresh-session public JSON import; native point/subgroup checks, manifest/configuration/receipt commitments, aggregates and threshold equations. Reports consistency, not authentication or fairness. |
 
 The root tests cover input checks and public export boundaries separately from native execution. The `test:native` suite imports the actual generated contract/runtime and includes independent public-verifier cases; the earlier 40-case result above belongs to its recorded revision, while the suite grows with new features. `node native/prove-local.mjs` from the contracts directory additionally checks and proves generated circuit preimages against a loopback proof server. Its successful report remains distinct from an emulator snapshot or accepted transaction; no private context or preimage is exported.
 
 ## Connect real Midnight providers
 
-`sdk-client.mjs` uses Midnight.js 4.1.1 `CompiledContract`, `deployContract`, `findDeployedContract` and `callTx` APIs. `browser-providers.mjs` assembles actual wallet, transaction, public-data, encrypted private-state, ZK-asset and proving providers after the user explicitly selects a compatible wallet and test network. Importing a module does not connect, transact or create placeholder providers. The network UI is `src/network.html`; its earlier four-case SDK/WASM loading and failure-handling Chromium run passed at the recorded revision. The separate Node wallet runner completed 17 indexer-confirmed transactions on the fresh local devnet. The separate local Lace browser-wallet election passed; see the linked verification status.
+`sdk-client.mjs` uses Midnight.js 5.0.0 `CompiledContract`, `deployContract`, `findDeployedContract` and `callTx` APIs, with explicit provider configuration and era-tagged state decoding. `browser-providers.mjs` assembles actual wallet, transaction, public-data, encrypted private-state, ZK-asset and proving providers after the user explicitly selects a compatible wallet and test network. Importing a module does not connect, transact or create placeholder providers. The network UI is `src/network.html`. Earlier SDK/WASM browser, Node wallet and local Lace results retain their recorded versions; they are not evidence of the current ledger-9 migration. See the linked verification status.
 
 ```js
 import { createNativeSdkClient } from './native/sdk-client.mjs';

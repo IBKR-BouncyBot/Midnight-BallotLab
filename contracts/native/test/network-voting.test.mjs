@@ -44,37 +44,37 @@ function prepareBallot(emulator, voterSecret) {
 
 test('voting readiness follows real enrollment, opening, accepted nullifier and closing transitions', async () => {
   const emulator = await createNativeEmulator(options);
-  for (const voter of [ALICE, BOB]) emulator.call('enroll', emulator.pureCircuits.memberIdentity(options.electionId, voter));
+  for (const voter of [ALICE, BOB]) await emulator.call('enroll', emulator.pureCircuits.memberIdentity(options.electionId, voter));
   expectDisabled(inspect(emulator, ALICE, OPEN - 1), 'scheduled');
   expectDisabled(inspect(emulator, ALICE, OPEN), 'awaiting-open');
   assert.equal(emulator.readLedger().phase, 0n, 'A display clock cannot open voting');
-  emulator.setTime(OPEN); emulator.call('openVoting');
+  emulator.setTime(OPEN); await emulator.call('openVoting');
   const ready = inspect(emulator, ALICE, OPEN);
   assert.equal(ready.kind, 'ready'); assert.equal(ready.canChoose, true); assert.equal(ready.canCast, true);
   expectDisabled(inspect(emulator, UNKNOWN, OPEN), 'not-registered');
-  prepareBallot(emulator, ALICE); emulator.call('castBallot');
+  prepareBallot(emulator, ALICE); await emulator.call('castBallot');
   assert.equal(emulator.readLedger().accepted, 1n);
   expectDisabled(inspect(emulator, ALICE, OPEN), 'already-voted');
-  assert.throws(() => emulator.call('castBallot'), /already voted/);
+  await assert.rejects(async () => await emulator.call('castBallot'), /already voted/);
   assert.equal(inspect(emulator, BOB, CLOSE - 1).canCast, true);
   expectDisabled(inspect(emulator, BOB, CLOSE), 'deadline-reached');
   assert.equal(emulator.readLedger().phase, 1n, 'A display deadline cannot close voting');
   emulator.setTime(CLOSE); prepareBallot(emulator, BOB);
-  assert.throws(() => emulator.call('castBallot'), /deadline passed/);
-  emulator.call('closeVoting');
+  await assert.rejects(async () => await emulator.call('castBallot'), /deadline passed/);
+  await emulator.call('closeVoting');
   expectDisabled(inspect(emulator, BOB, CLOSE), 'closed');
   for (const [index, trusteeSecretShare] of [[1n, 18n], [3n, 32n]]) {
-    emulator.setPrivateState({ trusteeSecretShare }); emulator.call('submitDecryption', index);
+    emulator.setPrivateState({ trusteeSecretShare }); await emulator.call('submitDecryption', index);
   }
-  emulator.call('finalize', 1n, 3n, recoverNativeTally(emulator, 1n, 3n));
+  await emulator.call('finalize', 1n, 3n, recoverNativeTally(emulator, 1n, 3n));
   expectDisabled(inspect(emulator, BOB, CLOSE), 'finalized');
   assert.deepEqual(emulator.readLedger().finalizedTotals, [0n, 1n, 0n, 0n, 0n]);
 });
 
 test('local voting flags and missing inputs cannot enable a genuine open native ledger', async () => {
   const emulator = await createNativeEmulator(options);
-  emulator.call('enroll', emulator.pureCircuits.memberIdentity(options.electionId, ALICE));
-  emulator.setTime(OPEN); emulator.call('openVoting');
+  await emulator.call('enroll', emulator.pureCircuits.memberIdentity(options.electionId, ALICE));
+  emulator.setTime(OPEN); await emulator.call('openVoting');
   for (const [overrides, kind, canChoose] of [
     [{ walletConnected: false }, 'wallet-required'],
     [{ contractConnected: false }, 'election-required'],
@@ -94,11 +94,11 @@ test('local voting flags and missing inputs cannot enable a genuine open native 
 
 test('actual unconfigured and empty-electorate states cannot be advertised as ready to vote', async () => {
   const contract = new Contract(nativeWitnesses), coin = '0'.repeat(64);
-  const initial = contract.initialState(RT.createConstructorContext({}, coin), options.electionId, options.manifestDigest,
+  const initial = await contract.initialState(RT.createConstructorContext({}, coin), options.electionId, options.manifestDigest,
     pureCircuits.administratorIdentity(ADMIN), BigInt(OPEN), BigInt(CLOSE), 2n);
-  const context = RT.createCircuitContext(RT.sampleContractAddress(), coin,
-    initial.currentContractState, {}, undefined, undefined, OPEN - 1);
-  const state = ledger(context.currentQueryContext.state);
+  const context = RT.createCircuitContext({ circuitId: 'openVoting', contractAddress: RT.sampleContractAddress(),
+    coinPublicKeyOrZswapState: coin, contractState: initial.currentContractState, privateState: {}, time: OPEN - 1 });
+  const state = ledger(context.callContext.currentQueryContext.state);
   assert.equal(state.keysConfigured, false);
   const describe = seconds => describeNetworkVoting({ ...connected, state, voterKeyValid: true,
     voterRegistered: false, voterSpent: false, selectedChoice: '1', nowMilliseconds: seconds * 1000 });
@@ -108,6 +108,6 @@ test('actual unconfigured and empty-electorate states cannot be advertised as re
   assert.equal(empty.readLedger().enrolled.size(), 0n);
   expectDisabled(inspect(empty, ALICE, OPEN), 'enrollment-missed');
   empty.setTime(OPEN);
-  assert.throws(() => empty.call('openVoting'), /no voters enrolled/);
+  await assert.rejects(async () => await empty.call('openVoting'), /no voters enrolled/);
   assert.equal(empty.readLedger().phase, 0n);
 });

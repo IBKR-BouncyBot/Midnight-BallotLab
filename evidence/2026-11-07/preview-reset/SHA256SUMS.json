@@ -1,0 +1,45 @@
+{
+  "schema": "midnight-ballot-lab/public-file-digests/v1",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2637,
+      "sha256": "f97f83544165002b580da94d5f1e44c2c9b1bc11c2adc534516870b25bffb7cc"
+    },
+    {
+      "file": "cancelled-run-artifacts.json",
+      "bytes": 63,
+      "sha256": "b04a3c4db64ba9af62bdf10221a9adfdf9464de67402ac81ec212617cf61f6ae"
+    },
+    {
+      "file": "cancelled-run-progress.json",
+      "bytes": 7056,
+      "sha256": "edb6633a3807a0ab6fb75d47eaaa7d316336d45a01bac041f1014f67c3178648"
+    },
+    {
+      "file": "chain-boundaries.json",
+      "bytes": 2711,
+      "sha256": "ab2d8da55fd4cc2f38b518fe31fbdde462f57005f127eefcca823e70eba3557d"
+    },
+    {
+      "file": "chain-identity-check.json",
+      "bytes": 683,
+      "sha256": "25e2113689788ba18165f83c37da4fe65465cbabeea328897c7324a84276d94d"
+    },
+    {
+      "file": "check-boundaries.mjs.txt",
+      "bytes": 2060,
+      "sha256": "1d67acf598692fcb7dc6269a79bed1c9dd65ae05b29e9de39329743c66849774"
+    },
+    {
+      "file": "check-chain-identity.mjs.txt",
+      "bytes": 1181,
+      "sha256": "de872bb25b67ed8fa18baf41f0e190d087171a65963d12e10ade3c32c82a2158"
+    },
+    {
+      "file": "preview-chain-reset.json",
+      "bytes": 1123,
+      "sha256": "dc658c2dd3f31c651bccda982f8e3bb06fca85e77fad773af9c37ce76f156088"
+    }
+  ]
+}

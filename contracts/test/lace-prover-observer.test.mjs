@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { laceProverTargetKind, verifyLaceProverResource, observeLaceProverWasm } from '../../scripts/lace-prover-observer.mjs';
+import { LACE_PROOF_COVERAGE_SOURCE } from '../../scripts/lace-proof-coverage.mjs';
 
 const origin = 'chrome-extension://gafhhkghbfjjkeiendhlofajokpaflmk';
 test('passive observation selects only the signed offscreen document and worker', () => {
@@ -46,7 +47,7 @@ test('discovery expiry cannot invalidate a previously verified observation', asy
   assert.ok(from >= 0 && to > from);
   for (const observed of [false, true]) {
     const failures = []; let sent = false;
-    const context = vm.createContext({ closed: false, closing: false, observation: observed ? {} : null,
+    const context = vm.createContext({ closed: false, closing: false, captureProofEntries: false, observation: observed ? {} : null,
       discovery: { snapshots: 3600, refreshLimit: 3600 }, started: 0, windowMilliseconds: 1_800_000,
       Date: { now: () => 10_800_000 }, fail: category => failures.push(category),
       send: async () => { sent = true; throw Error('No refresh may run'); } });
@@ -60,7 +61,7 @@ test('discovery expiry cannot invalidate a previously verified observation', asy
 
 // Transport-boundary fixtures only: no wallet, proof, WASM response or observed
 // success is fabricated. They model documented CDP metadata/message ordering.
-function transport({ lateWorker = false, childWorker = false, bodyResult, bodyError } = {}) {
+function transport({ lateWorker = false, childWorker = false, bodyResult, bodyError, coverageResults = [], coverageError } = {}) {
   const root = new EventEmitter(), calls = [];
   let snapshots = 0;
   const directReply = (sessionId, data) => queueMicrotask(() => root.emit('Target.receivedMessageFromTarget', {
@@ -84,7 +85,9 @@ function transport({ lateWorker = false, childWorker = false, bodyResult, bodyEr
       if (message.method === 'Target.sendMessageToTarget') {
         const nested = JSON.parse(message.params.message);
         calls.push({ method: nested.method, params: nested.params, sessionId: message.params.sessionId });
-        childReply(nested.method === 'Network.getResponseBody'
+        childReply(nested.method.startsWith('Profiler.') && coverageError ? { id: nested.id, error: { message: 'private diagnostic must not escape' } }
+          : nested.method === 'Profiler.takePreciseCoverage' ? { id: nested.id, result: coverageResults.shift() ?? { result: [] } }
+          : nested.method === 'Network.getResponseBody'
           ? bodyError ? { id: nested.id, error: bodyError } : { id: nested.id, result: bodyResult }
           : { id: nested.id, result: {} });
       }
@@ -117,6 +120,60 @@ test('bounded refresh reconsiders a worker whose URL was initially empty', async
     assert.equal(result.failureCategory, null);
     assert.ok(!JSON.stringify(result).includes('synthetic-worker'), 'Target IDs must not be exported');
   } finally { await observer.close(); }
+});
+
+function coverage(count) {
+  return { result: [{ url: LACE_PROOF_COVERAGE_SOURCE.url, functions: [{ functionName: 'prove', isBlockCoverage: false,
+    ranges: [{ startOffset: LACE_PROOF_COVERAGE_SOURCE.startOffset, endOffset: LACE_PROOF_COVERAGE_SOURCE.endOffset, count }] }] },
+  { url: 'https://private.example/withheld', functions: [{ functionName: 'sensitive-boundary-value' }] }] };
+}
+
+test('paid-operation coverage resets earlier activity and retains only fixed nested worker counts', async () => {
+  // Protocol-only metadata: no wallet, real proof or WASM success is invented.
+  const fixture = transport({ childWorker: true, coverageResults: Array.from({ length: 9 }, () => [coverage(99), coverage(2)]).flat() });
+  const observer = await observeLaceProverWasm(fixture.browser, { captureProofEntries: true });
+  try {
+    await delay(10);
+    for (let ordinal = 1; ordinal <= 9; ordinal++) {
+      await observer.beginProofWindow(ordinal);
+      assert.equal(observer.proofExecutionSnapshot().activeOrdinal, ordinal);
+      await observer.endProofWindow(ordinal);
+    }
+    const result = observer.proofExecutionSnapshot();
+    assert.equal(result.observed, true);
+    assert.equal(result.operations.length, 9);
+    assert.ok(result.operations.every(value => value.entryCalls === 2 && value.matchedFunctions === 1 && value.workerSessions === 1));
+    assert.equal(result.proofCompletionAttested, false);
+    assert.equal(observer.snapshot().observed, false, 'Invocation metadata must not manufacture resource/proof success');
+    assert.ok(!JSON.stringify(result).includes('sensitive-boundary-value'));
+    assert.ok(!JSON.stringify(result).includes('private.example'));
+    const calls = fixture.calls.filter(value => value.sessionId === 'worker-session');
+    assert.ok(calls.findIndex(value => value.method === 'Network.enable') < calls.findIndex(value => value.method === 'Profiler.enable'));
+    assert.deepEqual(calls.find(value => value.method === 'Profiler.startPreciseCoverage').params, { callCount: true, detailed: false });
+    assert.ok(!fixture.calls.some(value => /^(Runtime|Debugger)\./.test(value.method)));
+  } finally { await observer.close(); }
+  assert.ok(fixture.calls.some(value => value.method === 'Profiler.stopPreciseCoverage'));
+  assert.ok(fixture.calls.some(value => value.method === 'Profiler.disable'));
+});
+
+test('missing/unsupported proof-entry observations fail with finite metadata and no transaction retry', async () => {
+  for (const [options, expected] of [
+    [{ coverageResults: [coverage(0), coverage(0)] }, 'proof-coverage-entry-unobserved'],
+    [{ coverageError: true }, 'proof-coverage-command-failed'],
+  ]) {
+    const fixture = transport({ childWorker: true, ...options });
+    const observer = await observeLaceProverWasm(fixture.browser, { captureProofEntries: true });
+    try {
+      await delay(10);
+      await assert.rejects(async () => { await observer.beginProofWindow(1); await observer.endProofWindow(1); },
+        error => error.message === 'Passive Lace prover observation did not complete');
+      const result = observer.proofExecutionSnapshot();
+      assert.equal(result.observed, false);
+      assert.equal(result.failureCategory, expected);
+      assert.equal(result.status, 'failed');
+      assert.ok(!JSON.stringify(result).includes('private diagnostic'));
+    } finally { await observer.close(); }
+  }
 });
 
 test('funded observation budget remains capped at the explicit three-hour runner bound', async () => {

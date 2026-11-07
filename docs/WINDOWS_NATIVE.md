@@ -20,14 +20,14 @@ wsl --install --distribution Ubuntu-24.04
 
 Complete any Windows restart and Ubuntu setup that the installer requires.
 Install official Compact devtools 0.5.1 inside the chosen Linux environment,
-then install compiler 0.31.1. Do not run a bare `compact update` to select a
-newer ledger-incompatible compiler. For the existing continuation installation,
+then install compiler 0.36.0 for the current ledger-9 Preview target. Do not run a bare `compact update` to select an unreviewed
+compiler/runtime combination. For the existing continuation installation,
 the following explicit commands select the installed toolchain:
 
 ```powershell
 wsl --distribution Ubuntu-24.04 --user root --exec /root/.local/bin/compact --version
-wsl --distribution Ubuntu-24.04 --user root --exec /root/.local/bin/compact --directory /root/.compact-ballot-lab update 0.31.1
-wsl --distribution Ubuntu-24.04 --user root --exec /root/.local/bin/compact --directory /root/.compact-ballot-lab compile +0.31.1 --version
+wsl --distribution Ubuntu-24.04 --user root --exec /root/.local/bin/compact --directory /root/.compact-ballot-lab update 0.36.0
+wsl --distribution Ubuntu-24.04 --user root --exec /root/.local/bin/compact --directory /root/.compact-ballot-lab compile +0.36.0 --version
 ```
 
 From the repository root in PowerShell, configure the launcher for this terminal
@@ -80,3 +80,5 @@ Actual compile/runtime/browser results are recorded separately in
 denied access to the WSL service even when WSL works in a normal terminal; that
 permission failure must remain visible and must not trigger a replacement
 compiler or runtime.
+
+Preview was reset to a new ledger-9 chain. Old transaction, sponsor-balance and DUST records are historical; selecting the same network name does not restore them. Read [current verification status](VERIFICATION_STATUS.md) before network testing. The old loopback proof-server/devnet graph remains a separate ledger-8 fixture and is not compatible with these newly compiled assets.

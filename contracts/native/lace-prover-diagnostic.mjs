@@ -61,18 +61,22 @@ runButton.addEventListener('click', () => { void (async () => {
     const electionId = randomSecret32(), manifestDigest = randomSecret32(), dealer = createDemoDealer();
     const contract = new Contract(nativeWitnesses), coinPublicKey = '0'.repeat(64), opensAt = 2_000_000_000;
     const address = runtime.sampleContractAddress();
-    const initial = contract.initialState(runtime.createConstructorContext({}, coinPublicKey), electionId, manifestDigest,
+    const initial = await contract.initialState(runtime.createConstructorContext({}, coinPublicKey), electionId, manifestDigest,
       pureCircuits.administratorIdentity(administratorSecret), BigInt(opensAt), BigInt(opensAt + 600), 2n);
-    let context = runtime.createCircuitContext(address, coinPublicKey, initial.currentContractState,
-      { administratorSecret, setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope }, undefined, undefined, opensAt - 1);
-    context = contract.impureCircuits.configureKeys(context).context;
-    context = { ...context, currentPrivateState: { administratorSecret } };
-    context = contract.impureCircuits.enroll(context, pureCircuits.memberIdentity(electionId, voterSecret)).context;
-    context = runtime.createCircuitContext(address, coinPublicKey, context.currentQueryContext.state,
-      { administratorSecret }, undefined, undefined, opensAt + 1);
-    const result = contract.impureCircuits.openVoting(context);
-    if (ledger(result.context.currentQueryContext.state).phase !== 1n) fail();
-    const { input, output: circuitOutput, publicTranscript, privateTranscriptOutputs } = result.proofData;
+    let currentState = initial.currentContractState;
+    const contextFor = (circuitId, privateState, time) => runtime.createCircuitContext({ circuitId,
+      contractAddress: address, coinPublicKeyOrZswapState: coinPublicKey, contractState: currentState, privateState, time });
+    const configured = await contract.impureCircuits.configureKeys(contextFor('configureKeys',
+      { administratorSecret, setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope }, opensAt - 1));
+    currentState = configured.context.callContext.currentQueryContext.state;
+    const enrolled = await contract.impureCircuits.enroll(contextFor('enroll', { administratorSecret }, opensAt - 1),
+      pureCircuits.memberIdentity(electionId, voterSecret));
+    currentState = enrolled.context.callContext.currentQueryContext.state;
+    const result = await contract.impureCircuits.openVoting(contextFor('openVoting', { administratorSecret }, opensAt + 1));
+    if (ledger(result.context.callContext.currentQueryContext.state).phase !== 1n) fail();
+    const trace = result.context.callProofDataTrace;
+    if (trace.length !== 1 || trace[0].circuitId !== 'openVoting' || trace[0].contractAddress !== address) fail();
+    const { input, output: circuitOutput, publicTranscript, privateTranscriptOutputs } = trace[0];
     preimage = runtime.proofDataIntoSerializedPreimage(input, circuitOutput, publicTranscript, privateTranscriptOutputs, 'openVoting');
     paint('check-openVoting', 'Lace is checking the genuine circuit inputs.');
     await provider.check(preimage, 'openVoting');

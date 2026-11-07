@@ -4,6 +4,7 @@ const messages = Object.freeze({
   'connection-permission': 'Wallet access could not be obtained. Unlock Lace, enable Midnight and check its connection request, then try connecting again.',
   'connection-account': 'Lace did not return the required Midnight account information. Open and unlock its Midnight account, select the same test network as this page, then reconnect.',
   'connection-network': 'Lace and this page do not report matching test-network settings. In Lace, select the matching network under Settings → Network → Testnet → Midnight, confirm the change, then reconnect.',
+  'connection-chain': 'The current Preview chain could not be verified. Use Check public Preview services for details. A network reset, unsupported upgrade or unavailable service prevents this app from connecting.',
   'connection-wallet-proving-mode': 'Lace reports an HTTP proof-server address. In Lace Settings → Midnight, select Run in this app (WASM), save the configuration and reconnect. The wallet API cannot independently attest the selected mode.',
   'connection-proving-provider': 'The browser could not initialize its local Midnight prover. Check this site’s worker and public proving-file access, then reconnect.',
   'connection-storage': 'This browser could not initialize the app’s encrypted storage. Allow site storage for this page, close duplicate app tabs and try connecting again.',

@@ -1,0 +1,37 @@
+[
+  {
+    "path": "README.md",
+    "bytes": 1863,
+    "sha256": "48f93df9cc537306bd0447bfa612f2200afc7a3d99eba2e3a8fdf054c1011381"
+  },
+  {
+    "path": "browser-report.json",
+    "bytes": 3451,
+    "sha256": "484c956619cd4016715c5c8a652b71584efc40d50eece72f55c4de71379970ee"
+  },
+  {
+    "path": "proof-entry.mjs.txt",
+    "bytes": 9720,
+    "sha256": "98c331656645abf87d70900dc9cb4945673e95c1202d9346126c6b7e3c2049c0"
+  },
+  {
+    "path": "proof-result.png",
+    "bytes": 79800,
+    "sha256": "ce411c24ac01815e60febb346908c9eedd18d02f99ce016be3c12d962de5f14a"
+  },
+  {
+    "path": "provenance.json",
+    "bytes": 9001,
+    "sha256": "e7b0dc2d62df4acb47eecbb8426bfbae865d51ca7b84f65caee6d82aa49b1b55"
+  },
+  {
+    "path": "transaction-entry.mjs.txt",
+    "bytes": 4300,
+    "sha256": "1b56938491a32759273c0afc156198be5bfe540d1c01d21fe7f57903825874fb"
+  },
+  {
+    "path": "variant-builder.mjs.txt",
+    "bytes": 1393,
+    "sha256": "84fe85717bd5e979342af842f0e93f34512dc4f8903e6c5add78bde0f41d35ef"
+  }
+]

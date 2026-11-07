@@ -1,0 +1,22 @@
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { readFile, writeFile } from 'node:fs/promises';
+const tests = ['tests/public-testnet.test.mjs', 'tests/native-network-config.test.mjs',
+  'contracts/test/preview-chain-evidence.test.mjs', 'contracts/test/lace-ci-public-files.test.mjs',
+  'contracts/test/lace-prover-diagnostic-check.test.mjs', 'contracts/test/lace-ci-progress.test.mjs'];
+const sources = ['contracts/native/public-testnet.mjs', 'contracts/native/browser-config.mjs',
+  'scripts/ci-preview-chain-evidence.mjs', 'scripts/ci-lace-preview-public-check.mjs',
+  'scripts/ci-lace-prover-diagnostic-check.mjs', 'scripts/ci-lace-preview-progress.mjs', ...tests];
+const startedAt = new Date().toISOString();
+const executed = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...tests], { encoding: 'utf8', timeout: 60_000, windowsHide: true });
+const count = name => Number(executed.stdout?.match(new RegExp(`^# ${name} (\\d+)$`, 'm'))?.[1] ?? -1);
+const passed = executed.status === 0 && count('tests') === 40 && count('pass') === 40 && count('fail') === 0;
+const report = { schema: 'midnight-ballot-lab/preview-chain-boundaries/v1', startedAt, finishedAt: new Date().toISOString(),
+  status: passed ? 'passed' : 'failed', node: process.versions.node, tests: count('tests'), pass: count('pass'), fail: count('fail'),
+  execution: 'Node transport-and-public-format-boundary-tests', command: ['node', '--test', '--test-reporter=tap', ...tests],
+  walletAccessed: false, networkServicesTested: false, cryptographyReplaced: false, proofsGenerated: false, transactionsSubmitted: false,
+  sources: await Promise.all(sources.map(async source => ({ source, sha256: createHash('sha256').update(await readFile(source)).digest('hex') }))),
+};
+await writeFile(new URL('./chain-boundaries.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify({ status: report.status, tests: report.tests, pass: report.pass, fail: report.fail }));
+if (!passed) process.exitCode = 1;

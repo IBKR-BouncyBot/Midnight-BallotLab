@@ -31,25 +31,25 @@ async function fixture({ candidateCount = 3, phase = 3, allShares = false } = {}
   const emulator = await createNativeEmulator({ electionId, manifestDigest: await hashManifest(electionManifest),
     administratorSecret, setupSecret: 11n, setupSlope: 7n, opensAt: OPEN, closesAt: CLOSE, candidateCount });
   const voters = [bytes(2), bytes(3), bytes(4)];
-  for (const voter of voters) emulator.call('enroll', pureCircuits.memberIdentity(electionId, voter));
+  for (const voter of voters) await emulator.call('enroll', pureCircuits.memberIdentity(electionId, voter));
   if (phase >= 1) {
-    emulator.setTime(OPEN); emulator.call('openVoting');
+    emulator.setTime(OPEN); await emulator.call('openVoting');
     for (const [index, voter] of voters.entries()) {
       emulator.setPrivateState({ voterSecret: voter, selection: BigInt(index % candidateCount),
         ballotRandomness: Array.from({ length: 5 }, (_, lane) => BigInt(index * 10 + lane + 1)),
         eligibilityPath: emulator.readLedger().members.findPathForLeaf(pureCircuits.memberIdentity(electionId, voter)) });
-      emulator.call('castBallot');
+      await emulator.call('castBallot');
     }
     emulator.setPrivateState({});
   }
-  if (phase >= 2) { emulator.setTime(CLOSE); emulator.call('closeVoting'); }
+  if (phase >= 2) { emulator.setTime(CLOSE); await emulator.call('closeVoting'); }
   if (phase === 3) {
     for (const index of allShares ? [1, 2, 3] : [1, 3]) {
       emulator.setPrivateState({ trusteeSecretShare: 11n + BigInt(index) * 7n });
-      emulator.call('submitDecryption', BigInt(index));
+      await emulator.call('submitDecryption', BigInt(index));
     }
     emulator.setPrivateState({});
-    emulator.call('finalize', 1n, 3n, recoverNativeTally(emulator, 1n, 3n));
+    await emulator.call('finalize', 1n, 3n, recoverNativeTally(emulator, 1n, 3n));
   }
   return clone(observationFromProjection(nativePublicSnapshot(emulator), electionManifest));
 }
@@ -124,7 +124,7 @@ test('optional public election metadata must match the committed digest and acti
 
 test('unconfigured real constructor exports receive a fixed actionable code without treating placeholders as verified', async () => {
   const contract = new Contract(nativeWitnesses);
-  const initial = contract.initialState(RT.createConstructorContext({}, '0'.repeat(64)),
+  const initial = await contract.initialState(RT.createConstructorContext({}, '0'.repeat(64)),
     bytes(90), bytes(91), pureCircuits.administratorIdentity(bytes(1)), BigInt(OPEN), BigInt(CLOSE), 3n);
   const record = observationFromProjection(projectNativePublicLedger(ledger(initial.currentContractState.data),
     { contractAddress: RT.sampleContractAddress() }));

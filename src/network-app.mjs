@@ -40,6 +40,7 @@ const connectionStages = Object.freeze({
   'connection-permission': 'Waiting for Lace permission. Open Lace and approve this site’s connection request.',
   'connection-account': 'Reading the Midnight account selected in Lace…',
   'connection-network': 'Checking that Lace and this app use the same test network…',
+  'connection-chain': 'Checking Preview’s current chain and service agreement…',
   'connection-wallet-proving-mode': 'Checking that Lace has not reported an external proof server…',
   'connection-proving-provider': 'Preparing this browser’s contract prover…',
   'browser-prover-ready': 'Browser contract prover ready. No transaction has been submitted.',

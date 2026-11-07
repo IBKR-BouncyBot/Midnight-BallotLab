@@ -2,7 +2,9 @@
 
 See [current verification status](VERIFICATION_STATUS.md) for completed runs, the latest Preview browser-wallet result, exact versions and remaining limits. Historical results below remain tied to their recorded revisions.
 
-The native election in `contracts/native-election.compact` uses Compact 0.31.1 / language 0.23.0 / runtime 0.16.0 and ledger 8. Version 0.6.1 compiles all seven circuits with 2–5 active choices and five fixed ciphertext lanes. Its combined 40-case native suite passed, including 26 generated-contract and 14 public-verifier cases; 26 isolated-runtime cases and eight actual standalone proofs also passed. Proof, browser and network results are tied to the source revisions in [the execution report](CONTINUATION_RESULTS.md); a successful compile is not evidence for those later stages. The main browser page uses the actual generated contract and native WASM locally. The separate local Lace browser-wallet election passed.
+The current native election in `contracts/native-election.compact` targets Compact 0.36.0 / language 0.28.0 / runtime 0.21.0 and ledger 9, with Midnight.js 5.0.0 and official zkir-v3 3.2.0 browser proving. The Preview reset requires a new compatible deployment; previous contracts and transactions belong to the earlier chain. Fresh generated-runtime checks passed, while the migrated browser/proof/network stages require their own completed results. See [current verification status](VERIFICATION_STATUS.md).
+
+The historical 0.6.1 ledger-8 build compiled seven circuits with 2–5 active choices and five ciphertext lanes. Its 40-case native suite, 26 isolated-runtime cases and eight standalone proofs passed, followed by separately recorded browser/network runs. Those version-specific results remain in [the execution report](CONTINUATION_RESULTS.md); they do not establish the ledger-9 migration. The browser demo executes actual generated code and WASM locally without proving or submitting transactions.
 
 ## What is implemented in the source
 
@@ -41,7 +43,7 @@ From a machine that can install the official pinned toolchain:
 
 ```sh
 cd contracts
-compact update 0.31.1
+compact update 0.36.0
 npm ci --ignore-scripts
 npm run compile:native
 npm run test:native
@@ -54,11 +56,11 @@ The demo loads the actual compiler-generated bindings and `@midnight-ntwrk/compa
 
 **Running generated contract JavaScript is an emulator test. It does not generate a zero-knowledge proof or submit a transaction.** The exported snapshot explicitly marks `proofGenerated: false`, `ledgerInclusionVerified: false` and `network: null`. It is not an independently authenticated election record.
 
-The **Midnight contract compatibility** GitHub Actions workflow compiles/tests the native contract, runs the native example, generates real local circuit proofs against a pinned loopback server, exercises both browser entries and preserves public evidence. It passed alongside the Pages and devnet workflows in [IBKR-BouncyBot/Midnight-BallotLab](https://github.com/IBKR-BouncyBot/Midnight-BallotLab). The [live application](https://ibkr-bouncybot.github.io/Midnight-BallotLab/) also passed deployed-browser checks; [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md) records the first tested commit and exact run evidence.
+The current **Midnight contract compatibility** workflow compiles/tests the native contract, runs the example, exercises both browser entries and requires actual browser-worker proofs. It starts no HTTP prover. Earlier ledger-8 compatibility, Pages and devnet passes remain linked in [GITHUB_EXECUTION.md](GITHUB_EXECUTION.md), including the exact source of the historical direct-origin browser check. They are not current migration acceptance evidence.
 
-### Standalone local proving
+### Historical ledger-8 standalone local proving
 
-With the real generated circuit/key files and a loopback-bound proof server 8.1.3 running, execute `node contracts/native/prove-local.mjs` from the repository root. The script uses the official `httpClientProvingProvider` and `NodeZkConfigProvider`, checks each preimage, then generates eight proofs across the seven circuit types. It also checks rejection of mismatched preimage/circuit material and an incorrect trustee share. Only public proof digests, lengths and timings are saved to `artifacts/native-proof-evidence.json`; witnesses and serialized preimages stay in process memory and loopback requests. This has recorded successful runs, independently of the emulator/browser tests. It is not wallet balancing, transaction submission, network acceptance or independent proof verification.
+The preserved `contracts/native/prove-local.mjs` smoke uses proof-server 8.1.3 with ledger-8 circuit/key files. It must not be run with the newly generated ledger-9 assets. Its dated runs checked and generated eight proofs across seven circuits, with mismatched-material and incorrect-share negatives; public hashes/lengths/timings were retained without preimages. The historical manual devnet workflow retains this coverage behind an explicit ledger-8 compatibility preflight. It is separate from current browser-WASM proving, wallet work and network acceptance.
 
 ## SDK integration source
 
@@ -100,7 +102,7 @@ The [6 November voter-guidance evidence](../evidence/2026-11-06/voter-guidance/R
 
 ### Network client source
 
-`contracts/native/sdk-client.mjs` uses actual Midnight.js 4.1.1 contract APIs and the generated bindings. It supplies methods for deploying, configuring, joining, enrolling, opening, casting, closing, publishing trustee shares and finalizing. It accepts real providers; it does not construct mock wallets or silently submit anything on import.
+`contracts/native/sdk-client.mjs` uses actual Midnight.js 5.0.0 contract APIs and the generated bindings. Provider configuration carries the network explicitly; contract-state reads are era-tagged and decoded with the matching ledger-9 runtime. It supplies methods for deploying, configuring, joining, enrolling, opening, casting, closing, publishing trustee shares and finalizing. It accepts real providers; it does not construct mock wallets or silently submit anything on import.
 
 `contracts/native/browser-providers.mjs` assembles real encrypted private-state, indexer, ZK-asset, browser contract-proving, wallet balancing and submission providers. `browser-wasm-proof.mjs` runs the official ZKIR prover in a dedicated worker with bounded jobs, fixed error messages and build-pinned public assets. There is no HTTP-prover fallback. `src/network.html` exposes the test-network connection and election operations. Select a compatible DApp Connector 4 wallet on the same test network and Lace’s **Run in this app (WASM)** mode for its separate wallet/DUST proof work. No Docker, Node.js or HTTP proof service is required by the browser flow. Installed SDK/API and browser-loading checks are distinct from a connected-wallet transaction. The user-selected fresh local devnet passed the separate Node wallet acceptance path with 17 confirmed transactions; the separate local Lace browser-wallet election passed. A separate Node Wallet SDK run also completed nine application transactions and eight proved contract calls on public Preview. The [current verification status](VERIFICATION_STATUS.md) separates the latest browser-wallet Preview result from other completed runs and untested origins/networks. Follow [NATIVE_NETWORK.md](NATIVE_NETWORK.md) and `contracts/native/README.md`.
 

@@ -2,14 +2,23 @@
 // exercise cryptography, a real service, wallet, proof or accepted transaction.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PREVIEW_PUBLIC_SERVICES, previewBrowserConfiguration, checkPreviewPublicServices, formatPreviewServiceError } from '../contracts/native/public-testnet.mjs';
+import { PREVIEW_PUBLIC_SERVICES, PREVIEW_CHAIN_IDENTITY, previewBrowserConfiguration, checkPreviewPublicServices, requirePreviewChainIdentity, formatPreviewServiceError } from '../contracts/native/public-testnet.mjs';
 import { resolveNativeBrowserConfig, requireNoReportedExternalProver, requireConnectedNetwork } from '../contracts/native/browser-config.mjs';
 
 const rpc = { jsonrpc: '2.0', id: 1, result: 'Midnight Preview' };
-const block = { data: { block: { height: 1234 } } };
+const blockHash = 'b'.repeat(64);
+const protocolVersion = 2001100;
+const block = { data: { block: { height: 1234, hash: blockHash, protocolVersion } } };
 const response = data => ({ ok: true, json: async () => data });
-function transport({ node = rpc, indexer = block } = {}) {
-  return async url => response(url === PREVIEW_PUBLIC_SERVICES.nodeRpc ? node : indexer);
+function transport({ node = rpc, indexer = block, genesis = PREVIEW_CHAIN_IDENTITY.genesisHash,
+  runtime = { specName: 'midnight', specVersion: protocolVersion }, nodeBlockHash = `0x${blockHash}` } = {}) {
+  return async (url, options) => {
+    if (url !== PREVIEW_PUBLIC_SERVICES.nodeRpc) return response(indexer);
+    const body = JSON.parse(options.body);
+    if (body.method === 'system_chain') return response(node);
+    return response({ jsonrpc: '2.0', id: body.id, result: body.method === 'state_getRuntimeVersion' ? runtime
+      : body.params[0] === 0 ? genesis : nodeBlockHash });
+  };
 }
 
 test('Preview settings are immutable and callers cannot override their network or services', () => {
@@ -26,19 +35,22 @@ test('Preview settings are immutable and callers cannot override their network o
 test('Preview check sends only fixed public queries and reports no wallet/proof/transaction execution', async () => {
   const calls = [];
   const result = await checkPreviewPublicServices({ fetchImpl: async (url, options) => {
-    calls.push({ url, options }); return transport()(url);
+    calls.push({ url, options }); return transport()(url, options);
   } });
-  assert.deepEqual(calls.map(call => call.url).sort(), [PREVIEW_PUBLIC_SERVICES.nodeRpc, PREVIEW_PUBLIC_SERVICES.indexerUri].sort());
+  assert.deepEqual(calls.map(call => call.url).sort(), [...Array(4).fill(PREVIEW_PUBLIC_SERVICES.nodeRpc), PREVIEW_PUBLIC_SERVICES.indexerUri].sort());
   assert.deepEqual(JSON.parse(calls.find(call => call.url === PREVIEW_PUBLIC_SERVICES.nodeRpc).options.body),
     { jsonrpc: '2.0', id: 1, method: 'system_chain', params: [] });
-  assert.deepEqual(JSON.parse(calls.find(call => call.url === PREVIEW_PUBLIC_SERVICES.indexerUri).options.body), { query: '{ block { height } }' });
+  assert.deepEqual(JSON.parse(calls.find(call => call.url === PREVIEW_PUBLIC_SERVICES.indexerUri).options.body), { query: '{ block { height hash protocolVersion } }' });
+  assert.deepEqual(calls.filter(call => call.url === PREVIEW_PUBLIC_SERVICES.nodeRpc).map(call => JSON.parse(call.options.body).method),
+    ['system_chain', 'chain_getBlockHash', 'state_getRuntimeVersion', 'chain_getBlockHash']);
   for (const { options } of calls) {
     assert.equal(options.method, 'POST'); assert.equal(options.credentials, 'omit');
     assert.equal(options.redirect, 'error'); assert.equal(options.referrerPolicy, 'no-referrer');
   }
-  assert.deepEqual(result, { networkId: 'preview', chainName: 'Midnight Preview', blockHeight: 1234,
+  assert.deepEqual(result, { networkId: 'preview', chainName: 'Midnight Preview', blockHeight: 1234, blockHash,
+    chainIdentity: { ...PREVIEW_CHAIN_IDENTITY, protocolVersion }, independentlyVerified: false,
     source: 'fixed-public-preview-services', walletConnected: false, proofGenerated: false, transactionSubmitted: false });
-  assert.ok(Object.isFrozen(result));
+  assert.ok(Object.isFrozen(result)); assert.ok(Object.isFrozen(result.chainIdentity));
 });
 
 test('Preview check rejects other chains and malformed RPC identity responses', async () => {
@@ -55,6 +67,51 @@ test('Preview check rejects malformed indexer responses and GraphQL errors', asy
   }
 });
 
+test('the unchanged Preview name and URLs cannot hide another genesis or ledger era', async () => {
+  for (const genesis of [null, '0x' + 'a'.repeat(64), PREVIEW_CHAIN_IDENTITY.genesisHash.toUpperCase()]) {
+    await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({ genesis }) }), error => error.code === 'chain-reset');
+  }
+  // These are protocol metadata fixtures, not replacement ledger arithmetic.
+  for (const version of [1000400, 0, 3000000, -1, 2001100.5, '2001100', null, Number.MAX_SAFE_INTEGER + 1]) {
+    await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({ runtime: { specName: 'midnight', specVersion: version } }) }),
+      error => error.code === 'protocol-version');
+    await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({ indexer: { data: { block: { ...block.data.block, protocolVersion: version } } } }) }),
+      error => error.code === 'protocol-version');
+  }
+});
+
+test('Preview requires current RPC/indexer protocol and block-hash agreement', async () => {
+  await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({ runtime: { specName: 'midnight', specVersion: protocolVersion + 1 } }) }),
+    error => error.code === 'protocol-disagreement');
+  for (const nodeBlockHash of [null, '0x' + 'c'.repeat(64), blockHash]) {
+    await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({ nodeBlockHash }) }), error => error.code === 'indexer-chain-mismatch');
+  }
+  for (const hash of ['', '0x' + blockHash, 'B'.repeat(64), 'SYNTHETIC-PRIVATE-UPSTREAM']) {
+    await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({ indexer: { data: { block: { ...block.data.block, hash } } } }) }),
+      error => error.code === 'indexer-response' && !formatPreviewServiceError(error).includes('SYNTHETIC'));
+  }
+});
+
+test('every Preview identity check is fresh and a saved session cannot cross an upgrade or reset', async () => {
+  let calls = 0;
+  const fetchImpl = (url, options) => { calls++; return transport()(url, options); };
+  const initial = await requirePreviewChainIdentity({ fetchImpl });
+  assert.deepEqual(await requirePreviewChainIdentity({ fetchImpl }, initial), initial);
+  assert.equal(calls, 10, 'Each check makes all five fresh public requests');
+  const nextProtocol = protocolVersion + 1;
+  await assert.rejects(requirePreviewChainIdentity({ fetchImpl: transport({
+    runtime: { specName: 'midnight', specVersion: nextProtocol },
+    indexer: { data: { block: { ...block.data.block, protocolVersion: nextProtocol } } },
+  }) }, initial), error => error.code === 'chain-session-changed');
+  for (const expected of [{ ...initial, genesisHash: '0x' + 'a'.repeat(64) }, { ...initial, networkId: 'mainnet' },
+    { ...initial, ledgerEra: 'v8' }, { ...initial, secret: 'SYNTHETIC-PRIVATE' }, {}, null,
+    { ...initial, get protocolVersion() { throw new Error('SYNTHETIC-PRIVATE'); } }]) {
+    await assert.rejects(requirePreviewChainIdentity({ fetchImpl }, expected),
+      error => error.code === 'chain-session-changed' && !formatPreviewServiceError(error).includes('SYNTHETIC'));
+  }
+  assert.equal(calls, 10, 'Invalid saved identity is rejected before network access');
+});
+
 test('Preview diagnostics identify each failed service without exposing upstream error data', async () => {
   const marker = 'SYNTHETIC-PRIVATE-ERROR-CONTENT';
   for (const service of ['node', 'indexer']) {
@@ -64,7 +121,7 @@ test('Preview diagnostics identify each failed service without exposing upstream
       ['http-status', async () => ({ ok: false, status: 503, statusText: marker })],
       ['invalid-json', async () => ({ ok: true, json: async () => { throw new Error(marker); } })],
     ]) {
-      await assert.rejects(checkPreviewPublicServices({ fetchImpl: url => url === endpoint ? failedFetch() : transport()(url) }), error => {
+      await assert.rejects(checkPreviewPublicServices({ fetchImpl: (url, options) => url === endpoint ? failedFetch() : transport()(url, options) }), error => {
         assert.equal(error.code, code); assert.equal(error.service, service); assert.equal(error.cause, undefined);
         const message = formatPreviewServiceError(error);
         assert.ok(typeof message === 'string' && message.includes(`Preview ${service}`), 'A failed service must be identified');
@@ -122,8 +179,8 @@ test('Preview service check has a real 15-second bound even when a transport ign
 
 test('Preview timeout identifies the indexer when the node has already passed validation', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const result = checkPreviewPublicServices({ fetchImpl: url => url === PREVIEW_PUBLIC_SERVICES.nodeRpc
-    ? Promise.resolve(response(rpc)) : new Promise(() => {}) });
+  const result = checkPreviewPublicServices({ fetchImpl: (url, options) => url === PREVIEW_PUBLIC_SERVICES.nodeRpc
+    ? transport()(url, options) : new Promise(() => {}) });
   const rejected = assert.rejects(result, error => error.code === 'timeout' && error.service === 'indexer'
     && formatPreviewServiceError(error).includes('Preview indexer'));
   await new Promise(resolve => setImmediate(resolve));
@@ -161,10 +218,14 @@ test('known public service hosts cannot silently cross networks, including mainn
   assert.throws(() => resolveNativeBrowserConfig({ ...base, networkId: 'mainnet' }, 'https://example.test/'));
 });
 
-test('custom secure indexers and same-network query auth remain possible without relaxing prover or asset guards', () => {
-  const result = resolveNativeBrowserConfig({ ...previewBrowserConfiguration(), networkId: 'preprod',
+test('custom same-network indexers retain URL guards while the ledger-9 build rejects Preprod', () => {
+  assert.throws(() => resolveNativeBrowserConfig({ ...previewBrowserConfiguration(), networkId: 'preprod',
     indexerUri: 'https://midnight-preprod.blockfrost.io/api/v0?project_id=SYNTHETIC',
-    indexerWsUri: 'wss://midnight-preprod.blockfrost.io/api/v0/ws?project_id=SYNTHETIC' }, 'https://example.test/project/network.html');
+    indexerWsUri: 'wss://midnight-preprod.blockfrost.io/api/v0/ws?project_id=SYNTHETIC' }, 'https://example.test/project/network.html'),
+    error => /ledger-9 build cannot use Preprod/.test(error.message) && !error.message.includes('SYNTHETIC'));
+  const result = resolveNativeBrowserConfig({ ...previewBrowserConfiguration(),
+    indexerUri: 'https://custom.example.test/graphql?project_id=SYNTHETIC',
+    indexerWsUri: 'wss://custom.example.test/ws?project_id=SYNTHETIC' }, 'https://example.test/project/network.html');
   assert.equal(new URL(result.indexerUri).searchParams.get('project_id'), 'SYNTHETIC');
   assert.equal(result.compiledAssetsUrl, 'https://example.test/project/native-contract');
   assert.doesNotThrow(() => resolveNativeBrowserConfig({ ...previewBrowserConfiguration(), indexerUri: 'https://custom.example.test/graphql',

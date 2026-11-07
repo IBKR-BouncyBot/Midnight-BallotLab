@@ -8,7 +8,7 @@ const identity = Object.freeze({ networkId: 'preview', contractAddress: 'ab'.rep
 const record = { schema: 'midnight-ballot-lab/election-join/v1', ...identity };
 
 test('election join files round trip every allowed network with canonical public fields', async () => {
-  for (const networkId of ['preview', 'preprod', 'undeployed']) {
+  for (const networkId of ['preview', 'undeployed']) {
     const input = Object.freeze({ ...identity, networkId, contractAddress: ` \t${identity.contractAddress.toUpperCase()}\n`,
       configurationDigest: ` ${identity.configurationDigest.toUpperCase()} ` });
     const text = encodeElectionJoinFile(input), expected = { ...record, networkId };
@@ -63,10 +63,11 @@ test('network matching is explicit and mainnet or ambiguous network labels never
   for (const expected of ['preprod', 'undeployed', 'mainnet', 'Preview', '', undefined, null]) {
     assert.throws(() => decodeElectionJoinFile(text, expected));
   }
-  for (const networkId of ['mainnet', 'Preview', ' preview ', '', undefined, null, 1]) {
+  for (const networkId of ['preprod', 'mainnet', 'Preview', ' preview ', '', undefined, null, 1]) {
     assert.throws(() => encodeElectionJoinFile({ ...identity, networkId }));
     assert.throws(() => decodeElectionJoinFile(JSON.stringify({ ...record, networkId }), 'preview'));
   }
+  assert.throws(() => decodeElectionJoinFile(JSON.stringify({ ...record, networkId: 'preprod' }), 'preprod'), /ledger-9 build cannot use Preprod/);
 });
 
 test('addresses and fingerprints require complete nonzero 32-byte hex values', () => {

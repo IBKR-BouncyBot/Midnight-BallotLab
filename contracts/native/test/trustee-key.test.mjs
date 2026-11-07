@@ -27,7 +27,7 @@ test('all three imported trustee files match their actual generated registered p
   }
 });
 
-test('native trustee matching rejects other shares, indices, registered keys and election contexts', () => {
+test('native trustee matching rejects other shares, indices, registered keys and election contexts', async () => {
   const nativePublicKey = emulator.pureCircuits.nativePublicKey;
   for (const value of [fileRecord(1, 25n), fileRecord(2, 18n), fileRecord(3, 33n), fileRecord(1, 0n), fileRecord(1, JUBJUB_SCALAR_ORDER)]) {
     assert.throws(() => assertTrusteeKeyMatches(value, state.trusteeKeys, nativePublicKey),

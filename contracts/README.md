@@ -8,7 +8,7 @@ The contract supports up to 1,024 accepted ballots. These are implementation bou
 
 ## Build and test
 
-Install Compact devtools 0.5.1 and compiler 0.31.1, then run from this directory:
+Install Compact devtools 0.5.1 and compiler 0.36.0, then run from this directory:
 
 ```sh
 npm ci --ignore-scripts
@@ -17,13 +17,13 @@ npm run test:native
 npm run demo:native
 ```
 
-The reviewed package lock pins Compact runtime 0.16.0 and Midnight.js 4.1.1. Full compilation produces real generated bindings, keys and ZKIR under `managed/native-election/`. Missing compiler output is a build failure. [Windows instructions](../docs/WINDOWS_NATIVE.md) explain the explicit WSL launcher.
+The package lock pins Compact runtime 0.21.0, Midnight.js 5.0.0, ledger-v9 1.0.0 and onchain-runtime-v4 4.0.0; the browser worker uses zkir-v3 3.2.0. This is the ledger-9 migration for reset Preview. Full compilation produces real generated bindings, keys and ZKIR under `managed/native-election/`. Missing compiler output is a build failure. [Windows instructions](../docs/WINDOWS_NATIVE.md) explain the explicit WSL launcher. Earlier public-network results belong to the previous chain and do not validate this migration.
 
 The generated-contract suite covers all supported candidate counts, invalid private inputs and all trustee pairs. The independent public-verifier suite imports records without private state and exercises strict schema, native point validation, commitments, aggregates, receipts and threshold equations. The example executes five synthetic ballots and returns `[2,1,2,0,0]` for three active choices. These runtime tests do not generate proofs or submit transactions. Current counts and completed runs are in [the execution report](../docs/CONTINUATION_RESULTS.md).
 
 ## Proving and network execution
 
-`native/prove-local.mjs` requests eight real proofs across the seven circuit types from loopback proof-server 8.1.3 and retains only public proof hashes, lengths and timings. Run it after compilation with the supported server available.
+`native/prove-local.mjs` and proof-server 8.1.3 belong to the preserved historical ledger-8 devnet fixture; do not run them against newly generated ledger-9 assets. Current compatibility CI requires browser-WASM proving. Native runtime execution, actual proofs and accepted reset-chain transactions remain separate gates.
 
 `native/sdk-client.mjs` and `native/browser-providers.mjs` use actual Midnight.js contract, wallet, prover, indexer and submission APIs. The isolated `devnet/` graph has its own reviewed lockfile and a complete wallet acceptance runner. Its recorded local and hosted runs each confirmed 17 transactions and finalized five ballots with two trustees. See [GitHub execution evidence](../docs/GITHUB_EXECUTION.md) for exact tested commits, transaction IDs and confirmation scope.
 

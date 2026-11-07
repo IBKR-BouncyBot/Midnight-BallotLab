@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { NATIVE_PROVER_PARAMETERS, NATIVE_PROVER_PARAMETER_BYTES } from '../contracts/native/wasm-prover-assets.mjs';
 
-export const PARAMETER_SOURCE = 'https://midnight-s3-fileshare-dev-eu-west-1.s3.eu-west-1.amazonaws.com';
-export const PARAMETER_PROVENANCE = 'https://github.com/midnightntwrk/midnight-ledger/blob/ledger-8.1.2/base-crypto/src/data_provider.rs';
+export const PARAMETER_SOURCE = 'https://srs.midnight.network';
+export const PARAMETER_PROVENANCE = 'https://www.npmjs.com/package/@midnightntwrk/wallet-sdk-prover-client/v/2.0.0';
 export const PARAMETER_DIGESTS = NATIVE_PROVER_PARAMETERS;
 export const PARAMETER_SIZES = NATIVE_PROVER_PARAMETER_BYTES;
 const MAX_BYTES = 64 * 1024 * 1024;

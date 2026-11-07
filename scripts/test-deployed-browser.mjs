@@ -1,3 +1,4 @@
+import { validateBrowserModuleAssets, initialNetworkWasmAssets } from './browser-module-assets.mjs';
 /** Acceptance against the explicitly selected, already deployed GitHub Pages site.
  * No local server, substituted responses, wallet, proof generation or submission.
  * Only public outputs and counters are saved; no browser traces or raw errors.
@@ -149,13 +150,19 @@ try {
   assert.equal(native.enabled, true); assert.equal(native.bundle, 'native-bundle.mjs');
   assert.equal(native.mode, 'local-native-emulator');
   assert.equal(native.proofGeneration, false); assert.equal(native.networkSubmission, false);
-  assert.equal(native.compiler, '0.31.1'); assert.equal(native.runtime, '0.16.0');
+  assert.equal(native.compiler, '0.36.0'); assert.equal(native.runtime, '0.21.0');
   assert.equal(native.assets.length, 1);
   assert.equal(network.enabled, true); assert.equal(network.bundle, 'network-bundle.mjs');
   assert.equal(network.mode, 'development-network-client');
   assert.equal(network.compiler, native.compiler); assert.equal(network.runtime, native.runtime);
-  assert.equal(network.sdk, '4.1.1'); assert.equal(network.wasmAssets.length, 2);
+  assert.equal(network.sdk, '5.0.0'); assert.equal(network.wasmAssets.length, 5);
   assert.equal(network.circuitAssets.length, 21);
+  assert.equal(network.browserProver.version, '3.2.0');
+  const initialNetworkWasm = initialNetworkWasmAssets(network.wasmAssets);
+  assert.equal(initialNetworkWasm.length, 2);
+  assert.equal(network.browserProver.parameters.length, 6);
+  evidence.networkModuleAssets = validateBrowserModuleAssets(network.moduleAssets);
+  for (const asset of evidence.networkModuleAssets) await fetchAsset(asset.path, { kind: 'javascript', expectedBytes: asset.bytes, expectedHash: asset.sha256 });
   evidence.versions = { compiler: native.compiler, runtime: native.runtime, sdk: network.sdk };
   await fetchAsset(native.bundle, { kind: 'javascript' });
   await fetchAsset(network.bundle, { kind: 'javascript' });
@@ -174,8 +181,15 @@ try {
     assert.match(asset.sha256, /^[a-f0-9]{64}$/);
     await fetchAsset(asset.path, { kind: 'binary', expectedBytes: asset.bytes, expectedHash: asset.sha256 });
   }
+  assert.deepEqual(network.compilerMetadata.map(item => item.path).sort(),
+    ['native-contract/compiler/contract-info.json', 'native-contract/compiler/contract-manifest.json']);
+  for (const asset of [...network.compilerMetadata, network.browserProver.worker,
+    network.browserProver.manifest, ...network.browserProver.parameters]) {
+    await fetchAsset(asset.path, { kind: asset.path.endsWith('.mjs') ? 'javascript' : asset.path.endsWith('.json') ? 'json' : 'binary',
+      expectedBytes: asset.bytes, expectedHash: asset.sha256 });
+  }
   evidence.cases.push({ case: 'live-http-manifests-bundles-wasm-and-circuit-assets', status: 'passed',
-    wasmAssets: 3, circuitAssets: 21, integrityScope: 'served manifests and content-addressed WASM; bundle digests recorded' });
+    wasmAssets: native.assets.length + network.wasmAssets.length, circuitAssets: network.circuitAssets.length, integrityScope: 'served manifests and content-addressed WASM; bundle digests recorded' });
   console.log(JSON.stringify({ stage: 'live-http-assets', status: 'passed', assets: evidence.httpAssets.length }));
 
   stage = 'real-browser-launch';
@@ -308,24 +322,24 @@ try {
     assert.equal(await page.evaluate(() => typeof globalThis.midnight), 'undefined');
     assert.match(await page.locator('#network-wallet-note').textContent(), /No compatible wallet detected/);
     assert.match(await page.locator('#network-availability').textContent(), /No proof or transaction has been created yet/);
-    assert.equal(await page.locator('#network-id').inputValue(), '');
+    assert.equal(await page.locator('#network-id').inputValue(), 'preview');
     assert.equal(await page.locator('#network-id option[value="mainnet"]').count(), 0);
     for (const name of ['network-choice', 'network-trustee', 'network-pair']) {
       assert.equal(await page.locator(`input[name="${name}"]`).count(), name === 'network-choice' ? 5 : 3);
       assert.equal(await page.locator(`input[name="${name}"]:checked`).count(), 0);
       for (const input of await page.locator(`input[name="${name}"]`).all()) assert.equal(await input.isDisabled(), true);
     }
-    for (const asset of network.wasmAssets) assert.ok(observed.wasmLoaded.has(publicAssetUrl(asset)));
+    for (const asset of initialNetworkWasm) assert.ok(observed.wasmLoaded.has(publicAssetUrl(asset)));
+    assert.equal(observed.wasmLoaded.size, 2, 'Proof WASM must remain lazy without a wallet');
     const actionSelectors = ['#network-deploy', '#network-join', '#network-cast', '#network-finalize'];
     for (const selector of actionSelectors) assert.equal(await page.locator(selector).isDisabled(), true);
     stage = 'live-network:no-wallet-fails-closed';
     await page.locator('#network-id').selectOption('preview');
-    await page.locator('#network-indexer').fill('https://indexer.example.invalid/graphql');
-    await page.locator('#network-indexer-ws').fill('wss://indexer.example.invalid/graphql/ws');
+    for (const id of ['network-indexer', 'network-indexer-ws']) assert.equal(await page.locator(`#${id}`).evaluate(input => input.readOnly), true);
     // Disposable form fixture, not a wallet credential. Clear before screenshots.
     await page.locator('#network-password').fill('Browser-Test-Q7#M2!');
     await page.locator('#network-connect-form button[type="submit"]').click();
-    await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('could not finish'));
+    await page.waitForFunction(() => document.getElementById('network-status').textContent.includes('No compatible wallet is available'));
     await page.locator('#network-password').fill('');
     for (const selector of actionSelectors) assert.equal(await page.locator(selector).isDisabled(), true);
     assert.equal(await page.locator('#network-events').textContent(), '');
@@ -336,6 +350,7 @@ try {
       wasmLoaded: observed.wasmLoaded.size, actionsDisabled: true, noTransactionEvents: true, ...observed.counters });
     console.log(JSON.stringify({ stage: 'live-network-no-wallet', status: 'passed' }));
   } finally { await networkContext.close(); }
+  for (const asset of evidence.networkModuleAssets) await fetchAsset(asset.path, { kind: 'javascript', expectedBytes: asset.bytes, expectedHash: asset.sha256 });
   evidence.status = 'passed';
   console.log(JSON.stringify({ status: 'passed', cases: evidence.cases.length, url: approvedUrl,
     evidence: 'artifacts/deployed-browser/evidence.json', proofGeneration: false, networkSubmission: false }));

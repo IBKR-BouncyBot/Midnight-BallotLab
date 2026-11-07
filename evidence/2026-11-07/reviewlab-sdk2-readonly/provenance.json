@@ -1,0 +1,36 @@
+{
+  "schema": "midnight-ballot-lab/read-only-wallet-provenance/v1",
+  "execution": "fresh-official-sdk2-synchronization-of-authorized-existing-test-wallet",
+  "sourceFiles": [
+    {
+      "path": "artifacts/reviewlab-sdk2-readonly/read-wallet.mjs",
+      "sha256": "abd7b84ff0da3fc71e86aad844015a63f2b6c9af845e07c47e0eb8d422111e5c"
+    },
+    {
+      "path": "artifacts/reviewlab-sdk2-readonly/package.json",
+      "sha256": "83fbadee40ddf6b1b76f6463caf8e6a22dd31c84d74701d22033b9b1c63a2573"
+    },
+    {
+      "path": "artifacts/reviewlab-sdk2-readonly/package-lock.json",
+      "sha256": "70693cdd273defbef5c94afb7215c2c38bb3cd1f0a7a9625734523e28702655e"
+    }
+  ],
+  "resultFiles": [
+    {
+      "path": "address.json",
+      "sha256": "89f72cfad025875f3cf7b7896edf3c70900d7b568442e14392b7dcd18176fb4f"
+    },
+    {
+      "path": "balance.json",
+      "sha256": "79d0331e400563f7e013cb838a53aa9768cb96b7861f9a7ab34b06872d7958cc"
+    }
+  ],
+  "reviewLabModified": false,
+  "previousCheckpointRead": false,
+  "previousCheckpointWritten": false,
+  "privateDataExported": false,
+  "provingProviderCreated": false,
+  "transactionsSigned": 0,
+  "transactionsSubmitted": 0,
+  "independentConsensusVerification": false
+}

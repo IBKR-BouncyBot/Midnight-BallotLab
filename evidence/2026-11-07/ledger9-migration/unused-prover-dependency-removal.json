@@ -1,0 +1,13 @@
+{
+  "schema": "midnight-ballot-lab/ledger9-unused-prover-removal/v1",
+  "recordedAt": "2026-11-07T09:30:13.580Z",
+  "removedDirectDependency": "@midnightntwrk/zkir-v2@2.2.0",
+  "reason": "No current application, native helper or test imports; contract IR3 is handled by official zkir-v3@3.2.0.",
+  "packageSha256": "98410f8ce89a7fd48775726900bc9f559e477f26663715325caa77d548d50d2a",
+  "lockfileSha256": "9e9c3819d5cc0a63fb594c16c52b4984de84546ef0aa5df7bfcc383982cb24c8",
+  "registryPackagesReviewed": 166,
+  "registryAndIntegrity": "passed",
+  "npmInstalledPackagesAudited": 137,
+  "npmReportedVulnerabilities": 0,
+  "scope": "Dependency cleanup; earlier executed source and lock hashes remain retained unchanged."
+}

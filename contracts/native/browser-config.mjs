@@ -1,7 +1,7 @@
 /** Public configuration boundaries for the development/test network client.
  * These functions perform no cryptography, wallet connection, or network call.
  */
-const DEVELOPMENT_NETWORKS = new Set(['undeployed', 'preview', 'preprod']);
+const DEVELOPMENT_NETWORKS = new Set(['undeployed', 'preview']);
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 function requireMatchingKnownNetwork(url, networkId) {
@@ -18,8 +18,11 @@ function requireMatchingKnownNetwork(url, networkId) {
 }
 
 export function requireDevelopmentNetwork(networkId) {
+  if (networkId === 'preprod') {
+    throw new TypeError('This ledger-9 build cannot use Preprod while it remains on ledger 8. Select Preview or a compatible local development chain.');
+  }
   if (!DEVELOPMENT_NETWORKS.has(networkId)) {
-    throw new TypeError('Choose an explicit development network: undeployed, preview or preprod');
+    throw new TypeError('Choose an explicit compatible development network: undeployed or preview');
   }
   return networkId;
 }

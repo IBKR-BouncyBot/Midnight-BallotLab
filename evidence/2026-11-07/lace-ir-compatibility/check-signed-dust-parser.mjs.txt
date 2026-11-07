@@ -1,0 +1,17 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+const source = await readFile(new URL('./check-signed-ir-parser.mjs', import.meta.url), 'utf8');
+const url = 'https://srs.midnight.network/dust/10/spend.bzkir';
+const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(30_000) });
+if (!response.ok) throw new Error('Public DUST IR unavailable');
+const bytes = new Uint8Array(await response.arrayBuffer());
+if (createHash('sha256').update(bytes).digest('hex') !== 'd211cacb22391b9db60f945787d98c16d344cbb4790246132117084c080399c1') {
+  throw new Error('Public DUST IR integrity mismatch');
+}
+await writeFile(new URL('./parser-check/dust10-spend.bzkir', import.meta.url), bytes);
+const before = "{circuit:'configureKeys',format:'current-IR3',path:'../../contracts/managed/native-election/zkir/configureKeys.bzkir'}";
+if (!source.includes(before)) throw new Error('Unexpected parser check');
+const changed = source.replace(before, before + ",\n {circuit:'dust-spend',format:'official-DUST-generation-10',path:'./parser-check/dust10-spend.bzkir'}")
+  .replace("new URL('signed-ir-parser-result.json',import.meta.url)", "new URL('signed-dust-ir-parser-result.json',import.meta.url)");
+await writeFile(new URL('./.signed-dust-parser-runner.mjs', import.meta.url), changed);
+await import('./.signed-dust-parser-runner.mjs');

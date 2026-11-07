@@ -10,3 +10,7 @@ evidence/2026-11-06/browser-wasm/** -text whitespace=blank-at-eol,blank-at-eof,s
 evidence/2026-11-06/lace-preview/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 evidence/2026-11-07/lace-preview/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 evidence/2026-11-07/browser-wasm/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+evidence/2026-11-07/preview-reset/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+evidence/2026-11-07/ledger9-migration/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+evidence/2026-11-07/reviewlab-sdk2-readonly/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+evidence/2026-11-07/lace-ir-compatibility/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

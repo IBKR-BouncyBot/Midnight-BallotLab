@@ -29,39 +29,39 @@ test('timing display uses real native lifecycle states without advancing the ele
   assert.equal(emulator.readLedger().accepted, 0n);
 
   const member = emulator.pureCircuits.memberIdentity(electionId, voterSecret);
-  emulator.call('enroll', member);
-  emulator.setTime(OPEN); emulator.call('openVoting');
+  await emulator.call('enroll', member);
+  emulator.setTime(OPEN); await emulator.call('openVoting');
   inspect(OPEN, 'open', 600);
   emulator.setPrivateState({ voterSecret, selection: 1n,
     eligibilityPath: emulator.readLedger().members.findPathForLeaf(member),
     ballotRandomness: [101n, 103n, 107n, 109n, 113n] });
-  emulator.call('castBallot');
+  await emulator.call('castBallot');
   assert.equal(emulator.readLedger().accepted, 1n);
   inspect(CLOSE - 1, 'open', 1);
   inspect(CLOSE, 'awaiting-close');
   inspect(CLOSE + 120, 'awaiting-close');
   assert.equal(emulator.readLedger().phase, 1n);
 
-  emulator.setTime(CLOSE); emulator.call('closeVoting');
+  emulator.setTime(CLOSE); await emulator.call('closeVoting');
   inspect(CLOSE, 'closed');
   for (const [index, trusteeSecretShare] of [[1n, 18n], [3n, 32n]]) {
     emulator.setPrivateState({ trusteeSecretShare });
-    emulator.call('submitDecryption', index);
+    await emulator.call('submitDecryption', index);
   }
   const totals = recoverNativeTally(emulator, 1n, 3n);
-  emulator.call('finalize', 1n, 3n, totals);
+  await emulator.call('finalize', 1n, 3n, totals);
   inspect(CLOSE, 'finalized');
   inspect(OPEN - 120, 'finalized');
   assert.deepEqual(emulator.readLedger().finalizedTotals, [0n, 1n, 0n, 0n, 0n]);
 });
 
-test('unconfigured generated constructor state is not advertised as ready to open', () => {
+test('unconfigured generated constructor state is not advertised as ready to open', async () => {
   const contract = new Contract(nativeWitnesses), coin = '0'.repeat(64);
-  const initial = contract.initialState(RT.createConstructorContext({}, coin), bytes(20), bytes(21),
+  const initial = await contract.initialState(RT.createConstructorContext({}, coin), bytes(20), bytes(21),
     pureCircuits.administratorIdentity(bytes(1)), BigInt(OPEN), BigInt(CLOSE), 2n);
-  const context = RT.createCircuitContext(RT.sampleContractAddress(), coin,
-    initial.currentContractState, {}, undefined, undefined, OPEN - 1);
-  const state = ledger(context.currentQueryContext.state);
+  const context = RT.createCircuitContext({ circuitId: 'openVoting', contractAddress: RT.sampleContractAddress(),
+    coinPublicKeyOrZswapState: coin, contractState: initial.currentContractState, privateState: {}, time: OPEN - 1 });
+  const state = ledger(context.callContext.currentQueryContext.state);
   assert.equal(state.phase, 0n);
   assert.equal(state.keysConfigured, false);
   const before = describeNetworkElectionTiming(state, (OPEN - 120) * 1000);

@@ -1,0 +1,40 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { join, resolve, dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { nativeWasmPlugin } from '../../scripts/native-wasm-plugin.mjs';
+const root = process.cwd(), require = createRequire(join(root, 'contracts/package.json'));
+const esbuild = await import(pathToFileURL(require.resolve('esbuild')).href);
+const results = [];
+for (const mode of ['unchanged', 'tree-shaking-disabled', 'splitting', 'static-harness']) {
+  const assets = new Map(), folder = join(root, 'artifacts/ledger9-migration/import-variants', mode);
+  await mkdir(folder, { recursive: true });
+  const plugins = [];
+  if (mode === 'static-harness') plugins.push({ name: 'only-our-static-harness-imports', setup(build) {
+    build.onLoad({ filter: /native[\\/]harness\.mjs$/ }, async args => {
+      const input = await readFile(args.path, 'utf8');
+      const contents = `import * as runtime from '@midnight-ntwrk/compact-runtime';\nimport * as bindings from '../managed/native-election/contract/index.js';\n` + input
+        .replace("const runtime = await import('@midnight-ntwrk/compact-runtime');", '')
+        .replace("const bindings = await import('../managed/native-election/contract/index.js');", '');
+      return { contents, loader: 'js', resolveDir: dirname(args.path) };
+    });
+  } });
+  plugins.push(nativeWasmPlugin(assets, { projectRoot: root, assetFolder: 'native-assets' }));
+  const built = await esbuild.build({ absWorkingDir: root,
+    stdin: { contents: 'export { initNativeDemo } from "./src/native-app.mjs"; export { createNativeEmulator } from "./contracts/native/harness.mjs";', resolveDir: root, sourcefile: 'native-variant.mjs' },
+    outdir: folder, outExtension: { '.js': '.mjs' }, bundle: true, platform: 'browser', format: 'esm', target: 'es2022',
+    conditions: ['browser', 'import'], mainFields: ['browser', 'module', 'main'], nodePaths: [join(root, 'contracts/node_modules')],
+    splitting: mode === 'splitting', treeShaking: mode === 'tree-shaking-disabled' ? false : true,
+    write: false, logLevel: 'silent', plugins,
+  });
+  for (const output of built.outputFiles) await writeFile(output.path, output.contents);
+  // A fresh process avoids one variant's global module initialization masking another.
+  const script = `import { readFile } from 'node:fs/promises';
+globalThis.fetch=async url=>{const name=new URL(url).pathname.split('/native-assets/')[1];if(!name||name.includes('/'))throw new Error('Unexpected request');return new Response(await readFile(new URL('./native-assets/'+name,import.meta.url)));};
+let stage='import';try{const native=await import('./stdin.mjs');stage='constructor';const b=n=>{const v=new Uint8Array(32);v[31]=n;return v;};const e=await native.createNativeEmulator({electionId:b(10),manifestDigest:b(11),administratorSecret:b(1),setupSecret:11n,setupSlope:7n,opensAt:2000000000,closesAt:2000000600,candidateCount:3});stage='ledger';if(!e.readLedger().keysConfigured)throw new Error('Unconfigured');await e.call('enroll',e.pureCircuits.memberIdentity(b(10),b(2)));e.setTime(2000000000);await e.call('openVoting');if(e.readLedger().phase!==1n)throw new Error('Unopened');process.stdout.write(JSON.stringify({status:'passed'}));}catch(error){process.stdout.write(JSON.stringify({status:'failed',stage,emptyRunningCostMissing:error?.message?.includes('emptyRunningCost')===true}));process.exitCode=1;}`;
+  await writeFile(join(folder, 'run.mjs'), script);
+  await mkdir(join(folder, 'native-assets'), { recursive: true });
+  for (const [name, bytes] of assets) await writeFile(join(folder, name), bytes);
+  results.push({ mode, build: 'passed', outputFiles: built.outputFiles.length, wasmAssets: assets.size });
+}
+process.stdout.write(JSON.stringify(results)+'\n');

@@ -1,16 +1,17 @@
-/** Real Midnight.js 4.1.1 browser providers, DApp Connector API 4.0.1.
+/** Real Midnight.js 5 browser providers, DApp Connector API 4.1.
  * Importing does not connect a wallet or send a transaction. The caller selects
  * a wallet and explicit test network, then calls connectNativeBrowserProviders.
  */
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
-import { getNetworkId, setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
-import { Transaction } from '@midnight-ntwrk/midnight-js-protocol/ledger';
+import { Transaction } from '@midnightntwrk/ledger-v9';
+import { createLedger9WalletProvider, createLedger9MidnightProvider } from '@midnight-ntwrk/midnight-js-types';
 import { fromHex, toHex, validatePassword, PasswordValidationError } from '@midnight-ntwrk/midnight-js-utils';
 import { resolveNativeBrowserConfig, requireConnectedNetwork, requireNoReportedExternalProver } from './browser-config.mjs';
 import { nativeConnectionFailure } from './connection-errors.mjs';
 import { createNativeWasmProofProvider } from './browser-wasm-proof.mjs';
+import { requirePreviewChainIdentity } from './public-testnet.mjs';
 
 export { validatePassword as validateNativeStoragePassword };
 export { nativeConnectionErrorMessage } from './connection-errors.mjs';
@@ -46,6 +47,8 @@ export async function connectNativeBrowserProviders({
   }
   // Fail before connecting or transacting if storage cannot encrypt its key.
   validatePassword(await passwordProvider());
+  const chainIdentity = config.networkId === 'preview'
+    ? await connectionStep('connection-chain', () => requirePreviewChainIdentity()) : undefined;
   const api = await connectionStep('connection-permission', () => wallet.connect(config.networkId));
   const [status, services, shielded, unshielded] = await connectionStep('connection-account', async () => {
     const values = await Promise.all([
@@ -61,11 +64,11 @@ export async function connectNativeBrowserProviders({
   const accountId = unshielded.unshieldedAddress;
   const coinKey = shielded.shieldedCoinPublicKey;
   const encryptionKey = shielded.shieldedEncryptionPublicKey;
-  setNetworkId(config.networkId);
+  const sdkConfig = Object.freeze({ networkId: config.networkId, ttlSeconds: 3600 });
   let closed = false;
   const assertSession = async () => {
     if (closed) throw new Error('This native wallet session is closed');
-    if (getNetworkId() !== config.networkId) throw new Error('Midnight.js network changed');
+    if (chainIdentity) await requirePreviewChainIdentity({}, chainIdentity);
     const [connection, currentServices, currentShielded, currentUnshielded] = await Promise.all([
       api.getConnectionStatus(), api.getConfiguration(), api.getShieldedAddresses(), api.getUnshieldedAddress(),
     ]);
@@ -84,35 +87,44 @@ export async function connectNativeBrowserProviders({
     }
     return globalThis.fetch(target.href, { ...init, redirect: 'error', credentials: 'same-origin' });
   };
-  const zkConfigProvider = await connectionStep('connection-providers', () => new FetchZkConfigProvider(config.compiledAssetsUrl, artifactFetch));
+  const zkConfigProvider = await connectionStep('connection-providers', () => {
+    const expectedManifestHash = typeof __NATIVE_CONTRACT_MANIFEST_SHA256__ === 'string' ? __NATIVE_CONTRACT_MANIFEST_SHA256__ : '';
+    if (!/^[0-9a-f]{64}$/.test(expectedManifestHash)) throw new Error('The compiled contract manifest pin is missing');
+    return new FetchZkConfigProvider(config.compiledAssetsUrl,
+      { fetchFunc: artifactFetch, verify: 'require', expectedManifestHash });
+  });
   const underlyingProof = await connectionStep('connection-proving-provider',
     () => createNativeWasmProofProvider({ compiledAssetsUrl: config.compiledAssetsUrl, onStage: stage, onProofProgress }));
   try {
-  const walletProvider = {
+  const walletProvider = createLedger9WalletProvider({
     getCoinPublicKey: () => coinKey,
     getEncryptionPublicKey: () => encryptionKey,
     async balanceTx(transaction) {
       await assertSession();
       stage('wallet-approval-requested');
       const balanced = await api.balanceUnsealedTransaction(toHex(transaction.serialize()));
-      const result = Transaction.deserialize('signature', 'proof', 'binding', fromHex(balanced.tx));
+      // The official provider validates/seals these bytes as a finalized v9
+      // transaction. Lace's API has no TTL option; it controls its fee intent.
+      const result = fromHex(balanced.tx);
       stage('wallet-balanced');
       return result;
     },
-  };
+  });
   const privateStateProvider = await connectionStep('connection-storage', () => levelPrivateStateProvider({
-      accountId: `${config.networkId}:${accountId}`,
+      accountId: `${config.networkId}:${chainIdentity?.genesisHash ?? 'local'}:${accountId}`,
       privateStateStoreName: 'midnight-ballot-private-state',
       signingKeyStoreName: 'midnight-ballot-signing-keys',
       privateStoragePasswordProvider: passwordProvider,
     }));
   const publicDataProvider = await connectionStep('connection-providers',
-    () => indexerPublicDataProvider(config.indexerUri, config.indexerWsUri, globalThis.WebSocket));
+    () => indexerPublicDataProvider({ queryURL: config.indexerUri, subscriptionURL: config.indexerWsUri, webSocket: globalThis.WebSocket }));
   const providers = {
+    config: sdkConfig,
     privateStateProvider,
     publicDataProvider,
     zkConfigProvider,
     proofProvider: {
+      supportedEras: underlyingProof.supportedEras,
       async proveTx(transaction, options) {
         await assertSession();
         stage('proving-provider-started');
@@ -124,19 +136,17 @@ export async function connectNativeBrowserProviders({
       },
     },
     walletProvider,
-    midnightProvider: {
-      async submitTx(transaction) {
+    midnightProvider: createLedger9MidnightProvider(async transaction => {
         await assertSession();
         await api.submitTransaction(toHex(transaction.serialize()));
         stage('submission-returned');
-        const identifier = transaction.identifiers()[0];
+        const identifier = transaction.deserialize({ v9: Transaction }).identifiers()[0];
         if (!identifier) throw new Error('Submitted transaction did not have an identifier');
         return identifier;
-      },
-    },
+      }),
   };
   stage('wallet-connected');
-  return Object.freeze({ providers, networkId: config.networkId, compiledAssetsPath: config.compiledAssetsUrl,
+  return Object.freeze({ providers, networkId: config.networkId, chainIdentity, compiledAssetsPath: config.compiledAssetsUrl,
     assertSession,
     // This invalidates application use. It does not revoke wallet permissions,
     // erase IndexedDB or claim that in-flight submission can be cancelled.

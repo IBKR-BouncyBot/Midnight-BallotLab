@@ -1,3 +1,4 @@
+import { verifyBrowserModuleAssets } from './browser-module-assets.mjs';
 /** CI browser gate: generated-circuit and genuine SDK transaction proofs.
  * No wallet, HTTP prover, trace, request body or private preimage is retained.
  * This script is not a replacement for browser-wallet transaction acceptance.
@@ -84,13 +85,17 @@ try {
   await mkdir(output, { recursive: true });
   const build = JSON.parse(await readFile(join(root, 'dist/network-build.json'), 'utf8'));
   const harnessBuild = JSON.parse(await readFile(join(site, 'proof-check-build.json'), 'utf8'));
-  assert.equal(build.enabled, true); assert.equal(build.browserProver.version, '2.1.1');
+  assert.equal(build.enabled, true); assert.equal(build.browserProver.version, '3.2.0');
   assert.equal(build.browserProver.execution, 'dedicated-worker');
-  assert.equal(build.browserProver.parameters.length, 5); assert.equal(build.circuitAssets.length, 21);
+  assert.equal(build.browserProver.parameters.length, 6); assert.equal(build.circuitAssets.length, 21);
+  assert.equal(build.compilerMetadata.length, 2);
   assert.equal(harnessBuild.workerSha256, build.browserProver.worker.sha256);
   assert.equal(harnessBuild.assetManifestSha256, build.browserProver.manifest.sha256);
+  const networkModules = await verifyBrowserModuleAssets(join(root, 'dist'), build.moduleAssets);
+  await verifyBrowserModuleAssets(site, networkModules);
+  const harnessModules = await verifyBrowserModuleAssets(site, harnessBuild.moduleAssets, 'proof-check');
   const copiedAssets = [build.browserProver.worker, build.browserProver.manifest,
-    ...build.browserProver.parameters, ...build.circuitAssets];
+    ...build.browserProver.parameters, ...build.circuitAssets, ...build.compilerMetadata, ...networkModules];
   for (const asset of copiedAssets) {
     await checkRecord(join(root, 'dist', asset.path), asset);
     await checkRecord(join(site, asset.path), asset);
@@ -102,9 +107,10 @@ try {
   const harness = await readFile(join(site, 'proof-check-bundle.mjs'));
   assert.equal(hash(harness), harnessBuild.harnessSha256);
   const harnessWasm = (await readdir(join(site, 'proof-check-assets'))).filter(name => /^[A-Za-z0-9_-]+\.wasm$/.test(name));
-  assert.equal(harnessWasm.length, 2, 'Narrow harness must initialize actual ledger and onchain WASM');
+  assert.equal(harnessWasm.length, 4, 'SDK 5 carries actual v9 runtimes and retained v8 compatibility runtimes');
   approvedPaths = new Set(['proof-check.html', 'proof-check.css', 'proof-check-bundle.mjs',
-    ...copiedAssets.map(asset => asset.path), ...build.wasmAssets, ...harnessWasm.map(name => `proof-check-assets/${name}`)]);
+    ...copiedAssets.map(asset => asset.path), ...harnessModules.map(asset => asset.path), ...build.wasmAssets, ...harnessWasm.map(name => `proof-check-assets/${name}`)]);
+  report.moduleAssets = { network: networkModules, harness: harnessModules };
   report.build = { worker: build.browserProver.worker, manifest: build.browserProver.manifest,
     harnessSha256: hash(harness), networkBundleSha256: hash(await readFile(join(root, 'dist/network-bundle.mjs'))),
     circuitAssets: build.circuitAssets.length, publicParameters: build.browserProver.parameters.length };
@@ -178,7 +184,7 @@ try {
     'networkSubmission', 'networkAcceptance', 'independentProofVerification', 'distinctCircuitsProved', 'phase',
     'acceptedBallots', 'finishedAt']);
   assert.equal(raw.schema, 'midnight-ballot-lab/browser-circuit-proofs/v2');
-  assert.deepEqual(raw.versions, { compiler: '0.31.1', runtime: '0.16.0', midnightJs: '4.1.1', zkir: '2.1.1', ledger: '8.1.0' });
+  assert.deepEqual(raw.versions, { compiler: '0.36.0', runtime: '0.21.0', midnightJs: '5.0.0', zkir: '3.2.0', ledger: '9 / 1.0.0' });
   assert.equal(raw.execution, 'generated-contract-and-sdk-transaction-proofs-in-dedicated-browser-worker');
   assert.equal(raw.witnessSource, 'fresh-synthetic-browser-memory');
   assert.equal(raw.httpProofProviderConfigured, false);
@@ -192,6 +198,9 @@ try {
   assert.deepEqual(raw.negativeChecks, expectedNegatives);
   for (const time of [raw.startedAt, raw.finishedAt]) assert.ok(typeof time === 'string' && /^\d{4}-\d{2}-\d{2}T[0-9:.]+Z$/.test(time) && Number.isFinite(Date.parse(time)));
   assert.deepEqual(counts, { forbiddenRequests: 0, serverRejectedRequests: 0, pageErrors: 0, consoleErrors: 0, sockets: 0 });
+  await verifyBrowserModuleAssets(join(root, 'dist'), networkModules);
+  await verifyBrowserModuleAssets(site, networkModules);
+  await verifyBrowserModuleAssets(site, harnessModules, 'proof-check');
   report.status = 'passed'; report.circuitReport = raw;
   await page.locator('#proof-report').screenshot({ path: join(output, 'public-proof-report.png'), animations: 'disabled' });
   stage = 'complete';

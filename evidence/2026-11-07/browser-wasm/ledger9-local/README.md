@@ -1,0 +1,9 @@
+# Ledger-9 browser proof run — 7 November 2026
+
+The real browser run passed from **09:24:57.219 to 09:29:51.025 UTC** using Compact 0.36.0, compact-runtime 0.21.0, Midnight.js 5.0.0, ledger-v9 1.0.0 and official ZKIR 3.2.0 in a dedicated worker. It generated eight standalone proofs across all seven circuit types, then proved a genuine sealed SDK transaction for trustee-key configuration with the actual binding override. Wrong trustee shares and a mismatched circuit/preimage were rejected.
+
+The [public report](browser-report.json) retains proof sizes, hashes and timings. [Provenance](provenance.json) binds the exact executed modules, WASM, compiler metadata, public parameters and circuit files. The test used fresh synthetic private inputs in browser memory, a local static-only origin and the production proof-provider/worker implementation. Its source was an uncommitted migration worktree; this is not evidence for a later GitHub commit or deployment. The displayed success is preserved in [the screenshot](proof-result.png).
+
+Single-file SDK bundling had failed during module initialization before any proof request. Preserving ESM module splitting fixed that demonstrated problem without altering Midnight runtime functions or WASM bytes. The separately exercised native browser election completed casting, two-trustee tallying and public-record checks; the split network client reached Ready and passed the pinned Preview service check at indexer block 5040. These UI observations did not connect a wallet.
+
+**Limits:** no wallet, DUST proof, transaction signing, network submission, independently verified proof/consensus, hosted-origin test or full network capture was performed by this run. Static-file serving and the configured same-origin worker policy do not establish Lace's backend. Fresh CI and a funded Lace test remain separate gates.

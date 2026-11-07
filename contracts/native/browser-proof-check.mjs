@@ -30,7 +30,7 @@ async function run() {
   cancelled = false;
   report = { schema: 'midnight-ballot-lab/browser-circuit-proofs/v2', startedAt: new Date().toISOString(),
     execution: 'generated-contract-and-sdk-transaction-proofs-in-dedicated-browser-worker', status: 'running',
-    versions: { compiler: '0.31.1', runtime: '0.16.0', midnightJs: '4.1.1', ledger: '8.1.0', zkir: '2.1.1' },
+    versions: { compiler: '0.36.0', runtime: '0.21.0', midnightJs: '5.0.0', ledger: '9 / 1.0.0', zkir: '3.2.0' },
     candidateCount: 5, proofs: [], transactionProofs: [], negativeChecks: [],
     witnessSource: 'fresh-synthetic-browser-memory', httpProofProviderConfigured: false,
     workerAssetPolicy: 'same-origin-public-GET-with-size-and-SHA256',
@@ -40,9 +40,11 @@ async function run() {
   };
   paint();
   let currentStage = 'initialize-worker', castPreimage;
+  const proofResults = [];
   try {
     provider = await createNativeWasmProofProvider({ compiledAssetsUrl: new URL('./native-contract', location.href).href,
       onProofProgress: ({ phase, circuit }) => { status.textContent = `${currentStage}: ${phase}${circuit ? ` (${circuit})` : ''}`; },
+      onProofResult: result => proofResults.push(result),
     });
     const proving = provider.provingProvider;
     const dealer = createDemoDealer();
@@ -53,20 +55,25 @@ async function run() {
     const opensAt = 2_000_000_000, closesAt = opensAt + 600;
     const coinPublicKey = '0'.repeat(64), address = runtime.sampleContractAddress();
     const contract = new Contract(nativeWitnesses);
-    const initial = contract.initialState(runtime.createConstructorContext({}, coinPublicKey),
+    const initial = await contract.initialState(runtime.createConstructorContext({}, coinPublicKey),
       electionId, manifestDigest, pureCircuits.administratorIdentity(administratorSecret), BigInt(opensAt), BigInt(closesAt), 5n);
-    let context = runtime.createCircuitContext(address, coinPublicKey, initial.currentContractState, {}, undefined, undefined, opensAt - 1);
-    const as = currentPrivateState => { context = { ...context, currentPrivateState }; };
-    const at = time => { context = runtime.createCircuitContext(address, coinPublicKey,
-      context.currentQueryContext.state, context.currentPrivateState, undefined, undefined, time); };
-    const state = () => ledger(context.currentQueryContext.state);
+    let currentTime = opensAt - 1, currentPrivateState = {}, currentState = initial.currentContractState;
+    const contextFor = circuitId => runtime.createCircuitContext({ circuitId, contractAddress: address,
+      coinPublicKeyOrZswapState: coinPublicKey, contractState: currentState, privateState: currentPrivateState, time: currentTime });
+    const as = privateState => { currentPrivateState = privateState; };
+    const at = time => { currentTime = time; };
+    const state = () => ledger(currentState.data ?? currentState);
     async function prove(name, ...args) {
       if (cancelled) throw new Error('Cancelled');
       currentStage = name;
       report.currentStage = name; paint();
       const started = performance.now();
-      const result = contract.impureCircuits[name](context, ...args);
-      const { input, output: circuitOutput, publicTranscript, privateTranscriptOutputs } = result.proofData;
+      const result = await contract.impureCircuits[name](contextFor(name), ...args);
+      const trace = result.context.callProofDataTrace;
+      if (!Array.isArray(trace) || trace.length !== 1 || trace[0].circuitId !== name || trace[0].contractAddress !== address) {
+        throw new Error('Unexpected generated contract proof trace');
+      }
+      const { input, output: circuitOutput, publicTranscript, privateTranscriptOutputs } = trace[0];
       const preimage = runtime.proofDataIntoSerializedPreimage(input, circuitOutput, publicTranscript, privateTranscriptOutputs, name);
       try {
         await proving.check(preimage, name);
@@ -75,7 +82,7 @@ async function run() {
         report.proofs.push({ circuit: name, constraintCheck: 'passed', proofBytes: proof.length,
           proofSha256: await sha256(proof), elapsedMs: Math.round(performance.now() - started) });
         if (name === 'castBallot') castPreimage = preimage.slice();
-        context = result.context; paint();
+        currentState = result.context.callContext.currentQueryContext.state; paint();
       } finally { preimage.fill(0); }
     }
     as({ administratorSecret, setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope });
@@ -91,7 +98,7 @@ async function run() {
     currentStage = 'reject-wrong-trustee-share';
     as({ trusteeSecretShare: dealer.trustees[1].secretShare });
     let rejected = false;
-    try { contract.impureCircuits.submitDecryption(context, 1n); } catch { rejected = true; }
+    try { await contract.impureCircuits.submitDecryption(contextFor('submitDecryption'), 1n); } catch { rejected = true; }
     if (!rejected) throw new Error('Wrong share accepted');
     report.negativeChecks.push({ case: 'wrong registered trustee share', outcome: 'rejected by generated circuit', proofRequested: false });
     for (const trustee of [dealer.trustees[0], dealer.trustees[2]]) {
@@ -102,13 +109,13 @@ async function run() {
     if (cancelled) throw new Error('Cancelled');
     currentStage = 'sdk-configureKeys-transaction'; report.currentStage = currentStage; paint();
     const assetsBase = new URL('./native-contract/', location.href);
-    const zkConfig = new FetchZkConfigProvider(assetsBase.href, (url, init) => {
+    const zkConfig = new FetchZkConfigProvider(assetsBase.href, { verify: 'require', fetchFunc: (url, init) => {
       const target = new URL(url);
       if (target.origin !== assetsBase.origin || !target.pathname.startsWith(assetsBase.pathname)
           || target.search || target.hash || target.username || target.password) throw new Error('Unexpected public fixture asset');
       return fetch(target, { ...init, credentials: 'omit', redirect: 'error' });
-    });
-    report.transactionProofs.push(await proveSyntheticConfigureTransaction(provider, zkConfig)); paint();
+    } });
+    report.transactionProofs.push(await proveSyntheticConfigureTransaction(provider, zkConfig, proofResults)); paint();
     currentStage = 'reject-mismatched-circuit';
     rejected = false;
     try { await proving.check(castPreimage, 'enroll'); }

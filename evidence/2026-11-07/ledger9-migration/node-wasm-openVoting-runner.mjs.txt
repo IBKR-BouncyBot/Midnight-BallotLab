@@ -1,0 +1,89 @@
+/** Ignored diagnostic: actual ZKIR3 WASM; synthetic witnesses never leave memory. */
+import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+
+const root = new URL('../../', import.meta.url);
+const fromContracts = createRequire(new URL('contracts/package.json', root));
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+const output = new URL('artifacts/ledger9-migration/zkir3-openVoting-proof.json', root);
+let suppressedLogs = 0;
+for (const key of ['log', 'warn', 'error', 'info', 'debug']) console[key] = () => { suppressedLogs++; };
+globalThis.fetch = async () => { throw new Error('Network is unavailable in this local proof diagnostic'); };
+const report = {
+  schema: 'midnight-ballot-lab/local-zkir3-proof/v1', startedAt: new Date().toISOString(), status: 'running',
+  execution: 'official-zkir-wasm-in-node', circuit: 'openVoting', witnessSource: 'fresh-synthetic-memory',
+  versions: { compiler: '0.36.0', runtime: '0.21.0', ledger: '9 / 1.0.0', zkir: '3.2.0', node: process.version },
+  httpProofProviderConfigured: false, walletExecution: false, networkSubmission: false,
+  independentProofVerification: false, priorSetup: 'generated-runtime-only-unproved',
+};
+let stage = 'load-official-runtime', preimage, proof, administratorSecret, voterSecret;
+const save = async () => writeFile(output, JSON.stringify(report, null, 2) + '\n');
+try {
+  const runtime = await import(pathToFileURL(fromContracts.resolve('@midnight-ntwrk/compact-runtime')).href);
+  const zkir = await import(pathToFileURL(fromContracts.resolve('@midnightntwrk/zkir-v3')).href);
+  const { NodeZkConfigProvider } = await import(pathToFileURL(fromContracts.resolve('@midnight-ntwrk/midnight-js-node-zk-config-provider')).href);
+  const { Contract, ledger, pureCircuits } = await import(new URL('contracts/managed/native-election/contract/index.js', root));
+  const { createDemoDealer, nativeWitnesses, randomSecret32 } = await import(new URL('contracts/native/adapter.mjs', root));
+  report.runnerSha256 = digest(await readFile(new URL(import.meta.url)));
+  report.contractSourceSha256 = digest(await readFile(new URL('contracts/native-election.compact', root)));
+  report.compilerManifestSha256 = digest(await readFile(new URL('contracts/managed/native-election/compiler/contract-manifest.json', root)));
+  report.zkirWasmSha256 = digest(await readFile(new URL('contracts/node_modules/@midnightntwrk/zkir-v3/midnight_zkir_wasm_bg.wasm', root)));
+  stage = 'verify-public-assets';
+  const provider = new NodeZkConfigProvider(fileURLToPath(new URL('contracts/managed/native-election/', root)), { verify: 'require' });
+  if (await provider.getArtifactRuntimeVersion() !== '0.21.0') throw new Error('Unreviewed runtime');
+  const [proverKey, verifierKey, ir, params] = await Promise.all([
+    provider.getProverKey('openVoting'), provider.getVerifierKey('openVoting'), provider.getZKIR('openVoting'),
+    readFile(new URL('artifacts/browser-prover-params/bls_midnight_2p8', root)),
+  ]);
+  if (zkir.Zkir.deserialize(ir).getK() !== 8 || params.length !== 49540
+      || digest(params) !== '909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933') throw new Error('Unreviewed material');
+  report.publicMaterial = { k: 8, proverKeyBytes: proverKey.length, verifierKeyBytes: verifierKey.length,
+    irBytes: ir.length, paramsBytes: params.length, paramsSha256: digest(params) };
+  const material = {
+    lookupKey: async name => { if (name !== 'openVoting') throw new Error('Unexpected circuit'); return { proverKey, verifierKey, ir }; },
+    getParams: async k => { if (k !== 8) throw new Error('Unexpected parameters'); return params; },
+  };
+  stage = 'prepare-generated-trace';
+  administratorSecret = randomSecret32(); voterSecret = randomSecret32();
+  const electionId = randomSecret32(), manifestDigest = randomSecret32(), dealer = createDemoDealer();
+  const contract = new Contract(nativeWitnesses), coinPublicKey = '0'.repeat(64), opensAt = 2_000_000_000;
+  const contractAddress = runtime.sampleContractAddress();
+  stage = 'generated-initial-state';
+  const initial = await contract.initialState(runtime.createConstructorContext({}, coinPublicKey), electionId, manifestDigest,
+    pureCircuits.administratorIdentity(administratorSecret), BigInt(opensAt), BigInt(opensAt + 600), 2n);
+  let currentState = initial.currentContractState;
+  const contextFor = (circuitId, privateState, time) => runtime.createCircuitContext({ circuitId, contractAddress,
+    coinPublicKeyOrZswapState: coinPublicKey, contractState: currentState, privateState, time });
+  stage = 'generated-configureKeys';
+  const configured = await contract.impureCircuits.configureKeys(contextFor('configureKeys',
+    { administratorSecret, setupSecret: dealer.setupSecret, setupSlope: dealer.setupSlope }, opensAt - 1));
+  currentState = configured.context.callContext.currentQueryContext.state;
+  stage = 'generated-enroll';
+  const enrolled = await contract.impureCircuits.enroll(contextFor('enroll', { administratorSecret }, opensAt - 1),
+    pureCircuits.memberIdentity(electionId, voterSecret));
+  currentState = enrolled.context.callContext.currentQueryContext.state;
+  stage = 'generated-openVoting';
+  const result = await contract.impureCircuits.openVoting(contextFor('openVoting', { administratorSecret }, opensAt + 1));
+  if (ledger(result.context.callContext.currentQueryContext.state).phase !== 1n) throw new Error('Unexpected circuit result');
+  stage = 'serialize-real-proof-data';
+  const trace = result.context.callProofDataTrace;
+  if (trace.length !== 1 || trace[0].circuitId !== 'openVoting' || trace[0].contractAddress !== contractAddress) throw new Error('Unexpected native proof trace');
+  const { input, output: circuitOutput, publicTranscript, privateTranscriptOutputs } = trace[0];
+  preimage = runtime.proofDataIntoSerializedPreimage(input, circuitOutput, publicTranscript, privateTranscriptOutputs, 'openVoting');
+  stage = 'actual-check'; await save();
+  const checkStarted = performance.now(); await zkir.check(preimage, material);
+  report.constraintCheck = 'passed'; report.checkMs = Math.round(performance.now() - checkStarted);
+  stage = 'actual-prove'; await save();
+  const proveStarted = performance.now(); proof = await zkir.prove(preimage, material);
+  if (!(proof instanceof Uint8Array) || proof.length < 1 || proof.length > 16 * 1024 * 1024) throw new Error('Invalid proof response');
+  report.proveMs = Math.round(performance.now() - proveStarted);
+  report.proofBytes = proof.length; report.proofSha256 = digest(proof); report.status = 'passed';
+} catch {
+  report.status = 'failed'; report.failedStage = stage; process.exitCode = 1;
+} finally {
+  preimage?.fill(0); proof?.fill(0); administratorSecret?.fill(0); voterSecret?.fill(0);
+  report.finishedAt = new Date().toISOString(); report.suppressedLibraryLogCount = suppressedLogs;
+  await save(); process.stdout.write(JSON.stringify(report) + '\n');
+}

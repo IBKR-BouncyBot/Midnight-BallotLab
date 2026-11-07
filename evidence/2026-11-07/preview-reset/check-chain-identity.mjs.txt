@@ -1,0 +1,22 @@
+import { createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
+import { requirePreviewChainIdentity, formatPreviewServiceError } from '../../contracts/native/public-testnet.mjs';
+const startedAt = new Date().toISOString();
+const report = {
+  schema: 'midnight-ballot-lab/preview-chain-identity-check/v1', startedAt,
+  status: 'failed', chainIdentity: null, readOnly: true,
+  walletAccessed: false, fundingAttempted: false, proofGenerated: false,
+  transactionSubmitted: false, independentlyVerified: false,
+  source: 'contracts/native/public-testnet.mjs',
+  sourceSha256: createHash('sha256').update(await readFile(new URL('../../contracts/native/public-testnet.mjs', import.meta.url))).digest('hex'),
+};
+try {
+  report.chainIdentity = await requirePreviewChainIdentity();
+  report.status = 'passed';
+} catch (error) {
+  report.failureCategory = formatPreviewServiceError(error) ? error.code : 'unclassified-read-failure';
+  process.exitCode = 1;
+}
+report.finishedAt = new Date().toISOString();
+await writeFile(new URL('./chain-identity-check.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify(report));

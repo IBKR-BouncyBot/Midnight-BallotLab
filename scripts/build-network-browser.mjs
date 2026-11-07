@@ -1,6 +1,6 @@
 // Real SDK/browser build. A manifest is enabled only after actual generated
 // bindings, official runtime WASM and every circuit's ZK files are packaged.
-import { readFile, writeFile, mkdir, rm, stat } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm, stat, readdir } from 'node:fs/promises';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
@@ -33,11 +33,18 @@ async function disable() {
     reason: 'The real network browser bundle and complete generated proving assets have not been built.' }, null, 2) + '\n');
 }
 
+async function removeModuleChunks() {
+  for (const name of await readdir(dist)) {
+    if (/^network-chunk-[A-Z0-9]{8}\.mjs$/.test(name)) await rm(join(dist, name), { force: true });
+  }
+}
+
 try {
   await actualFile(join(dist, 'network.html'), 'network page: run the root build first');
   await disable();
   await rm(bundlePath, { force: true });
   await rm(workerPath, { force: true });
+  await removeModuleChunks();
   await rm(wasmDirectory, { recursive: true, force: true });
   await rm(contractDirectory, { recursive: true, force: true });
   await actualFile(join(generated, 'contract/index.js'), 'real generated native bindings');
@@ -54,24 +61,32 @@ try {
       proofAssets.set(path, await actualFile(join(generated, path), `generated circuit asset ${path}`));
     }
   }
+  const compilerAssets = new Map();
+  for (const path of ['compiler/contract-manifest.json', 'compiler/contract-info.json']) {
+    compilerAssets.set(path, await actualFile(join(generated, path), `generated integrity metadata ${path}`));
+  }
   const requireContracts = createRequire(join(contracts, 'package.json'));
   const esbuild = await import(pathToFileURL(requireContracts.resolve('esbuild')).href);
-  if (esbuild.version !== '0.25.12') throw new Error('Expected pinned esbuild 0.25.12');
+  if (esbuild.version !== '0.28.2') throw new Error('Expected pinned esbuild 0.28.2');
   const pins = JSON.parse(await readFile(join(contracts, 'toolchain.json'), 'utf8'));
-  const proverPackage = JSON.parse(await readFile(join(contracts, 'node_modules/@midnight-ntwrk/zkir-v2/package.json'), 'utf8'));
-  if (proverPackage.version !== '2.1.1') throw new Error('Expected official ZKIR prover 2.1.1');
+  const proverPackage = JSON.parse(await readFile(join(contracts, 'node_modules/@midnightntwrk/zkir-v3/package.json'), 'utf8'));
+  if (proverPackage.version !== '3.2.0') throw new Error('Expected official ZKIR prover 3.2.0');
   const result = await esbuild.build({
-    absWorkingDir: root, entryPoints: [join(root, 'src/network-app.mjs')], outfile: bundlePath,
+    absWorkingDir: root, entryPoints: [{ in: join(root, 'src/network-app.mjs'), out: 'network-bundle' }], outdir: dist,
+    chunkNames: 'network-chunk-[hash]', outExtension: { '.js': '.mjs' },
     bundle: true, platform: 'browser', format: 'esm', target: 'es2022',
     nodePaths: [join(contracts, 'node_modules')], mainFields: ['browser', 'module', 'main'],
     conditions: ['browser', 'import'],
+    define: { __NATIVE_CONTRACT_MANIFEST_SHA256__: JSON.stringify(sha256(compilerAssets.get('compiler/contract-manifest.json'))) },
     inject: [join(root, 'scripts/network-browser-globals.mjs')],
     plugins: [nativeWasmPlugin(wasmAssets, { projectRoot: root, assetFolder: 'network-assets', browserPackages: {
       // These are actual installed browser implementations, not empty Node stubs.
       events: requireContracts.resolve('events/'), buffer: requireContracts.resolve('buffer/'),
       assert: requireContracts.resolve('assert/'), 'process/browser.js': requireContracts.resolve('process/browser.js'),
     } })],
-    splitting: false, write: false, metafile: true, sourcemap: false,
+    // Preserve native ESM initialization across the SDK's dynamic imports.
+    // A single bundle can run re-exported helpers before their WASM is ready.
+    splitting: true, write: false, metafile: true, sourcemap: false,
     minify: false, legalComments: 'inline', logLevel: 'warning',
   });
   if (result.warnings.length) throw new Error('Network browser warnings require review');
@@ -83,7 +98,7 @@ try {
     throw new Error('The browser process implementation must come from the locked contracts dependencies');
   }
   for (const required of ['managed/native-election/contract/index.js', '/@midnight-ntwrk/compact-runtime/',
-    '/@midnight-ntwrk/onchain-runtime-v3/', '/@midnight-ntwrk/ledger-v8/', '/@midnight-ntwrk/midnight-js-contracts/',
+    '/@midnightntwrk/onchain-runtime-v4/', '/@midnightntwrk/ledger-v9/', '/@midnight-ntwrk/midnight-js-contracts/',
     '/@midnight-ntwrk/midnight-js-types/']) {
     if (!inputs.some(path => path.includes(required))) throw new Error(`Required real implementation absent: ${required}`);
   }
@@ -93,11 +108,16 @@ try {
   }
   if (wasmAssets.size < 2) throw new Error('Expected both real onchain-runtime and ledger WASM');
   const output = result.outputFiles.find(file => resolve(file.path) === bundlePath);
-  if (!output?.contents.length || result.outputFiles.length !== 1) throw new Error('Unexpected or empty network output');
-  if ([...output.text.matchAll(/new URL\(\s*['"]([^'"]+\.wasm)['"]/g)].some(match => !match[1].startsWith('./network-assets/'))) {
+  if (!output?.contents.length || result.outputFiles.some(file => !file.contents.length
+      || dirname(resolve(file.path)) !== dist
+      || (resolve(file.path) !== bundlePath && !/^network-chunk-[A-Z0-9]{8}\.mjs$/.test(relative(dist, file.path))))) {
+    throw new Error('Unexpected or empty network module output');
+  }
+  if (result.outputFiles.some(file => [...file.text.matchAll(/new URL\(\s*['"]([^'"]+\.wasm)['"]/g)]
+    .some(match => !match[1].startsWith('./network-assets/')))) {
     throw new Error('Unhandled WASM location in network output');
   }
-  const zkir = await import(pathToFileURL(requireContracts.resolve('@midnight-ntwrk/zkir-v2')).href);
+  const zkir = await import(pathToFileURL(requireContracts.resolve('@midnightntwrk/zkir-v3')).href);
   for (const name of circuitNames) {
     const parsed = zkir.Zkir.deserialize(proofAssets.get(`zkir/${name}.bzkir`));
     try { if (parsed.getK() !== NATIVE_PROVER_CIRCUITS[name]) throw new Error('Generated circuit parameter size changed; review proving assets'); }
@@ -105,7 +125,7 @@ try {
   }
   const parameters = await prepareBrowserProverParameters(root);
   const assetRecord = path => { const bytes = proofAssets.get(path); return { path, bytes: bytes.length, sha256: sha256(bytes) }; };
-  const proverManifest = { schema: NATIVE_PROVER_ASSET_SCHEMA, proverVersion: '2.1.1',
+  const proverManifest = { schema: NATIVE_PROVER_ASSET_SCHEMA, proverVersion: '3.2.0',
     circuits: circuitNames.map(name => ({ name, k: NATIVE_PROVER_CIRCUITS[name],
       prover: assetRecord(`keys/${name}.prover`), verifier: assetRecord(`keys/${name}.verifier`), ir: assetRecord(`zkir/${name}.bzkir`) })),
     params: [...parameters.values()].map(item => item.record),
@@ -124,7 +144,7 @@ try {
   const workerInputs = Object.keys(workerResult.metafile.inputs).map(path => path.replaceAll('\\', '/'));
   if (workerResult.warnings.length || workerResult.outputFiles.length !== 1 || !workerOutput?.contents.length
     || Object.values(workerResult.metafile.outputs).flatMap(item => item.imports).some(item => item.external)
-    || !workerInputs.some(path => path.includes('/@midnight-ntwrk/zkir-v2/')) || wasmAssets.size !== 3) {
+    || !workerInputs.some(path => path.includes('/@midnightntwrk/zkir-v3/')) || wasmAssets.size !== 5) {
     throw new Error('Official browser proving worker is incomplete');
   }
   if ([...workerOutput.text.matchAll(/new URL\(\s*['"]([^'"]+\.wasm)['"]/g)].some(match => !match[1].startsWith('./network-assets/'))) {
@@ -135,16 +155,21 @@ try {
   await mkdir(join(contractDirectory, 'keys'), { recursive: true });
   await mkdir(join(contractDirectory, 'zkir'), { recursive: true });
   await mkdir(join(contractDirectory, 'params'), { recursive: true });
+  await mkdir(join(contractDirectory, 'compiler'), { recursive: true });
   for (const [path, bytes] of proofAssets) await writeFile(join(contractDirectory, path), bytes);
+  for (const [path, bytes] of compilerAssets) await writeFile(join(contractDirectory, path), bytes);
   for (const { record, bytes } of parameters.values()) await writeFile(join(contractDirectory, record.path), bytes);
   await writeFile(join(contractDirectory, 'prover-manifest.json'), proverManifestBytes);
   await writeFile(workerPath, workerOutput.contents);
-  await writeFile(bundlePath, output.contents);
+  for (const file of result.outputFiles) await writeFile(file.path, file.contents);
   const artifactRecords = [...proofAssets].map(([path, bytes]) => ({ path: `native-contract/${path}`, bytes: bytes.length, sha256: sha256(bytes) }));
   await writeFile(manifestPath, JSON.stringify({ enabled: true, bundle: 'network-bundle.mjs',
-    mode: 'development-network-client', compiler: pins.compiler, runtime: pins.runtime, sdk: '4.1.1',
+    mode: 'development-network-client', compiler: pins.compiler, runtime: pins.runtime, sdk: '5.0.0',
+    moduleAssets: result.outputFiles.filter(file => resolve(file.path) !== bundlePath)
+      .map(file => ({ path: relative(dist, file.path), bytes: file.contents.length, sha256: sha256(file.contents) })),
     wasmAssets: [...wasmAssets.keys()].sort(), circuitAssets: artifactRecords,
-    browserProver: { version: '2.1.1', execution: 'dedicated-worker',
+    compilerMetadata: [...compilerAssets].map(([path, bytes]) => ({ path: `native-contract/${path}`, bytes: bytes.length, sha256: sha256(bytes) })),
+    browserProver: { version: '3.2.0', execution: 'dedicated-worker',
       worker: { path: 'native-prover-worker.mjs', bytes: workerOutput.contents.length, sha256: sha256(workerOutput.contents) },
       manifest: { path: 'native-contract/prover-manifest.json', bytes: proverManifestBytes.length, sha256: sha256(proverManifestBytes) },
       parameters: [...parameters.values()].map(({ record }) => ({ ...record, path: `native-contract/${record.path}` })),
@@ -160,6 +185,7 @@ try {
 } catch (error) {
   await rm(bundlePath, { force: true }).catch(() => {});
   await rm(workerPath, { force: true }).catch(() => {});
+  await removeModuleChunks().catch(() => {});
   await rm(wasmDirectory, { recursive: true, force: true }).catch(() => {});
   await rm(contractDirectory, { recursive: true, force: true }).catch(() => {});
   await disable().catch(() => {});

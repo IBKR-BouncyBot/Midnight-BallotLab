@@ -1,0 +1,87 @@
+{
+  "schema": "midnight-ballot-lab/ledger9-native-migration/v1",
+  "recordedAt": "2026-11-07T09:09:59.754Z",
+  "versions": {
+    "compactDevtools": "0.5.1",
+    "compiler": "0.36.0",
+    "compilerCommit": "b5d9e4dfc532fe47011c4f6296e254f4853eb469",
+    "language": "0.28.0",
+    "runtime": "0.21.0",
+    "compactJs": "3.0.0",
+    "midnightJs": "5.0.0",
+    "ledger": "9 / 1.0.0",
+    "onchainRuntime": "4.0.0",
+    "zkir": "3.2.0",
+    "connectorApi": "4.1.0",
+    "node": "v24.18.0"
+  },
+  "supportMatrix": "https://docs.midnight.network/relnotes/support-matrix",
+  "compile": {
+    "status": "passed",
+    "circuits": 7,
+    "keyFiles": 14,
+    "zkirFiles": 14,
+    "compilerManifest": true
+  },
+  "generatedRuntimeTests": {
+    "status": "passed",
+    "count": 63
+  },
+  "nativeDemo": {
+    "status": "passed",
+    "ballots": 5,
+    "candidateCount": 3,
+    "tally": [
+      2,
+      1,
+      2,
+      0,
+      0
+    ]
+  },
+  "nodeWasmProof": {
+    "status": "passed",
+    "circuit": "openVoting",
+    "k": 8,
+    "proofBytes": 3845,
+    "proofSha256": "201543385c1edd9cc2e57a6595b7ba1b92784e157ef2ff65832ce5483ede0fde",
+    "checkMs": 4,
+    "proveMs": 472
+  },
+  "circuitK": {
+    "castBallot": 16,
+    "configureKeys": 15,
+    "enroll": 13,
+    "finalize": 15,
+    "openVoting": 8,
+    "closeVoting": 7,
+    "submitDecryption": 12
+  },
+  "sourceHashes": {
+    "contracts/native-election.compact": "dc7dbe61d72672c5dd0788fbc8b758837ae262958ee83aa015b050c6423d5a37",
+    "contracts/native/adapter.mjs": "6bdbd467edbad74269818b240b120f711c46c26d6cfb1494e651757d22e3a68c",
+    "contracts/native/harness.mjs": "06e123b52ab0418a33ba5d5fba657b6e5f62e102ba4d77446c4984517b9255f0",
+    "contracts/native/record.mjs": "6b48614c74fdfe642d03e6d0ea696390dc45cb950ca42677aeac7ae3b3de69d3",
+    "contracts/native/demo.mjs": "4d5eb3fb0065e521f911753271a8cd11cf53350e5ab74c3cd7356f44dbe1d601",
+    "contracts/native/verify-public.mjs": "c0bbaa81716ea63458cc158c06009d49bab663407119e19a9da2fe178302c90f",
+    "contracts/native/test/native-election.test.mjs": "beaf4ec79ec638645d991c2162f844daa49975f5c3997c04fc7070040cf5a5ed",
+    "contracts/native/test/indexed-observation.test.mjs": "7dedfb777827880d972fb77956bff12f3ff60547b37541efe2a4206c46034d0d",
+    "contracts/native/test/network-timing.test.mjs": "14a0dbf09c735494e132b3139a1dcfd028f0c9885f4276a6f2b8dbc2d43e49e5",
+    "contracts/native/test/network-voting.test.mjs": "53570a1a6d2d99b6b864abe3cf2f5c487c576cd9fa7e72bbc07a3c5f09d72bf8",
+    "contracts/native/test/public-verifier.test.mjs": "9a053fbf10a27e483a43b2fa130358724a55b5bec1240ac6e3aa10b0bd750bc4",
+    "contracts/native/test/receipt-id.test.mjs": "ad839894e7225bbac2828bf55502cc39dfa1f6adc5eff3c82e30e4a74ddc22a2",
+    "contracts/native/test/trustee-key.test.mjs": "457375d6c14e48947eab27428a95f477337c0e104192a287cc41a65bccac7762",
+    "contracts/package.json": "f749d9fc832238c343e1cbe9a32875d76edb1f4c1a3f9be9717590c278c82aaf",
+    "contracts/package-lock.json": "421c1aae5e099345eb8e6a48fd7d33fea14648cd90930f8e7306678c0d4fbd67",
+    "contracts/toolchain.json": "cc97f3f1b92c45a98a13b1cc3543e8369c35b344efdf0ca0c6979822679a55ef",
+    "contracts/managed/native-election/contract/index.js": "17a6ca819e6d170eaf74d1ed1f7c931a4867efe5e1583b6d4bb89e147c09dd07"
+  },
+  "scope": {
+    "browserExecution": "not-established-by-this-evidence",
+    "walletExecution": false,
+    "httpProverUsed": false,
+    "proofOfAllCircuits": false,
+    "independentProofVerification": false,
+    "networkSubmission": false
+  }
+}

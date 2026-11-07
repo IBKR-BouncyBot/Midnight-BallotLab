@@ -1,12 +1,14 @@
 {
-  "checkedOn": "2026-11-03",
+  "checkedOn": "2026-11-07",
   "source": "https://docs.midnight.network/relnotes/support-matrix",
-  "networks": ["preview", "preprod", "mainnet"],
-  "ledger": 8,
+  "networks": [
+    "preview"
+  ],
+  "ledger": 9,
   "devtools": "0.5.1",
-  "compiler": "0.31.1",
-  "language": "0.23.0",
-  "runtime": "0.16.0",
-  "onchainRuntime": "3.0.0",
+  "compiler": "0.36.0",
+  "language": "0.28.0",
+  "runtime": "0.21.0",
+  "onchainRuntime": "4.0.0",
   "nodeMinimum": "22.12.0"
 }

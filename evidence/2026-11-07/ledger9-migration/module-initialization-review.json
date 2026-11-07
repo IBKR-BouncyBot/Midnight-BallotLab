@@ -1,0 +1,50 @@
+{
+  "schema": "midnight-ballot-lab/native-module-initialization-review/v1",
+  "recordedAt": "2026-11-07T09:13:46.190Z",
+  "execution": "real-esbuild-browser-output-in-Node-with-local-official-WASM",
+  "esbuild": "0.28.2",
+  "runtime": "0.21.0",
+  "onchainRuntime": "4.0.0",
+  "variants": [
+    {
+      "mode": "unchanged",
+      "status": "failed",
+      "scope": "Actual import/constructor/configure/enroll/open; failure variants stop at import with emptyRunningCost missing.",
+      "entrySha256": "56b7b84d4bd2db69b215676eb09db58ee5f65bcac038f318ce11ced9a64eaaae",
+      "runnerSha256": "ce7b0111036556698a03a8b770dad85ee128fdc08b024f4cf3fc7593963bd6ca"
+    },
+    {
+      "mode": "tree-shaking-disabled",
+      "status": "failed",
+      "scope": "Actual import/constructor/configure/enroll/open; failure variants stop at import with emptyRunningCost missing.",
+      "entrySha256": "9b1226e34e43ff2f3cef5b414b2b1df715c4aa23a3f0593f0446a064acc4b0a1",
+      "runnerSha256": "ce7b0111036556698a03a8b770dad85ee128fdc08b024f4cf3fc7593963bd6ca"
+    },
+    {
+      "mode": "splitting",
+      "status": "passed",
+      "scope": "Actual import/constructor/configure/enroll/open; failure variants stop at import with emptyRunningCost missing.",
+      "entrySha256": "513419a51bb53b5afc573e1e5833ef43fc26430454891faef16d1c5817485479",
+      "runnerSha256": "ce7b0111036556698a03a8b770dad85ee128fdc08b024f4cf3fc7593963bd6ca"
+    },
+    {
+      "mode": "static-harness",
+      "status": "passed",
+      "scope": "Actual import/constructor/configure/enroll/open; failure variants stop at import with emptyRunningCost missing.",
+      "entrySha256": "9e9d05875c6d679c35e4e80d660413db3a6c830f13a563ba257e6c21a4f0a0de",
+      "runnerSha256": "ce7b0111036556698a03a8b770dad85ee128fdc08b024f4cf3fc7593963bd6ca"
+    }
+  ],
+  "resolution": "Own harness uses static imports for actual runtime/generated bindings; no Midnight package implementation or WASM bytes modified.",
+  "sourceSha256": {
+    "harness": "3609a6ad50a7db18fab72cdeba1b7e02a4bf3c195ebda98b6d4e8d61f212347b",
+    "variantBuilder": "552111e063bd7c76d50894298a1b82db3c42945aea2afc57ad680ee952c6f9b9"
+  },
+  "generatedRuntimeTests": {
+    "passed": 63,
+    "failed": 0
+  },
+  "browserUiExecution": false,
+  "proofGeneration": false,
+  "networkSubmission": false
+}

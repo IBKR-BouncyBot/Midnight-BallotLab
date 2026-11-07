@@ -43,18 +43,18 @@ async function main() {
     throw new Error('Loopback HTTP proof server required');
   }
   const pins = JSON.parse(await readFile(new URL('../toolchain.json', import.meta.url), 'utf8'));
-  if (pins.compiler !== '0.31.1' || pins.runtime !== '0.16.0') throw new Error('Unreviewed proof toolchain');
-  report.versions = { compiler: pins.compiler, runtime: pins.runtime, midnightJs: '4.1.1', node: process.version };
+  if (pins.compiler !== '0.36.0' || pins.runtime !== '0.21.0' || pins.ledger !== 9) throw new Error('Unreviewed proof toolchain');
+  report.versions = { compiler: pins.compiler, runtime: pins.runtime, midnightJs: '5.0.0', ledger: '1.0.0', node: process.version };
   report.contractSourceSha256 = digest(await readFile(new URL('../native-election.compact', import.meta.url)));
   report.generatedBindingSha256 = digest(await readFile(new URL('../managed/native-election/contract/index.js', import.meta.url)));
   const versionResponse = await fetch(new URL('/version', url), { signal: AbortSignal.timeout(10_000) });
-  if (!versionResponse.ok || (await versionResponse.text()).trim() !== '8.1.3') throw new Error('Wrong proof server');
+  if (!versionResponse.ok || (await versionResponse.text()).trim() !== '9.0.0') throw new Error('Wrong proof server');
   const readyResponse = await fetch(new URL('/ready', url), { signal: AbortSignal.timeout(10_000) });
   if (!readyResponse.ok) throw new Error('Proof server unavailable');
   const ready = await readyResponse.json();
   if (ready.status !== 'ok' || ready.jobsProcessing !== 0 || ready.jobsPending !== 0) throw new Error('Proof server must be idle');
-  report.versions.proofServer = '8.1.3';
-  const zkConfig = new NodeZkConfigProvider(generated);
+  report.versions.proofServer = '9.0.0';
+  const zkConfig = new NodeZkConfigProvider(generated, { verify: 'require' });
   // The supported provider controls its own fixed retry policy (3 retries on 500/503).
   const provider = httpClientProvingProvider(url.href, zkConfig, { timeout: 600_000 });
   const dealer = createDemoDealer();
@@ -64,28 +64,31 @@ async function main() {
   const coinPublicKey = '0'.repeat(64); // Local synthetic execution, never a funded wallet.
   const address = runtime.sampleContractAddress();
   const contract = new Contract(nativeWitnesses);
-  const initial = contract.initialState(runtime.createConstructorContext({}, coinPublicKey),
+  const initial = await contract.initialState(runtime.createConstructorContext({}, coinPublicKey),
     electionId, manifestDigest, pureCircuits.administratorIdentity(administratorSecret),
     BigInt(opensAt), BigInt(closesAt), 5n);
   report.candidateCount = 5;
-  let context = runtime.createCircuitContext(address, coinPublicKey, initial.currentContractState,
-    {}, undefined, undefined, opensAt - 1);
-  const as = privateState => { context = { ...context, currentPrivateState: privateState }; };
-  const at = time => {
-    context = runtime.createCircuitContext(address, coinPublicKey, context.currentQueryContext.state,
-      context.currentPrivateState, undefined, undefined, time);
-  };
-  const state = () => ledger(context.currentQueryContext.state);
+  let currentState = initial.currentContractState, currentPrivateState = {}, currentTime = opensAt - 1;
+  const contextFor = circuitId => runtime.createCircuitContext({ circuitId, contractAddress: address,
+    coinPublicKeyOrZswapState: coinPublicKey, contractState: currentState,
+    privateState: currentPrivateState, time: currentTime });
+  const as = privateState => { currentPrivateState = privateState; };
+  const at = time => { currentTime = time; };
+  const state = () => ledger(currentState.data ?? currentState);
 
   async function prove(name, ...args) {
     setStage(name);
     const started = performance.now();
-    // Preflight key presence explicitly: the provider intentionally swallows missing-key errors.
+    // Require the compiler manifest and material before invoking the HTTP provider.
     for (const material of [await zkConfig.getProverKey(name), await zkConfig.getVerifierKey(name), await zkConfig.getZKIR(name)]) {
       if (!(material instanceof Uint8Array) || material.length === 0) throw new Error('Missing generated key material');
     }
-    const result = contract.impureCircuits[name](context, ...args);
-    const { input, output, publicTranscript, privateTranscriptOutputs } = result.proofData;
+    const result = await contract.impureCircuits[name](contextFor(name), ...args);
+    const trace = result.context.callProofDataTrace;
+    if (trace.length !== 1 || trace[0].circuitId !== name || trace[0].contractAddress !== address) {
+      throw new Error('Unexpected native proof trace');
+    }
+    const { input, output, publicTranscript, privateTranscriptOutputs } = trace[0];
     const preimage = runtime.proofDataIntoSerializedPreimage(input, output, publicTranscript, privateTranscriptOutputs, name);
     try {
       if (name === 'castBallot') {
@@ -102,7 +105,7 @@ async function main() {
       const evidence = { circuit: name, constraintCheck: 'passed', proofBytes: proof.length,
         proofSha256: digest(proof), elapsedMs: Math.round(performance.now() - started) };
       report.proofs.push(evidence);
-      context = result.context;
+      currentState = result.context.callContext.currentQueryContext.state;
       await save();
       console.log(JSON.stringify({ stage: name, status: 'proved', ...evidence }));
     } finally {
@@ -128,7 +131,7 @@ async function main() {
   setStage('reject-wrong-trustee-share');
   as({ trusteeSecretShare: dealer.trustees[1].secretShare });
   let rejected = false;
-  try { contract.impureCircuits.submitDecryption(context, 1n); } catch { rejected = true; }
+  try { await contract.impureCircuits.submitDecryption(contextFor('submitDecryption'), 1n); } catch { rejected = true; }
   if (!rejected) throw new Error('Invalid trustee share was accepted');
   report.negativeChecks.push({ case: 'wrong registered trustee share',
     outcome: 'rejected by generated circuit before proof request', proofRequested: false });

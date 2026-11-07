@@ -22,22 +22,22 @@ async function fixture({ candidateCount = 3, pair = [1, 3], partial = false, all
   const emulator = await createNativeEmulator({ electionId, manifestDigest: await nativeManifestDigest(manifest),
     administratorSecret, setupSecret: 11n, setupSlope: 7n, opensAt, closesAt, candidateCount });
   const voters = Array.from({ length: 5 }, (_, i) => key(i + 2));
-  for (const voter of voters) emulator.call('enroll', pureCircuits.memberIdentity(electionId, voter));
-  emulator.setTime(opensAt + 1); emulator.call('openVoting');
+  for (const voter of voters) await emulator.call('enroll', pureCircuits.memberIdentity(electionId, voter));
+  emulator.setTime(opensAt + 1); await emulator.call('openVoting');
   for (let i = 0; i < voters.length; i++) {
     emulator.setPrivateState({ voterSecret: voters[i], selection: BigInt(i % candidateCount),
       ballotRandomness: Array.from({ length: 5 }, (_, lane) => BigInt(i * 10 + lane + 1)),
       eligibilityPath: emulator.readLedger().members.findPathForLeaf(pureCircuits.memberIdentity(electionId, voters[i])) });
-    emulator.call('castBallot');
+    await emulator.call('castBallot');
   }
   if (!partial) {
-    emulator.setPrivateState({}); emulator.setTime(closesAt + 1); emulator.call('closeVoting');
+    emulator.setPrivateState({}); emulator.setTime(closesAt + 1); await emulator.call('closeVoting');
     for (const index of allShares ? [1, 2, 3] : pair) {
       emulator.setPrivateState({ trusteeSecretShare: 11n + BigInt(index) * 7n });
-      emulator.call('submitDecryption', BigInt(index));
+      await emulator.call('submitDecryption', BigInt(index));
     }
     emulator.setPrivateState({});
-    emulator.call('finalize', ...pair.map(BigInt), recoverNativeTally(emulator, ...pair.map(BigInt)));
+    await emulator.call('finalize', ...pair.map(BigInt), recoverNativeTally(emulator, ...pair.map(BigInt)));
   }
   const snapshot = { ...nativePublicSnapshot(emulator), manifest };
   // The verifier receives a transport copy only; this scope retains no emulator reference.
@@ -123,7 +123,7 @@ test('canonical schema rejects duplicate JSON fields, hidden/private fields and 
   await assert.rejects(verify(nested), /validation failed \(points\)/);
 });
 
-test('official WASM point gate rejects off-curve, torsion, noncanonical and forbidden identity points', () => {
+test('official WASM point gate rejects off-curve, torsion, noncanonical and forbidden identity points', async () => {
   const generator = pointJson(pureCircuits.nativePublicKey(1n));
   assert.deepEqual(validateNativePublicPoint(generator), generator.map(BigInt));
   assert.deepEqual(validateNativePublicPoint(['0', '1']), [0n, 1n]);

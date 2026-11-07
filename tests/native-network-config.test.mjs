@@ -11,7 +11,8 @@ const config = {
 };
 
 test('network configuration requires an explicit supported development environment', () => {
-  for (const network of ['undeployed', 'preview', 'preprod']) assert.equal(requireDevelopmentNetwork(network), network);
+  for (const network of ['undeployed', 'preview']) assert.equal(requireDevelopmentNetwork(network), network);
+  assert.throws(() => requireDevelopmentNetwork('preprod'), /ledger-9 build cannot use Preprod/);
   for (const network of [undefined, '', 'mainnet', 'Preview', 'testnet', 'preview ']) {
     assert.throws(() => requireDevelopmentNetwork(network), /development network/);
   }

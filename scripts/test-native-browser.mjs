@@ -1,3 +1,4 @@
+import { verifyBrowserModuleAssets, initialNetworkWasmAssets } from './browser-module-assets.mjs';
 /** Real Chromium acceptance gate for the generated Compact/WASM application.
  * This never installs a substitute runtime or enables a missing native build.
  * Browser console/error contents and Playwright traces are deliberately not
@@ -157,9 +158,10 @@ try {
   const networkManifest = await readJson(join(dist, 'network-build.json'));
   assert.equal(networkManifest.enabled, true, 'The testnet landing destination requires a real network build');
   assert.equal(networkManifest.bundle, 'network-bundle.mjs');
-  assert.equal(networkManifest.wasmAssets.length, 3);
-  const initialNetworkWasm = networkManifest.wasmAssets.filter(path => !/midnight_zkir_wasm_bg-/.test(path));
-  assert.equal(initialNetworkWasm.length, 2, 'Proof WASM is packaged separately and is lazy until wallet connection');
+  assert.equal(networkManifest.wasmAssets.length, 5);
+  const initialNetworkWasm = initialNetworkWasmAssets(networkManifest.wasmAssets);
+  assert.equal(initialNetworkWasm.length, 2, 'SDK 5 initializes v9; compatibility and proof WASMs remain lazy');
+  evidence.networkModuleAssets = await verifyBrowserModuleAssets(dist, networkManifest.moduleAssets);
   evidence.networkBundleSha256 = hash(await readFile(join(dist, networkManifest.bundle)));
   evidence.landingHtmlSha256 = hash(await readFile(join(dist, 'index.html')));
   evidence.landingCssSha256 = hash(await readFile(join(dist, 'landing.css')));
@@ -209,7 +211,7 @@ try {
         for (const request of requested) {
           const url = new URL(request);
           assert.equal(url.origin, origin, 'Landing must not contact external services');
-          assert.doesNotMatch(url.pathname, /(?:native|network)-(?:bundle|loader|assets|build)|\.wasm$/,
+          assert.doesNotMatch(url.pathname, /(?:native|network)-(?:bundle|loader|assets|build|chunk)|\.wasm$/,
             'Choosing an experience must precede loading its cryptographic runtime');
         }
         const scripts = await page.locator('script[src]').evaluateAll(elements => elements.map(element => element.getAttribute('src')));
@@ -242,7 +244,7 @@ try {
           assert.equal(await page.locator('#network-id').inputValue(), 'preview');
           assert.equal(await page.locator('#network-deploy').isDisabled(), true);
           assert.equal(await page.locator('#network-events').textContent(), '');
-          assert.equal(loadedWasm.size, 2, 'An unconnected landing visit must not load the proof worker WASM');
+          assert.equal(loadedWasm.size, 4, 'An unconnected landing visit must not load the proof worker WASM');
           assert.ok([...requested].every(url => !url.endsWith('/native-prover-worker.mjs') && !url.includes('/native-contract/params/')),
             'Choosing testnet does not start proof computation or download proving parameters');
         }
@@ -706,6 +708,7 @@ try {
       console.log(JSON.stringify({ stage, passed: true }));
     } finally { await context.close(); }
   }
+  await verifyBrowserModuleAssets(dist, evidence.networkModuleAssets);
   evidence.passed = true;
   console.log(JSON.stringify({ nativeBrowserAcceptance: 'passed', cases: evidence.cases.length,
     proofGeneration: false, networkSubmission: false }));

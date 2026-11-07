@@ -347,14 +347,14 @@ export async function initNativeDemo() {
           for (let index = 0; index < members.length; index++) {
             const actualTime = requireSetupWindow();
             if (timingMode === 'scheduled') emulator.setTime(actualTime);
-            emulator.call('enroll', members[index]);
+            await emulator.call('enroll', members[index]);
             if ((index + 1) % 8 === 0 || index === members.length - 1) {
               status(`Adding demo voters: ${index + 1} of ${voterCount}…`, false, true); await nextFrame();
             }
           }
           requireSetupWindow();
           emulator.setPrivateState({});
-          if (timingMode === 'manual') { emulator.setTime(opensAt + 1); emulator.call('openVoting'); }
+          if (timingMode === 'manual') { emulator.setTime(opensAt + 1); await emulator.call('openVoting'); }
           break;
         } catch (error) {
           emulator?.setPrivateState({}); emulator = null;
@@ -395,7 +395,7 @@ export async function initNativeDemo() {
       // Preparing the ciphertext may take time on a slow device. Enforce the
       // actual current deadline at the call, not the earlier preparation time.
       if (session.manifest.timingMode === 'scheduled') emulator.setTime(Math.floor(Date.now() / 1000));
-      const receipt = emulator.call('castBallot');
+      const receipt = await emulator.call('castBallot');
       // Clear a successful credential and selection even if a subsequent display
       // or consistency check fails; retry must not cast the same credential.
       session.voters[voterIndex] = null; $('native-voter').value = '';
@@ -412,7 +412,7 @@ export async function initNativeDemo() {
   });
   $('native-close').addEventListener('click', () => operate('Closing voting…', async () => {
     if (!session || session.manifest.timingMode !== 'manual') throw new Error('Manual closing is unavailable');
-    session.emulator.setPrivateState({}); session.emulator.setTime(session.closesAt); session.emulator.call('closeVoting');
+    session.emulator.setPrivateState({}); session.emulator.setTime(session.closesAt); await session.emulator.call('closeVoting');
     log('Voting closed. No more ballots can be cast.'); status('Voting is closed. Choose two trustees to reveal the results.');
   }));
   async function finalizePair(pairText) {
@@ -423,13 +423,13 @@ export async function initNativeDemo() {
       if (!emulator.readLedger().submittedTrustees.member(index)) {
         if (session.manifest.timingMode === 'scheduled') emulator.setTime(Math.floor(Date.now() / 1000));
         emulator.setPrivateState({ trusteeSecretShare: session.trustees[Number(index) - 1].secretShare });
-        emulator.call('submitDecryption', index);
+        await emulator.call('submitDecryption', index);
       }
       emulator.setPrivateState({}); await nextFrame();
     }
     const totals = recoverNativeTally(emulator, ...pair);
     if (session.manifest.timingMode === 'scheduled') emulator.setTime(Math.floor(Date.now() / 1000));
-    emulator.call('finalize', ...pair, totals); session.finalizedPair = pair;
+    await emulator.call('finalize', ...pair, totals); session.finalizedPair = pair;
     log(`Results revealed with trustees ${pairText.replace(',', ' + ')}.`);
     status('The two trustee contributions agree with the combined results.');
   }
@@ -439,7 +439,7 @@ export async function initNativeDemo() {
   }));
   async function finishScheduledElection() {
     session.emulator.setTime(Math.floor(Date.now() / 1000));
-    session.emulator.setPrivateState({}); session.emulator.call('closeVoting');
+    session.emulator.setPrivateState({}); await session.emulator.call('closeVoting');
     document.querySelectorAll('input[name="native-trustee"]').forEach(input => { input.checked = ['1', '3'].includes(input.value); });
     showPanel('tally'); await finalizePair('1,3');
   }
@@ -461,7 +461,7 @@ export async function initNativeDemo() {
           session.scheduleFailed = true;
           if (Math.floor(Date.now() / 1000) >= session.closesAt) await finishScheduledElection();
           else {
-            session.emulator.setPrivateState({}); session.emulator.call('openVoting');
+            session.emulator.setPrivateState({}); await session.emulator.call('openVoting');
             status('Voting is open. Keep this tab open until the results are ready.');
           }
           session.scheduleFailed = false;

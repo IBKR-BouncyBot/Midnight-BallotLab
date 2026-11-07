@@ -1,0 +1,39 @@
+{
+  "schema": "midnight-ballot-lab/local-zkir3-proof/v1",
+  "startedAt": "2026-11-07T09:07:43.825Z",
+  "status": "passed",
+  "execution": "official-zkir-wasm-in-node",
+  "circuit": "openVoting",
+  "witnessSource": "fresh-synthetic-memory",
+  "versions": {
+    "compiler": "0.36.0",
+    "runtime": "0.21.0",
+    "ledger": "9 / 1.0.0",
+    "zkir": "3.2.0",
+    "node": "v24.18.0"
+  },
+  "httpProofProviderConfigured": false,
+  "walletExecution": false,
+  "networkSubmission": false,
+  "independentProofVerification": false,
+  "priorSetup": "generated-runtime-only-unproved",
+  "runnerSha256": "8590b49383c04b6c07fb313971f1e6eb94de7792ae456ce6e0e36e27c0459d8c",
+  "contractSourceSha256": "dc7dbe61d72672c5dd0788fbc8b758837ae262958ee83aa015b050c6423d5a37",
+  "compilerManifestSha256": "9413d3acea1b4eb125aec664743a482eea8fc82551bc420cc66c86b3ca71d91b",
+  "zkirWasmSha256": "5c81a400f7bc110c0c65a1889c1e241a4055efdb722e8e512b459ab6d2f80255",
+  "publicMaterial": {
+    "k": 8,
+    "proverKeyBytes": 225105,
+    "verifierKeyBytes": 1353,
+    "irBytes": 1153,
+    "paramsBytes": 49540,
+    "paramsSha256": "909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933"
+  },
+  "constraintCheck": "passed",
+  "checkMs": 4,
+  "proveMs": 472,
+  "proofBytes": 3845,
+  "proofSha256": "201543385c1edd9cc2e57a6595b7ba1b92784e157ef2ff65832ce5483ede0fde",
+  "finishedAt": "2026-11-07T09:07:44.803Z",
+  "suppressedLibraryLogCount": 0
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "midnight-ballot-lab/official-parameter-provenance/v1",
+  "package": "@midnightntwrk/wallet-sdk-prover-client",
+  "version": "2.0.0",
+  "sourceFile": "dist/effect/KeyMaterial.js",
+  "sourceSha256": "38a81a6ae12afb128fc96703fd76ad0d9c68773c1c18bc4923d8a5327e14e82d",
+  "parameters": [
+    {
+      "k": 8,
+      "url": "https://srs.midnight.network/bls_midnight_2p8",
+      "bytes": 49540,
+      "sha256": "909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933"
+    },
+    {
+      "k": 12,
+      "url": "https://srs.midnight.network/bls_midnight_2p12",
+      "bytes": 786820,
+      "sha256": "ef08eb3fcf62df8f72c515cffa027e681808b530cb016eea104115545ef6d5c8"
+    }
+  ]
+}

@@ -3,6 +3,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { connectNativeBrowserProviders, nativeStoragePasswordMessage, nativeConnectionErrorMessage } from '../native/browser-providers.mjs';
+import { PREVIEW_CHAIN_IDENTITY, PREVIEW_PUBLIC_SERVICES } from '../native/public-testnet.mjs';
+
+// Fixed transport metadata only, so these fail-before-session tests never
+// depend on live Preview or make a remote request. No working wallet exists.
+const fixtureBlockHash = 'b'.repeat(64), fixtureProtocol = 2001100;
+test.beforeEach(t => t.mock.method(globalThis, 'fetch', async (url, options) => {
+  const body = JSON.parse(options.body);
+  if (url === PREVIEW_PUBLIC_SERVICES.indexerUri) return { ok: true, json: async () => ({ data: {
+    block: { height: 1234, hash: fixtureBlockHash, protocolVersion: fixtureProtocol },
+  } }) };
+  assert.equal(url, PREVIEW_PUBLIC_SERVICES.nodeRpc, 'No unrelated request is permitted by this boundary fixture');
+  assert.ok(['system_chain', 'chain_getBlockHash', 'state_getRuntimeVersion'].includes(body.method));
+  const result = body.method === 'system_chain' ? 'Midnight Preview'
+    : body.method === 'state_getRuntimeVersion' ? { specName: 'midnight', specVersion: fixtureProtocol }
+      : body.params[0] === 0 ? PREVIEW_CHAIN_IDENTITY.genesisHash : `0x${fixtureBlockHash}`;
+  return { ok: true, json: async () => ({ jsonrpc: '2.0', id: body.id, result }) };
+}));
 
 const settings = {
   networkId: 'preview', indexerUri: 'https://indexer.example/graphql',
@@ -53,6 +70,16 @@ test('official SDK provider bootstrap rejects incompatible connector APIs before
   assert.equal(connections, 0);
 });
 
+test('an unavailable Preview identity fails before a wallet permission request', async t => {
+  let connections = 0;
+  t.mock.method(globalThis, 'fetch', async () => { throw new Error('SYNTHETIC-PRIVATE-UPSTREAM'); });
+  const wallet = { apiVersion: '4.1.0', connect() { connections++; throw new Error('Wallet access must not happen'); } };
+  await assert.rejects(connectNativeBrowserProviders({ wallet, configuration: settings, pageUrl,
+    passwordProvider: () => 'Synthetic-Q7#pL9!vR6' }), error => error.stage === 'connection-chain'
+      && !nativeConnectionErrorMessage(error).includes('SYNTHETIC'));
+  assert.equal(connections, 0);
+});
+
 // These deliberately incomplete connector doubles can only fail. No test
 // returns a working provider/session or claims genuine wallet compatibility.
 const syntheticPassword = 'Synthetic-Q7#pL9!vR6';
@@ -86,7 +113,7 @@ test('failed permission requests expose the failed stage and preserve rejection 
     await expectConnectionFailure(wallet, 'connection-permission', code === 'Rejected' ? 'No automatic retry'
       : code === 'PermissionRejected' ? 'denied permission' : code === 'Disconnected' ? 'disconnected' : 'Wallet access',
     stage => { observed.push(stage); });
-    assert.deepEqual(observed, ['connection-settings', 'connection-permission']);
+    assert.deepEqual(observed, ['connection-settings', 'connection-chain', 'connection-permission']);
   }
 });
 
@@ -98,7 +125,7 @@ test('failed or incomplete account reads never proceed to network/prover initial
     const observed = [];
     await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => incompleteApi(overrides) },
       'connection-account', 'required Midnight account information', stage => { observed.push(stage); });
-    assert.deepEqual(observed, ['connection-settings', 'connection-permission', 'connection-account']);
+    assert.deepEqual(observed, ['connection-settings', 'connection-chain', 'connection-permission', 'connection-account']);
   }
 });
 
@@ -119,12 +146,21 @@ test('network and external-prover guards fail closed with distinct safe connecti
 });
 
 test('missing browser worker environment fails before a session exists without invoking wallet proving', async () => {
+  // A test-only public manifest digest stands in for the build-time constant;
+  // no asset is fetched and the worker still fails before any crypto/session.
+  const previousPin = globalThis.__NATIVE_CONTRACT_MANIFEST_SHA256__;
+  globalThis.__NATIVE_CONTRACT_MANIFEST_SHA256__ = 'a'.repeat(64);
+  try {
   const observed = [];
   let walletProvingCalls = 0;
   await expectConnectionFailure({ apiVersion: '4.0.1', connect: async () => incompleteApi({
     getProvingProvider: async () => { walletProvingCalls++; throw new Error(syntheticMarker); },
   }) }, 'connection-proving-provider', 'browser could not initialize its local Midnight prover', stage => { observed.push(stage); });
   assert.equal(walletProvingCalls, 0);
-  assert.deepEqual(observed, ['connection-settings', 'connection-permission', 'connection-account', 'connection-network',
+  assert.deepEqual(observed, ['connection-settings', 'connection-chain', 'connection-permission', 'connection-account', 'connection-network',
     'connection-wallet-proving-mode', 'connection-providers', 'connection-proving-provider']);
+  } finally {
+    if (previousPin === undefined) delete globalThis.__NATIVE_CONTRACT_MANIFEST_SHA256__;
+    else globalThis.__NATIVE_CONTRACT_MANIFEST_SHA256__ = previousPin;
+  }
 });

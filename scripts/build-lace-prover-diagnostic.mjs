@@ -21,7 +21,7 @@ export async function buildLaceProverDiagnostic(destination, { checkOnly = false
   const manifestBytes = await readFile(join(root, 'dist/native-contract/prover-manifest.json'));
   const manifest = validateNativeProverManifest(parseStrictJson(decodeJsonUtf8(manifestBytes), { maxBytes: 64 * 1024, maxDepth: 8 }));
   if (!network.enabled || hash(manifestBytes) !== network.browserProver?.manifest?.sha256
-      || manifest.circuits.get('openVoting')?.k !== 7) throw new Error('The actual built proving assets are required');
+      || manifest.circuits.get('openVoting')?.k !== 8) throw new Error('The actual built proving assets are required');
   const assets = new Map();
   const result = await esbuild.build({
     absWorkingDir: root, entryPoints: [join(contractRoot, 'native/lace-prover-diagnostic.mjs')],

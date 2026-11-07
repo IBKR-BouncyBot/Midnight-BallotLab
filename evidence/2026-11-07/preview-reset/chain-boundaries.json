@@ -1,0 +1,77 @@
+{
+  "schema": "midnight-ballot-lab/preview-chain-boundaries/v1",
+  "startedAt": "2026-11-07T08:59:28.417Z",
+  "finishedAt": "2026-11-07T08:59:28.566Z",
+  "status": "passed",
+  "node": "24.18.0",
+  "tests": 40,
+  "pass": 40,
+  "fail": 0,
+  "execution": "Node transport-and-public-format-boundary-tests",
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "tests/public-testnet.test.mjs",
+    "tests/native-network-config.test.mjs",
+    "contracts/test/preview-chain-evidence.test.mjs",
+    "contracts/test/lace-ci-public-files.test.mjs",
+    "contracts/test/lace-prover-diagnostic-check.test.mjs",
+    "contracts/test/lace-ci-progress.test.mjs"
+  ],
+  "walletAccessed": false,
+  "networkServicesTested": false,
+  "cryptographyReplaced": false,
+  "proofsGenerated": false,
+  "transactionsSubmitted": false,
+  "sources": [
+    {
+      "source": "contracts/native/public-testnet.mjs",
+      "sha256": "6b3143bdcce834bd0a02b225d691c21c74927fddd35759bc9b718a7788783e1b"
+    },
+    {
+      "source": "contracts/native/browser-config.mjs",
+      "sha256": "e943eb464208c2148af6af561c4dadb354b0ec579a6397d3a41c910e3da1f6b6"
+    },
+    {
+      "source": "scripts/ci-preview-chain-evidence.mjs",
+      "sha256": "3bd3a0b3353efbd04a39e74763530f4ab544e8249c2114aa37894e83698f6314"
+    },
+    {
+      "source": "scripts/ci-lace-preview-public-check.mjs",
+      "sha256": "6b64582b4793b4d11fd29542d3023abb6868fedf3760edcd93810339093fc806"
+    },
+    {
+      "source": "scripts/ci-lace-prover-diagnostic-check.mjs",
+      "sha256": "4e00267c19d2e8507ade844db541844a2df3de616e795ebf62809e31cfa89a23"
+    },
+    {
+      "source": "scripts/ci-lace-preview-progress.mjs",
+      "sha256": "3a72ecaf485f7f7d2e51fe506f820624e00a02a1ec63ed74fb2a15dc0972779b"
+    },
+    {
+      "source": "tests/public-testnet.test.mjs",
+      "sha256": "5936d2e7a3cd61eaf224efd019408f2985c7b4480159393bdedbc40917a229e6"
+    },
+    {
+      "source": "tests/native-network-config.test.mjs",
+      "sha256": "ec1e8502d81b8bf0cc14676ce81206c341b4db814c63bfbab491825658173842"
+    },
+    {
+      "source": "contracts/test/preview-chain-evidence.test.mjs",
+      "sha256": "b1b492cc91f6fa7cae8d1e21fce08e2c60995e8411fb96d9cb5e40c9af79b48e"
+    },
+    {
+      "source": "contracts/test/lace-ci-public-files.test.mjs",
+      "sha256": "653beb03fa30e17dc2fe463dc8bc95c46d07591c7da808d33366e43d3507ef8b"
+    },
+    {
+      "source": "contracts/test/lace-prover-diagnostic-check.test.mjs",
+      "sha256": "c6e9034fcf60e02e2a56d85403d083043b6da0a3634380ffc47a2c3e2c70f939"
+    },
+    {
+      "source": "contracts/test/lace-ci-progress.test.mjs",
+      "sha256": "3f74e476179806330b2db4d6af13ed3c6ef1ea67d314aadb119a9a1fd512d8e9"
+    }
+  ]
+}

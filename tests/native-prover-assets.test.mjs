@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  validateNativeProverManifest, nativeProverAssetBase, loadNativeProvingAssets, proverAssetFailureCode,
+  validateNativeProverManifest, nativeProverAssetBase, nativeProverKeyLocation, loadNativeProvingAssets, proverAssetFailureCode,
   NATIVE_PROVER_CIRCUITS, NATIVE_PROVER_PARAMETERS, NATIVE_PROVER_PARAMETER_BYTES, NATIVE_PROVER_ASSET_SCHEMA,
 } from '../contracts/native/wasm-prover-assets.mjs';
 import { requireNoReportedExternalProver } from '../contracts/native/browser-config.mjs';
@@ -10,7 +10,7 @@ import { requireNoReportedExternalProver } from '../contracts/native/browser-con
 const asset = (path, bytes = 4, sha256 = 'a'.repeat(64)) => ({ path, bytes, sha256 });
 function manifest() {
   return {
-    schema: NATIVE_PROVER_ASSET_SCHEMA, proverVersion: '2.1.1',
+    schema: NATIVE_PROVER_ASSET_SCHEMA, proverVersion: '3.2.0',
     circuits: Object.entries(NATIVE_PROVER_CIRCUITS).map(([name, k]) => ({ name, k,
       prover: asset(`keys/${name}.prover`), verifier: asset(`keys/${name}.verifier`), ir: asset(`zkir/${name}.bzkir`),
     })),
@@ -31,8 +31,8 @@ test('prover manifest binds every native circuit and the official SRS size/hash 
   const before = JSON.stringify(input);
   const parsed = validateNativeProverManifest(input);
   assert.equal(parsed.circuits.size, 7);
-  assert.equal(parsed.params.size, 5);
-  assert.equal(parsed.circuits.get('castBallot').k, 17);
+  assert.equal(parsed.params.size, 6);
+  assert.equal(parsed.circuits.get('castBallot').k, 16);
   assert.equal(JSON.stringify(input), before);
   assert.ok(Object.isFrozen(parsed.circuits.get('castBallot')));
   for (const mutate of [
@@ -55,6 +55,39 @@ test('prover public files cannot escape the same-origin asset directory', () => 
     'https://user:secret@app.example.test/native-contract', 'file:///native-contract', `${assetsUrl}/`]) {
     assert.throws(() => nativeProverAssetBase(value, workerUrl), integrity);
   }
+});
+
+test('SDK 5 key locations reject malformed, unrelated and wallet circuit requests', () => {
+  const address = 'a'.repeat(64), verifier = 'b'.repeat(64);
+  const key = `contract:${address}/castBallot?vk=${verifier}`;
+  assert.deepEqual(nativeProverKeyLocation(key), { contractAddress: address, circuitId: 'castBallot', verifierKeyHash: verifier });
+  assert.ok(Object.isFrozen(nativeProverKeyLocation(key)));
+  assert.deepEqual(nativeProverKeyLocation('castBallot'), { circuitId: 'castBallot' });
+  for (const value of [null, {}, '', 'constructor', 'midnight/dust/spend', 'dust/spend',
+    `contract:${address}/other?vk=${verifier}`, `contract:${address}/castBallot`,
+    key + '&secret=value', key + '#fragment', key.replace(verifier, 'B'.repeat(64)),
+    key.replace(address, 'a'.repeat(63)), key.replace('/castBallot', '/..%2FcastBallot')]) {
+    assert.throws(() => nativeProverKeyLocation(value), error => proverAssetFailureCode(error) === 'INVALID_REQUEST');
+  }
+});
+
+test('canonical deployed key hashes must match the pinned manifest before material is fetched', async t => {
+  const bytes = new Uint8Array([1, 2, 3, 4]), verifier = await hashBytes(bytes), input = manifest();
+  for (const entry of input.circuits) for (const key of ['prover', 'verifier', 'ir']) entry[key].sha256 = verifier;
+  const requests = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    requests.push(url);
+    return new Response(url.endsWith('/prover-manifest.json') ? JSON.stringify(input) : bytes);
+  });
+  const source = await loadNativeProvingAssets(assetsUrl, workerUrl, await manifestHash(input));
+  const prefix = `contract:${'a'.repeat(64)}/castBallot?vk=`;
+  await assert.rejects(source.lookupKey(prefix + '0'.repeat(64)), integrity);
+  assert.equal(requests.length, 1, 'A mismatched deployed key must not fetch any proving material');
+  const actual = await source.lookupKey(prefix + verifier);
+  assert.deepEqual(actual, { proverKey: bytes, verifierKey: bytes, ir: bytes });
+  assert.equal(requests.length, 4);
+  assert.ok(requests.every(url => !url.includes('contract:') && !url.includes('?')),
+    'Contract addresses and key-location strings must not be sent in asset URLs');
 });
 
 test('manifest transport errors and malformed/duplicate JSON remain fixed safe failures', async t => {

@@ -4,15 +4,14 @@
  */
 import { nativeWitnesses, requireBytes32, requireScalar, requireCandidateCount, pairCoefficients, pointEqual, NATIVE_CAPACITY, NATIVE_CANDIDATES } from './adapter.mjs';
 import { projectNativePublicLedger } from './record.mjs';
+import * as runtime from '@midnight-ntwrk/compact-runtime';
+import * as bindings from '../managed/native-election/contract/index.js';
 
 export async function loadNativeModules() {
-  try {
-    const runtime = await import('@midnight-ntwrk/compact-runtime');
-    const bindings = await import('../managed/native-election/contract/index.js');
-    return { runtime, bindings };
-  } catch (cause) {
-    throw new Error('Native emulator unavailable: install the pinned contracts dependencies and compile native-election.compact. No substitute runtime is used.', { cause });
-  }
+  // Static dependencies preserve the official runtime's complete ESM/WASM
+  // initialization before any generated pure helper or constructor executes.
+  // Missing packages or bindings fail module loading; there is no fallback.
+  return { runtime, bindings };
 }
 
 function seconds(value) {
@@ -38,38 +37,53 @@ export async function createNativeEmulator({
   const contractAddress = address ?? RT.sampleContractAddress();
   if (typeof contractAddress !== 'string' || !/^[0-9a-f]{64}$/.test(contractAddress)) throw new TypeError('Invalid emulator contract address');
   const constructorPrivateState = {};
-  const initial = contract.initialState(
+  const initial = await contract.initialState(
     RT.createConstructorContext(constructorPrivateState, coinPublicKey),
     electionId, manifestDigest, pureCircuits.administratorIdentity(administratorSecret),
     BigInt(opensAt), BigInt(closesAt), BigInt(candidateCount),
   );
   // Deployment does not prove constructor computations. Key setup is a separate
   // impure circuit and must be proven on the actual network.
-  let context = RT.createCircuitContext(contractAddress, coinPublicKey,
-    initial.currentContractState, { administratorSecret }, undefined, undefined, seconds(initialTime ?? opensAt - 1));
+  let context = RT.createCircuitContext({ circuitId: 'configureKeys', contractAddress,
+    coinPublicKeyOrZswapState: coinPublicKey, contractState: initial.currentContractState,
+    privateState: { administratorSecret }, time: seconds(initialTime ?? opensAt - 1) });
+  let pending = false;
+  const requireIdle = () => { if (pending) throw new Error('A native circuit is still executing'); };
 
-  const readLedger = () => ledger(context.currentQueryContext.state);
+  const readLedger = () => ledger(context.callContext.currentQueryContext.state);
   const setPrivateState = privateState => {
+    requireIdle();
     if (!privateState || Object.getPrototypeOf(privateState) !== Object.prototype) throw new TypeError('Native private state must be a plain object');
     // Replace rather than merge roles, to avoid carrying a previous voter's inputs.
-    context = { ...context, currentPrivateState: privateState };
+    context = { ...context, callContext: { ...context.callContext, currentPrivateState: privateState } };
   };
   const setTime = time => {
-    context = RT.createCircuitContext(contractAddress, coinPublicKey,
-      context.currentQueryContext.state, context.currentPrivateState,
-      undefined, undefined, seconds(time));
+    requireIdle();
+    context = RT.createCircuitContext({ circuitId: context.callContext.circuitId, contractAddress,
+      coinPublicKeyOrZswapState: coinPublicKey, contractState: context.callContext.currentQueryContext.state,
+      privateState: context.callContext.currentPrivateState, time: seconds(time) });
   };
-  const call = (name, ...args) => {
+  const call = async (name, ...args) => {
+    requireIdle();
     if (!Object.hasOwn(contract.impureCircuits, name) || typeof contract.impureCircuits[name] !== 'function') {
       throw new Error('Unknown native circuit');
     }
-    const result = contract.impureCircuits[name](context, ...args);
-    context = result.context;
-    // result.proofData can contain private witnesses. Never return or serialize it.
-    return result.result;
+    // Start a fresh transaction context for every actual circuit call. Reuse only
+    // the last committed public state, current private inputs and explicit time.
+    const next = RT.createCircuitContext({ circuitId: name, contractAddress,
+      coinPublicKeyOrZswapState: coinPublicKey, contractState: context.callContext.currentQueryContext.state,
+      privateState: context.callContext.currentPrivateState,
+      time: Number(context.callContext.currentQueryContext.block.secondsSinceEpoch) });
+    pending = true;
+    try {
+      const result = await contract.impureCircuits[name](next, ...args);
+      context = result.context;
+      // context.callProofDataTrace contains private witnesses. Never return or serialize it.
+      return result.result;
+    } finally { pending = false; }
   };
   setPrivateState({ administratorSecret, setupSecret, setupSlope });
-  call('configureKeys');
+  await call('configureKeys');
   setPrivateState({ administratorSecret });
   return Object.freeze({ contractAddress, pureCircuits, readLedger, setPrivateState, setTime, call });
 }

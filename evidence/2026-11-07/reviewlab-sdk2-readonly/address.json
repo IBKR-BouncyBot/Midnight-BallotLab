@@ -1,0 +1,35 @@
+{
+  "schema": "midnight-ballot-lab/reviewlab-sdk2-readonly/v1",
+  "checkedAt": "2026-11-07T09:29:08.335Z",
+  "networkId": "preview",
+  "chainIdentity": {
+    "networkId": "preview",
+    "genesisHash": "0x3c096de209e06a1a8c52be7bda109ee8c891a42288c0a9db5495f9616dd13796",
+    "ledgerEra": "v9",
+    "protocolVersion": 2001100
+  },
+  "unshieldedAddress": "mn_addr_preview1p35fx287danunuhw7ezctf5n0hkr5cc4ctxv00nhsf7wmvyjxx8sqc3n0f",
+  "scope": "authorized-existing-reviewlab-test-wallet",
+  "lockfileSha256": "70693cdd273defbef5c94afb7215c2c38bb3cd1f0a7a9625734523e28702655e",
+  "packages": {
+    "@midnightntwrk/wallet-sdk": "2.0.0",
+    "@midnightntwrk/wallet-sdk-hd": "4.0.0",
+    "@midnightntwrk/wallet-sdk-unshielded-wallet": "4.0.0",
+    "@midnightntwrk/wallet-sdk-dust-wallet": "5.0.0",
+    "@midnightntwrk/ledger-v9": "1.0.0",
+    "@midnightntwrk/wallet-sdk-address-format": "4.0.0",
+    "ws": "8.22.1"
+  },
+  "sdk2SameIdentitySyntheticCheck": true,
+  "previousCheckpointRead": false,
+  "previousCheckpointWritten": false,
+  "privateStatePersisted": false,
+  "privateDataExported": false,
+  "provingProviderCreated": false,
+  "proofsGenerated": 0,
+  "transactionsSigned": 0,
+  "transactionsSubmitted": 0,
+  "independentConsensusVerification": false,
+  "status": "address-derived",
+  "balanceChecked": false
+}

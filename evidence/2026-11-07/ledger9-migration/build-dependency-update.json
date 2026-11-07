@@ -1,0 +1,12 @@
+{
+  "schema": "midnight-ballot-lab/ledger9-build-dependency-update/v1",
+  "recordedAt": "2026-11-07T09:10:47.487Z",
+  "esbuild": "0.28.2",
+  "reason": "Demonstrated asynchronous WASM initialization bundling failure with 0.25.12; official builder update paired with source-preserving ledger getter resolver.",
+  "packageSha256": "9ddb837ee4615346e262288eb0a633c5c04c6b8e41953f55ccf4b2d4ace4c230",
+  "lockfileSha256": "067e6a710aa63faa12c1fcc01383d6ce172dd9c8e70270879d560dfb0851e411",
+  "registryPackagesReviewed": 167,
+  "registryAndIntegrity": "passed",
+  "nativeRuntimeDependencyChange": false,
+  "scope": "Build-tool update after retained native runtime and Node proof execution; browser execution evidence is separate."
+}

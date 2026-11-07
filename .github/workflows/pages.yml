@@ -32,8 +32,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - name: Test native adapters, receipts and input boundaries
-        run: npm test 2>&1 | tee "$RUNNER_TEMP/native-boundary-tests.log"
       - name: Install and verify the pinned native toolchain
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -43,11 +41,15 @@ jobs:
         run: |
           npm ci --ignore-scripts 2>&1 | tee "$RUNNER_TEMP/dependency-install.log"
           npm ls --all --json > "$RUNNER_TEMP/dependency-tree.json"
-      - name: Check installed wallet and provider APIs
-        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs contracts/test/browser-prover-startup.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
+      - name: Test native adapters, receipts and input boundaries
+        # Chain-identity boundaries use the real installed SDK protocol resolver.
+        run: npm test 2>&1 | tee "$RUNNER_TEMP/native-boundary-tests.log"
       - name: Compile the actual native election and generate its keys
         working-directory: contracts
         run: npm run compile:native 2>&1 | tee "$RUNNER_TEMP/native-election-compile.log"
+      - name: Check installed wallet and provider APIs
+        # The WASM startup regression constructs the actual generated contract.
+        run: node --test contracts/test/browser-providers-api.test.mjs contracts/test/native-wasm-plugin.test.mjs contracts/test/browser-sdk-initialization.test.mjs contracts/test/browser-module-assets.test.mjs contracts/test/browser-prover-startup.test.mjs contracts/test/lace-public-proofs.test.mjs 2>&1 | tee "$RUNNER_TEMP/provider-api-tests.log"
       - name: Run generated native election tests
         working-directory: contracts
         run: npm run test:native 2>&1 | tee "$RUNNER_TEMP/native-election-tests.log"

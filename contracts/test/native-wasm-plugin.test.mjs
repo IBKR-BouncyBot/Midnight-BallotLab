@@ -13,10 +13,10 @@ import { nativeWasmPlugin } from '../../scripts/native-wasm-plugin.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
-const wasmFile = join(dirname(require.resolve('@midnight-ntwrk/onchain-runtime-v3')), 'midnight_onchain_runtime_wasm_bg.wasm');
+const wasmFile = join(dirname(fileURLToPath(import.meta.resolve('@midnightntwrk/onchain-runtime-v4'))), 'midnight_onchain_runtime_wasm_bg.wasm');
 const options = {
   absWorkingDir: root,
-  stdin: { contents: 'export * from "@midnight-ntwrk/onchain-runtime-v3";',
+  stdin: { contents: 'export * from "@midnightntwrk/onchain-runtime-v4";',
     sourcefile: 'native-wasm-packaging-test.mjs', resolveDir: join(root, 'contracts') },
   bundle: true, platform: 'browser', format: 'esm', target: 'es2022',
   nodePaths: [join(root, 'contracts/node_modules')], mainFields: ['browser', 'module', 'main'],
@@ -30,13 +30,13 @@ test('actual WASM packaging preserves bytes and excludes filesystem prefixes fro
   assert.equal(assets.size, 1);
   assert.ok(Buffer.from([...assets.values()][0]).equals(await readFile(wasmFile)), 'Packaged official WASM bytes must be unchanged');
   const ids = Object.keys(result.metafile.inputs).filter(id => id.startsWith('native-wasm:'));
-  assert.ok(ids.length === 1 && ids[0] === 'native-wasm:contracts/node_modules/@midnight-ntwrk/onchain-runtime-v3/midnight_onchain_runtime_wasm_bg.wasm',
+  assert.ok(ids.length === 1 && ids[0] === 'native-wasm:contracts/node_modules/@midnightntwrk/onchain-runtime-v4/midnight_onchain_runtime_wasm_bg.wasm',
     'WASM module identity must be the expected project-relative path');
   const output = result.outputFiles.map(file => file.text).join('\n');
   for (const prefix of [root, root.replaceAll('\\', '/'), root.replaceAll('\\', '\\\\')]) {
     assert.equal(output.includes(prefix), false, 'Bundle must not contain the absolute project root');
   }
-  assert.ok(/native-wasm:contracts\/node_modules\/@midnight-ntwrk\/onchain-runtime-v3\//.test(output),
+  assert.ok(/native-wasm:contracts\/node_modules\/@midnightntwrk\/onchain-runtime-v4\//.test(output),
     'Bundle must retain the expected project-relative WASM module identity');
 });
 
@@ -57,15 +57,15 @@ test('actual official ZKIR worker bundles separately with unchanged non-shared W
   assert.equal(result.warnings.length, 0);
   assert.equal(result.outputFiles.length, 1);
   assert.equal(assets.size, 1);
-  const officialFile = join(root, 'contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.wasm');
+  const officialFile = join(root, 'contracts/node_modules/@midnightntwrk/zkir-v3/midnight_zkir_wasm_bg.wasm');
   const official = await readFile(officialFile);
   assert.ok(Buffer.from([...assets.values()][0]).equals(official));
-  assert.equal(createHash('sha256').update(official).digest('hex'), '6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b');
-  assert.ok(Object.keys(result.metafile.inputs).some(id => id.startsWith('native-wasm:contracts/node_modules/@midnight-ntwrk/zkir-v2/')));
+  assert.equal(createHash('sha256').update(official).digest('hex'), '5c81a400f7bc110c0c65a1889c1e241a4055efdb722e8e512b459ab6d2f80255');
+  assert.ok(Object.keys(result.metafile.inputs).some(id => id.startsWith('native-wasm:contracts/node_modules/@midnightntwrk/zkir-v3/')));
   assert.equal(Object.values(result.metafile.outputs).flatMap(output => output.imports).some(item => item.external), false);
   const output = result.outputFiles[0].text;
   assert.ok(output.includes('Native WASM asset integrity check failed'));
-  assert.ok(output.includes('6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b'));
+  assert.ok(output.includes('5c81a400f7bc110c0c65a1889c1e241a4055efdb722e8e512b459ab6d2f80255'));
   for (const prefix of [root, root.replaceAll('\\', '/'), root.replaceAll('\\', '\\\\')]) assert.equal(output.includes(prefix), false);
   assert.equal(/SharedArrayBuffer|initThreadPool|Atomics\./.test(output), false);
   // Inspect the actual pinned binary's memory declarations; this is a package
@@ -92,16 +92,16 @@ test('strict loader instantiates real ZKIR and rejects changed or truncated deco
   const folder = await mkdtemp(join(tmpdir(), 'ballot-wasm-loader-'));
   const originalFetch = globalThis.fetch;
   try {
-    const official = await readFile(join(root, 'contracts/node_modules/@midnight-ntwrk/zkir-v2/midnight_zkir_wasm_bg.wasm'));
+    const official = await readFile(join(root, 'contracts/node_modules/@midnightntwrk/zkir-v3/midnight_zkir_wasm_bg.wasm'));
     const built = await esbuild.build({ ...options,
-      stdin: { contents: 'export * from "@midnight-ntwrk/zkir-v2";', sourcefile: 'zkir-loader-test.mjs', resolveDir: join(root, 'contracts') },
+      stdin: { contents: 'export * from "@midnightntwrk/zkir-v3";', sourcefile: 'zkir-loader-test.mjs', resolveDir: join(root, 'contracts') },
       outfile: join(folder, 'loader.mjs'),
       plugins: [nativeWasmPlugin(new Map(), { projectRoot: root, assetFolder: 'network-assets', verifyIntegrity: true })],
     });
     await writeFile(join(folder, 'loader.mjs'), built.outputFiles[0].contents);
     let payload = official, calls = 0;
     globalThis.fetch = async (url, options) => {
-      calls++; assert.ok(new URL(url).pathname.endsWith('/network-assets/midnight_zkir_wasm_bg-6b4c38c097a215568fedf87183a495652b142b84b1caa6681b414b4c11da642b.wasm'));
+      calls++; assert.ok(new URL(url).pathname.endsWith('/network-assets/midnight_zkir_wasm_bg-5c81a400f7bc110c0c65a1889c1e241a4055efdb722e8e512b459ab6d2f80255.wasm'));
       assert.equal(options.redirect, 'error'); assert.equal(options.credentials, 'omit');
       assert.equal(options.body, undefined);
       // Fetch exposes decoded bytes, while this header can describe a smaller
@@ -117,4 +117,45 @@ test('strict loader instantiates real ZKIR and rejects changed or truncated deco
     await assert.rejects(import(`${url}?short`), /Native WASM asset integrity check failed/);
     assert.equal(calls, 3);
   } finally { globalThis.fetch = originalFetch; await rm(folder, { recursive: true, force: true }); }
+});
+
+test('browser bundle initializes the real native app modules and awaited generated constructor', { timeout: 20_000 }, async () => {
+  const folder = await mkdtemp(join(tmpdir(), 'ballot-native-initialization-'));
+  const originalFetch = globalThis.fetch;
+  const assets = new Map();
+  try {
+    const built = await esbuild.build({ ...options,
+      stdin: { contents: 'export { initNativeDemo } from "./src/native-app.mjs"; export { createNativeEmulator } from "./contracts/native/harness.mjs";',
+        sourcefile: 'native-initialization-test.mjs', resolveDir: root },
+      outfile: join(folder, 'native.mjs'),
+      plugins: [nativeWasmPlugin(assets, { projectRoot: root, assetFolder: 'native-assets' })],
+    });
+    assert.equal(built.warnings.length, 0);
+    assert.equal(assets.size, 1);
+    await writeFile(join(folder, 'native.mjs'), built.outputFiles[0].contents);
+    let wasmLoads = 0;
+    globalThis.fetch = async url => {
+      const path = new URL(url).pathname.split('/native-assets/')[1];
+      const bytes = assets.get(`native-assets/${path}`);
+      assert.ok(bytes, 'Only the actual bundled runtime WASM may be fetched');
+      wasmLoads++; return new Response(bytes, { headers: { 'content-type': 'application/wasm' } });
+    };
+    const native = await import(pathToFileURL(join(folder, 'native.mjs')).href);
+    assert.equal(typeof native.initNativeDemo, 'function');
+    const bytes = last => { const value = new Uint8Array(32); value[31] = last; return value; };
+    const emulator = await native.createNativeEmulator({ electionId: bytes(10), manifestDigest: bytes(11),
+      administratorSecret: bytes(1), setupSecret: 11n, setupSlope: 7n,
+      opensAt: 2_000_000_000, closesAt: 2_000_000_600, candidateCount: 3 });
+    assert.equal(emulator.readLedger().keysConfigured, true);
+    assert.equal(emulator.readLedger().phase, 0n);
+    await emulator.call('enroll', emulator.pureCircuits.memberIdentity(bytes(10), bytes(2)));
+    emulator.setTime(2_000_000_000);
+    await emulator.call('openVoting');
+    assert.equal(emulator.readLedger().phase, 1n);
+    emulator.setPrivateState({});
+    assert.equal(wasmLoads, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    await rm(folder, { recursive: true, force: true });
+  }
 });

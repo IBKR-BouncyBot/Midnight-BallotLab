@@ -1,0 +1,21 @@
+import {readFile,writeFile}from'node:fs/promises';import vm from'node:vm';import{createHash}from'node:crypto';
+const dir=new URL('./parser-check/',import.meta.url),code=await readFile(new URL('signed-chunk.js',dir),'utf8'),bytes=await readFile(new URL('signed-prover.wasm',dir));
+const sha=x=>createHash('sha256').update(x).digest('hex');
+if(sha(code)!=='f021b27a0b98661b49b261b32fa3933dc4a50c58ac5825fdf93fe26182102b56'||sha(bytes)!=='f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb')throw Error('signed-input-integrity');
+const sandbox={TextEncoder,TextDecoder,Uint8Array,ArrayBuffer,DataView,WebAssembly,Promise,crypto,URL,queueMicrotask};sandbox.globalThis=sandbox;vm.createContext(sandbox);vm.runInContext(code,sandbox,{timeout:1000});
+const factories=sandbox.webpackChunklace_extension[0][1];const glue={};const require=()=>{throw Error('unreviewed-module-dependency')};require.d=(out,defs)=>{for(const[k,get]of Object.entries(defs))Object.defineProperty(out,k,{get,enumerable:true})};
+factories[737441]({},glue,require);const named=Object.fromEntries(Object.values(glue).filter(x=>typeof x==='function').map(x=>[x.name,x]));
+const mod=await WebAssembly.compile(bytes);const imports={};for(const item of WebAssembly.Module.imports(mod)){if(item.module!=='./midnight_zkir_wasm_bg.js'||typeof named[item.name]!=='function')throw Error('signed-glue-mismatch');(imports[item.module]??={})[item.name]=named[item.name]}
+const instance=await WebAssembly.instantiate(mod,imports);named.__wbg_set_wasm(instance.exports);instance.exports.__wbindgen_start();
+const report={schema:'midnight-ballot-lab/signed-lace-ir-parser-check/v1',checkedAt:new Date().toISOString(),execution:'signed-public-js-glue-and-wasm-in-node',extensionVersion:'2.5.1',wasmSha256:sha(bytes),glueChunkSha256:sha(code),walletCreated:false,proofGenerated:false,networkRequest:false,cases:[]};
+for(const fixture of [
+ {circuit:'openVoting',format:'historical-IR2-positive-control',path:'../../../ballot-preview-acceptance/sdk/runtime/contracts/managed/native-election/zkir/openVoting.bzkir'},
+ {circuit:'openVoting',format:'current-IR3',path:'../../contracts/managed/native-election/zkir/openVoting.bzkir'},
+ {circuit:'configureKeys',format:'current-IR3',path:'../../contracts/managed/native-election/zkir/configureKeys.bzkir'},
+ {circuit:'dust-spend',format:'official-DUST-generation-10',path:'./parser-check/dust10-spend.bzkir'}]){
+ const ir=await readFile(new URL(fixture.path,import.meta.url));const result=instance.exports.zkir_deserialize(new Uint8Array(ir));
+ report.cases.push({circuit:fixture.circuit,format:fixture.format,irSha256:sha(ir),deserialized:result[2]===0});
+ if(result[2]===0)instance.exports.__wbg_zkir_free(result[0],0);
+}
+if(!report.cases[0].deserialized)throw Error('positive-control-failed');
+await writeFile(new URL('signed-dust-ir-parser-result.json',import.meta.url),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));

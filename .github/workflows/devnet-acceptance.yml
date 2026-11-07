@@ -1,5 +1,7 @@
-name: Local devnet transaction acceptance
+name: Historical ledger-8 local devnet acceptance
 
+# Preserved ledger-8 fixture. Current ledger-9 source must fail preflight rather
+# than run against incompatible services or be reported as a network regression.
 # Explicit, isolated test-chain execution. No public-network wallet or secrets.
 on:
   workflow_dispatch:
@@ -9,7 +11,7 @@ permissions:
 
 jobs:
   devnet:
-    name: Prove and submit the native election on a fresh local chain
+    name: Require matching ledger-8 source before local execution
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
@@ -25,6 +27,19 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Require source compatible with the preserved ledger-8 fixture
+        run: |
+          node --input-type=module <<'NODE' 2>&1 | tee "$RUNNER_TEMP/devnet-compatibility-preflight.log"
+          import { readFileSync } from 'node:fs';
+          const toolchain = JSON.parse(readFileSync('contracts/toolchain.json', 'utf8'));
+          const fixture = JSON.parse(readFileSync('contracts/devnet/package.json', 'utf8'));
+          if (toolchain.ledger !== 8 || toolchain.compiler !== '0.31.1' || toolchain.runtime !== '0.16.0'
+            || fixture.dependencies['@midnight-ntwrk/compact-runtime'] !== '0.16.0') {
+            console.error('This manual fixture is pinned to ledger 8. Current ledger-9 source cannot run here. Use the current native/browser compatibility workflow; migrate the isolated fixture before claiming new local-network acceptance.');
+            process.exit(1);
+          }
+          console.log('Historical ledger-8 fixture and source versions match.');
+          NODE
       - name: Set up Python for toolchain evidence
         uses: actions/setup-python@v7
         with:
@@ -63,6 +78,10 @@ jobs:
         run: bash contracts/devnet/services.sh up 2>&1 | tee "$RUNNER_TEMP/devnet-services.log"
       - name: Verify actual loopback service readiness
         run: node contracts/devnet/probe.mjs 2>&1 | tee "$RUNNER_TEMP/devnet-readiness.log"
+      - name: Generate real ledger-8 local circuit proofs
+        # Preserved standalone HTTP-prover coverage belongs only to this fixture.
+        # Never retain private preimages or verbose proof-server logs.
+        run: node contracts/native/prove-local.mjs 2>&1 | tee "$RUNNER_TEMP/local-proofs.log"
       - name: Execute real wallet proving and network transactions
         # Uses the official local genesis fixture only in memory, waits for actual
         # block time, and records indexer-confirmed public transaction outcomes.
@@ -80,6 +99,7 @@ jobs:
             contracts/package-lock.json
             contracts/devnet/package-lock.json
             contracts/toolchain.json
+            ${{ runner.temp }}/devnet-compatibility-preflight.log
             evidence/2026-11-03/application-lockfile-review.json
             evidence/2026-11-03/devnet-lockfile-review.json
             ${{ runner.temp }}/devnet-toolchain.log
@@ -92,9 +112,11 @@ jobs:
             ${{ runner.temp }}/lockfile-review.log
             ${{ runner.temp }}/devnet-services.log
             ${{ runner.temp }}/devnet-readiness.log
+            ${{ runner.temp }}/local-proofs.log
             ${{ runner.temp }}/devnet-acceptance.log
             ${{ runner.temp }}/devnet-cleanup.log
             artifacts/local-devnet-readiness.json
             artifacts/local-devnet/network-evidence.json
+            artifacts/native-proof-evidence.json
           if-no-files-found: error
           retention-days: 30

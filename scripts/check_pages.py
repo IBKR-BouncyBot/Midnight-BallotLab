@@ -124,8 +124,18 @@ def check(dist):
         if network.get("bundle") != "network-bundle.mjs" or network.get("mode") != "development-network-client":
             raise ValueError("Unexpected network build configuration")
         reference(network["bundle"])
-        if len(network.get("wasmAssets", [])) != 3:
-            raise ValueError("Network build requires actual onchain, ledger and ZKIR proving WASM")
+        modules = network.get("moduleAssets", [])
+        if not modules or len(modules) > 64 or len({item.get("path") for item in modules}) != len(modules):
+            raise ValueError("Network SDK modules are missing or duplicated")
+        for item in modules:
+            if not re.fullmatch(r"network-chunk-[A-Z0-9]{8}\.mjs", item.get("path", "")):
+                raise ValueError("Unexpected network module location")
+            reference(item["path"])
+            content = (dist / item["path"]).read_bytes()
+            if not content or len(content) != item.get("bytes") or hashlib.sha256(content).hexdigest() != item.get("sha256"):
+                raise ValueError("Network module integrity mismatch")
+        if len(network.get("wasmAssets", [])) != 5:
+            raise ValueError("SDK 5 requires its two ledger/onchain runtime pairs and the ZKIR 3 prover WASM")
         for asset in network["wasmAssets"]:
             if not asset.startswith("network-assets/"):
                 raise ValueError("Unexpected network WASM location")
@@ -143,18 +153,29 @@ def check(dist):
             content = (dist / item["path"]).read_bytes()
             if not content or len(content) != item.get("bytes") or hashlib.sha256(content).hexdigest() != item.get("sha256"):
                 raise ValueError("Network circuit asset integrity mismatch")
+        metadata = network.get("compilerMetadata", [])
+        if len(metadata) != 2 or {item.get("path") for item in metadata} != {
+            "native-contract/compiler/contract-manifest.json", "native-contract/compiler/contract-info.json"
+        }:
+            raise ValueError("Compiler integrity metadata is missing")
+        for item in metadata:
+            reference(item["path"])
+            content = (dist / item["path"]).read_bytes()
+            if len(content) != item.get("bytes") or hashlib.sha256(content).hexdigest() != item.get("sha256"):
+                raise ValueError("Compiler metadata integrity mismatch")
         prover = network.get("browserProver", {})
-        if prover.get("version") != "2.1.1" or prover.get("execution") != "dedicated-worker":
+        if prover.get("version") != "3.2.0" or prover.get("execution") != "dedicated-worker":
             raise ValueError("Browser proving worker is required")
         parameter_hashes = {
             7: "e82ae890c080188355f37feaffe91372584cd810615082d9143d4dec0453fd9d",
+            8: "909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933",
+            12: "ef08eb3fcf62df8f72c515cffa027e681808b530cb016eea104115545ef6d5c8",
             13: "d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803",
             15: "724c7c3d779148bb113c7ee9c034b2f27db16e6bdf315fde90105a9bad00b1de",
             16: "09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6",
-            17: "4a9ef6c7c0619aab74eede44b13e753e3ba54508a02dd3b7106a949aabb73b74",
         }
         params = prover.get("parameters", [])
-        if len(params) != 5 or {item.get("k") for item in params} != set(parameter_hashes):
+        if len(params) != 6 or {item.get("k") for item in params} != set(parameter_hashes):
             raise ValueError("Browser proving parameter set is incomplete")
         for item in params:
             if item.get("path") != f'native-contract/params/bls_midnight_2p{item["k"]}' or item.get("sha256") != parameter_hashes[item["k"]]:

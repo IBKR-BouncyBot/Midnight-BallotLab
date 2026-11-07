@@ -1,0 +1,29 @@
+{
+  "schema": "midnight-ballot-lab/preview-chain-reset-check/v1",
+  "checkedAt": "2026-11-07T08:51:38.569Z",
+  "networkId": "preview",
+  "rpc": "https://rpc.preview.midnight.network",
+  "indexer": "https://indexer.preview.midnight.network/api/v4/graphql",
+  "readOnly": true,
+  "transactionsSubmitted": 0,
+  "previousReportedAcceptedHeight": 1630531,
+  "chain": "Midnight Preview",
+  "ledgerVersion": "1.0.1 (tag: crate-ledger-9.1.0.1, rev: 3e69c5e3092fa29c1e8b1728a68fc3ca98774e34)",
+  "genesisHash": "0x3c096de209e06a1a8c52be7bda109ee8c891a42288c0a9db5495f9616dd13796",
+  "head": {
+    "number": "0x1260",
+    "parentHash": "0xcb1cc13ce77dbbe4a21e9bd5670972fbccf55ec8ba70e658a20a548aed4f661a"
+  },
+  "previousHeightHash": null,
+  "indexedBlock": {
+    "height": 4702,
+    "hash": "191ba4fc17b5e9ee5e3400a237faf48daef573bdff9ddf4b4ca7a105434ccc93",
+    "timestamp": 1794041478000,
+    "protocolVersion": 2001100
+  },
+  "officialReleaseSources": [
+    "https://docs.midnight.network/relnotes/network",
+    "https://docs.midnight.network/relnotes/support-matrix",
+    "https://docs.midnight.network/relnotes/ledger-9"
+  ]
+}

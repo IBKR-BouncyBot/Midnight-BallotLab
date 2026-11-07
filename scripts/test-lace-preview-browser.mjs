@@ -1,3 +1,4 @@
+import { verifyBrowserModuleAssets } from './browser-module-assets.mjs';
 /** CI ONLY: genuine disposable Lace + Preview, through the normal wallet/app UI.
  * No personal profile, wallet API substitute, HTTP prover, transaction retry,
  * private checkpoint, console dump, screenshot, trace or video is produced.
@@ -12,6 +13,9 @@ import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { decodeJsonUtf8, parseStrictJson } from '../src/json.mjs';
 import { validateProverObservation } from './ci-lace-prover-diagnostic-check.mjs';
+import { requirePreviewChainIdentity } from '../contracts/native/public-testnet.mjs';
+import { verifyLaceProofCoverageSource } from './lace-proof-coverage.mjs';
+import { validateWalletProofExecution } from './ci-lace-proof-execution.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requireContracts = createRequire(join(root, 'contracts/package.json'));
@@ -47,6 +51,7 @@ let output, browserContext, app, wallet, server, origin, profileRoot, siteDirect
 let stage = 'ci-prerequisites', currentOperation, canSave = false, shuttingDown = false;
 let walletPassword, appPassword, publicIdentity, detachWalletResponseObserver;
 const walletVendorServiceUrls = new Set(), configurationResponses = [];
+const networkModulePaths = new Set();
 let configurationFailure = false;
 const settingsControlIds = Object.freeze(['settings-tab-btn', 'option-list-item-network', 'radio-button-testnet',
   'radio-button-midnight-preview', 'network-selection-sheet-confirm-button', 'network-selection-sheet',
@@ -87,13 +92,14 @@ const DIAGNOSTIC_PUBLIC_FIELDS = Object.freeze([
   'fundingAttempted', 'walletDustProofsTested', 'networkSubmissionAttempted', 'independentProofVerification',
   'privateArtifactsExported', 'hostedOriginTested', 'walletModeApiAttestation', 'httpProofProviderConfigured',
   'laceVersion', 'apiVersion', 'extensionId', 'extensionArchiveSha256', 'runnerSha256',
-  'networkBundleSha256', 'workerSha256', 'diagnosticBuildSha256', 'proverObserverSha256', 'playwright', 'chromium',
+  'networkBundleSha256', 'networkModuleAssets', 'workerSha256', 'diagnosticBuildSha256', 'proverObserverSha256', 'playwright', 'chromium',
   'vendorServiceConfiguration', 'publicConfigurationPreflight', 'normalBrowserContextRestart',
   'midnightOnlyAccountSelectionVerified', 'freshWalletCreated', 'lastSettingsControl',
   'visibleWalletServicesBeforeSave', 'settingsModeObservations', 'walletSettingsSaveActivations',
   'walletSettingsClose', 'walletOnDeviceWasmSelectedThroughUi', 'walletConnected', 'walletServices',
   'walletPublicConfigurationReloaded', 'contractProof', 'walletProverObservation',
   'failureCategory', 'failedStage', 'settingsControls', 'fundlessFixtureState', 'fundlessWalletAvailability',
+  'chainIdentity', 'chainCheckpoints',
 ]);
 let saving = Promise.resolve();
 function save() {
@@ -101,6 +107,7 @@ function save() {
   // Serialize writes, including progress callbacks, without capturing secrets.
   const persist = async () => {
     if (proverObserver) report.walletProverObservation = proverObserver.snapshot();
+    if (proverObserver && !diagnosticMode) report.walletProofExecution = proverObserver.proofExecutionSnapshot();
     if (diagnosticMode) {
       const publicReport = Object.fromEntries(DIAGNOSTIC_PUBLIC_FIELDS.filter(key => report[key] !== undefined).map(key => [key, report[key]]));
       await atomic('prover-diagnostic-report.json', { ...publicReport, currentStage: stage, traffic });
@@ -113,6 +120,29 @@ function save() {
   return saving;
 }
 async function setStage(next) { stage = next; await save(); process.stdout.write(JSON.stringify({ stage: next }) + '\n'); }
+async function checkPreviewChain(checkpoint, operationOrdinal) {
+  const stages = {
+    'before-wallet-creation': 'check-preview-chain-before-wallet',
+    'before-funding-request': 'check-preview-chain-before-funding',
+    'before-dust-registration': 'check-preview-chain-before-dust',
+    'before-application-operation': 'check-preview-chain-before-operation',
+    'before-fundless-proof': 'check-preview-chain-before-diagnostic',
+  };
+  requireThat(Object.hasOwn(stages, checkpoint), 'invalid-chain-checkpoint');
+  requireThat(checkpoint === 'before-application-operation'
+    ? Number.isInteger(operationOrdinal) && operationOrdinal >= 1 && operationOrdinal <= 9
+    : operationOrdinal === undefined, 'invalid-chain-checkpoint-ordinal');
+  await setStage(stages[checkpoint]);
+  let identity;
+  try { identity = await requirePreviewChainIdentity({}, report.chainIdentity); }
+  catch { fail('preview-chain-identity-check-failed'); }
+  report.chainIdentity = identity;
+  journal.chainIdentity = identity;
+  report.chainCheckpoints ??= [];
+  report.chainCheckpoints.push({ checkpoint, checkedAt: new Date().toISOString(),
+    ...(operationOrdinal === undefined ? {} : { operationOrdinal }) });
+  await save();
+}
 async function settingsControlSnapshot() {
   if (!wallet || wallet.isClosed()) return [];
   const results = [];
@@ -452,7 +482,8 @@ function allowedNetworkUrl(value, method = 'GET') {
   try {
     const url = new URL(value);
     if (url.username || url.password || url.hash) return false;
-    if (url.origin === origin) return ['GET', 'HEAD'].includes(method) && !url.search;
+    if (url.origin === origin) return ['GET', 'HEAD'].includes(method) && !url.search
+      && (!url.pathname.startsWith('/network-chunk-') || networkModulePaths.has(url.pathname.slice(1)));
     if (url.protocol === 'chrome-extension:') return url.host === EXTENSION_ID;
     if (url.protocol === 'https:' || url.protocol === 'wss:') {
       if (url.port) return false;
@@ -503,9 +534,11 @@ function knownRequestPathLabel(value) {
   return 'other';
 }
 const walletPublicAssetPaths = new Set([
+  // Signed Lace 2.5.1's ledger-v9 descriptor uses key generation 10. This
+  // Preview-only runner must not silently fetch ledger-v8 generation 9 keys.
   ...['spend', 'output', 'sign'].flatMap(circuit => ['prover', 'verifier', 'bzkir']
-    .map(kind => `https://srs.midnight.network/zswap/9/${circuit}.${kind}`)),
-  ...['prover', 'verifier', 'bzkir'].map(kind => `https://srs.midnight.network/dust/9/spend.${kind}`),
+    .map(kind => `https://srs.midnight.network/zswap/10/${circuit}.${kind}`)),
+  ...['prover', 'verifier', 'bzkir'].map(kind => `https://srs.midnight.network/dust/10/spend.${kind}`),
   ...Array.from({ length: 26 }, (_, k) => `https://srs.midnight.network/bls_midnight_2p${k}`),
 ]);
 async function startServer() {
@@ -593,6 +626,7 @@ async function authenticate(page) {
 }
 async function operation(label, button, metadata = {}) {
   requireThat(!diagnosticMode, 'fundless-diagnostic-no-application-transaction');
+  await checkPreviewChain('before-application-operation', report.operations.length + 1);
   await setStage(`operation-${button.replace('network-', '')}`);
   await publicApi();
   const deadline = Date.now() + 20 * 60_000;
@@ -602,6 +636,9 @@ async function operation(label, button, metadata = {}) {
     confirmationSource: 'configured-indexer', ledgerInclusionIndependentlyVerified: false };
   report.operations.push(op); currentOperation = op;
   await save(); // Journal before the sole initiating click; never retry it.
+  try { await proverObserver.beginProofWindow(op.ordinal); }
+  catch { fail('wallet-proof-entry-window-unavailable'); }
+  await save();
   await app.locator(`#${button}`).click();
   const page = await approval('#/prove-midnight-transaction', remaining());
   requireThat((await page.getByTestId('dapp-info-url').textContent()).trim() === origin, 'wallet-approval-origin-mismatch');
@@ -621,6 +658,11 @@ async function operation(label, button, metadata = {}) {
   op.txId = confirmation[1]; op.blockHeight = Number(confirmation[2]);
   requireThat(Number.isSafeInteger(op.blockHeight), 'invalid-confirmation-height');
   op.status = 'indexer-accepted'; op.acceptedAt = new Date().toISOString(); await save();
+  // Acceptance is recorded first even when passive execution evidence fails.
+  // This observation must never cause an accepted transaction to be retried.
+  try { await proverObserver.endProofWindow(op.ordinal); }
+  catch { await save(); fail('wallet-proof-entry-not-observed'); }
+  await save();
   await appIdle();
   const address = await app.locator('#network-address').inputValue();
   requireThat(/^[0-9a-f]{64}$/.test(address) && !/^0+$/.test(address), 'invalid-public-contract-address');
@@ -743,6 +785,7 @@ async function runFundlessDiagnostic(addressCodec) {
   requireThat(!configurationFailure && traffic.publicConfigurationResponses > 0, 'normal-wallet-public-configuration-required');
   requireThat(['indexerUri', 'indexerWsUri', 'substrateNodeUri'].every(field =>
     walletVendorServiceUrls.has(new URL(metadata.configuration[field]).href)), 'wallet-current-vendor-services-required');
+  await checkPreviewChain('before-fundless-proof');
   await setStage('run-fundless-lace-proof');
   await app.locator('#lace-diagnostic-run').click();
   const result = await poll(async () => {
@@ -763,6 +806,8 @@ async function runFundlessDiagnostic(addressCodec) {
   await requireWalletProverObservation();
   requireThat(report.operations.length === 0 && !report.fundingRequestSha256 && !report.dustRegistration,
     'fundless-diagnostic-exit-boundary');
+  await verifyBrowserModuleAssets(join(root, 'dist'), report.networkModuleAssets);
+  await verifyBrowserModuleAssets(siteDirectory, report.networkModuleAssets);
   await setStage('fundless-proof-completed');
   report.status = 'passed'; report.finishedAt = new Date().toISOString(); await save();
 }
@@ -786,6 +831,13 @@ async function requireWalletProverObservation() {
   catch { fail('wallet-prover-observation-mismatch'); }
   requireThat(hash(await readFile(new URL('./lace-prover-observer.mjs', import.meta.url))) === report.proverObserverSha256,
     'wallet-prover-observer-changed-during-test');
+  if (!diagnosticMode) {
+    report.walletProofExecution = proverObserver.proofExecutionSnapshot();
+    try { validateWalletProofExecution(report.walletProofExecution, { completed: true }); }
+    catch { fail('wallet-proof-entry-observation-incomplete'); }
+    requireThat(hash(await readFile(new URL('./lace-proof-coverage.mjs', import.meta.url))) === report.walletProofCoverageHelperSha256,
+      'wallet-proof-coverage-helper-changed-during-test');
+  }
 }
 async function shutdown() {
   if (shuttingDown) return; shuttingDown = true;
@@ -856,7 +908,10 @@ try {
   report.laceVersion = LACE_VERSION; report.extensionId = EXTENSION_ID; report.extensionArchiveSha256 = EXTENSION_ARCHIVE_SHA;
   report.runnerSha256 = hash(await readFile(fileURLToPath(import.meta.url)));
   const build = JSON.parse(await readFile(join(root, 'dist/network-build.json'), 'utf8'));
-  requireThat(build.enabled === true && build.browserProver?.version === '2.1.1', 'real-browser-prover-build-required');
+  requireThat(build.enabled === true && build.browserProver?.version === '3.2.0', 'real-browser-prover-build-required');
+  report.networkModuleAssets = await verifyBrowserModuleAssets(join(root, 'dist'), build.moduleAssets);
+  await verifyBrowserModuleAssets(siteDirectory, report.networkModuleAssets);
+  for (const asset of report.networkModuleAssets) networkModulePaths.add(asset.path);
   report.networkBundleSha256 = hash(await readFile(join(root, 'dist/network-bundle.mjs')));
   report.workerSha256 = build.browserProver.worker.sha256;
   if (diagnosticMode) {
@@ -874,9 +929,9 @@ try {
     report.diagnosticBuildSha256 = hash(bytes);
   }
   const { chromium } = requireContracts('playwright');
-  const addressPackage = join(root, 'contracts/node_modules/@midnight-ntwrk/wallet-sdk-address-format');
+  const addressPackage = join(root, 'contracts/node_modules/@midnightntwrk/wallet-sdk-address-format');
   const addressManifest = JSON.parse(await readFile(join(addressPackage, 'package.json'), 'utf8'));
-  requireThat(addressManifest.name === '@midnight-ntwrk/wallet-sdk-address-format' && addressManifest.version === '3.1.2'
+  requireThat(addressManifest.name === '@midnightntwrk/wallet-sdk-address-format' && addressManifest.version === '4.0.0'
     && addressManifest.exports?.['.']?.import === './dist/index.js', 'official-address-codec-entry-required');
   const addressCodec = await import(pathToFileURL(join(addressPackage, 'dist/index.js')).href);
   const { validatePassword } = await import(pathToFileURL(requireContracts.resolve('@midnight-ntwrk/midnight-js-utils').replace(/\.cjs$/, '.mjs')).href);
@@ -947,10 +1002,15 @@ try {
     await setStage(diagnosticMode ? 'arm-fundless-wallet-prover-observer' : 'arm-wallet-prover-observer');
     const { observeLaceProverWasm } = await import('./lace-prover-observer.mjs');
     report.proverObserverSha256 = hash(await readFile(new URL('./lace-prover-observer.mjs', import.meta.url)));
+    if (!diagnosticMode) {
+      verifyLaceProofCoverageSource(await readFile(join(extension, 'js/3267.js')));
+      report.walletProofCoverageHelperSha256 = hash(await readFile(new URL('./lace-proof-coverage.mjs', import.meta.url)));
+    }
     const windowMilliseconds = diagnosticMode ? 30 * 60_000 : Math.min(180 * 60_000, overallDeadline - Date.now());
-    proverObserver = await observeLaceProverWasm(browserContext.browser(), { windowMilliseconds });
+    proverObserver = await observeLaceProverWasm(browserContext.browser(), { windowMilliseconds, captureProofEntries: !diagnosticMode });
     report.walletProverObservation = proverObserver.snapshot(); await save();
   }
+  await checkPreviewChain('before-wallet-creation');
   await setStage('create-fresh-test-wallet');
   const freshPassword = prefix => {
     for (let attempt = 0; attempt < 32; attempt++) {
@@ -1069,8 +1129,10 @@ try {
   const unfunded = await publicApi(true);
   requireThat(Object.values(unfunded.balances).every(value => value === '0'), 'fresh-unfunded-wallet-required');
   report.walletBalanceApiBeforeFunding = { responded: true, balancesZero: true, walletSyncAttested: false };
+  await checkPreviewChain('before-funding-request');
   await setStage('waiting-for-authorized-test-funding');
-  const request = { schema: 'midnight-ballot-lab/lace-preview-funding-request/v1', networkId: 'preview',
+  const request = { schema: 'midnight-ballot-lab/lace-preview-funding-request/v2', networkId: 'preview',
+    chainIdentity: report.chainIdentity,
     runId: report.runId, headSha: report.headSha, nonce: randomBytes(32).toString('hex'),
     unshieldedAddress: publicIdentity.unshieldedAddress, laceVersion: LACE_VERSION, extensionId: EXTENSION_ID,
     maximumFundingAtomic: '5000000000' };
@@ -1078,6 +1140,7 @@ try {
   report.fundingRequestSha256 = hash(JSON.stringify(request, null, 2) + '\n'); await save();
   await poll(async () => BigInt((await publicApi(true)).balances.night) > 0n, 60 * 60_000, 5000);
   report.testNightObserved = true; await save();
+  await checkPreviewChain('before-dust-registration');
   await setStage('generate-test-dust-through-wallet-ui');
   // No SDK registration/signing replaces these wallet controls.
   report.dustRegistration = { status: 'preparing', startedAt: new Date().toISOString(),
@@ -1168,6 +1231,8 @@ try {
   requireThat(report.operations.filter(op => op.phases.includes('contract-proof-completed')).length === 8, 'incomplete-contract-proof-evidence');
   await setStage('verify-wallet-prover-observation');
   await requireWalletProverObservation();
+  await verifyBrowserModuleAssets(join(root, 'dist'), report.networkModuleAssets);
+  await verifyBrowserModuleAssets(siteDirectory, report.networkModuleAssets);
   requireThat(hash(await readFile(join(root, 'dist/network-bundle.mjs'))) === report.networkBundleSha256, 'bundle-changed-during-test');
   report.finalizedTotals = record.finalizedTotals; report.publicRecordConsistent = true;
   report.acceptedApplicationTransactions = 9; report.observedContractProofCompletions = 8;

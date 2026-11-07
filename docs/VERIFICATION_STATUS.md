@@ -2,7 +2,23 @@
 
 This is the current summary of what has been executed and what remains unverified. Dated reports retain their original scope; a later success does not rewrite an earlier failure.
 
+## Preview reset and current compatibility — 7 November 2026
+
+**The deployed ledger-8 application and its earlier Preview acceptance records do not establish compatibility with the current Preview chain.** Midnight's [network release notes](https://docs.midnight.network/relnotes/network) report a new ledger-9 Preview chain after the 6 November reset, while retaining the same network ID and service URLs. The [current support matrix](https://docs.midnight.network/relnotes/support-matrix) requires compiler 0.36.0, compact-runtime 0.21.0, Midnight.js 5.0.0 and Wallet SDK 2.0.0 for Preview. Migration and fresh compiler/browser/proof/transaction verification are separate work; no new-chain election acceptance is claimed here.
+
+The [fresh read-only evidence](../evidence/2026-11-07/preview-reset/README.md) records the new genesis, protocol `2001100` and a low current block height; a previously accepted high block is absent from this RPC. The new source guard pins that genesis, resolves the protocol with Midnight.js 5, and checks RPC/indexer block agreement. Its fresh service check and 17 transport-boundary tests passed. This is a consistency check of configured services, not independent chain authentication. The unfunded [run 42356820370](https://github.com/IBKR-BouncyBot/Midnight-BallotLab/actions/runs/42356820370) was cancelled during compilation before wallet startup. No funding or transaction was attempted for that run.
+
+The official reset notice says old contracts, balances and DUST registrations were discarded. A separate [fresh SDK2 read-only synchronization](../evidence/2026-11-07/reviewlab-sdk2-readonly/README.md) of the authorized ReviewLab test wallet observed **zero available NIGHT and zero DUST** at 09:29:31 UTC on the pinned reset chain. It read no previous checkpoint and generated no proof or transaction. Funding is still needed for a new wallet test. Old accepted transaction IDs, cached DUST indices and sponsor amounts must not be treated as current-chain state. Preprod is a separate ledger-8 environment, not an automatic fallback; mainnet remains unauthorized.
+
+## Current ledger-9 local verification
+
+The [actual browser proof run](../evidence/2026-11-07/browser-wasm/ledger9-local/README.md) **passed on 7 November, 09:24:57.219–09:29:51.025 UTC**: eight standalone proofs across all seven circuits, plus one genuine bound SDK `configureKeys` transaction proof. The two invalid-input checks were rejected. Its exact graph was Compact **0.36.0**, compact-runtime **0.21.0**, Midnight.js **5.0.0**, ledger-v9 **1.0.0** and ZKIR **3.2.0**. Fresh generated-runtime tests also passed.
+
+The local native browser election completed casting, two-trustee tallying and public-record checks. The network page reached Ready and its pinned Preview service check passed at block **5040**. These observations used an uncommitted migration build at a local origin. **No wallet connection, DUST proof, signing, network submission or new-chain election acceptance was performed by these checks.** Independent proof verification, migration CI and deployment remain unverified. The last deployed ledger-8 build below is separate from these current local results.
+
 ## Current browser-wallet attempt
+
+The results in this section used the earlier ledger-8 graph and are historical. They do not establish wallet/DUST compatibility with the reset Preview chain. The current signed Lace parser's custom-IR3 diagnostic limitation and its separate successful parsing of official generation-10 DUST material are recorded in the [CI runbook](CI_LACE_PREVIEW.md#separate-fundless-wallet-prover-diagnostic); neither parsing result is a wallet proof test.
 
 The [fourth fundless diagnostic](../evidence/2026-11-07/lace-preview/fundless-diagnostic-4/README.md) **passed** on **7 November 2026**, testing commit `8310552d1ca36dd9bd29387a0d6a692d6a1ae3e8`. Genuine Lace returned a **2,933-byte `openVoting` contract proof** after a successful constraint check (26,780 ms for preparation/check/proving). The passive worker observer also captured and verified the exact signed prover-WASM response: **3,413,037 decoded bytes**, SHA-256 `f5326f9e869d7795edbe4a80ad1ed7f0e8636178f60c0268ecd4700787612cdb`, with no observer failure. Both conditions were required by the executed diagnostic; the extension was unmodified.
 
@@ -35,7 +51,7 @@ The local browser demo executes native cryptography but neither generates networ
 
 ## Tested versions and assets
 
-The current browser application uses **Compact 0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1**, ledger-v8 **8.1.0**, onchain-runtime-v3 **3.0.0** and ZKIR **2.1.1**. The retained CI gate used Node **24.22.2**, npm **11.19.1**, Python **3.12.16**, Playwright **1.64.1** and Chromium **156.0.8078.4**. Attempt 9 uses signed Lace **2.5.1**, reporting API **4.1.0-canary.20260819082604-3b622cb**. The separate SDK/devnet dependency graphs retain their own versions.
+The last verified deployed browser application used **Compact 0.31.1**, compact-runtime **0.16.0**, Midnight.js **4.1.1**, ledger-v8 **8.1.0**, onchain-runtime-v3 **3.0.0** and ZKIR **2.1.1**. These are the historical ledger-8 versions, not the current Preview target above. The retained CI gate used Node **24.22.2**, npm **11.19.1**, Python **3.12.16**, Playwright **1.64.1** and Chromium **156.0.8078.4**. Attempt 9 used signed Lace **2.5.1**, reporting API **4.1.0-canary.20260819082604-3b622cb**. The separate SDK/devnet dependency graphs retain their own versions.
 
 The [exact asset audit](../evidence/2026-11-06/browser-wasm/github-42311868015/deployment-ci-evidence-audit.json) records native/network bundle, worker and manifest hashes, with 21 circuit assets, five pinned public parameter files and three network-bundle WASM files. No proof witnesses, private key files or wallet profile are included. The worker uses official WASM and verifies public asset hashes; there is no HTTP-prover fallback in the browser contract path.
 

@@ -1,0 +1,7 @@
+
+> midnight-ballot-lab-contract-source@0.6.1 compile:native
+> node scripts/compile.mjs native
+
+Using Compact toolchain 0.36.0: 0.36.0 (b5d9e4dfc 2026-11-03)
+Compiling 7 circuits:
+{"check":"generated-native-artifacts","target":"native","files":{"compiler":2,"keys":14,"zkir":14},"runtimeImport":"passed","proofExecution":"not-tested","ledgerSubmission":"not-tested"}
